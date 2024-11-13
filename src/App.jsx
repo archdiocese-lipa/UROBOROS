@@ -1,16 +1,13 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import "@"
+import { useState } from "react";
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <div className=' text-4xl font-bold animate-textMove'>
-      Project Uroboros V2
+    <div className=" flex justify-center items-center h-screen">
+      <div className=" text-4xl font-bold animate-textMove">
+        Project Uroboros V2
+      </div>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
