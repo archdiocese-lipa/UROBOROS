@@ -10,12 +10,21 @@ import GroupsIconSelected from "@/assets/icons/groups-icon-selected.svg";
 import ScheduleIconSelected from "@/assets/icons/schedule-icon-selected.svg";
 import RequestIconSelected from "@/assets/icons/request-icon-selected.svg";
 import CalendarIconSelected from "@/assets/icons/calendar-icon-selected.svg";
+import AnnouncementsIcon from "@/assets/icons/announcements-icon.svg";
+
+import AnnouncementsIconSelected from "@/assets/icons/announcements-icon-selected.svg";
 export const sidebarLinks = [
   {
     label: "Dashboard",
     link: "/dashboard",
     icon: DashboardIcon,
     selectedIcon: DashboardIconSelected,
+  },
+  {
+    label: "Announcements",
+    link: "/announcements",
+    icon: AnnouncementsIcon,
+    selectedIcon: AnnouncementsIconSelected,
   },
   {
     label: "Attendance",
