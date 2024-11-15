@@ -2,6 +2,7 @@ import {
   BrowserRouter as Router,
   Routes,
   Route,
+  Outlet, // Add Outlet here
   useLocation,
 } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
@@ -15,19 +16,14 @@ import Home from "./pages/Home";
 import clsx from "clsx";
 
 // Layout component that conditionally renders Sidebar
-function Layout({ children }) {
-  const url = useLocation();
-  const isAuthRoute = url.pathname === "/";
-
+function Layout() {
   return (
-    <div
-      className={clsx("flex bg-primary h-dvh", {
-        "flex-col-reverse lg:flex-row": !isAuthRoute,
-      })}
-    >
-      {/* Render Sidebar only if it's not an auth route */}
-      {!isAuthRoute && <Sidebar />}
-      <div className="bg-white rounded-[20px] flex-1 p-9 m-4">{children}</div>
+    <div className="flex bg-primary h-dvh flex-col-reverse lg:flex-row">
+      <Sidebar />
+      <div className="bg-white rounded-[20px] flex-1 p-9 m-4">
+        {/* Use Outlet here to render the child route */}
+        <Outlet />
+      </div>
     </div>
   );
 }
@@ -39,7 +35,7 @@ function App() {
         {/* Auth Routes */}
         <Route path="/" element={<Home />} />
 
-        {/* Protected Routes*/}
+        {/* Protected Routes */}
         <Route element={<Layout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/attendance" element={<Attendance />} />
