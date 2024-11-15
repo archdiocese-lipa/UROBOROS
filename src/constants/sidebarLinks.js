@@ -13,7 +13,7 @@ import CalendarIconSelected from "@/assets/icons/calendar-icon-selected.svg";
 export const sidebarLinks = [
   {
     label: "Dashboard",
-    link: "/",
+    link: "/dashboard",
     icon: DashboardIcon,
     selectedIcon: DashboardIconSelected,
   },
