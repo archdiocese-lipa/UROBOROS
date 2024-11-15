@@ -6,6 +6,7 @@ import Schedule from "./pages/Schedule";
 import Calendar from "./pages/Calendar";
 import Requests from "./pages/Requests";
 import Groups from "./pages/Groups";
+import Home from "./pages/Home";
 
 function App() {
   return (
