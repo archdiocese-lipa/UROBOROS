@@ -1,0 +1,24 @@
+<svg width="8" height="5" viewBox="0 0 8 5" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="8" height="5" fill="#1E1E1E"/>
+<g id="Schedule">
+<g clip-path="url(#clip0_96_58)">
+<rect x="-468" y="-270" width="1440" height="850" rx="10" fill="white"/>
+<rect id="Rectangle 9" x="-468" y="-191" width="1440" height="771" fill="#F7F0ED"/>
+<rect id="Rectangle 8" x="-170" y="-167" width="1118" height="723" rx="20" fill="white"/>
+<g id="Frame 28">
+<rect x="-133.5" y="-12.5" width="160" height="30" rx="15" fill="white"/>
+<rect x="-133.5" y="-12.5" width="160" height="30" rx="15" stroke="#F6F0ED"/>
+<g id="Frame">
+<rect x="22" y="13" width="36" height="21" rx="10.5" transform="rotate(-180 22 13)" fill="#F4E2D9"/>
+<path id="Vector" fill-rule="evenodd" clip-rule="evenodd" d="M4.4256 4.62453C4.31271 4.73738 4.15962 4.80078 4 4.80078C3.84038 4.80078 3.68729 4.73738 3.5744 4.62453L0.168984 1.21911C0.0593279 1.10558 -0.00134816 0.953516 2.32383e-05 0.795678C0.00139464 0.637841 0.0647048 0.486856 0.176317 0.375243C0.28793 0.263631 0.438915 0.200321 0.596753 0.19895C0.75459 0.197578 0.906651 0.258254 1.02019 0.367911L4 3.34772L6.97981 0.367911C7.09335 0.258255 7.24541 0.197579 7.40325 0.19895C7.56109 0.200322 7.71207 0.263632 7.82368 0.375244C7.9353 0.486856 7.99861 0.637841 7.99998 0.795679C8.00135 0.953517 7.94067 1.10558 7.83102 1.21911L4.4256 4.62453Z" fill="#663F30"/>
+</g>
+</g>
+</g>
+<rect x="-467.5" y="-269.5" width="1439" height="849" rx="9.5" stroke="#3C3C3C"/>
+</g>
+<defs>
+<clipPath id="clip0_96_58">
+<rect x="-468" y="-270" width="1440" height="850" rx="10" fill="white"/>
+</clipPath>
+</defs>
+</svg>

@@ -5,19 +5,19 @@ export default {
   theme: {
     extend: {
       colors: {
-        "primary": "#F6F0ED",
-		"accent": "#663F30",
-		"white":"#FFFFFF",	
-		"blue": "#2394FE",
-		"secondary-accent":"#F4E2D9"
+        primary: "#F6F0ED",
+        accent: "#663F30",
+        white: "#FFFFFF",
+        blue: "#2394FE",
+        "secondary-accent": "#F4E2D9",
+        "primary-outline":"#E8DAD3"
       },
-	  fontFamily: {
-        montserrat: ['Montserrat', 'sans-serif'],
+      fontFamily: {
+        montserrat: ["Montserrat", "sans-serif"],
       },
-	  fontSize: {
-        heading: '26px', 
+      fontSize: {
+        heading: "26px",
       },
-
     },
   },
 };
