@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import {
@@ -12,14 +13,12 @@ import { Input } from "@/components/ui/input";
 import { addFamilySchema } from "@/zodSchema/AddFamilySchema";
 import { Label } from "../ui/label";
 
-const FamilyRegistration = () => {
+const FamilyRegistration = ({ skipBtn }) => {
   const form = useForm({
     resolver: zodResolver(addFamilySchema),
     defaultValues: {
-      parentFirstName: "",
-      parentLastName: "",
-      childFirstName: "",
-      childLastName: "",
+      parents: [{ firstName: "", lastName: "" }],
+      children: [{ firstName: "", lastName: "" }],
     },
   });
 
@@ -97,8 +96,8 @@ const FamilyRegistration = () => {
           </div>
         </div>
         <div className="flex justify-end gap-x-2">
-          <Button type="button" variant="outline">
-            Cancel
+          <Button type="button" variant="outline" onClick={skipBtn}>
+            Skip
           </Button>
           <Button
             variant="primary"
@@ -111,6 +110,11 @@ const FamilyRegistration = () => {
       </form>
     </Form>
   );
+};
+
+// Props validation
+FamilyRegistration.propTypes = {
+  skipBtn: PropTypes.func.isRequired, // Require skipBtn to be a function
 };
 
 export default FamilyRegistration;
