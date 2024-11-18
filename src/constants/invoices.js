@@ -42,4 +42,22 @@ export const INVOICES = Object.freeze([
     contact: "+1 (555) 678-9012",
     action: "Pay Now",
   },
+  {
+    name: "David Wilson",
+    email: "david.wilson@example.com",
+    contact: "+1 (555) 678-9012",
+    action: "Pay Now",
+  },
+  {
+    name: "David Wilson",
+    email: "david.wilson@example.com",
+    contact: "+1 (555) 678-9012",
+    action: "Pay Now",
+  },
+  {
+    name: "David Wilson",
+    email: "david.wilson@example.com",
+    contact: "+1 (555) 678-9012",
+    action: "Pay Now",
+  },
 ]);

@@ -9,14 +9,14 @@ import Filter from "@/components/Announcements/Filter";
 
 const Announcements = () => {
   return (
-    <div className=" flex gap-8 w-full px-12">
+    <div className=" flex gap-8 w-full px-12 h-full">
       <div className=" flex flex-col w-3/4 ">
         <div className=" flex justify-between items-end mb-6 ">
           <div className="">
             <Title>Announcements</Title>
             {/* <Description>Announce announcements to announce.</Description> */}
           </div>
-          <Button className=" rounded-[15px]" variant="uroboros">
+          <Button className=" rounded-[15px]" variant="primary">
             <img
               className="w-5 h-5"
               src={AnnouncementsIconSelected}
@@ -38,10 +38,10 @@ const Announcements = () => {
       </div>
       <div className=" w-1/4 py-6 px-8 border border-primary-outline mt-[64px] rounded-[15px] overflow-y-scroll no-scrollbar">
         <p className=" mb-3 text-accent font-bold">Filter by your groups.</p>
-        <div className=" rounded-xl bg-accent">
+        <div className=" rounded-xl bg-white border border-gray">
           <div className="  py-3 px-[18px] ">
             <div className="flex justify-between">
-              <h3 className=" text-white font-bold">All</h3>
+              <h3 className=" text-accent font-bold">All</h3>
               <div className="hover:cursor-pointer flex items-center justify-center h-7  bg-white text-accent rounded-[18.5px] py-3 px-3">
                 <img
                   src={GlobeIcon}
@@ -50,7 +50,7 @@ const Announcements = () => {
                 />
               </div>
             </div>
-            <p className=" pb-1 text-white font-medium text-[13px] opacity-60">
+            <p className=" pb-1 text-accent font-medium text-[13px] opacity-60">
               This shows all group announcements
             </p>
             <div className="flex justify-start relative w-full h-8">
@@ -82,6 +82,7 @@ const Announcements = () => {
       </div>
     </div>
   );
-};
+}
+
 
 export default Announcements;
