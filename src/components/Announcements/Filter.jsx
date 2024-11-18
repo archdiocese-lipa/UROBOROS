@@ -24,7 +24,7 @@ export default function Filter() {
                 left: `${i * 20}px`,
                 zIndex: 999 - i,
               }}
-              className={`absolute p-[3px] bg-accent  rounded-full`}
+              className={`absolute p-[3px] bg-white  rounded-full`}
             >
               <Avatar className="w-6 h-6">
                 <AvatarImage src="https://github.com/shadcn.png" />
