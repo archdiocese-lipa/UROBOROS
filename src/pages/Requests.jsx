@@ -12,7 +12,6 @@ import {
 import DownIcon from "@/assets/icons/down-icon.svg";
 import { clsx } from "clsx";
 
-// Data with only necessary fields
 const invoices = [
   {
     name: "John Doe",
@@ -60,7 +59,7 @@ const invoices = [
 
 export default function Requests() {
   return (
-    <>
+    <div className=" flex-1">
       <Title>Requests</Title>
       <Description>Manage your organisation's community.</Description>
 
@@ -159,6 +158,6 @@ export default function Requests() {
           </Table>
         </TabsContent>
       </Tabs>
-    </>
+    </div>
   );
 }
