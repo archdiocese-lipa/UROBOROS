@@ -6,6 +6,20 @@ import LikeIcon from "@/assets/icons/like-icon.svg";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 
+const dummyData = [
+  {
+    image: "",
+    name: "Tristan Santos",
+    content:
+      " Hi this is my sample comment Hi this is my sample comment Hi this is my sample comment Hi this is my sample comment Hi this is my sample comment Hi this is my sample comment Hi this is my sample comment Hi this is my sample comment",
+  },
+  {
+    image: "",
+    name: "Kerby Sarcia",
+    content: " Hi this another sample comment",
+  },
+];
+
 export default function Announcement() {
   return (
     <div>
@@ -38,12 +52,39 @@ export default function Announcement() {
         </div>
       </div>
       <Separator className="my-5" />
+      <div>
+        {dummyData.map((comment, i) => (
+          <div className="flex items-start gap-2 mb-2" key={i}>
+            <Avatar className=" w-7 h-7">
+              <AvatarImage src={comment.image} />
+              <AvatarFallback>CN</AvatarFallback>
+            </Avatar>
+            <div className=" relative bg-primary rounded-2xl text-justify py-3 px-5">
+              <p>{comment.content}</p>
+              {/* <div className=" bg-blue right-10 absolute py-1 px-2 w-10 rounded-full">
+                <img src="" alt="" />
+              </div> */}
+              <div className="absolute right-7 p-1 bg-white rounded-full">
+                <div className=" hover:cursor-pointer flex gap-1 items-center justify-center w-12 h-6 bg-blue text-accent rounded-[18.5px] py-3 px-3">
+                  <img src={LikeIcon} alt={`up icon`} className="h-5 w-5" />
+                  <p className=" font-semibold text-sm text-white">1</p>
+                </div>
+              </div>
+            </div>
+            <img className="hover:cursor-pointer" src={KebabIcon} alt="icon" />
+          </div>
+        ))}
+        <button className=" ml-12 text-accent opacity-85 font-semibold">
+          View all comments ({dummyData.length})
+        </button>
+      </div>
+
       <div className=" flex items-center gap-2">
         <Avatar className=" w-7 h-7">
           <AvatarImage src="https://github.com/shadcn.png" />
           <AvatarFallback>CN</AvatarFallback>
         </Avatar>
-        <Input placeholder="Write a comment..."/>
+        <Input placeholder="Write a comment..." />
       </div>
     </div>
   );

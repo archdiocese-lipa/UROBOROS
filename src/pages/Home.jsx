@@ -5,7 +5,7 @@ import UpperCurly from "@/assets/svg/UpperCurly.svg";
 import CurlyRectangle from "@/assets/svg/CurlyRectangle.svg";
 import ParishionerRegister from "@/components/ParishionerRegister";
 
-export default function Home() {
+const Home = () => {
   return (
     <div className="relative h-screen bg-primary flex items-center justify-center overflow-hidden">
       <div className="absolute top-20">
@@ -56,4 +56,6 @@ export default function Home() {
       </div>
     </div>
   );
-}
+};
+
+export default Home;

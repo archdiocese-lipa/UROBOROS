@@ -1,7 +1,5 @@
-import React from 'react'
+const Calendar = () => {
+  return <div>Calendar</div>;
+};
 
-export default function Calendar() {
-  return (
-    <div>Calendar</div>
-  )
-}
+export default Calendar;
