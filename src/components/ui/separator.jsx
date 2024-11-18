@@ -22,7 +22,9 @@ const Separator = React.forwardRef(
     />
   )
 );
+
 Separator.displayName = SeparatorPrimitive.Root.displayName;
+
 Separator.propTypes = {
   className: PropTypes.string,
   orientation: PropTypes.oneOf(["horizontal", "vertical"]),
