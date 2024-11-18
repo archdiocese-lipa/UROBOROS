@@ -3,14 +3,28 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
 import { parishionerRegisterSchema } from "@/zodSchema/ParishionerRegisterSchema";
 import { useRegister } from "@/hooks/useRegister"; // Import the new useRegister hook
 
-export default function ParishionerRegister() {
+const ParishionerRegister = () => {
   const [open, setOpen] = useState(false);
-  const { register, isLoading, error, isError } = useRegister(); // Use the custom hook for registration
+  const { register, _isLoading, error, isError } = useRegister(); // Use the custom hook for registration
 
   const form = useForm({
     resolver: zodResolver(parishionerRegisterSchema),
@@ -45,7 +59,10 @@ export default function ParishionerRegister() {
           <DialogTitle>Register</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-2">
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="flex flex-col gap-2"
+          >
             <FormField
               control={form.control}
               name="firstName"
@@ -124,12 +141,16 @@ export default function ParishionerRegister() {
                 </FormItem>
               )}
             />
-            {isError && <p className="text-red-500">{error}</p>} {/* Display error */}
+            {isError && <p className="text-red-500">{error}</p>}{" "}
+            {/* Display error */}
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpen(false)}
+              >
                 Cancel
               </Button>
-
 
               <Button
                 variant="uroboros"
@@ -137,7 +158,6 @@ export default function ParishionerRegister() {
                 disabled={form.formState.isSubmitting}
               >
                 {form.formState.isSubmitting ? "Submitting..." : "Register"}
-
               </Button>
             </DialogFooter>
           </form>
@@ -145,4 +165,6 @@ export default function ParishionerRegister() {
       </DialogContent>
     </Dialog>
   );
-}
+};
+
+export default ParishionerRegister;

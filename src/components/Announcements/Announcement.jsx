@@ -20,7 +20,7 @@ const dummyData = [
   },
 ];
 
-export default function Announcement() {
+const Announcement = () => {
   return (
     <div>
       <div className="flex justify-between mb-3">
@@ -88,4 +88,6 @@ export default function Announcement() {
       </div>
     </div>
   );
-}
+};
+
+export default Announcement;

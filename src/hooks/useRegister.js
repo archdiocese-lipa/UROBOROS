@@ -3,7 +3,7 @@ import { registerUser } from "@/services/authService"; // Import the registratio
 import { useState } from "react";
 
 // This hook handles user registration with the backend
-export function useRegister() {
+export const useRegister = () => {
   const [error, setError] = useState(null);
 
   // Use mutation to handle the registration process
@@ -11,7 +11,7 @@ export function useRegister() {
     mutate: register,
     isLoading,
     isError,
-    error: registrationError,
+    error: _registrationError,
   } = useMutation({
     mutationFn: async (userData) => {
       try {
@@ -37,4 +37,4 @@ export function useRegister() {
     error,
     isError,
   };
-}
+};
