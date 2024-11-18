@@ -58,7 +58,5 @@ Button.propTypes = {
   asChild: PropTypes.bool,
 };
 
-export default Button;
-
 // eslint-disable-next-line react-refresh/only-export-components
-export { buttonVariants };
+export { Button, buttonVariants };
