@@ -38,7 +38,7 @@ export default function ParishionerRegister() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>Register</Button>
+        <Button variant="primary">Register</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
@@ -129,8 +129,15 @@ export default function ParishionerRegister() {
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? "Submitting..." : "Register"}
+
+
+              <Button
+                variant="uroboros"
+                type="submit"
+                disabled={form.formState.isSubmitting}
+              >
+                {form.formState.isSubmitting ? "Submitting..." : "Register"}
+
               </Button>
             </DialogFooter>
           </form>
