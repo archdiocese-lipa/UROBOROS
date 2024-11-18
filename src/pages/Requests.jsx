@@ -16,7 +16,7 @@ import DownIcon from "@/assets/icons/down-icon.svg";
 
 const Requests = () => {
   return (
-    <>
+    <div className=" flex-1">
       <Title>Requests</Title>
       <Description>Manage your organisation&apos;s community.</Description>
 
@@ -115,7 +115,7 @@ const Requests = () => {
           </Table>
         </TabsContent>
       </Tabs>
-    </>
+    </div>
   );
 };
 

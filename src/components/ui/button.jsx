@@ -2,6 +2,7 @@ import * as React from "react";
 import PropTypes from "prop-types";
 import { Slot } from "@radix-ui/react-slot";
 import { cva } from "class-variance-authority";
+
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
@@ -20,7 +21,6 @@ const buttonVariants = cva(
         ghost:
           "hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-neutral-50",
         link: "text-neutral-900 underline-offset-4 hover:underline dark:text-neutral-50",
-        uroboros: "bg-accent text-white font-semibold",
       },
       size: {
         default: "h-10 px-4 py-2",
@@ -48,6 +48,7 @@ const Button = React.forwardRef(
     );
   }
 );
+
 Button.displayName = "Button";
 
 Button.propTypes = {
@@ -56,7 +57,6 @@ Button.propTypes = {
   size: PropTypes.string,
   asChild: PropTypes.bool,
 };
-Button.displayName = "Button";
 
 export default Button;
 
