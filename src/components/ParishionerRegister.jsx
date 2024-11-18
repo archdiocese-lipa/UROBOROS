@@ -3,27 +3,14 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { parishionerRegisterSchema } from "@/zodSchema/ParishionerRegisterSchema";
+import { useRegister } from "@/hooks/useRegister"; // Import the new useRegister hook
 
 export default function ParishionerRegister() {
   const [open, setOpen] = useState(false);
+  const { register, isLoading, error, isError } = useRegister(); // Use the custom hook for registration
 
   const form = useForm({
     resolver: zodResolver(parishionerRegisterSchema),
@@ -37,11 +24,16 @@ export default function ParishionerRegister() {
     },
   });
 
-  function onSubmit(values) {
-    console.log("Registration submitted:", values);
-    setOpen(false);
-    form.reset();
-  }
+  const onSubmit = async (values) => {
+    try {
+      await register(values); // Call the register function from useRegister hook
+      console.log("Registration successful:", values);
+      setOpen(false); // Close the dialog on success
+      form.reset(); // Reset the form after successful registration
+    } catch (err) {
+      console.error("Registration failed:", err.message);
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -51,15 +43,9 @@ export default function ParishionerRegister() {
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Register</DialogTitle>
-          <DialogDescription>
-            Create a new account to join the platform.
-          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="flex flex-col gap-2"
-          >
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-2">
             <FormField
               control={form.control}
               name="firstName"
@@ -138,16 +124,13 @@ export default function ParishionerRegister() {
                 </FormItem>
               )}
             />
+            {isError && <p className="text-red-500">{error}</p>} {/* Display error */}
             <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setOpen(false)}
-              >
+              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? "Submitting..." : "Register"}
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? "Submitting..." : "Register"}
               </Button>
             </DialogFooter>
           </form>
