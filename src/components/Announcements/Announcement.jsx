@@ -53,8 +53,8 @@ export default function Announcement() {
       </div>
       <Separator className="my-5" />
       <div>
-        {dummyData.map((comment) => (
-          <div className=" flex items-start gap-2 mb-2">
+        {dummyData.map((comment, i) => (
+          <div className="flex items-start gap-2 mb-2" key={i}>
             <Avatar className=" w-7 h-7">
               <AvatarImage src={comment.image} />
               <AvatarFallback>CN</AvatarFallback>

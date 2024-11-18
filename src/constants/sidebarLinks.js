@@ -13,7 +13,8 @@ import CalendarIconSelected from "@/assets/icons/calendar-icon-selected.svg";
 import AnnouncementsIcon from "@/assets/icons/announcements-icon.svg";
 
 import AnnouncementsIconSelected from "@/assets/icons/announcements-icon-selected.svg";
-export const sidebarLinks = [
+
+export const sidebarLinks = Object.freeze([
   {
     label: "Dashboard",
     link: "/dashboard",
@@ -56,4 +57,4 @@ export const sidebarLinks = [
     icon: RequestIcon,
     selectedIcon: RequestIconSelected,
   },
-];
+]);

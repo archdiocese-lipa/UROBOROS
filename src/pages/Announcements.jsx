@@ -1,5 +1,4 @@
 import { Title } from "@/components/Title";
-import React from "react";
 import AnnouncementsIconSelected from "@/assets/icons/announcements-icon-selected.svg";
 import { Button } from "@/components/ui/button";
 import Announcement from "@/components/Announcements/Announcement";
@@ -77,7 +76,7 @@ export default function Announcements() {
         <Separator className="bg-gray my-3" />
         <div className=" mb-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <Filter />
+            <Filter key={i} />
           ))}
         </div>
       </div>
