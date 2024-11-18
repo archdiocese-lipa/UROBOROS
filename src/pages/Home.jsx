@@ -3,6 +3,7 @@ import BigCurlyRectangle from "@/assets/svg/BigCurlyRectangle.svg";
 import StarIcon from "@/assets/svg/Star.svg";
 import UpperCurly from "@/assets/svg/UpperCurly.svg";
 import CurlyRectangle from "@/assets/svg/CurlyRectangle.svg";
+import ParishionerRegister from "@/components/ParishionerRegister";
 
 export default function Home() {
   return (
@@ -11,7 +12,7 @@ export default function Home() {
         <div className="order-2 mx-auto max-w-xl justify-center rounded-2xl bg-white/60 sm:flex sm:space-x-3 md:order-1 md:col-span-2">
           <div className="grid grid-cols-2 gap-2 p-2 sm:grid-cols-4">
             <button>Login</button>
-            <button>Register</button>
+            <ParishionerRegister />
             <button>Walk - in Register</button>
             <button>Edit Registration</button>
           </div>
