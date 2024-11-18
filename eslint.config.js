@@ -48,7 +48,10 @@ export default [
       "no-var": "error", // Disallow var, use let and const instead
       "prefer-const": "error", // Prefer const over let when variables are not reassigned
       "arrow-spacing": ["error", { before: true, after: true }], // Enforce spacing around arrow function arrows
-      "no-unused-vars": ["error", { argsIgnorePattern: "^_" }], // Disallow unused variables
+      "no-unused-vars": [
+        "error",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+      ], // Disallow unused variables
       "no-duplicate-imports": "error", // Disallow duplicate imports
       "object-shorthand": "error", // Require object shorthand syntax
       "prefer-template": "error", // Prefer template literals over string concatenation

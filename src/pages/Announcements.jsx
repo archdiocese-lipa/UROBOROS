@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import Filter from "@/components/Announcements/Filter";
 
-export default function Announcements() {
+const Announcements = () => {
   return (
     <div className=" flex gap-8 w-full px-12">
       <div className=" flex flex-col w-3/4 ">
@@ -82,4 +82,6 @@ export default function Announcements() {
       </div>
     </div>
   );
-}
+};
+
+export default Announcements;
