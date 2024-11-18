@@ -1,7 +1,7 @@
 import { Title } from "@/components/Title";
 import React from "react";
 import AnnouncementsIconSelected from "@/assets/icons/announcements-icon-selected.svg";
-import Button from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import Announcement from "@/components/Announcements/Announcement";
 import GlobeIcon from "@/assets/icons/globe-icon.svg";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -75,11 +75,11 @@ export default function Announcements() {
         </div>
 
         <Separator className="bg-gray my-3" />
-       <div className=" mb-3">
-         {Array.from({ length: 6 }).map((_, i) => (
-          <Filter />
-        ))}
-       </div>
+        <div className=" mb-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Filter />
+          ))}
+        </div>
       </div>
     </div>
   );
