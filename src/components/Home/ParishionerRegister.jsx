@@ -26,6 +26,8 @@ import { parishionerRegisterSchema } from "@/zodSchema/ParishionerRegisterSchema
 
 const ParishionerRegister = () => {
   const [open, setOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("profile");
+  const [isProfileDisabled, setIsProfileDisabled] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(parishionerRegisterSchema),
@@ -41,26 +43,62 @@ const ParishionerRegister = () => {
 
   const onSubmit = (values) => {
     console.log("Registration submitted:", values);
-    setOpen(false);
     form.reset();
+    setActiveTab("family");
+    setIsProfileDisabled(true);
+  };
+
+  // Reset form and states
+  const reset = () => {
+    form.reset(); // Reset form fields when closing
+    setActiveTab("profile"); // Reset active tab to "Profile"
+    setIsProfileDisabled(false); // Re-enable the "Profile" tab
+  };
+
+  // Close the Dialog if cancel
+  const handleDialogClose = (isOpen) => {
+    if (!isOpen) {
+      reset();
+    }
+    setOpen(isOpen);
+  };
+
+  // Skip button for Add family members
+  const handleSkip = () => {
+    reset();
+    setOpen(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleDialogClose}>
       <DialogTrigger asChild>
         <Button variant="primary">Create New Profile</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent
+        className={`sm:max-w-2xl md:h-auto h-dvh ${
+          activeTab === "family" && "h-auto"
+        }`}
+      >
         <DialogHeader>
-          <DialogTitle>Create New Profile</DialogTitle>
+          <DialogTitle>
+            {activeTab === "profile"
+              ? "Create New Profile"
+              : "Add Family Member"}
+          </DialogTitle>
           <DialogDescription>
-            Create a new profile to join the platform.
+            {activeTab === "profile"
+              ? "Create a new profile to join the platform."
+              : "Add your family member here or you can do it later."}
           </DialogDescription>
         </DialogHeader>
-        <Tabs defaultValue="profile">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
-            <TabsTrigger value="profile">Profile</TabsTrigger>
-            <TabsTrigger value="family">Family</TabsTrigger>
+            <TabsTrigger value="profile" disabled={isProfileDisabled}>
+              Profile
+            </TabsTrigger>
+            <TabsTrigger value="family" disabled={!isProfileDisabled}>
+              Family
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="profile">
             <Form {...form}>
@@ -135,7 +173,11 @@ const ParishionerRegister = () => {
                         <FormItem>
                           <FormLabel>Password</FormLabel>
                           <FormControl>
-                            <Input type="password" {...field} />
+                            <Input
+                              type="password"
+                              placeholder="Enter Password"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -143,7 +185,6 @@ const ParishionerRegister = () => {
                     />
                   </div>
                   <div className="flex-1">
-                    {" "}
                     <FormField
                       control={form.control}
                       name="confirmPassword"
@@ -151,7 +192,11 @@ const ParishionerRegister = () => {
                         <FormItem>
                           <FormLabel>Confirm Password</FormLabel>
                           <FormControl>
-                            <Input type="password" {...field} />
+                            <Input
+                              type="password"
+                              placeholder="Confirm Password"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -159,7 +204,6 @@ const ParishionerRegister = () => {
                     />
                   </div>
                 </div>
-
                 <DialogFooter>
                   <Button
                     type="button"
@@ -180,7 +224,7 @@ const ParishionerRegister = () => {
             </Form>
           </TabsContent>
           <TabsContent value="family">
-            <FamilyRegistration />
+            <FamilyRegistration skipBtn={handleSkip} />
           </TabsContent>
         </Tabs>
       </DialogContent>
