@@ -27,7 +27,7 @@ export default function SidebarLink({
           </div>
         </Link>
       </li>
-      <p className=" font-bold text-center hidden md:block lg:hidden text-xs">{label}</p>
+      <p className=" text-accent font-bold text-center hidden md:block lg:hidden text-xs">{label}</p>
     </div>
   );
 }
