@@ -1,7 +1,5 @@
-import React from 'react'
+const Dashboard = () => {
+  return <div className=" text-heading text-accent font-bold ">Dashboard</div>;
+};
 
-export default function Dashboard() {
-  return (
-    <div className=' text-heading text-accent font-bold '>Dashboard</div>
-  )
-}
+export default Dashboard;

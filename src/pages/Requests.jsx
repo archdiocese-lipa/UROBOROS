@@ -1,5 +1,4 @@
-import  {Title, Description } from "@/components/Title";
-import React from "react";
+import { Title, Description } from "@/components/Title";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
@@ -9,60 +8,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+
+import { cn } from "@/lib/utils";
+import { INVOICES } from "@/constants/invoices";
+
 import DownIcon from "@/assets/icons/down-icon.svg";
-import { clsx } from "clsx";
 
-// Data with only necessary fields
-const invoices = [
-  {
-    name: "John Doe",
-    email: "john.doe@example.com",
-    contact: "+1 (555) 123-4567",
-    action: "View",
-  },
-  {
-    name: "Jane Smith",
-    email: "jane.smith@example.com",
-    contact: "+1 (555) 987-6543",
-    action: "Pay Now",
-  },
-  {
-    name: "Michael Brown",
-    email: "michael.brown@example.com",
-    contact: "+1 (555) 234-5678",
-    action: "Pay Now",
-  },
-  {
-    name: "Alice Johnson",
-    email: "alice.johnson@example.com",
-    contact: "+1 (555) 345-6789",
-    action: "View",
-  },
-  {
-    name: "Chris Lee",
-    email: "chris.lee@example.com",
-    contact: "+1 (555) 456-7890",
-    action: "View",
-  },
-  {
-    name: "Emily Davis",
-    email: "emily.davis@example.com",
-    contact: "+1 (555) 567-8901",
-    action: "Pay Now",
-  },
-  {
-    name: "David Wilson",
-    email: "david.wilson@example.com",
-    contact: "+1 (555) 678-9012",
-    action: "Pay Now",
-  },
-];
-
-export default function Requests() {
+const Requests = () => {
   return (
     <>
       <Title>Requests</Title>
-      <Description>Manage your organisation's community.</Description>
+      <Description>Manage your organisation&apos;s community.</Description>
 
       <Tabs defaultValue="volunteers" className="w-full mt-7">
         <TabsList>
@@ -94,9 +50,9 @@ export default function Requests() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {invoices.map((invoice, index) => (
+              {INVOICES.map((invoice, index) => (
                 <TableRow
-                  className={clsx(
+                  className={cn(
                     index % 2 !== 0 ? "bg-primary bg-opacity-35" : "bg-white"
                   )}
                   key={invoice.email}
@@ -134,9 +90,9 @@ export default function Requests() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {invoices.map((invoice, index) => (
+              {INVOICES.map((invoice, index) => (
                 <TableRow
-                  className={clsx(
+                  className={cn(
                     index % 2 !== 0 ? "bg-primary bg-opacity-35" : "bg-white"
                   )}
                   key={invoice.email}
@@ -161,4 +117,6 @@ export default function Requests() {
       </Tabs>
     </>
   );
-}
+};
+
+export default Requests;

@@ -4,7 +4,7 @@ import StarIcon from "@/assets/svg/Star.svg";
 import UpperCurly from "@/assets/svg/UpperCurly.svg";
 import CurlyRectangle from "@/assets/svg/CurlyRectangle.svg";
 
-export default function Home() {
+const Home = () => {
   return (
     <div className="relative h-screen bg-primary flex items-center justify-center overflow-hidden">
       <div className="flex items-center md:absolute md:bottom-5 lg:left-10 xl:left-30 z-10">
@@ -45,4 +45,6 @@ export default function Home() {
       </div>
     </div>
   );
-}
+};
+
+export default Home;

@@ -1,17 +1,33 @@
-import React from "react";
+import { forwardRef } from "react";
+import PropTypes from "prop-types";
+import { cn } from "@/lib/utils";
 
-export function Title({ children, className }) {
-  return (
-    <h1 className={`text-[26px] font-bold text-accent ${className}`}>
-      {children}
-    </h1>
-  );
-}
+const Title = forwardRef(({ className, ...props }, ref) => (
+  <h1
+    ref={ref}
+    className={cn("text-[26px] font-bold text-accent", className)}
+    {...props}
+  />
+));
 
-export function Description({ children, className }) {
-  return (
-    <p className={`text-sm lg:text-lg text-accent opacity-60 ${className}`}>
-      {children}
-    </p>
-  );
-}
+Title.displayName = "Title";
+
+Title.propTypes = {
+  className: PropTypes.string,
+};
+
+const Description = forwardRef(({ className, ...props }, ref) => (
+  <p
+    ref={ref}
+    className={cn("text-sm lg:text-lg text-accent opacity-60", className)}
+    {...props}
+  />
+));
+
+Description.displayName = "Description";
+
+Description.propTypes = {
+  className: PropTypes.string,
+};
+
+export { Title, Description };

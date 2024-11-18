@@ -1,7 +1,5 @@
-import React from 'react'
+const Attendance = () => {
+  return <div className=" text-heading text-accent font-bold">Attendance</div>;
+};
 
-export default function attendance() {
-  return (
-    <div className=' text-heading text-accent font-bold '>Attendance</div>
-  )
-}
+export default Attendance;
