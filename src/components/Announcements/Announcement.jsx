@@ -20,6 +20,7 @@ const dummyData = [
   },
 ];
 
+
 const Announcement = () => {
   return (
     <div>
@@ -61,9 +62,6 @@ const Announcement = () => {
             </Avatar>
             <div className=" relative bg-primary rounded-2xl text-justify py-3 px-5">
               <p>{comment.content}</p>
-              {/* <div className=" bg-blue right-10 absolute py-1 px-2 w-10 rounded-full">
-                <img src="" alt="" />
-              </div> */}
               <div className="absolute right-7 p-1 bg-white rounded-full">
                 <div className=" hover:cursor-pointer flex gap-1 items-center justify-center w-12 h-6 bg-blue text-accent rounded-[18.5px] py-3 px-3">
                   <img src={LikeIcon} alt={`up icon`} className="h-5 w-5" />
