@@ -3,12 +3,12 @@ import BigCurlyRectangle from "@/assets/svg/BigCurlyRectangle.svg";
 import StarIcon from "@/assets/svg/Star.svg";
 import UpperCurly from "@/assets/svg/UpperCurly.svg";
 import CurlyRectangle from "@/assets/svg/CurlyRectangle.svg";
-import ParishionerRegister from "@/components/ParishionerRegister";
+import ParishionerRegister from "@/components/Home/ParishionerRegister";
 
 const Home = () => {
   return (
     <div className="relative h-screen bg-primary flex items-center justify-center overflow-hidden">
-      <div className="absolute top-20">
+      <div className="absolute top-20 z-50">
         <div className="order-2 mx-auto max-w-xl justify-center rounded-2xl sm:flex sm:space-x-3 md:order-1 md:col-span-2 ">
           <div className="grid grid-cols-2 gap-2 p-2 sm:grid-cols-4 bg-white/60">
             <button>Login</button>
