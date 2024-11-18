@@ -7,6 +7,16 @@ import CurlyRectangle from "@/assets/svg/CurlyRectangle.svg";
 export default function Home() {
   return (
     <div className="relative h-screen bg-primary flex items-center justify-center overflow-hidden">
+      <div className="absolute top-20">
+        <div className="order-2 mx-auto max-w-xl justify-center rounded-2xl bg-white/60 sm:flex sm:space-x-3 md:order-1 md:col-span-2">
+          <div className="grid grid-cols-2 gap-2 p-2 sm:grid-cols-4">
+            <button>Login</button>
+            <button>Register</button>
+            <button>Walk - in Register</button>
+            <button>Edit Registration</button>
+          </div>
+        </div>
+      </div>
       <div className="flex items-center md:absolute md:bottom-5 lg:left-10 xl:left-30 z-10">
         <img
           src={SaintLaurenceImg}
