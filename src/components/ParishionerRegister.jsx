@@ -46,7 +46,7 @@ export default function ParishionerRegister() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="uroboros">Register</Button>
+        <Button variant="primary">Register</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
