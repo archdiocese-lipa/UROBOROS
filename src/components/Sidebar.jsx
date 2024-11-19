@@ -3,6 +3,13 @@ import PropTypes from "prop-types";
 
 import { Title } from "@/components/Title";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 import { cn } from "@/lib/utils";
 
@@ -45,12 +52,20 @@ const SidebarProfile = () => {
           <AvatarImage src="https://github.com/shadcn.png" />
           <AvatarFallback>CN</AvatarFallback>
         </Avatar>
-
         <p className=" font-medium text-[16px]">A2K Group</p>
       </div>
-      <div className=" hover:cursor-pointer flex items-center justify-center w-11 h-7 bg-accent text-white rounded-[18.5px] px-2">
-        <img src={UpIcon} alt={`up icon`} className="h-5 w-5" />
-      </div>
+      <DropdownMenu>
+        <DropdownMenuTrigger className="hover:cursor-pointer flex items-center justify-center w-11 h-7 bg-accent text-white rounded-[18.5px] px-2">
+          <img src={UpIcon} alt={`up icon`} className="h-5 w-5" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuItem>Switch to Parishioner</DropdownMenuItem>
+          <DropdownMenuItem>Switch to Volunteer</DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem>Profile Settings</DropdownMenuItem>
+          <DropdownMenuItem>Logout</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 };

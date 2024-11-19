@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogClose,
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -27,7 +28,6 @@ import { parishionerRegisterSchema } from "@/zodSchema/ParishionerRegisterSchema
 import { cn } from "@/lib/utils";
 
 const ParishionerRegister = () => {
-  const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
   const [isProfileDisabled, setIsProfileDisabled] = useState(false);
   const { toast } = useToast();
@@ -84,17 +84,16 @@ const ParishionerRegister = () => {
     if (!isOpen) {
       reset();
     }
-    setOpen(isOpen);
   };
 
   // Skip button for Add family members
-  const handleSkip = () => {
-    reset();
-    setOpen(false);
-  };
+  // const handleSkip = () => {
+  //   reset();
+  //   setOpen(false);
+  // };
 
   return (
-    <Dialog open={open} onOpenChange={handleDialogClose}>
+    <Dialog onOpenChange={handleDialogClose}>
       <DialogTrigger asChild>
         <Button variant="secondary">Create New Profile</Button>
       </DialogTrigger>
@@ -234,13 +233,14 @@ const ParishionerRegister = () => {
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setOpen(false)}
-                  >
-                    Cancel
-                  </Button>
+                  <DialogClose asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                    >
+                      Cancel
+                    </Button>
+                  </DialogClose>
                   <Button
                     variant="primary"
                     type="submit"
@@ -253,7 +253,7 @@ const ParishionerRegister = () => {
             </Form>
           </TabsContent>
           <TabsContent value="family">
-            <FamilyRegistration skipBtn={handleSkip} />
+            <FamilyRegistration />
           </TabsContent>
         </Tabs>
       </DialogContent>

@@ -13,8 +13,9 @@ import { Input } from "@/components/ui/input";
 import { addFamilySchema } from "@/zodSchema/AddFamilySchema";
 import { Label } from "../ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { DialogClose } from "../ui/dialog";
 
-const FamilyRegistration = ({ skipBtn }) => {
+const FamilyRegistration = () => {
   const { toast } = useToast();
 
   const form = useForm({
@@ -197,9 +198,12 @@ const FamilyRegistration = ({ skipBtn }) => {
         </div>
 
         <div className="flex justify-end gap-x-2">
-          <Button type="button" variant="outline" onClick={skipBtn}>
-            Skip
-          </Button>
+          <DialogClose asChild>
+            <Button type="button" variant="outline">
+              Skip
+            </Button>
+          </DialogClose>
+
           <Button
             variant="primary"
             type="submit"
