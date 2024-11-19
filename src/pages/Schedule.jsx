@@ -7,7 +7,8 @@ import { Title, Description } from "@/components/Title";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { EventIcon, Users, Settings, Search } from "@/assets/icons/icons";
+import { Users, Search, EventIcon } from "@/assets/icons/icons";
+import CreateEvent from "@/components/Schedule/CreateEvent";
 
 const Schedule = () => {
   const form = useForm({
@@ -44,18 +45,11 @@ const Schedule = () => {
           <Description>Manage schedules for your organization.</Description>
         </div>
         <div className="flex flex-col gap-3">
-          <div className="flex gap-3 lg:min-w-[400px]">
-            <Button size="primary">
-              <EventIcon className="text-primary" />
-              <p>Create Event</p>
-            </Button>
+          <div className="flex gap-1 lg:min-w-[400px]">
+            <CreateEvent />
             <Button size="primary">
               <Users className="text-primary" />
               <p>Create Meeting</p>
-            </Button>
-            <Button size="primary">
-              <Settings className="text-primary" />
-              <p>Create Poll</p>
             </Button>
           </div>
           <Form {...form}>
