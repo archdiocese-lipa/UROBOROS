@@ -36,18 +36,19 @@ const Login = () => {
     },
   });
   const togglePasswordVisibility = () => {
-    setPasswordVisible((prevState) => !prevState)
+    setPasswordVisible((prevState) => !prevState);
+  };
 
-  }
-
-  const login = () => { 
+  const login = () => {
     console.log("submit form");
   };
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={setisDialogOpen}>
       <DialogTrigger asChild>
-        <Button className=" hover:cursor-pointer">Login</Button>
+        <Button className=" hover:cursor-pointer" variant="primary">
+          Login
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader className="space-y-3 h-fit">
@@ -65,9 +66,7 @@ const Login = () => {
               className="space-y-2"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel  className="text-sm font-medium">
-                    Email
-                  </FormLabel>
+                  <FormLabel className="text-sm font-medium">Email</FormLabel>
                   <FormControl>
                     <Input
                       type="email"
@@ -85,7 +84,7 @@ const Login = () => {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel >Password</FormLabel>
+                  <FormLabel>Password</FormLabel>
                   <FormControl>
                     <Input
                       type={passwordVisible ? "text" : "password"}
@@ -99,10 +98,9 @@ const Login = () => {
               )}
             ></FormField>
             <div className=" flex items-center my-2 justify-end gap-2">
-            <input type="checkbox" onClick={togglePasswordVisibility} />
-            <p>Show Password</p>
+              <input type="checkbox" onClick={togglePasswordVisibility} />
+              <p>Show Password</p>
             </div>
-               
             <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
               <DialogClose asChild>
                 <Button
@@ -117,7 +115,6 @@ const Login = () => {
             </DialogFooter>
           </form>
         </Form>
-     
       </DialogContent>
     </Dialog>
   );
