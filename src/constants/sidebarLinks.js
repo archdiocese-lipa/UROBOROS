@@ -2,14 +2,14 @@ import DashboardIcon from "@/assets/icons/dashboard-icon.svg";
 import AttendanceIcon from "@/assets/icons/attendance-icon.svg";
 import GroupsIcon from "@/assets/icons/groups-icon.svg";
 import ScheduleIcon from "@/assets/icons/schedule-icon.svg";
-import CalendarIcon from "@/assets/icons/calendar-icon.svg";
+// import CalendarIcon from "@/assets/icons/calendar-icon.svg";
 import RequestIcon from "@/assets/icons/request-icon.svg";
 import DashboardIconSelected from "@/assets/icons/dashboard-icon-selected.svg";
 import AttendanceIconSelected from "@/assets/icons/attendance-icon-selected.svg";
 import GroupsIconSelected from "@/assets/icons/groups-icon-selected.svg";
 import ScheduleIconSelected from "@/assets/icons/schedule-icon-selected.svg";
 import RequestIconSelected from "@/assets/icons/request-icon-selected.svg";
-import CalendarIconSelected from "@/assets/icons/calendar-icon-selected.svg";
+// import CalendarIconSelected from "@/assets/icons/calendar-icon-selected.svg";
 import AnnouncementsIcon from "@/assets/icons/announcements-icon.svg";
 
 import AnnouncementsIconSelected from "@/assets/icons/announcements-icon-selected.svg";
@@ -34,8 +34,8 @@ export const sidebarLinks = Object.freeze([
     selectedIcon: AttendanceIconSelected,
   },
   {
-    label: "Groups",
-    link: "/groups",
+    label: "Ministries",
+    link: "/ministries",
     icon: GroupsIcon,
     selectedIcon: GroupsIconSelected,
   },
@@ -45,12 +45,12 @@ export const sidebarLinks = Object.freeze([
     icon: ScheduleIcon,
     selectedIcon: ScheduleIconSelected,
   },
-  {
-    label: "Calendar",
-    link: "/calendar",
-    icon: CalendarIcon,
-    selectedIcon: CalendarIconSelected,
-  },
+  // {
+  //   label: "Calendar",
+  //   link: "/calendar",
+  //   icon: CalendarIcon,
+  //   selectedIcon: CalendarIconSelected,
+  // },
   {
     label: "Requests",
     link: "/requests",
