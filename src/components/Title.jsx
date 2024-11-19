@@ -19,7 +19,7 @@ Title.propTypes = {
 const Description = forwardRef(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={cn("text-sm lg:text-lg text-accent opacity-60", className)}
+    className={cn("text-sm lg:text-base text-accent opacity-60", className)}
     {...props}
   />
 ));

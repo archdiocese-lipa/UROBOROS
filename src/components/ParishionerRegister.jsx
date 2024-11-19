@@ -41,7 +41,7 @@ const ParishionerRegister = () => {
     console.log("Registration submitted:", values);
     setOpen(false);
     form.reset();
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -155,7 +155,6 @@ const ParishionerRegister = () => {
       </DialogContent>
     </Dialog>
   );
-}
-
+};
 
 export default ParishionerRegister;
