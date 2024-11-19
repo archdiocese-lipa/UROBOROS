@@ -22,7 +22,7 @@ import { Input } from './ui/input';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema } from '@/zodSchema/LoginSchema'; // Your Zod validation schema
-import { useUser } from '@/context/UserContext'; // Import context for login
+import { useUser } from '@/context/useUser';
 import { useNavigate } from 'react-router-dom'; // Import navigation hook
 
 const Login = () => {
