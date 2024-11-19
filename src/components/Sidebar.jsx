@@ -1,4 +1,5 @@
 import { useLocation, Link } from "react-router-dom";
+import { Icon } from "@iconify/react";
 import PropTypes from "prop-types";
 
 import { Title } from "@/components/Title";
@@ -13,19 +14,20 @@ import {
 
 import { cn } from "@/lib/utils";
 
-import { sidebarLinks } from "@/constants/sidebarLinks";
-import UpIcon from "@/assets/icons/up-icon.svg";
+import { SIDEBAR_LINKS } from "@/constants/sidebarLinks";
+
+import { ChevronUp } from "@/assets/icons/icons";
 
 const Sidebar = () => {
   const url = useLocation();
   return (
-    <div className="flex w-full lg:flex-col lg:my-9 lg:w-2/12">
-      <Title className="hidden lg:block ml-9 max-w-[201px] mb-12">
+    <div className="flex w-full lg:my-9 lg:w-2/12 lg:flex-col">
+      <Title className="mb-12 ml-9 hidden max-w-[201px] lg:block">
         Admin Management Centre
       </Title>
-      <div className="flex lg:flex-col justify-between flex-1">
-        <ul className="lg:ml-4 flex justify-evenly w-full lg:flex-col lg:items-start lg:mr-8">
-          {sidebarLinks.map((links, index) => (
+      <div className="flex flex-1 justify-between lg:flex-col">
+        <ul className="flex w-full justify-evenly gap-2 lg:ml-4 lg:mr-8 lg:flex-col lg:items-start">
+          {SIDEBAR_LINKS.map((links, index) => (
             <SidebarLink
               key={index}
               label={links.label}
@@ -46,17 +48,17 @@ export default Sidebar;
 
 const SidebarProfile = () => {
   return (
-    <div className=" hidden lg:flex justify-between items-center ml-9 bg-white h-10 rounded-[20px] p-1 max-w-56">
-      <div className=" flex gap-2 items-center">
-        <Avatar className=" w-7 h-7">
+    <div className="ml-9 hidden h-10 max-w-56 items-center justify-between rounded-[20px] bg-white p-1 lg:flex">
+      <div className="flex items-center gap-2">
+        <Avatar className="h-7 w-7">
           <AvatarImage src="https://github.com/shadcn.png" />
           <AvatarFallback>CN</AvatarFallback>
         </Avatar>
-        <p className=" font-medium text-[16px]">A2K Group</p>
+        <p className="text-[16px] font-medium">A2K Group</p>
       </div>
       <DropdownMenu>
-        <DropdownMenuTrigger className="hover:cursor-pointer flex items-center justify-center w-11 h-7 bg-accent text-white rounded-[18.5px] px-2">
-          <img src={UpIcon} alt={`up icon`} className="h-5 w-5" />
+        <DropdownMenuTrigger className="flex h-7 w-11 items-center justify-center rounded-[18.5px] bg-accent px-2 text-white hover:cursor-pointer">
+          <ChevronUp className="h-5 w-5 text-white" />
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <DropdownMenuItem>Switch to Parishioner</DropdownMenuItem>
@@ -72,25 +74,22 @@ const SidebarProfile = () => {
 
 const SidebarLink = ({ label, link, icon, selectedIcon, isActive }) => {
   return (
-    <div className=" w-10 md:w-16 lg:w-fit">
+    <div className="w-10 md:w-16 lg:w-fit">
       <li
         className={cn(
-          "flex lg:px-6 mb-2 items-center justify-center lg:justify-start rounded-3xl p-2",
+          "flex items-center justify-center rounded-3xl p-2 lg:justify-start lg:px-6",
           isActive ? "bg-accent text-primary" : "text-accent"
         )}
       >
-        <Link to={link} className=" font-medium text-[16px]">
-          <div className="flex lg:gap-2">
-            <img
-              src={isActive ? selectedIcon : icon}
-              alt={`${label} icon`}
-              className="h-5 w-5"
-            />
-            <p className=" hidden lg:block">{label}</p>
-          </div>
+        <Link
+          to={link}
+          className="flex items-center justify-center text-[16px] font-medium lg:gap-2"
+        >
+          <Icon icon={isActive ? selectedIcon : icon} className="h-6 w-6" />
+          <p className="hidden lg:block">{label}</p>
         </Link>
       </li>
-      <p className=" text-accent font-bold text-center hidden md:block lg:hidden text-xs">
+      <p className="hidden text-center text-xs font-bold text-accent md:block lg:hidden">
         {label}
       </p>
     </div>

@@ -1,5 +1,6 @@
-import { supabase } from "./supabaseClient"; // Ensure you're using the correct import for your Supabase client
+import { supabase } from './supabaseClient'; // Supabase client import
 
+// Register user
 const registerUser = async ({
   firstName,
   lastName,
@@ -13,9 +14,7 @@ const registerUser = async ({
       password,
     });
 
-    if (signUpError) {
-      throw signUpError;
-    }
+    if (signUpError) throw signUpError;
 
     // Insert user details into the 'users' table, matching the correct column names
     const { error: insertError } = await supabase.from("users").insert([
@@ -30,38 +29,42 @@ const registerUser = async ({
       },
     ]);
 
-    if (insertError) {
-      throw insertError;
-    }
+    if (insertError) throw insertError;
 
-    return user; // Return user data after sign-up and insertion
+    return user;
   } catch (error) {
     console.error("Error during sign-up:", error);
   }
 };
 
+// Login user
 const loginUser = async ({ email, password }) => {
   try {
+    // Authenticate the user
     const { data: user, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
-    if (error) {
-      throw new Error(error.message);
-    }
+    if (error) throw new Error(error.message);
 
-    return user;
+    return user; // Return only the authenticated user data
+  } catch (error) {
+    console.error('Error during login:', error.message);
+    throw error; // Let the calling context handle errors
+  }
+};
+
+// Logout user
+const logoutUser = async () => {
+  try {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw new Error(error.message);
+    console.log('User logged out successfully');
   } catch (error) {
     console.error("Error during login:", error);
     throw error;
   }
-};
-
-// Logout function
-const logoutUser = async () => {
-  const { error } = await supabase.auth.signOut();
-  if (error) throw new Error(error.message);
 };
 
 export { registerUser, loginUser, logoutUser };

@@ -3,12 +3,10 @@ name: Lint Check
 on:
   push:
     branches:
-      - main
-      - develop # Add branches where you want to enforce linting
+      - "**"
   pull_request:
     branches:
-      - main
-      - develop
+      - "**"
 
 jobs:
   lint:
@@ -28,6 +26,3 @@ jobs:
 
       - name: Run lint
         run: npm run lint
-
-      - name: Run lint fix
-        run: npm run lint:fix
