@@ -28,7 +28,7 @@ import { useNavigate } from 'react-router-dom'; // Import useNavigate for naviga
 
 const Login = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const [isDialogOpen, setisDialogOpen] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const navigate = useNavigate(); // Initialize useNavigate for navigation
   // Initialize the form using react-hook-form
@@ -51,7 +51,7 @@ const Login = () => {
     login(data, {
       onSuccess: () => {
         console.log('Login successful!');
-        setisDialogOpen(false); // Close dialog
+        setIsDialogOpen(false); // Close dialog
         navigate('/dashboard'); // Navigate to the dashboard
       },
       onError: (err) => {
@@ -61,9 +61,11 @@ const Login = () => {
   };
 
   return (
-    <Dialog open={isDialogOpen} onOpenChange={setisDialogOpen}>
+    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
-        <Button className="hover:cursor-pointer">Login</Button>
+        <Button className="hover:cursor-pointer" variant="primary">
+          Login
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader className="space-y-3 h-fit">
@@ -73,10 +75,7 @@ const Login = () => {
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleLogin)}
-            className="space-y-6 py-4"
-          >
+          <form onSubmit={form.handleSubmit(handleLogin)} className="space-y-6 py-4">
             <FormField
               control={form.control}
               name="email"
@@ -100,9 +99,7 @@ const Login = () => {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm font-medium">
-                    Password
-                  </FormLabel>
+                  <FormLabel>Password</FormLabel>
                   <FormControl>
                     <Input
                       type={passwordVisible ? 'text' : 'password'}
@@ -119,8 +116,7 @@ const Login = () => {
               <input type="checkbox" onClick={togglePasswordVisibility} />
               <p>Show Password</p>
             </div>
-            {error && <p className="text-red-500 text-sm">{error}</p>}{' '}
-            {/* Show error if login fails */}
+            {error && <p className="text-red-500 text-sm">{error}</p>} {/* Show error if login fails */}
             <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
               <DialogClose asChild>
                 <Button

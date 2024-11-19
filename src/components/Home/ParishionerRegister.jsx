@@ -72,7 +72,7 @@ const ParishionerRegister = () => {
   return (
     <Dialog open={open} onOpenChange={handleDialogClose}>
       <DialogTrigger asChild>
-        <Button variant="primary">Create New Profile</Button>
+        <Button variant="secondary">Create New Profile</Button>
       </DialogTrigger>
       <DialogContent
         className={`sm:max-w-2xl md:h-auto h-dvh ${
