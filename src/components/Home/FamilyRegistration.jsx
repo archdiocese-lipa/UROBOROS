@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { addFamilySchema } from "@/zodSchema/AddFamilySchema";
-import { Label } from "../ui/label";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { DialogClose } from "../ui/dialog";
 
