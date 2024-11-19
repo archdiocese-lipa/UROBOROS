@@ -39,6 +39,7 @@ const registerUser = async ({
 // Login user
 const loginUser = async ({ email, password }) => {
   try {
+    // Authenticate the user
     const { data: user, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -46,10 +47,10 @@ const loginUser = async ({ email, password }) => {
 
     if (error) throw new Error(error.message);
 
-    return user; // Return user data on successful login
+    return user; // Return only the authenticated user data
   } catch (error) {
-    console.error('Error during login:', error);
-    throw error;
+    console.error('Error during login:', error.message);
+    throw error; // Let the calling context handle errors
   }
 };
 
