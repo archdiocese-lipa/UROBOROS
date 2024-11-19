@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -8,7 +8,7 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogClose,
-} from "./ui/dialog";
+} from './ui/dialog';
 
 import {
   Form,
@@ -17,36 +17,53 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { loginSchema } from "@/zodSchema/LoginSchema";
+} from '@/components/ui/form';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { loginSchema } from '@/zodSchema/LoginSchema';
+import { useLogin } from '@/hooks/useLogin';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate for navigation
 
 const Login = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const [isDialogOpen, setisDialogOpen] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
+  const navigate = useNavigate(); // Initialize useNavigate for navigation
+  // Initialize the form using react-hook-form
   const form = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
-      password: "",
+      email: '',
+      password: '',
     },
   });
+
+  // Use the useLogin hook for managing login
+  const { login, isLoading, error } = useLogin();
+
   const togglePasswordVisibility = () => {
     setPasswordVisible((prevState) => !prevState);
   };
 
-  const login = () => {
-    console.log("submit form");
+  const handleLogin = (data) => {
+    login(data, {
+      onSuccess: () => {
+        console.log('Login successful!');
+        setIsDialogOpen(false); // Close dialog
+        navigate('/dashboard'); // Navigate to the dashboard
+      },
+      onError: (err) => {
+        console.error('Login failed:', err.message);
+      },
+    });
   };
 
   return (
-    <Dialog open={isDialogOpen} onOpenChange={setisDialogOpen}>
+    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
-        <Button className=" hover:cursor-pointer" variant="primary">
+        <Button className="hover:cursor-pointer" variant="primary">
           Login
         </Button>
       </DialogTrigger>
@@ -57,13 +74,11 @@ const Login = () => {
             Enter your account information to access your dashboard.
           </DialogDescription>
         </DialogHeader>
-        <Form {...form} className="space-y-6 py-4">
-          <form onSubmit={form.handleSubmit(login)}>
-            {/* <div className="space-y-4"> */}
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleLogin)} className="space-y-6 py-4">
             <FormField
               control={form.control}
               name="email"
-              className="space-y-2"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-sm font-medium">Email</FormLabel>
@@ -78,7 +93,7 @@ const Login = () => {
                   <FormMessage />
                 </FormItem>
               )}
-            />{" "}
+            />
             <FormField
               control={form.control}
               name="password"
@@ -87,7 +102,7 @@ const Login = () => {
                   <FormLabel>Password</FormLabel>
                   <FormControl>
                     <Input
-                      type={passwordVisible ? "text" : "password"}
+                      type={passwordVisible ? 'text' : 'password'}
                       className="w-full"
                       placeholder="Enter your password"
                       {...field}
@@ -96,11 +111,12 @@ const Login = () => {
                   <FormMessage />
                 </FormItem>
               )}
-            ></FormField>
-            <div className=" flex items-center my-2 justify-end gap-2">
+            />
+            <div className="flex items-center my-2 justify-end gap-2">
               <input type="checkbox" onClick={togglePasswordVisibility} />
               <p>Show Password</p>
             </div>
+            {error && <p className="text-red-500 text-sm">{error}</p>} {/* Show error if login fails */}
             <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
               <DialogClose asChild>
                 <Button
@@ -111,7 +127,9 @@ const Login = () => {
                   Cancel
                 </Button>
               </DialogClose>
-              <Button type="submit">Login</Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? 'Logging in...' : 'Login'}
+              </Button>
             </DialogFooter>
           </form>
         </Form>
