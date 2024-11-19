@@ -133,4 +133,27 @@ ChevronUp.propTypes = {
   className: PropTypes.string,
 };
 
-export { EventIcon, Users, Settings, Search, ChevronUp };
+const DownIcon = ({ className = "text-black" }) => {
+  return (
+    <svg
+      width="0.5em"
+      height="0.5em"
+      viewBox="0 0 8 5"
+      fill="none"
+      className={cn(className)}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M4.4256 4.62465C4.31271 4.7375 4.15962 4.8009 4 4.8009C3.84038 4.8009 3.68729 4.7375 3.5744 4.62465L0.168984 1.21924C0.0593279 1.1057 -0.00134816 0.953638 2.32383e-05 0.7958C0.00139464 0.637963 0.0647048 0.486978 0.176317 0.375366C0.28793 0.263753 0.438915 0.200444 0.596753 0.199072C0.75459 0.1977 0.906651 0.258376 1.02019 0.368033L4 3.34785L6.97981 0.368033C7.09335 0.258377 7.24541 0.197701 7.40325 0.199072C7.56109 0.200444 7.71207 0.263754 7.82368 0.375366C7.9353 0.486979 7.99861 0.637963 7.99998 0.795801C8.00135 0.953639 7.94067 1.1057 7.83102 1.21924L4.4256 4.62465Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+};
+
+DownIcon.propTypes = {
+  className: PropTypes.string,
+};
+export { EventIcon, Users, Settings, Search, ChevronUp, DownIcon };
