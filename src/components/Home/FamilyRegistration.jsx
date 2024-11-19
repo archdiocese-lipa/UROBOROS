@@ -12,16 +12,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { addFamilySchema } from "@/zodSchema/AddFamilySchema";
 import { Label } from "../ui/label";
+import { useToast } from "@/hooks/use-toast";
 
 const FamilyRegistration = ({ skipBtn }) => {
+  const { toast } = useToast();
+
   const form = useForm({
     resolver: zodResolver(addFamilySchema),
     defaultValues: {
-      parents: [{ firstName: "", lastName: "" }],
+      parents: [{ firstName: "", lastName: "", contactNumber: "" }],
       children: [{ firstName: "", lastName: "" }],
     },
   });
-
   const {
     fields: parentFields,
     append: appendParent,
@@ -40,9 +42,28 @@ const FamilyRegistration = ({ skipBtn }) => {
     name: "children",
   });
 
-  const onSubmit = (data) => {
-    console.log("Form Data:", data);
-    // Handle form submission
+  const onSubmit = async (data) => {
+    try {
+      console.log("Form Data:", data);
+      // Simulate the process of adding family members (e.g., API call)
+      // Replace this with actual logic for submitting the data, e.g., an API call
+      // await submitFamilyMembers(data);
+
+      toast({
+        title: "Family Members Added Successfully",
+        description:
+          "The parent and child information has been successfully added to the system.",
+      });
+    } catch (error) {
+      console.error("Error adding family members:", error);
+
+      toast({
+        title: "Error",
+        description:
+          "There was an issue adding the family members. Please try again.",
+        variant: "destructive", // Optionally you can customize the toast style for errors
+      });
+    }
   };
 
   return (
@@ -79,6 +100,20 @@ const FamilyRegistration = ({ skipBtn }) => {
                   <FormItem>
                     <FormControl>
                       <Input placeholder="Last Name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="flex-1">
+              <FormField
+                control={form.control}
+                name={`parents.${index}.contactNumber`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input placeholder="Contact Tel No." {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -170,7 +205,7 @@ const FamilyRegistration = ({ skipBtn }) => {
             type="submit"
             disabled={form.formState.isSubmitting}
           >
-            {form.formState.isSubmitting ? "Submitting..." : "Save"}
+            {form.formState.isSubmitting ? "Saving..." : "Save"}
           </Button>
         </div>
       </form>

@@ -22,12 +22,14 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
 import { parishionerRegisterSchema } from "@/zodSchema/ParishionerRegisterSchema";
 
 const ParishionerRegister = () => {
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
   const [isProfileDisabled, setIsProfileDisabled] = useState(false);
+  const { toast } = useToast();
 
   const form = useForm({
     resolver: zodResolver(parishionerRegisterSchema),
@@ -42,10 +44,31 @@ const ParishionerRegister = () => {
   });
 
   const onSubmit = (values) => {
-    console.log("Registration submitted:", values);
-    form.reset();
-    setActiveTab("family");
-    setIsProfileDisabled(true);
+    try {
+      console.log("Registration submitted:", values);
+
+      // Simulate profile creation (replace with actual logic, like an API call)
+      // await createProfile(values);
+
+      toast({
+        title: "Profile Created Successfully",
+        description:
+          "The new profile has been created and saved to the system.",
+      });
+
+      form.reset(); // Reset the form after submission
+      setActiveTab("family"); // Switch to the next tab or step
+      setIsProfileDisabled(true); // Disable profile editing or move to the next state
+    } catch (error) {
+      console.error("Error creating profile:", error);
+
+      toast({
+        title: "Error",
+        description:
+          "There was an issue creating the profile. Please try again.",
+        variant: "destructive", // Optionally, use a different variant for error
+      });
+    }
   };
 
   // Reset form and states
@@ -88,7 +111,7 @@ const ParishionerRegister = () => {
           <DialogDescription>
             {activeTab === "profile"
               ? "Create a new profile to join the platform."
-              : "Add your family member here or you can do it later."}
+              : "Add your family members here, or you can do it later."}
           </DialogDescription>
         </DialogHeader>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
