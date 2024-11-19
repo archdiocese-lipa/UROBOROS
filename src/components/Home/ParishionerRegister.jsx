@@ -24,6 +24,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { parishionerRegisterSchema } from "@/zodSchema/ParishionerRegisterSchema";
+import { cn } from "@/lib/utils";
 
 const ParishionerRegister = () => {
   const [open, setOpen] = useState(false);
@@ -98,9 +99,10 @@ const ParishionerRegister = () => {
         <Button variant="secondary">Create New Profile</Button>
       </DialogTrigger>
       <DialogContent
-        className={`sm:max-w-2xl md:h-auto h-dvh ${
+        className={cn(
+          "sm:max-w-2xl md:h-auto h-dvh",
           activeTab === "family" && "h-auto"
-        }`}
+        )}
       >
         <DialogHeader>
           <DialogTitle>
@@ -168,7 +170,11 @@ const ParishionerRegister = () => {
                     <FormItem>
                       <FormLabel>Contact Tel No.</FormLabel>
                       <FormControl>
-                        <Input placeholder="09123456789" {...field} />
+                        <Input
+                          type="tel"
+                          placeholder="09123456789"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
