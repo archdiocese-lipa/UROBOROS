@@ -9,7 +9,6 @@ import {
   DialogTrigger,
   DialogClose,
 } from './ui/dialog';
-
 import {
   Form,
   FormControl,
@@ -22,16 +21,15 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { loginSchema } from '@/zodSchema/LoginSchema';
-import { useLogin } from '@/hooks/useLogin';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate for navigation
+import { loginSchema } from '@/zodSchema/LoginSchema'; // Your Zod validation schema
+import { useUser } from '@/context/UserContext'; // Import context for login
+import { useNavigate } from 'react-router-dom'; // Import navigation hook
 
 const Login = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-  const navigate = useNavigate(); // Initialize useNavigate for navigation
-  // Initialize the form using react-hook-form
+  const navigate = useNavigate();
+  const { login, userData, loading, error } = useUser(); // Access context functions
   const form = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -40,32 +38,27 @@ const Login = () => {
     },
   });
 
-  // Use the useLogin hook for managing login
-  const { login, isLoading, error } = useLogin();
-
   const togglePasswordVisibility = () => {
     setPasswordVisible((prevState) => !prevState);
   };
 
-  const handleLogin = (data) => {
-    login(data, {
-      onSuccess: () => {
+  const handleLogin = async (data) => {
+    try {
+      await login(data); // Trigger login from context
+      if (userData) {
         console.log('Login successful!');
-        setIsDialogOpen(false); // Close dialog
-        navigate('/dashboard'); // Navigate to the dashboard
-      },
-      onError: (err) => {
-        console.error('Login failed:', err.message);
-      },
-    });
+        setIsDialogOpen(false); // Close dialog on success
+        navigate('/dashboard'); // Redirect to dashboard
+      }
+    } catch (err) {
+      console.error('Login failed:', err.message);
+    }
   };
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
-        <Button className="hover:cursor-pointer" variant="primary">
-          Login
-        </Button>
+        <Button variant="primary">Login</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader className="space-y-3 h-fit">
@@ -75,7 +68,10 @@ const Login = () => {
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleLogin)} className="space-y-6 py-4">
+          <form
+            onSubmit={form.handleSubmit(handleLogin)}
+            className="space-y-6 py-4"
+          >
             <FormField
               control={form.control}
               name="email"
@@ -116,7 +112,8 @@ const Login = () => {
               <input type="checkbox" onClick={togglePasswordVisibility} />
               <p>Show Password</p>
             </div>
-            {error && <p className="text-red-500 text-sm">{error}</p>} {/* Show error if login fails */}
+            {error && <p className="text-red-500 text-sm">{error}</p>}{' '}
+            {/* Show error message */}
             <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
               <DialogClose asChild>
                 <Button
@@ -127,8 +124,8 @@ const Login = () => {
                   Cancel
                 </Button>
               </DialogClose>
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? 'Logging in...' : 'Login'}
+              <Button type="submit" disabled={loading}>
+                {loading ? 'Logging in...' : 'Login'}
               </Button>
             </DialogFooter>
           </form>
