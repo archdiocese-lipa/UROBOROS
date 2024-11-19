@@ -4,10 +4,11 @@ import Attendance from "@/pages/Attendance";
 import Schedule from "@/pages/Schedule";
 import Calendar from "@/pages/Calendar";
 import Requests from "@/pages/Requests";
-import Groups from "@/pages/Groups";
+import Ministries from "@/pages/Ministries";
 import Home from "@/pages/Home";
 import MainLayout from "@/layouts/main-layout";
 import Announcements from "./pages/Announcements";
+
 
 const App = () => {
   return (
@@ -20,7 +21,7 @@ const App = () => {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/announcements" element={<Announcements />} />
           <Route path="/attendance" element={<Attendance />} />
-          <Route path="/groups" element={<Groups />} />
+          <Route path="/ministries" element={<Ministries />} />
           <Route path="/schedule" element={<Schedule />} />
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/requests" element={<Requests />} />
