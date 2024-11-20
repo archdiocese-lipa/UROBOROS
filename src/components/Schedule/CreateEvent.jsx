@@ -180,7 +180,7 @@ const CreateEvent = () => {
                     <div className="relative flex-1">
                       <Input
                         placeholder="Add event name here"
-                        className="pr-10"
+                        className="pr-14"
                         {...field}
                       />
                       <Popover
@@ -189,10 +189,9 @@ const CreateEvent = () => {
                       >
                         <PopoverTrigger asChild>
                           <button
-                            type="button"
-                            className="text-gray-500 absolute right-5 top-1/2 -translate-y-1/2 transform"
+                            className="text-gray-500 absolute right-5 top-1/2 -translate-y-1/2 transform w-7 h-full flex items-center justify-center"
                           >
-                            <DownIcon />
+                            <DownIcon className="w-3 opacity-50"/>
                           </button>
                         </PopoverTrigger>
                         <PopoverContent className="p-2">
@@ -226,7 +225,7 @@ const CreateEvent = () => {
                         label: `${volunteer.userFirstName} ${volunteer.userLastName}`,
                       }))}
                       value={field.value}
-                      onChange={field.onChange} 
+                      onChange={field.onChange}
                       placeholder="Select Volunteer"
                     />
                   </FormControl>
