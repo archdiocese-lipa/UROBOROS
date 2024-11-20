@@ -66,7 +66,7 @@ const CreateEvent = () => {
     {
       name: "First Holy Communion, 11.00am",
       category: "catechist",
-      visibility: "ministry",
+      visibility: "private",
       eventTime: new Date(new Date().setHours(11, 0, 0, 0)),
     },
   ];
@@ -237,7 +237,7 @@ const CreateEvent = () => {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="public">Public</SelectItem>
-                          <SelectItem value="ministry">Ministry</SelectItem>
+                          <SelectItem value="private">Private</SelectItem>
                         </SelectContent>
                       </Select>
                     </FormControl>
@@ -247,7 +247,7 @@ const CreateEvent = () => {
               />
 
               {/* Conditional Ministry Selection */}
-              {watchVisibility === "ministry" && (
+              {watchVisibility === "private" && (
                 <FormField
                   control={control}
                   name="ministry"

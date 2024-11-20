@@ -101,7 +101,7 @@ const CreateMeeting = () => {
                     <FormItem>
                       <FormLabel>Meeting Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="shadcn" {...field} />
+                        <Input placeholder="Title" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

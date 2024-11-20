@@ -48,7 +48,6 @@ export const UserProvider = ({ children }) => {
         email,
         password,
       });
-      console.log(user);
 
       if (signUpError) throw signUpError;
 
