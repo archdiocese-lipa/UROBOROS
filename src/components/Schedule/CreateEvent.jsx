@@ -89,7 +89,7 @@ const CreateEvent = () => {
       eventVisibility: "",
       ministry: "",
       eventDate: null,
-      eventTime: "",
+      eventTime: new Date(),
       eventDescription: "",
       assignVolunteer: "",
     },
@@ -225,8 +225,8 @@ const CreateEvent = () => {
                         value: volunteer.uuid, // UUID as string value
                         label: `${volunteer.userFirstName} ${volunteer.userLastName}`,
                       }))}
-                      value={field.value} // Expecting a single string value (UUID)
-                      onChange={field.onChange} // Set single string value to form field
+                      value={field.value}
+                      onChange={field.onChange} 
                       placeholder="Select Volunteer"
                     />
                   </FormControl>
