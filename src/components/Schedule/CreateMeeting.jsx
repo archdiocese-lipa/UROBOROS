@@ -224,7 +224,6 @@ const CreateMeeting = () => {
                   </FormItem>
                 )}
               />
-
               <DialogFooter>
                 <div className="flex justify-end gap-x-2">
                   <DialogClose asChild>
