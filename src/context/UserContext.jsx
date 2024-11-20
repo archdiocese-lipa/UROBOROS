@@ -100,6 +100,7 @@ export const UserProvider = ({ children }) => {
       value={{
         userData,
         regData,
+        setUserData,
         loading,
         login,
         register,
