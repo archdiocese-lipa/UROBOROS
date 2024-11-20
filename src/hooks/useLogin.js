@@ -1,6 +1,6 @@
-import { useMutation } from '@tanstack/react-query';
-import { loginUser } from '@/services/authService'; // Import the loginUser function
-import { useState } from 'react';
+import { useMutation } from "@tanstack/react-query";
+import { loginUser } from "@/services/authService"; // Import the loginUser function
+import { useState } from "react";
 
 export const useLogin = () => {
   const [error, setError] = useState(null);

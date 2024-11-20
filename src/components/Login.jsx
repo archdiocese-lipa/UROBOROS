@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useUser } from "@/context/useUser";
+import { useToast } from "@/hooks/use-toast";
+import { loginSchema } from "@/zodSchema/LoginSchema"; // Your Zod validation schema
 
 import {
   Dialog,
@@ -13,6 +16,7 @@ import {
   DialogTrigger,
   DialogClose,
 } from "@/components/ui/dialog";
+
 import {
   Form,
   FormControl,
@@ -21,13 +25,9 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
-import { useUser } from "@/context/useUser";
-import { useToast } from "@/hooks/use-toast";
-
-import { loginSchema } from "@/zodSchema/LoginSchema";
 
 const Login = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -89,10 +89,7 @@ const Login = () => {
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleLogin)}
-            className="space-y-6 py-4"
-          >
+          <form onSubmit={form.handleSubmit(handleLogin)} className="space-y-6 py-4">
             <FormField
               control={form.control}
               name="email"
@@ -135,11 +132,7 @@ const Login = () => {
             </div>
             <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
               <DialogClose asChild>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="mt-3 sm:mt-0"
-                >
+                <Button type="button" variant="outline" className="mt-3 sm:mt-0">
                   Cancel
                 </Button>
               </DialogClose>
