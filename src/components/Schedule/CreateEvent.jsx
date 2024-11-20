@@ -43,6 +43,7 @@ const CreateEvent = () => {
   const { toast } = useToast();
 
   // Predefined events with associated categories, visibility, and ministry
+  // Maganda meron na tayo na nakaset na table sa supabase nito mark
   const events = [
     {
       name: "Children's Liturgy, 9.30am",
@@ -103,6 +104,7 @@ const CreateEvent = () => {
     setPopoverOpen(false); // Close the popover
   };
 
+  // Mark dito mo connect backend
   const handleFormSubmit = async (data) => {
     try {
       // Simulate API call or validation
@@ -134,12 +136,11 @@ const CreateEvent = () => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button size="primary">
+        <Button size="primary" className="px-3.5 py-2">
           <EventIcon className="text-primary" />
           <p>Create Event</p>
         </Button>
       </DialogTrigger>
-
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Create Event</DialogTitle>
