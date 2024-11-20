@@ -1,6 +1,7 @@
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useNavigate } from "react-router-dom";
 import { Icon } from "@iconify/react";
 import PropTypes from "prop-types";
+import { useUser } from "@/context/useUser"; // Adjust the path as needed
 
 import { Title } from "@/components/Title";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -47,6 +48,19 @@ const Sidebar = () => {
 export default Sidebar;
 
 const SidebarProfile = () => {
+  const { logout } = useUser(); // Destructure logout and userData
+  const navigate = useNavigate(); // Initialize navigate
+
+  const handleLogout = async () => {
+    try {
+      await logout(); // Call logout from UserContext
+      console.log("User logged out successfully");
+      navigate("/"); // Redirect to the home page
+    } catch (error) {
+      console.error("Logout failed:", error.message);
+    }
+  };
+
   return (
     <div className="ml-9 hidden h-10 max-w-56 items-center justify-between rounded-[20px] bg-white p-1 lg:flex">
       <div className="flex items-center gap-2">
@@ -65,7 +79,7 @@ const SidebarProfile = () => {
           <DropdownMenuItem>Switch to Volunteer</DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem>Profile Settings</DropdownMenuItem>
-          <DropdownMenuItem>Logout</DropdownMenuItem>
+          <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
