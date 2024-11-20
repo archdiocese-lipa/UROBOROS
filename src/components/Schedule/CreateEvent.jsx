@@ -37,9 +37,12 @@ import { EventIcon, DownIcon } from "@/assets/icons/icons";
 import { CalendarIcon } from "lucide-react";
 import TimePicker from "./TimePicker";
 import { Textarea } from "../ui/textarea";
+import AssignVolunteerComboBox from "./AssignVolunteerComboBox";
 
 const CreateEvent = () => {
+  const [isDialogOpen, setDialogOpen] = useState(false);
   const [isPopoverOpen, setPopoverOpen] = useState(false);
+
   const { toast } = useToast();
 
   // Predefined events with associated categories, visibility, and ministry
@@ -71,6 +74,13 @@ const CreateEvent = () => {
     },
   ];
 
+  //Dummy data volunteers
+  const volunteers = [
+    { uuid: "1231231232", userFirstName: "John", userLastName: "Doe" },
+    { uuid: "233323232", userFirstName: "Jane", userLastName: "Smith" },
+    { uuid: "323232425235", userFirstName: "Alice", userLastName: "Johnson" },
+  ];
+
   const eventForm = useForm({
     resolver: zodResolver(createEventSchema),
     defaultValues: {
@@ -81,10 +91,18 @@ const CreateEvent = () => {
       eventDate: null,
       eventTime: "",
       eventDescription: "",
+      assignVolunteer: "",
     },
   });
 
-  const { setValue, watch, handleSubmit, control, resetField } = eventForm;
+  const {
+    setValue,
+    watch,
+    handleSubmit,
+    control,
+    resetField,
+    formState: { isSubmitting },
+  } = eventForm;
   const watchVisibility = watch("eventVisibility");
 
   // Effect to reset the ministry field when visibility changes to "public"
@@ -122,6 +140,8 @@ const CreateEvent = () => {
         title: "Event Created",
         description: `Event "${data.eventName}" created successfully!`,
       });
+      setDialogOpen(false);
+      eventForm.reset();
       console.log(data);
     } catch (error) {
       // Handle error
@@ -134,7 +154,7 @@ const CreateEvent = () => {
   };
 
   return (
-    <Dialog>
+    <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>
         <Button size="primary" className="px-3.5 py-2">
           <EventIcon className="text-primary" />
@@ -188,6 +208,27 @@ const CreateEvent = () => {
                         </PopoverContent>
                       </Popover>
                     </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={control}
+              name="assignVolunteer"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Assign Volunteer</FormLabel>
+                  <FormControl>
+                    <AssignVolunteerComboBox
+                      options={volunteers.map((volunteer) => ({
+                        value: volunteer.uuid, // UUID as string value
+                        label: `${volunteer.userFirstName} ${volunteer.userLastName}`,
+                      }))}
+                      value={field.value} // Expecting a single string value (UUID)
+                      onChange={field.onChange} // Set single string value to form field
+                      placeholder="Select Volunteer"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -360,7 +401,9 @@ const CreateEvent = () => {
                     Cancel
                   </Button>
                 </DialogClose>
-                <Button type="submit">Create</Button>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Creating" : "Create"}
+                </Button>
               </div>
             </DialogFooter>
           </form>
