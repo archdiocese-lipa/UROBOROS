@@ -6,7 +6,7 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import preferArrow from "eslint-plugin-prefer-arrow";
 
 export default [
-  { ignores: ["dist"] },
+  { ignores: ["dist", ".husky"] },
   {
     files: ["**/*.{js,jsx}"],
     languageOptions: {
@@ -64,6 +64,7 @@ export default [
       "require-yield": "error", // Require generator functions to contain yield
       "prefer-rest-params": "error", // Prefer rest parameters over arguments
       "prefer-spread": "error", // Prefer spread operator over .apply()
+      "no-console": ["warn", { allow: ["warn", "error"] }], // Disallow console (warn instead of error)
     },
   },
 ];
