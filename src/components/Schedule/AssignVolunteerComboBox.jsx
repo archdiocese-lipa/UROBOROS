@@ -35,7 +35,7 @@ const AssignVolunteerComboBox = ({ options, value, onChange, placeholder }) => {
       </PopoverTrigger>
       <PopoverContent className="sm:w-[29rem] p-0">
         <Command>
-          <CommandInput placeholder={`Search ${placeholder}`} />
+          <CommandInput placeholder={`${placeholder}`} />
           <CommandEmpty>No options found.</CommandEmpty>
           <CommandGroup>
             {options.map((opt) => (
