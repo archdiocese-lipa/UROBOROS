@@ -26,12 +26,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { parishionerRegisterSchema } from "@/zodSchema/ParishionerRegisterSchema";
 import { cn } from "@/lib/utils";
+import { useUser } from "@/context/useUser";
 
 const ParishionerRegister = () => {
   const [activeTab, setActiveTab] = useState("profile");
-  const [isProfileDisabled, setIsProfileDisabled] = useState(false);
+
+  const [isProfileDisabled, setIsProfileDisabled] = useState(false); // Disable Profile tab after submission
   const { toast } = useToast();
 
+  // Access register function from context
+  const { register, isLoading } = useUser(); // Assuming register is part of the context
+
+  // Form setup with react-hook-form and Zod validation
   const form = useForm({
     resolver: zodResolver(parishionerRegisterSchema),
     defaultValues: {
@@ -44,22 +50,21 @@ const ParishionerRegister = () => {
     },
   });
 
-  const onSubmit = (values) => {
+  // Form submission logic
+  const onSubmit = async (values) => {
     try {
-      console.log("Registration submitted:", values);
+      // Call the register function and pass the form values
+      await register(values);
 
-      // Simulate profile creation (replace with actual logic, like an API call)
-      // await createProfile(values);
-
+      // After successful registration
       toast({
         title: "Profile Created Successfully",
-        description:
-          "The new profile has been created and saved to the system.",
+        description: `Welcome! Your profile has been created.`,
       });
 
-      form.reset(); // Reset the form after submission
-      setActiveTab("family"); // Switch to the next tab or step
-      setIsProfileDisabled(true); // Disable profile editing or move to the next state
+      form.reset(); // Reset the form after successful submission
+      setActiveTab("family"); // Switch to the Family tab
+      setIsProfileDisabled(true); // Disable editing of profile
     } catch (error) {
       console.error("Error creating profile:", error);
 
@@ -67,30 +72,24 @@ const ParishionerRegister = () => {
         title: "Error",
         description:
           "There was an issue creating the profile. Please try again.",
-        variant: "destructive", // Optionally, use a different variant for error
+        variant: "destructive",
       });
     }
   };
 
-  // Reset form and states
+  // Reset form and states on dialog close
   const reset = () => {
-    form.reset(); // Reset form fields when closing
+    form.reset(); // Reset form fields
     setActiveTab("profile"); // Reset active tab to "Profile"
     setIsProfileDisabled(false); // Re-enable the "Profile" tab
   };
 
-  // Close the Dialog if cancel
+  // Handle dialog close event
   const handleDialogClose = (isOpen) => {
     if (!isOpen) {
       reset();
     }
   };
-
-  // Skip button for Add family members
-  // const handleSkip = () => {
-  //   reset();
-  //   setOpen(false);
-  // };
 
   return (
     <Dialog onOpenChange={handleDialogClose}>
@@ -99,7 +98,7 @@ const ParishionerRegister = () => {
       </DialogTrigger>
       <DialogContent
         className={cn(
-          "sm:max-w-2xl md:h-auto h-dvh",
+          "h-dvh sm:max-w-2xl md:h-auto",
           activeTab === "family" && "h-auto"
         )}
       >
@@ -130,7 +129,7 @@ const ParishionerRegister = () => {
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="flex flex-col gap-2"
               >
-                <div className="flex flex-col md:flex-row w-full gap-x-2">
+                <div className="flex w-full flex-col gap-x-2 md:flex-row">
                   <div className="flex-1">
                     <FormField
                       control={form.control}
@@ -192,7 +191,7 @@ const ParishionerRegister = () => {
                     </FormItem>
                   )}
                 />
-                <div className="flex flex-col md:flex-row w-full gap-x-2">
+                <div className="flex w-full flex-col gap-x-2 md:flex-row">
                   <div className="flex-1">
                     <FormField
                       control={form.control}
@@ -234,19 +233,16 @@ const ParishionerRegister = () => {
                 </div>
                 <DialogFooter>
                   <DialogClose asChild>
-                    <Button
-                      type="button"
-                      variant="outline"
-                    >
+                    <Button type="button" variant="outline">
                       Cancel
                     </Button>
                   </DialogClose>
                   <Button
                     variant="primary"
                     type="submit"
-                    disabled={form.formState.isSubmitting}
+                    disabled={form.formState.isSubmitting || isLoading}
                   >
-                    {form.formState.isSubmitting ? "Submitting..." : "Register"}
+                    {isLoading ? "Submitting..." : "Register"}
                   </Button>
                 </DialogFooter>
               </form>
