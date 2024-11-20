@@ -20,7 +20,6 @@ import { useUser } from "@/context/useUser"; // Custom hook for accessing UserCo
 const FamilyRegistration = ({ skipBtn }) => {
   const { toast } = useToast();
   const { regData } = useUser(); // Access registration data
-  console.log(regData);
   const { mutate, isLoading } = useAddFamily(); // Destructure the hook
 
   // Use `regData` to prepopulate the first parent

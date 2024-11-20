@@ -59,7 +59,7 @@ const ParishionerRegister = () => {
       // After successful registration
       toast({
         title: "Profile Created Successfully",
-        description: `Welcome! Your profile has been created.`,
+        description: "New profile has been created.",
       });
 
       form.reset(); // Reset the form after successful submission
