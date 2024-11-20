@@ -1,8 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Dashboard from "@/pages/Dashboard";
-import Attendance from "@/pages/Attendance";
 import Schedule from "@/pages/Schedule";
-import Calendar from "@/pages/Calendar";
 import Requests from "@/pages/Requests";
 import Ministries from "@/pages/Ministries";
 import Home from "@/pages/Home";
@@ -12,6 +10,8 @@ import Announcements from "@/pages/Announcements";
 import RequireRole from "@/components/RequireRole";
 
 const App = () => {
+  const ROLES = Object.freeze(["admin", "volunteer", "parishioner"]);
+
   return (
     <Router>
       <Routes>
@@ -19,15 +19,31 @@ const App = () => {
         <Route path="/" element={<Home />} />
         {/* Protected Routes */}
         <Route element={<MainLayout />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/announcements" element={<Announcements />} />
-          <Route path="/attendance" element={<Attendance />} />
-          <Route element={<RequireRole roles={["admin"]} />}>
+          {/* ========================================================= */}
+          {/* Only Admin can access the routes below */}
+          <Route element={<RequireRole roles={[ROLES[0]]} />}>
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/ministries" element={<Ministries />} />
+            <Route path="/schedule" element={<Schedule />} />
+            <Route path="/requests" element={<Requests />} />
           </Route>
-          <Route path="/schedule" element={<Schedule />} />
-          <Route path="/calendar" element={<Calendar />} />
-          <Route path="/requests" element={<Requests />} />
+          {/* ========================================================= */}
+          {/* Roles of Admin and Volunteer can access the routes below */}
+          <Route element={<RequireRole roles={[ROLES[0], ROLES[1]]} />}>
+            {/* Add Route for OrganizedEvents */}
+          </Route>
+          {/* ========================================================= */}
+          {/* Roles of Admin and Parishioner can access the routes below */}
+          <Route element={<RequireRole roles={[ROLES[0], ROLES[2]]} />}>
+            {/* Add Route for Events */}
+            {/* Add Route for Family */}
+          </Route>
+          {/* ========================================================= */}
+          {/* All Roles Can Access Routes Below */}
+          <Route element={<RequireRole roles={[...ROLES]} />}>
+            <Route path="/announcements" element={<Announcements />} />
+          </Route>
+          {/* ========================================================= */}
         </Route>
       </Routes>
     </Router>
