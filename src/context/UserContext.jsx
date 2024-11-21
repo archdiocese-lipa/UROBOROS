@@ -55,7 +55,8 @@ export const UserProvider = ({ children }) => {
         {
           id: user.user.id,
           email: user.user.email,
-          name: `${firstName} ${lastName}`,
+          first_name: firstName, // Use firstName directly
+          last_name: lastName, // Use lastName directly
           contact_number: contactNumber,
           role: "parishioner",
           is_confirmed: false,
