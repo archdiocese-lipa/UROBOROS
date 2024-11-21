@@ -117,7 +117,7 @@ const CreateMeeting = () => {
                     <FormItem>
                       <FormLabel>Meeting Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="shadcn" {...field} />
+                        <Input placeholder="Title" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -240,7 +240,6 @@ const CreateMeeting = () => {
                   </FormItem>
                 )}
               />
-
               <DialogFooter>
                 <div className="flex justify-end gap-x-2">
                   <DialogClose asChild>

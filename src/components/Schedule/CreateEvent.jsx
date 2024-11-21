@@ -37,6 +37,7 @@ import { EventIcon, DownIcon } from "@/assets/icons/icons";
 import { CalendarIcon } from "lucide-react";
 import TimePicker from "./TimePicker";
 import { Textarea } from "../ui/textarea";
+
 import { useUser } from "@/context/useUser";
 import useCreateEvent from "@/hooks/useCreateEvent";
 import useQuickAccessEvents from "@/hooks/useQuickAccessEvents";
@@ -44,10 +45,21 @@ import useQuickAccessEvents from "@/hooks/useQuickAccessEvents";
 const CreateEvent = () => {
   const { userData } = useUser(); // Get userData from the context
   const userId = userData?.id; // Extract the userId, safely checking if userData exists
+
   const [isPopoverOpen, setPopoverOpen] = useState(false);
+
   const { toast } = useToast();
+
   const { mutate: createEvent, isLoading } = useCreateEvent();
   const { events } = useQuickAccessEvents();
+
+
+  //Dummy data volunteers
+  const volunteers = [
+    { uuid: "1231231232", userFirstName: "John", userLastName: "Doe" },
+    { uuid: "233323232", userFirstName: "Jane", userLastName: "Smith" },
+    { uuid: "323232425235", userFirstName: "Alice", userLastName: "Johnson" },
+  ];
 
   const eventForm = useForm({
     resolver: zodResolver(createEventSchema),
@@ -57,12 +69,20 @@ const CreateEvent = () => {
       eventVisibility: "",
       ministry: "",
       eventDate: null,
-      eventTime: "",
+      eventTime: new Date(),
       eventDescription: "",
+      assignVolunteer: "",
     },
   });
 
-  const { setValue, watch, handleSubmit, control, resetField } = eventForm;
+  const {
+    setValue,
+    watch,
+    handleSubmit,
+    control,
+    resetField,
+    formState: { isSubmitting },
+  } = eventForm;
   const watchVisibility = watch("eventVisibility");
 
   // Effect to reset the ministry field when visibility changes to "public"
@@ -91,8 +111,10 @@ const CreateEvent = () => {
     // Ensure userId is available
     if (!userId) {
       toast({
+
         description: "User not logged in. Please log in to create an event.",
         variant: "error",
+
       });
       return; // Prevent form submission if no userId
     }
@@ -118,7 +140,7 @@ const CreateEvent = () => {
   };
 
   return (
-    <Dialog>
+    <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>
         <Button size="primary" className="px-3.5 py-2">
           <EventIcon className="text-primary" />
@@ -144,7 +166,7 @@ const CreateEvent = () => {
                     <div className="relative flex-1">
                       <Input
                         placeholder="Add event name here"
-                        className="pr-10"
+                        className="pr-14"
                         {...field}
                       />
                       <Popover
@@ -153,10 +175,9 @@ const CreateEvent = () => {
                       >
                         <PopoverTrigger asChild>
                           <button
-                            type="button"
-                            className="text-gray-500 absolute right-5 top-1/2 -translate-y-1/2 transform"
+                            className="text-gray-500 absolute right-5 top-1/2 -translate-y-1/2 transform w-7 h-full flex items-center justify-center"
                           >
-                            <DownIcon />
+                            <DownIcon className="w-3 opacity-50"/>
                           </button>
                         </PopoverTrigger>
                         <PopoverContent className="p-2">
@@ -172,6 +193,27 @@ const CreateEvent = () => {
                         </PopoverContent>
                       </Popover>
                     </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={control}
+              name="assignVolunteer"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Assign Volunteer</FormLabel>
+                  <FormControl>
+                    <AssignVolunteerComboBox
+                      options={volunteers.map((volunteer) => ({
+                        value: volunteer.uuid, // UUID as string value
+                        label: `${volunteer.userFirstName} ${volunteer.userLastName}`,
+                      }))}
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder="Select Volunteer"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -221,7 +263,7 @@ const CreateEvent = () => {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="public">Public</SelectItem>
-                          <SelectItem value="ministry">Ministry</SelectItem>
+                          <SelectItem value="private">Private</SelectItem>
                         </SelectContent>
                       </Select>
                     </FormControl>
@@ -231,7 +273,7 @@ const CreateEvent = () => {
               />
 
               {/* Conditional Ministry Selection */}
-              {watchVisibility === "ministry" && (
+              {watchVisibility === "private" && (
                 <FormField
                   control={control}
                   name="ministry"
@@ -344,8 +386,10 @@ const CreateEvent = () => {
                     Cancel
                   </Button>
                 </DialogClose>
+
                 <Button type="submit" loading={isLoading}>
                   Create
+
                 </Button>
               </div>
             </DialogFooter>

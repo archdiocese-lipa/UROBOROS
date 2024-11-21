@@ -4,7 +4,7 @@
  */
 
 // Define the default configuration for toLocaleDateString
-const defaultLocale = "en-US";
+const defaultLocale = "en-UK";
 const defaultOptions = {
   year: "numeric",
   month: "short",

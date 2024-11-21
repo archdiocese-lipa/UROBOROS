@@ -11,12 +11,12 @@ export const SIDEBAR_LINKS = Object.freeze([
     icon: "mingcute:announcement-line",
     selectedIcon: "mingcute:announcement-fill",
   },
-  {
-    label: "Attendance",
-    link: "/attendance",
-    icon: "mingcute:clipboard-line",
-    selectedIcon: "mingcute:clipboard-fill",
-  },
+  // {
+  //   label: "Attendance",
+  //   link: "/attendance",
+  //   icon: "mingcute:clipboard-line",
+  //   selectedIcon: "mingcute:clipboard-fill",
+  // },
   {
     label: "Ministries",
     link: "/ministries",

@@ -70,7 +70,7 @@ const Login = () => {
   // Effect to watch for userData and trigger navigation when it's updated
   useEffect(() => {
     if (userData) {
-      console.log("Login successful! userData:", userData);
+      console.log("userData:", userData);
       setIsDialogOpen(false); // Close dialog on success
       navigate("/dashboard"); // Navigate to the dashboard
     }

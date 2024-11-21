@@ -5,37 +5,38 @@ import UpperCurly from "@/assets/svg/UpperCurly.svg";
 import CurlyRectangle from "@/assets/svg/CurlyRectangle.svg";
 import ParishionerRegister from "@/components/Home/ParishionerRegister";
 import Login from "@/components/Login";
+import WalkInRegistration from "@/components/Home/WalkInRegistration";
 
 const Home = () => {
   return (
-    <div className="relative h-screen bg-primary flex items-center justify-center overflow-hidden">
-      <div className="absolute z-50 top-20">
+    <div className="relative flex h-screen items-center justify-center overflow-hidden bg-primary">
+      <div className="absolute top-20 z-50">
         <div className="order-2 mx-auto max-w-xl justify-center rounded-2xl bg-white/60 sm:flex sm:space-x-3 md:order-1 md:col-span-2">
           <div className="grid grid-cols-2 gap-2 p-2 sm:grid-cols-4">
-            <Login/>
+            <Login />
             <ParishionerRegister />
-            <button>Walk - in Register</button>
+            <WalkInRegistration />
             <button>Edit Registration</button>
           </div>
         </div>
       </div>
-      <div className="flex items-center md:absolute md:bottom-5 lg:left-10 xl:left-30 z-10">
+      <div className="xl:left-30 z-10 flex items-center md:absolute md:bottom-5 lg:left-10">
         <img
           src={SaintLaurenceImg}
           alt="Saint Laurence"
-          className="w-40 md:w-72 lg:w-96 h-auto object-contain"
+          className="h-auto w-40 object-contain md:w-72 lg:w-96"
           loading="lazy"
         />
-        <div className="space-y-1 md:space-y-5 xs:mt-20 md:mt-36 max-w-xl">
-          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-accent">
+        <div className="xs:mt-20 max-w-xl space-y-1 md:mt-36 md:space-y-5">
+          <h2 className="text-3xl font-black text-accent sm:text-4xl md:text-5xl lg:text-6xl">
             Growing in Faith Together
           </h2>
-          <p className="text-xl sm:text-2xl md:text-3xl lg:text-5xl text-accent font-medium">
+          <p className="text-xl font-medium text-accent sm:text-2xl md:text-3xl lg:text-5xl">
             Engaging Children in the Joy of Gospel
           </p>
         </div>
       </div>
-      <div className="absolute md:-top-16 md:right-8 -top-10 right-5">
+      <div className="absolute -top-10 right-5 md:-top-16 md:right-8">
         <img
           src={BigCurlyRectangle}
           alt="Curly Icon"
@@ -45,10 +46,10 @@ const Home = () => {
       <div className="absolute bottom-0 right-0">
         <img src={StarIcon} alt="Star Icon" className="w-36 lg:w-72" />
       </div>
-      <div className="absolute -top-5 lg:-top-16 -left-16 md:left-0">
+      <div className="absolute -left-16 -top-5 md:left-0 lg:-top-16">
         <img src={UpperCurly} alt="Curly Rectangle" className="w-36 lg:w-72" />
       </div>
-      <div className="absolute bottom-48 -left-7 md:bottom-16 lg:-bottom-64 lg:-left-28 xl:-bottom-52 xl:-left-20">
+      <div className="absolute -left-7 bottom-48 md:bottom-16 lg:-bottom-64 lg:-left-28 xl:-bottom-52 xl:-left-20">
         <img
           src={CurlyRectangle}
           alt="Curly Rectangle"
