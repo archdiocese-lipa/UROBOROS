@@ -23,7 +23,7 @@ const getUsersByRole = async (role) => {
   try {
     const { data: users, error } = await supabase
       .from("users")
-      .select("id, name, email, role") // Adjust columns as needed
+      .select("id, first_name,last_name, email, role") // Adjust columns as needed
       .eq("role", role); // Filter by role directly
 
     if (error) throw error;

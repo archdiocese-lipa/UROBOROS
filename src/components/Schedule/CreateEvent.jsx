@@ -52,7 +52,7 @@ const CreateEvent = () => {
   const [isDialogOpen, setDialogOpen] = useState(false);
 
   const { toast } = useToast();
-  
+
   const { mutate: createEvent, isLoading } = useCreateEvent();
   const { events } = useQuickAccessEvents();
   const { data: volunteers } = useUsersByRole("volunteer");
@@ -201,7 +201,7 @@ const CreateEvent = () => {
                     <AssignVolunteerComboBox
                       options={volunteers.map((volunteer) => ({
                         value: volunteer.id, // Use 'id' as the value
-                        label: volunteer.name, // Use 'name' as the label
+                        label: `${volunteer.first_name} ${volunteer.last_name}`, // Combine first name and last name
                       }))}
                       value={field.value} // Value controlled by react-hook-form
                       onChange={field.onChange} // Handle change to update the form state
