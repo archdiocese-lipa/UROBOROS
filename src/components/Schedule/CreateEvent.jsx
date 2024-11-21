@@ -37,6 +37,7 @@ import { EventIcon, DownIcon } from "@/assets/icons/icons";
 import { CalendarIcon } from "lucide-react";
 import TimePicker from "./TimePicker";
 import { Textarea } from "../ui/textarea";
+import AssignVolunteerComboBox from "./AssignVolunteerComboBox";
 
 import { useUser } from "@/context/useUser";
 import useCreateEvent from "@/hooks/useCreateEvent";
@@ -47,12 +48,12 @@ const CreateEvent = () => {
   const userId = userData?.id; // Extract the userId, safely checking if userData exists
 
   const [isPopoverOpen, setPopoverOpen] = useState(false);
+  const [isDialogOpen, setDialogOpen] = useState(false);
 
   const { toast } = useToast();
 
   const { mutate: createEvent, isLoading } = useCreateEvent();
   const { events } = useQuickAccessEvents();
-
 
   //Dummy data volunteers
   const volunteers = [
@@ -75,14 +76,7 @@ const CreateEvent = () => {
     },
   });
 
-  const {
-    setValue,
-    watch,
-    handleSubmit,
-    control,
-    resetField,
-    formState: { isSubmitting },
-  } = eventForm;
+  const { setValue, watch, handleSubmit, control, resetField } = eventForm;
   const watchVisibility = watch("eventVisibility");
 
   // Effect to reset the ministry field when visibility changes to "public"
@@ -111,10 +105,8 @@ const CreateEvent = () => {
     // Ensure userId is available
     if (!userId) {
       toast({
-
         description: "User not logged in. Please log in to create an event.",
         variant: "error",
-
       });
       return; // Prevent form submission if no userId
     }
@@ -174,10 +166,8 @@ const CreateEvent = () => {
                         onOpenChange={setPopoverOpen}
                       >
                         <PopoverTrigger asChild>
-                          <button
-                            className="text-gray-500 absolute right-5 top-1/2 -translate-y-1/2 transform w-7 h-full flex items-center justify-center"
-                          >
-                            <DownIcon className="w-3 opacity-50"/>
+                          <button className="text-gray-500 absolute right-5 top-1/2 flex h-full w-7 -translate-y-1/2 transform items-center justify-center">
+                            <DownIcon className="w-3 opacity-50" />
                           </button>
                         </PopoverTrigger>
                         <PopoverContent className="p-2">
@@ -389,7 +379,6 @@ const CreateEvent = () => {
 
                 <Button type="submit" loading={isLoading}>
                   Create
-
                 </Button>
               </div>
             </DialogFooter>
