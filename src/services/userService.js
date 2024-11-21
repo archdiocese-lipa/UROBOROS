@@ -1,14 +1,8 @@
 import { supabase } from "./supabaseClient"; // Supabase client import
 
-/**
- * This function will fetch for user information from the database.
- * @param {string} userId The user ID to fetch from the database.
- * @returns {Promise<object>} The user object fetched from the database.
- * @throws {Error} If an error occurs while fetching the user.
- */
+// Fetch a single user by ID
 const getUser = async (userId) => {
   try {
-    // Fetch the user from the database
     const { data: user, error } = await supabase
       .from("users")
       .select("*")
@@ -24,4 +18,21 @@ const getUser = async (userId) => {
   }
 };
 
-export { getUser };
+// Fetch users by role
+const getUsersByRole = async (role) => {
+  try {
+    const { data: users, error } = await supabase
+      .from("users")
+      .select("id, name, email, role") // Adjust columns as needed
+      .eq("role", role); // Filter by role directly
+
+    if (error) throw error;
+
+    return users;
+  } catch (error) {
+    console.error("Error fetching users by role:", error.message);
+    throw error;
+  }
+};
+
+export { getUser, getUsersByRole };
