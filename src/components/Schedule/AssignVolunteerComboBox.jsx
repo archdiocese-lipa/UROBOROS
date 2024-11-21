@@ -25,7 +25,7 @@ const AssignVolunteerComboBox = ({ options, value, onChange, placeholder }) => {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between"
+          className="w-full justify-between bg-primary hover:bg-primary"
         >
           {value
             ? options.find((opt) => opt.value === value)?.label
