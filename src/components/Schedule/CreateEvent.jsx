@@ -42,6 +42,7 @@ import AssignVolunteerComboBox from "./AssignVolunteerComboBox";
 import { useUser } from "@/context/useUser";
 import useCreateEvent from "@/hooks/useCreateEvent";
 import useQuickAccessEvents from "@/hooks/useQuickAccessEvents";
+import useUsersByRole from "@/hooks/useUsersByRole";
 
 const CreateEvent = () => {
   const { userData } = useUser(); // Get userData from the context
@@ -54,13 +55,15 @@ const CreateEvent = () => {
   
   const { mutate: createEvent, isLoading } = useCreateEvent();
   const { events } = useQuickAccessEvents();
+  const { data: volunteers } = useUsersByRole("volunteer");
+  console.log(volunteers);
 
   //Dummy data volunteers
-  const volunteers = [
-    { uuid: "1231231232", userFirstName: "John", userLastName: "Doe" },
-    { uuid: "233323232", userFirstName: "Jane", userLastName: "Smith" },
-    { uuid: "323232425235", userFirstName: "Alice", userLastName: "Johnson" },
-  ];
+  // const volunteers = [
+  //   { uuid: "1231231232", userFirstName: "John", userLastName: "Doe" },
+  //   { uuid: "233323232", userFirstName: "Jane", userLastName: "Smith" },
+  //   { uuid: "323232425235", userFirstName: "Alice", userLastName: "Johnson" },
+  // ];
 
   const eventForm = useForm({
     resolver: zodResolver(createEventSchema),
@@ -197,11 +200,11 @@ const CreateEvent = () => {
                   <FormControl>
                     <AssignVolunteerComboBox
                       options={volunteers.map((volunteer) => ({
-                        value: volunteer.uuid, // UUID as string value
-                        label: `${volunteer.userFirstName} ${volunteer.userLastName}`,
+                        value: volunteer.id, // Use 'id' as the value
+                        label: volunteer.name, // Use 'name' as the label
                       }))}
-                      value={field.value}
-                      onChange={field.onChange}
+                      value={field.value} // Value controlled by react-hook-form
+                      onChange={field.onChange} // Handle change to update the form state
                       placeholder="Select Volunteer"
                     />
                   </FormControl>
@@ -209,6 +212,7 @@ const CreateEvent = () => {
                 </FormItem>
               )}
             />
+
             {/* Event Category, Visibility & Ministry */}
             <div className="flex flex-wrap gap-2">
               {/* Event Category */}
