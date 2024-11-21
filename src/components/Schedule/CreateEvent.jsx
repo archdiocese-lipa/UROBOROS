@@ -50,25 +50,25 @@ const CreateEvent = () => {
   const events = [
     {
       name: "Children's Liturgy, 9.30am",
-      category: "catechist",
+      category: "youth",
       visibility: "public",
       eventTime: new Date(new Date().setHours(9, 30, 0, 0)), //  Date object
     },
     {
       name: "Children's Liturgy, 11.00am",
-      category: "catechist",
+      category: "youth",
       visibility: "public",
       eventTime: new Date(new Date().setHours(11, 0, 0, 0)),
     },
     {
       name: "Ablaze",
-      category: "catechist",
+      category: "youth",
       visibility: "public",
       eventTime: new Date(new Date().setHours(12, 0, 0, 0)),
     },
     {
       name: "First Holy Communion, 11.00am",
-      category: "catechist",
+      category: "youth",
       visibility: "private",
       eventTime: new Date(new Date().setHours(11, 0, 0, 0)),
     },
@@ -252,7 +252,7 @@ const CreateEvent = () => {
                           <SelectValue placeholder="Select Category" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="catechist">Catechist</SelectItem>
+                          <SelectItem value="youth">youth</SelectItem>
                         </SelectContent>
                       </Select>
                     </FormControl>

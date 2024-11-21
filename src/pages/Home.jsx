@@ -3,9 +3,10 @@ import BigCurlyRectangle from "@/assets/svg/BigCurlyRectangle.svg";
 import StarIcon from "@/assets/svg/Star.svg";
 import UpperCurly from "@/assets/svg/UpperCurly.svg";
 import CurlyRectangle from "@/assets/svg/CurlyRectangle.svg";
-import ParishionerRegister from "@/components/Home/ParishionerRegister";
+import ParishionerRegister from "@/components/Home/Profile-Registration/ParishionerRegister";
 import Login from "@/components/Login";
 import WalkInRegistration from "@/components/Home/WalkInRegistration";
+import EditRegistration from "@/components/Home/EditRegistration";
 
 const Home = () => {
   return (
@@ -16,7 +17,7 @@ const Home = () => {
             <Login />
             <ParishionerRegister />
             <WalkInRegistration />
-            <button>Edit Registration</button>
+            <EditRegistration />
           </div>
         </div>
       </div>
