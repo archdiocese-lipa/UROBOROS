@@ -129,6 +129,24 @@ export const deleteEvent = async (eventId) => {
   }
 };
 
+// Function to fetch quick access events
+export const getQuickAccessEvents = async () => {
+  try {
+    const { data, error } = await supabase
+      .from("quick_access_events")
+      .select("*");
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return data; // Return only the data directly
+  } catch (error) {
+    console.error("Error fetching quick access events:", error);
+    throw new Error(error.message);
+  }
+};
+
 // Function to fetch a single event by its ID
 export const getEventById = async (eventId) => {
   try {
