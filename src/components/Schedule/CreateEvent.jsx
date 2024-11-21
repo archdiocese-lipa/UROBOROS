@@ -37,42 +37,22 @@ import { EventIcon, DownIcon } from "@/assets/icons/icons";
 import { CalendarIcon } from "lucide-react";
 import TimePicker from "./TimePicker";
 import { Textarea } from "../ui/textarea";
-import AssignVolunteerComboBox from "./AssignVolunteerComboBox";
+
+import { useUser } from "@/context/useUser";
+import useCreateEvent from "@/hooks/useCreateEvent";
+import useQuickAccessEvents from "@/hooks/useQuickAccessEvents";
 
 const CreateEvent = () => {
-  const [isDialogOpen, setDialogOpen] = useState(false);
+  const { userData } = useUser(); // Get userData from the context
+  const userId = userData?.id; // Extract the userId, safely checking if userData exists
+
   const [isPopoverOpen, setPopoverOpen] = useState(false);
 
   const { toast } = useToast();
 
-  // Predefined events with associated categories, visibility, and ministry
-  // Maganda meron na tayo na nakaset na table sa supabase nito mark
-  const events = [
-    {
-      name: "Children's Liturgy, 9.30am",
-      category: "catechist",
-      visibility: "public",
-      eventTime: new Date(new Date().setHours(9, 30, 0, 0)), //  Date object
-    },
-    {
-      name: "Children's Liturgy, 11.00am",
-      category: "catechist",
-      visibility: "public",
-      eventTime: new Date(new Date().setHours(11, 0, 0, 0)),
-    },
-    {
-      name: "Ablaze",
-      category: "catechist",
-      visibility: "public",
-      eventTime: new Date(new Date().setHours(12, 0, 0, 0)),
-    },
-    {
-      name: "First Holy Communion, 11.00am",
-      category: "catechist",
-      visibility: "private",
-      eventTime: new Date(new Date().setHours(11, 0, 0, 0)),
-    },
-  ];
+  const { mutate: createEvent, isLoading } = useCreateEvent();
+  const { events } = useQuickAccessEvents();
+
 
   //Dummy data volunteers
   const volunteers = [
@@ -113,44 +93,50 @@ const CreateEvent = () => {
   }, [watchVisibility, resetField]);
 
   const handleEventSelect = (eventItem) => {
-    // Set selected event's values for all fields
-    setValue("eventName", eventItem.name);
-    setValue("eventCategory", eventItem.category);
-    setValue("eventVisibility", eventItem.visibility);
-    setValue("eventTime", eventItem.eventTime);
+    // Convert the event time string to a Date object
+    const eventTime = eventItem.event_time
+      ? new Date(`1970-01-01T${eventItem.event_time}Z`) // Z to indicate UTC time
+      : null;
+
+    setValue("eventName", eventItem.event_name);
+    setValue("eventCategory", eventItem.event_category);
+    setValue("eventVisibility", eventItem.event_visibility);
+    setValue("eventTime", eventTime); // Set Date object here
 
     setPopoverOpen(false); // Close the popover
   };
 
   // Mark dito mo connect backend
-  const handleFormSubmit = async (data) => {
-    try {
-      // Simulate API call or validation
-      if (
-        !data.eventName ||
-        !data.eventCategory ||
-        !data.eventVisibility ||
-        !data.eventDate ||
-        !data.eventTime
-      ) {
-        throw new Error("Please fill all required fields.");
-      }
-      // Simulating success
+  const onSubmit = (data) => {
+    // Ensure userId is available
+    if (!userId) {
       toast({
-        title: "Event Created",
-        description: `Event "${data.eventName}" created successfully!`,
+
+        description: "User not logged in. Please log in to create an event.",
+        variant: "error",
+
       });
-      setDialogOpen(false);
-      eventForm.reset();
-      console.log(data);
-    } catch (error) {
-      // Handle error
-      toast({
-        title: "Event Creation Failed",
-        description: error.message || "Something went wrong. Please try again.",
-        variant: "destructive",
-      });
+      return; // Prevent form submission if no userId
     }
+
+    // Validate and format date and time
+    const formattedDate = data.eventDate
+      ? format(new Date(data.eventDate), "yyyy-MM-dd")
+      : null;
+    const formattedTime = data.eventTime
+      ? format(new Date(data.eventTime), "HH:mm:ss")
+      : null;
+
+    // Prepare event data with formatted date and time
+    const eventData = {
+      ...data,
+      eventDate: formattedDate, // Ensure event date is formatted correctly
+      eventTime: formattedTime, // Ensure event time is formatted correctly
+      userId, // Include userId in the data
+    };
+
+    // Call the create event function with the prepared data
+    createEvent(eventData);
   };
 
   return (
@@ -168,7 +154,7 @@ const CreateEvent = () => {
         </DialogHeader>
 
         <Form {...eventForm}>
-          <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-2">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
             {/* Event Name Field */}
             <FormField
               control={control}
@@ -195,13 +181,13 @@ const CreateEvent = () => {
                           </button>
                         </PopoverTrigger>
                         <PopoverContent className="p-2">
-                          {events.map((eventItem, index) => (
+                          {events?.map((eventItem, index) => (
                             <button
                               key={index}
                               onClick={() => handleEventSelect(eventItem)}
                               className="text-gray-700 hover:bg-gray-200 mt-1 w-full rounded-md border border-secondary-accent px-4 py-2 text-left text-sm"
                             >
-                              {eventItem.name}
+                              {eventItem.event_name}
                             </button>
                           ))}
                         </PopoverContent>
@@ -400,8 +386,10 @@ const CreateEvent = () => {
                     Cancel
                   </Button>
                 </DialogClose>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Creating" : "Create"}
+
+                <Button type="submit" loading={isLoading}>
+                  Create
+
                 </Button>
               </div>
             </DialogFooter>
