@@ -39,6 +39,7 @@ import TimePicker from "./TimePicker";
 import { Textarea } from "../ui/textarea";
 import { useUser } from "@/context/useUser";
 import useCreateEvent from "@/hooks/useCreateEvent";
+import useQuickAccessEvents from "@/hooks/useQuickAccessEvents";
 
 const CreateEvent = () => {
   const { userData } = useUser(); // Get userData from the context
@@ -46,35 +47,7 @@ const CreateEvent = () => {
   const [isPopoverOpen, setPopoverOpen] = useState(false);
   const { toast } = useToast();
   const { mutate: createEvent, isLoading } = useCreateEvent();
-
-  // Predefined events with associated categories, visibility, and ministry
-  // Maganda meron na tayo na nakaset na table sa supabase nito mark
-  const events = [
-    {
-      name: "Children's Liturgy, 9.30am",
-      category: "catechist",
-      visibility: "public",
-      eventTime: new Date(new Date().setHours(9, 30, 0, 0)), //  Date object
-    },
-    {
-      name: "Children's Liturgy, 11.00am",
-      category: "catechist",
-      visibility: "public",
-      eventTime: new Date(new Date().setHours(11, 0, 0, 0)),
-    },
-    {
-      name: "Ablaze",
-      category: "catechist",
-      visibility: "public",
-      eventTime: new Date(new Date().setHours(12, 0, 0, 0)),
-    },
-    {
-      name: "First Holy Communion, 11.00am",
-      category: "catechist",
-      visibility: "ministry",
-      eventTime: new Date(new Date().setHours(11, 0, 0, 0)),
-    },
-  ];
+  const { events } = useQuickAccessEvents();
 
   const eventForm = useForm({
     resolver: zodResolver(createEventSchema),
@@ -100,11 +73,15 @@ const CreateEvent = () => {
   }, [watchVisibility, resetField]);
 
   const handleEventSelect = (eventItem) => {
-    // Set selected event's values for all fields
-    setValue("eventName", eventItem.name);
-    setValue("eventCategory", eventItem.category);
-    setValue("eventVisibility", eventItem.visibility);
-    setValue("eventTime", eventItem.eventTime);
+    // Convert the event time string to a Date object
+    const eventTime = eventItem.event_time
+      ? new Date(`1970-01-01T${eventItem.event_time}Z`) // Z to indicate UTC time
+      : null;
+
+    setValue("eventName", eventItem.event_name);
+    setValue("eventCategory", eventItem.event_category);
+    setValue("eventVisibility", eventItem.event_visibility);
+    setValue("eventTime", eventTime); // Set Date object here
 
     setPopoverOpen(false); // Close the popover
   };
@@ -183,13 +160,13 @@ const CreateEvent = () => {
                           </button>
                         </PopoverTrigger>
                         <PopoverContent className="p-2">
-                          {events.map((eventItem, index) => (
+                          {events?.map((eventItem, index) => (
                             <button
                               key={index}
                               onClick={() => handleEventSelect(eventItem)}
                               className="text-gray-700 hover:bg-gray-200 mt-1 w-full rounded-md border border-secondary-accent px-4 py-2 text-left text-sm"
                             >
-                              {eventItem.name}
+                              {eventItem.event_name}
                             </button>
                           ))}
                         </PopoverContent>
