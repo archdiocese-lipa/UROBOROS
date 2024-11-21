@@ -30,6 +30,8 @@ import { Textarea } from "../ui/textarea";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import useCreateMeeting from "@/hooks/useCreateMeeting";
+import { useUser } from "@/context/useUser";
 
 // Dummy participants
 const options = [
@@ -39,7 +41,10 @@ const options = [
 ];
 
 const CreateMeeting = () => {
+  const { userData } = useUser(); // Get userData from the context
+  const userId = userData?.id; // Extract the userId, safely checking if userData exists
   const { toast } = useToast();
+  const { mutate: createMeeting, isLoading } = useCreateMeeting();
 
   const meetingForm = useForm({
     resolver: zodResolver(createMeetingSchema),
@@ -54,22 +59,33 @@ const CreateMeeting = () => {
   });
 
   const onSubmit = (data) => {
-    // This will rely on runtime validation from Zod.
-    try {
-      // Simulating success
+    // Ensure userId is available
+    if (!userId) {
       toast({
-        title: "Meeting Created",
-        description: `Meeting "${data.meetingName}" created successfully!`,
+        description: "User not logged in. Please log in to create a meeting.",
+        variant: "error",
       });
-      console.log(data);
-    } catch (error) {
-      // Handle error
-      toast({
-        title: "Meeting Creation Failed",
-        description: error.message || "Something went wrong. Please try again.",
-        variant: "destructive",
-      });
+      return; // Prevent form submission if no userId
     }
+
+    // Validate and format date and time
+    const formattedDate = data.date
+      ? format(new Date(data.date), "yyyy-MM-dd")
+      : null;
+    const formattedTime = data.time
+      ? format(new Date(data.time), "HH:mm:ss")
+      : null;
+
+    // Prepare meeting data with formatted date and time
+    const meetingData = {
+      ...data,
+      date: formattedDate, // Ensure date is formatted correctly
+      time: formattedTime, // Ensure time is formatted correctly
+      userId, // Include userId in the data
+    };
+
+    // Call the create meeting function with the prepared data
+    createMeeting(meetingData);
   };
 
   return (
@@ -230,7 +246,9 @@ const CreateMeeting = () => {
                   <DialogClose asChild>
                     <Button variant="outline">Cancel</Button>
                   </DialogClose>
-                  <Button type="submit">Create</Button>
+                  <Button type="submit" loading={isLoading}>
+                    Create
+                  </Button>
                 </div>
               </DialogFooter>
             </form>
