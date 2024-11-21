@@ -23,7 +23,10 @@ const buttonVariants = cva(
         link: "text-neutral-900 underline-offset-4 hover:underline dark:text-neutral-50",
         primary:
           "bg-accent text-white font-semibold rounded-[10px] tracking-wide",
+        transparent:
+          "bg-transparent text-white font-semibold rounded-[10px] tracking-wide border-0",
       },
+
       size: {
         default: "h-10 px-4 py-2",
         primary: "h-fit px-4 py-[5px]",
