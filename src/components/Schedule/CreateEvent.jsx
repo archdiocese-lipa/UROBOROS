@@ -37,10 +37,15 @@ import { EventIcon, DownIcon } from "@/assets/icons/icons";
 import { CalendarIcon } from "lucide-react";
 import TimePicker from "./TimePicker";
 import { Textarea } from "../ui/textarea";
+import { useUser } from "@/context/useUser";
+import useCreateEvent from "@/hooks/useCreateEvent";
 
 const CreateEvent = () => {
+  const { userData } = useUser(); // Get userData from the context
+  const userId = userData?.id; // Extract the userId, safely checking if userData exists
   const [isPopoverOpen, setPopoverOpen] = useState(false);
   const { toast } = useToast();
+  const { mutate: createEvent, isLoading } = useCreateEvent();
 
   // Predefined events with associated categories, visibility, and ministry
   // Maganda meron na tayo na nakaset na table sa supabase nito mark
@@ -105,32 +110,34 @@ const CreateEvent = () => {
   };
 
   // Mark dito mo connect backend
-  const handleFormSubmit = async (data) => {
-    try {
-      // Simulate API call or validation
-      if (
-        !data.eventName ||
-        !data.eventCategory ||
-        !data.eventVisibility ||
-        !data.eventDate ||
-        !data.eventTime
-      ) {
-        throw new Error("Please fill all required fields.");
-      }
-      // Simulating success
+  const onSubmit = (data) => {
+    // Ensure userId is available
+    if (!userId) {
       toast({
-        title: "Event Created",
-        description: `Event "${data.eventName}" created successfully!`,
+        description: "User not logged in. Please log in to create an event.",
+        variant: "error",
       });
-      console.log(data);
-    } catch (error) {
-      // Handle error
-      toast({
-        title: "Event Creation Failed",
-        description: error.message || "Something went wrong. Please try again.",
-        variant: "destructive",
-      });
+      return; // Prevent form submission if no userId
     }
+
+    // Validate and format date and time
+    const formattedDate = data.eventDate
+      ? format(new Date(data.eventDate), "yyyy-MM-dd")
+      : null;
+    const formattedTime = data.eventTime
+      ? format(new Date(data.eventTime), "HH:mm:ss")
+      : null;
+
+    // Prepare event data with formatted date and time
+    const eventData = {
+      ...data,
+      eventDate: formattedDate, // Ensure event date is formatted correctly
+      eventTime: formattedTime, // Ensure event time is formatted correctly
+      userId, // Include userId in the data
+    };
+
+    // Call the create event function with the prepared data
+    createEvent(eventData);
   };
 
   return (
@@ -148,7 +155,7 @@ const CreateEvent = () => {
         </DialogHeader>
 
         <Form {...eventForm}>
-          <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-2">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
             {/* Event Name Field */}
             <FormField
               control={control}
@@ -360,7 +367,9 @@ const CreateEvent = () => {
                     Cancel
                   </Button>
                 </DialogClose>
-                <Button type="submit">Create</Button>
+                <Button type="submit" loading={isLoading}>
+                  Create
+                </Button>
               </div>
             </DialogFooter>
           </form>
