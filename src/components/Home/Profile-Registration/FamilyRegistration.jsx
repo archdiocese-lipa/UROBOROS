@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { addFamilySchema } from "@/zodSchema/AddFamilySchema";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { DialogClose } from "../ui/dialog";
+import { DialogClose } from "../../ui/dialog";
 import { useAddFamily } from "@/hooks/useAddFamily";
 import { useUser } from "@/context/useUser"; // Custom hook for accessing UserContext
 

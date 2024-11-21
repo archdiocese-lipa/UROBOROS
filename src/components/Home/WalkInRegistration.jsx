@@ -136,6 +136,7 @@ const WalkInRegistration = () => {
     const eventTime = new Date(event.dateTime);
     return eventTime >= twoHoursAgo;
   });
+
   return (
     <Dialog>
       <DialogTrigger asChild>

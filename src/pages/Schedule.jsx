@@ -77,7 +77,7 @@ const Schedule = () => {
       <div className="flex flex-col gap-8">
         <div>
           <Title>Scheduler</Title>
-          <Description>Manage schedules for your organization.</Description>
+          <Description>Manage schedules for your organisation.</Description>
         </div>
         <div className="flex flex-col gap-3">
           <div className="flex gap-1 lg:min-w-[400px]">

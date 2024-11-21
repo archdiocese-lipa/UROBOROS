@@ -51,7 +51,7 @@ const CreateEvent = () => {
   const [isDialogOpen, setDialogOpen] = useState(false);
 
   const { toast } = useToast();
-
+  
   const { mutate: createEvent, isLoading } = useCreateEvent();
   const { events } = useQuickAccessEvents();
 
@@ -227,7 +227,7 @@ const CreateEvent = () => {
                           <SelectValue placeholder="Select Category" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="catechist">Catechist</SelectItem>
+                          <SelectItem value="youth">youth</SelectItem>
                         </SelectContent>
                       </Select>
                     </FormControl>
