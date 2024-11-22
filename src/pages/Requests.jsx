@@ -1,5 +1,9 @@
+import { useState } from "react";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { Icon } from "@iconify/react";
+
 import { Title, Description } from "@/components/Title";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
   TableBody,
@@ -8,113 +12,229 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import NewProfileForm from "@/components/NewProfileForm";
+import { Skeleton } from "@/components/ui/skeleton";
+
+import useInterObserver from "@/hooks/useInterObserver";
+
+import { getUsers, removeUser } from "@/services/userService";
 
 import { cn } from "@/lib/utils";
-import { INVOICES } from "@/constants/invoices";
-
 import DownIcon from "@/assets/icons/down-icon.svg";
 
 const Requests = () => {
+  const [tab, setTab] = useState("volunteers");
+  const [open, setOpen] = useState(false);
+  const [selectedRow, setSelectedRow] = useState(null);
+
+  const {
+    data,
+    isLoading,
+    refetch,
+    hasNextPage,
+    fetchNextPage,
+    _isFetchingNextPage,
+    error,
+  } = useInfiniteQuery({
+    queryKey: ["users-list", tab],
+    queryFn: async ({ pageParam }) => {
+      const response = await getUsers({ page: pageParam, limit: 10 });
+
+      return response;
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      if (lastPage.nextPage) {
+        return lastPage.currentPage + 1;
+      }
+      return undefined;
+    },
+  });
+
+  const { ref } = useInterObserver(fetchNextPage);
+
+  const onDialogStateChange = (state) => {
+    setOpen(state);
+    if (!state) {
+      setSelectedRow(null);
+      async () => await refetch();
+    }
+  };
+
+  const onRowEdit = (row) => {
+    setSelectedRow(row);
+    setOpen(true);
+  };
+
+  const onRowDelete = async (id) => {
+    try {
+      // MARK: Error here due to:
+      // Error removing user update or delete on table "users"
+      // violates foreign key constraint "events_assigned_volunteer_fkey"
+      // on table "events"
+      await removeUser(id);
+      await refetch();
+    } catch (error) {
+      console.error("Error deleting user", error.message);
+    }
+  };
+
+  if (error) return <div>Error: {error.message}</div>;
+
   return (
-    <div className=" flex-1">
-      <Title>Requests</Title>
-      <Description>Manage your organisation&apos;s community.</Description>
-
-      <Tabs defaultValue="volunteers" className="w-full mt-7">
-        <TabsList>
-          <TabsTrigger value="volunteers">Volunteers</TabsTrigger>
-          <TabsTrigger value="parishioners">Parishioners</TabsTrigger>
-        </TabsList>
-
-        <div className=" mt-2 py-2 pl-4 pr-1 rounded-full border border-primary w-fit p ">
-          <div className=" items-center flex gap-4">
-            <p className=" font-semibold text-accent text-md">All Volunteers</p>
-            <div className=" hover:cursor-pointer flex items-center justify-center w-11 h-7 bg-secondary-accent text-white rounded-[18.5px] px-2">
-              <img src={DownIcon} alt={`up icon`} className="h-2 w-4" />
+    <div className="flex flex-col gap-7">
+      <div>
+        <Title>Requests</Title>
+        <Description>Manage your organisation&apos;s community.</Description>
+      </div>
+      <div>
+        <Tabs
+          onValueChange={(value) => setTab(value)}
+          defaultValue={tab}
+          className="w-full"
+        >
+          <TabsList>
+            <TabsTrigger value="volunteers">Volunteers</TabsTrigger>
+            <TabsTrigger value="parishioners">Parishioners</TabsTrigger>
+          </TabsList>
+        </Tabs>
+        <div className="mt-2 flex h-fit w-fit items-center gap-3">
+          <div className="w-fit rounded-full border border-primary py-2 pl-4 pr-1">
+            <div className="flex items-center gap-4">
+              <p className="text-md font-semibold text-accent">
+                All Volunteers
+              </p>
+              <div className="flex h-7 w-11 items-center justify-center rounded-[18.5px] bg-secondary-accent px-2 text-white hover:cursor-pointer">
+                <img src={DownIcon} alt={`up icon`} className="h-2 w-4" />
+              </div>
             </div>
           </div>
+          <Dialog
+            open={open}
+            onOpenChange={(state) => onDialogStateChange(state)}
+          >
+            <DialogTrigger asChild>
+              <Button>Create User</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>
+                  {!selectedRow ? "Create New Profile" : "Update Profile"}
+                </DialogTitle>
+                <DialogDescription>
+                  {!selectedRow
+                    ? "Create a new user profile"
+                    : "Update existing user profile"}
+                </DialogDescription>
+              </DialogHeader>
+              <NewProfileForm user={selectedRow} />
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant="outline">Cancel</Button>
+                </DialogClose>
+                <Button form="new-user-form">Confirm</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
-
-        <TabsContent value="volunteers">
-          <Table>
-            <TableHeader className=" bg-primary ">
-              <TableRow>
-                <TableHead className="text-center rounded-l-lg">
-                  Email
-                </TableHead>
-                <TableHead className="text-center">Name</TableHead>
-                <TableHead className="text-center">Contact</TableHead>
-                <TableHead className="text-center rounded-r-lg">
-                  Action
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {INVOICES.map((invoice, index) => (
+      </div>
+      {!isLoading ? (
+        <Table>
+          <TableHeader className="bg-primary">
+            <TableRow>
+              <TableHead className="rounded-l-lg text-center">Email</TableHead>
+              <TableHead className="text-center">Name</TableHead>
+              <TableHead className="text-center">Contact</TableHead>
+              <TableHead className="rounded-r-lg text-center">Action</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {data?.pages.map((page) =>
+              page.items.map((row, j) => (
                 <TableRow
+                  key={j}
                   className={cn(
-                    index % 2 !== 0 ? "bg-primary bg-opacity-35" : "bg-white"
+                    j % 2 !== 0 ? "bg-primary bg-opacity-35" : "bg-white"
                   )}
-                  key={invoice.email}
                 >
-                  <TableCell className="text-center w-[300px]">
-                    {invoice.email}
+                  <TableCell className="w-[300px] text-center">
+                    {row.email}
                   </TableCell>
-                  <TableCell className="text-center w-[300px]">
-                    {invoice.name}
+                  <TableCell className="w-[300px] text-center">
+                    {`${row.first_name} ${row.last_name}`}
                   </TableCell>
-                  <TableCell className="text-center w-[300px]">
-                    {invoice.contact}
+                  <TableCell className="w-[300px] text-center">
+                    {row.contact_number}
                   </TableCell>
-                  <TableCell className="text-center w-[300px]">
-                    {invoice.action}
+                  <TableCell className="w-[300px] text-center">
+                    <div className="flex items-center justify-center gap-2">
+                      <Button
+                        onClick={() => onRowEdit(row)}
+                        variant="outline"
+                        className="h-auto px-2 text-accent hover:text-orange-500"
+                      >
+                        <Icon icon="mingcute:pencil-3-line" />
+                      </Button>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className="h-auto px-2 text-accent hover:text-red-500"
+                          >
+                            <Icon icon="mingcute:delete-2-line" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle className="text-accent">
+                              {`Delete ${row.first_name} ${row.last_name}`}
+                            </DialogTitle>
+                            <DialogDescription>
+                              Are you sure you want to delete{" "}
+                              <span className="font-bold text-accent">
+                                {`${row.first_name} ${row.last_name}`}
+                              </span>
+                              ?
+                            </DialogDescription>
+                          </DialogHeader>
+                          <DialogFooter>
+                            <DialogClose asChild>
+                              <Button variant="outline">Cancel</Button>
+                            </DialogClose>
+                            <Button onClick={() => onRowDelete(row.id)}>
+                              Delete
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
                   </TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TabsContent>
-
-        <TabsContent value="parishioners">
-          <Table>
-            <TableHeader className=" bg-primary ">
-              <TableRow>
-                <TableHead className="text-center rounded-l-lg">
-                  Email
-                </TableHead>
-                <TableHead className="text-center">Name</TableHead>
-                <TableHead className="text-center">Contact</TableHead>
-                <TableHead className="text-center rounded-r-lg">
-                  Action
-                </TableHead>
+              ))
+            )}
+            {hasNextPage && (
+              <TableRow ref={ref}>
+                <TableCell colSpan={4}>
+                  <Skeleton className="h-10 w-full rounded-xl" />
+                </TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {INVOICES.map((invoice, index) => (
-                <TableRow
-                  className={cn(
-                    index % 2 !== 0 ? "bg-primary bg-opacity-35" : "bg-white"
-                  )}
-                  key={invoice.email}
-                >
-                  <TableCell className="text-center w-[300px]">
-                    {invoice.email}
-                  </TableCell>
-                  <TableCell className="text-center w-[300px]">
-                    {invoice.name}
-                  </TableCell>
-                  <TableCell className="text-center w-[300px]">
-                    {invoice.contact}
-                  </TableCell>
-                  <TableCell className="text-center w-[300px]">
-                    {invoice.action}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TabsContent>
-      </Tabs>
+            )}
+          </TableBody>
+        </Table>
+      ) : (
+        <Skeleton className="h-96 w-full rounded-xl" />
+      )}
     </div>
   );
 };
