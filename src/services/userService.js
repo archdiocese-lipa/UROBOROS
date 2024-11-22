@@ -1,6 +1,13 @@
 import { supabase } from "./supabaseClient"; // Supabase client import
 
-// Fetch a single user by ID
+import { paginate } from "@/lib/utils";
+
+/**
+ * This function will fetch for user information from the database.
+ * @param {string} userId The user ID to fetch from the database.
+ * @returns {Promise<object>} The user object fetched from the database.
+ * @throws {Error} If an error occurs while fetching the user.
+ */
 const getUser = async (userId) => {
   try {
     const { data: user, error } = await supabase
@@ -35,4 +42,55 @@ const getUsersByRole = async (role) => {
   }
 };
 
-export { getUser, getUsersByRole };
+const getUsers = async ({ page, limit }) => {
+  try {
+    const data = await paginate("users", page, limit);
+
+    return data;
+  } catch (error) {
+    console.error("Error fetching users", error.message);
+    throw error;
+  }
+};
+
+/**
+ *
+ * @param {Object} payload
+ */
+const updateUser = async (id, payload) => {
+  try {
+    const { data: user, error } = await supabase
+      .from("users")
+      .update(payload)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return user;
+  } catch (error) {
+    console.error("Error updating user", error.message);
+    throw error;
+  }
+};
+
+const removeUser = async (id) => {
+  try {
+    const { data: user, error } = await supabase
+      .from("users")
+      .delete()
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return user;
+  } catch (error) {
+    console.error("Error removing user", error.message);
+    throw error;
+  }
+};
+
+export { getUser, getUsersByRole, getUsers, updateUser, removeUser };
