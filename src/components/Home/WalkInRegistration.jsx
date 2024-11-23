@@ -29,28 +29,15 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { walkInRegisterSchema } from "@/zodSchema/WalkInRegisterSchema";
-
-//Sample events from supabase
-//Check mo mark kapag ganito yung binibigay ng supabase sayo
-const events = [
-  {
-    id: "event1",
-    name: "Children's Liturgy",
-    dateTime: "2024-11-20T04:39:00Z",
-  },
-  {
-    id: "event2",
-    name: "Youth Choir Practice",
-    dateTime: "2024-12-21T14:00:00Z",
-  },
-  {
-    id: "event3",
-    name: "Evening Mass",
-    dateTime: "2024-12-20T18:00:00Z",
-  },
-];
+import { useGetAllEvents } from "@/hooks/useGetAllEvents";
+import useWalkInAttendance from "@/hooks/useWalkInAttendance";
+import { useToast } from "@/hooks/use-toast";
 
 const WalkInRegistration = () => {
+  const { data } = useGetAllEvents();
+  const { mutate: registerAttendance } = useWalkInAttendance(); // Initialize the mutation hook
+  const { toast } = useToast();
+
   const form = useForm({
     resolver: zodResolver(walkInRegisterSchema),
     defaultValues: {
@@ -91,7 +78,6 @@ const WalkInRegistration = () => {
     name: "children",
   });
 
-  // Add parent function
   const addParentField = () => {
     addParent({
       parentFirstName: "",
@@ -101,7 +87,6 @@ const WalkInRegistration = () => {
     });
   };
 
-  // Add child function
   const addChildField = () => {
     addChild({
       childFirstName: "",
@@ -109,11 +94,38 @@ const WalkInRegistration = () => {
     });
   };
 
+  // Submit handler
   const onSubmit = (values) => {
-    console.log(values);
+    if (!values.event) {
+      // Show an error message if no event is selected
+      toast({
+        title: "Error",
+        description: "Please select an event.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Proceed with submission
+    const { event, parents, children } = values;
+    const submitData = {
+      event,
+      parents: parents.map((parent) => ({
+        parentFirstName: parent.parentFirstName,
+        parentLastName: parent.parentLastName,
+        parentContactNumber: parent.parentContactNumber,
+        isMainApplicant: parent.isMainApplicant,
+      })),
+      children: children.map((child) => ({
+        childFirstName: child.childFirstName,
+        childLastName: child.childLastName,
+      })),
+    };
+
+    registerAttendance(submitData);
   };
 
-  //Format the date
+  // Format the date
   const formatDateTime = (dateTime) => {
     return new Intl.DateTimeFormat("en-GB", {
       day: "numeric",
@@ -125,17 +137,21 @@ const WalkInRegistration = () => {
     }).format(new Date(dateTime));
   };
 
-  // Get current time
   const now = new Date();
 
   // Removing the past two hours event
   const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
 
   // Filter events
-  const upcomingEvents = events.filter((event) => {
-    const eventTime = new Date(event.dateTime);
-    return eventTime >= twoHoursAgo;
-  });
+  const upcomingEvents = Array.isArray(data?.data)
+    ? data.data.filter((event) => {
+        const eventDateTime = new Date(
+          event.dateTime || `${event.event_date}T${event.event_time}`
+        );
+
+        return eventDateTime >= twoHoursAgo;
+      })
+    : [];
 
   return (
     <Dialog>
@@ -168,7 +184,11 @@ const WalkInRegistration = () => {
                         <SelectContent>
                           {upcomingEvents.map((event) => (
                             <SelectItem key={event.id} value={event.id}>
-                              {event.name} - {formatDateTime(event.dateTime)}
+                              {event.event_name} -{" "}
+                              {formatDateTime(
+                                event.dateTime ||
+                                  `${event.event_date}T${event.event_time}`
+                              )}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -179,7 +199,7 @@ const WalkInRegistration = () => {
                 )}
               />
               {/* Parent Guardian Field */}
-              <Label className="text-lg">Parent/Guardian Information </Label>
+              <Label className="text-lg">Parent/Guardian Information</Label>
               <span className="hidden text-sm italic text-zinc-400 md:block">
                 (Check the box on the left to choose the main applicant).
               </span>
