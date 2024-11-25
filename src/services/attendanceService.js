@@ -1,45 +1,16 @@
 import { supabase } from "@/services/supabaseClient"; // Adjust the import to match the final location of supabaseClient
 
-const generateTicketCode = () => {
-  // Generates a 6-character alphanumeric string (e.g., ABC123)
-  return Math.random().toString(36).substr(2, 6).toUpperCase();
-};
-
-const checkTicketCodeUnique = async (ticketCode) => {
-  // Check if the ticket code already exists in the database
-  const { data } = await supabase
-    .from("tickets")
-    .select("ticket_code")
-    .eq("ticket_code", ticketCode);
-
-  return data.length === 0; // Returns true if the code doesn't exist
-};
-
-const generateUniqueTicketCode = async () => {
-  let ticketCode = generateTicketCode();
-
-  // Ensure the ticket code is unique
-  while (!(await checkTicketCodeUnique(ticketCode))) {
-    ticketCode = generateTicketCode();
-  }
-
-  return ticketCode;
-};
-
 export const insertEventAttendance = async (submittedData) => {
-  const { event, parents, children } = submittedData;
-
-  // Generate a unique ticket code for this batch
-  const ticketCode = await generateUniqueTicketCode();
+  const { randomSixDigit, event, parents, children } = submittedData;
 
   // Insert into the tickets table (this table tracks the tickets themselves)
-  const { data: ticketData, error: ticketError } = await supabase
+  const { error: ticketError } = await supabase
     .from("tickets")
     .insert([
       {
         event_id: event, // Foreign key for the event
-        ticket_code: ticketCode, // Unique ticket code
-        timestamp: new Date(), // Automatically handled by the database, if needed
+        ticket_code: randomSixDigit, // Unique ticket code (generated six-digit number)
+        timestamp: new Date(), // Automatically handled by the database
       },
     ])
     .select("ticket_code"); // Return the inserted ticket's ticket_code
@@ -52,7 +23,7 @@ export const insertEventAttendance = async (submittedData) => {
   // Prepare parent records with ticket_code
   const parentRecords = parents.map((parent) => ({
     event_id: event,
-    ticket_code: ticketData[0].ticket_code, // Use the inserted ticket code
+    ticket_code: randomSixDigit, // Use the generated ticket code
     first_name: parent.parentFirstName,
     last_name: parent.parentLastName,
     contact_number: parent.parentContactNumber,
@@ -60,19 +31,18 @@ export const insertEventAttendance = async (submittedData) => {
     is_main_applicant: parent.isMainApplicant,
   }));
 
-  // Prepare child records with ticket_code and main_applicant_name
+  // Prepare child records with ticket_code and guardian names
   const childRecords = children.map((child) => {
-    const mainApplicantName = parents.find((parent) => parent.isMainApplicant);
+    const mainApplicant = parents.find((parent) => parent.isMainApplicant);
     return {
       event_id: event,
-      ticket_code: ticketData[0].ticket_code, // Use the inserted ticket code
+      ticket_code: randomSixDigit, // Use the generated ticket code
       first_name: child.childFirstName,
       last_name: child.childLastName,
       type: "child",
       is_main_applicant: false, // Children are not main applicants
-      main_applicant_name: mainApplicantName
-        ? `${mainApplicantName.parentFirstName} ${mainApplicantName.parentLastName}`
-        : null, // Assign the main applicant's name if available
+      guardian_first_name: mainApplicant ? mainApplicant.parentFirstName : null,
+      guardian_last_name: mainApplicant ? mainApplicant.parentLastName : null,
     };
   });
 
