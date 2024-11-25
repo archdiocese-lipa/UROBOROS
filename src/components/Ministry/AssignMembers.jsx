@@ -47,8 +47,8 @@ const AssignMembers = ({ title }) => {
     console.log("Form submitted with values:", values);
     setOpenDialog(false);
     toast({
-        description: "Successfully added a new member.",
-      });
+      description: "Successfully added a new member.",
+    });
   };
 
   return (

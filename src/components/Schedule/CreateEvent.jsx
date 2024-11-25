@@ -238,7 +238,7 @@ const CreateEvent = () => {
                           <SelectValue placeholder="Select Category" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="youth">youth</SelectItem>
+                          <SelectItem value="youth">Youth</SelectItem>
                         </SelectContent>
                       </Select>
                     </FormControl>
