@@ -35,6 +35,7 @@ export const UserProvider = ({ children }) => {
   };
 
   // Register function
+  // Register function with email check
   const register = async ({
     firstName,
     lastName,
@@ -44,6 +45,23 @@ export const UserProvider = ({ children }) => {
   }) => {
     setLoading(true);
     try {
+      // Check if the email already exists in the users table
+      const { data: existingUser, error: emailCheckError } = await supabase
+        .from("users")
+        .select("*")
+        .eq("email", email)
+        .single(); // Retrieve only one user (since emails are unique)
+
+      if (emailCheckError) throw emailCheckError;
+
+      // If email already exists, throw an error
+      if (existingUser) {
+        throw new Error(
+          "Email already registered. Please use a different one."
+        );
+      }
+
+      // Proceed with the signup process if the email does not exist
       const { data: user, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
@@ -55,8 +73,8 @@ export const UserProvider = ({ children }) => {
         {
           id: user.user.id,
           email: user.user.email,
-          first_name: firstName, // Use firstName directly
-          last_name: lastName, // Use lastName directly
+          first_name: firstName,
+          last_name: lastName,
           contact_number: contactNumber,
           role: "parishioner",
           is_confirmed: false,

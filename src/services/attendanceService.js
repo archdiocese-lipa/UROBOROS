@@ -60,15 +60,21 @@ export const insertEventAttendance = async (submittedData) => {
     is_main_applicant: parent.isMainApplicant,
   }));
 
-  // Prepare child records with ticket_code
-  const childRecords = children.map((child) => ({
-    event_id: event,
-    ticket_code: ticketData[0].ticket_code, // Use the inserted ticket code
-    first_name: child.childFirstName,
-    last_name: child.childLastName,
-    type: "child",
-    is_main_applicant: false, // Children are not main applicants
-  }));
+  // Prepare child records with ticket_code and main_applicant_name
+  const childRecords = children.map((child) => {
+    const mainApplicantName = parents.find((parent) => parent.isMainApplicant);
+    return {
+      event_id: event,
+      ticket_code: ticketData[0].ticket_code, // Use the inserted ticket code
+      first_name: child.childFirstName,
+      last_name: child.childLastName,
+      type: "child",
+      is_main_applicant: false, // Children are not main applicants
+      main_applicant_name: mainApplicantName
+        ? `${mainApplicantName.parentFirstName} ${mainApplicantName.parentLastName}`
+        : null, // Assign the main applicant's name if available
+    };
+  });
 
   // Combine all records
   const allRecords = [...parentRecords, ...childRecords];
