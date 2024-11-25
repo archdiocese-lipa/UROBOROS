@@ -34,7 +34,7 @@ import { cn } from "@/lib/utils";
 import DownIcon from "@/assets/icons/down-icon.svg";
 
 const Requests = () => {
-  const [tab, setTab] = useState("volunteers");
+  const [tab, setTab] = useState("volunteer");
   const [open, setOpen] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
 
@@ -49,7 +49,11 @@ const Requests = () => {
   } = useInfiniteQuery({
     queryKey: ["users-list", tab],
     queryFn: async ({ pageParam }) => {
-      const response = await getUsers({ page: pageParam, limit: 10 });
+      const response = await getUsers({
+        page: pageParam,
+        pageSize: 10,
+        role: tab,
+      });
 
       return response;
     },
@@ -105,8 +109,8 @@ const Requests = () => {
           className="w-full"
         >
           <TabsList>
-            <TabsTrigger value="volunteers">Volunteers</TabsTrigger>
-            <TabsTrigger value="parishioners">Parishioners</TabsTrigger>
+            <TabsTrigger value="volunteer">Volunteers</TabsTrigger>
+            <TabsTrigger value="parishioner">Parishioners</TabsTrigger>
           </TabsList>
         </Tabs>
         <div className="mt-2 flex h-fit w-fit items-center gap-3">
@@ -160,7 +164,7 @@ const Requests = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data?.pages.map((page) =>
+            {data?.pages.flatMap((page) =>
               page.items.map((row, j) => (
                 <TableRow
                   key={j}

@@ -18,6 +18,15 @@ import PropTypes from "prop-types";
 const AssignVolunteerComboBox = ({ options, value, onChange, placeholder }) => {
   const [open, setOpen] = useState(false);
 
+  // Helper function to toggle selection
+  const toggleSelection = (selectedValue) => {
+    if (value.includes(selectedValue)) {
+      onChange(value.filter((v) => v !== selectedValue)); // Remove if already selected
+    } else {
+      onChange([...value, selectedValue]); // Add if not selected
+    }
+  };
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -27,8 +36,11 @@ const AssignVolunteerComboBox = ({ options, value, onChange, placeholder }) => {
           aria-expanded={open}
           className="w-full justify-between bg-primary hover:bg-primary"
         >
-          {value
-            ? options.find((opt) => opt.value === value)?.label
+          {value.length > 0
+            ? options
+                .filter((opt) => value.includes(opt.value))
+                .map((opt) => opt.label)
+                .join(", ") // Display selected labels
             : placeholder}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
@@ -41,14 +53,13 @@ const AssignVolunteerComboBox = ({ options, value, onChange, placeholder }) => {
             {options.map((opt) => (
               <CommandItem
                 key={opt.value}
-                onSelect={() => {
-                  onChange(opt.value);
-                  setOpen(false);
-                }}
+                onSelect={() => toggleSelection(opt.value)}
               >
                 {opt.label}
                 <Check
-                  className={`ml-auto h-4 w-4 ${value === opt.value ? "opacity-100" : "opacity-0"}`}
+                  className={`ml-auto h-4 w-4 ${
+                    value.includes(opt.value) ? "opacity-100" : "opacity-0"
+                  }`}
                 />
               </CommandItem>
             ))}
@@ -60,15 +71,15 @@ const AssignVolunteerComboBox = ({ options, value, onChange, placeholder }) => {
 };
 
 AssignVolunteerComboBox.propTypes = {
-    options: PropTypes.arrayOf(
-      PropTypes.shape({
-        value: PropTypes.string.isRequired,
-        label: PropTypes.string.isRequired,
-      })
-    ).isRequired, 
-    value: PropTypes.string, 
-    onChange: PropTypes.func.isRequired, 
-    placeholder: PropTypes.string, 
-  };
+  options: PropTypes.arrayOf(
+    PropTypes.shape({
+      value: PropTypes.string.isRequired,
+      label: PropTypes.string.isRequired,
+    })
+  ).isRequired,
+  value: PropTypes.arrayOf(PropTypes.string).isRequired, // Changed to an array for multi-select
+  onChange: PropTypes.func.isRequired,
+  placeholder: PropTypes.string,
+};
 
 export default AssignVolunteerComboBox;

@@ -1,4 +1,4 @@
-import { supabase } from "./supabaseClient"; // Ensure supabase client is imported
+import { supabase } from "@/services/supabaseClient"; // Adjust the import to match the final location of supabaseClient
 
 const generateTicketCode = () => {
   // Generates a 6-character alphanumeric string (e.g., ABC123)
@@ -159,3 +159,23 @@ export const fetchAttendeesByTicketCode = async (ticketCode) => {
     return { success: false, error };
   }
 };
+
+const getEventAttendance = async (eventId) => {
+  try {
+    const { data, error } = await supabase
+      .from("event_attendance")
+      .select("*")
+      .eq("event_id", eventId);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error fetching event attendance:", error);
+    throw new Error(error.message);
+  }
+};
+
+export { getEventAttendance };

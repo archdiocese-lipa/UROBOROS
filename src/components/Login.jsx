@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useUser } from "@/context/useUser";
@@ -16,7 +16,6 @@ import {
   DialogTrigger,
   DialogClose,
 } from "@/components/ui/dialog";
-
 import {
   Form,
   FormControl,
@@ -25,13 +24,14 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 const Login = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const loc = useLocation();
   const navigate = useNavigate();
   const { login, userData, loading } = useUser(); // Access context functions
   const { toast } = useToast();
@@ -54,7 +54,7 @@ const Login = () => {
       console.log("Login successful! user:", user);
 
       setIsDialogOpen(false); // Close dialog
-      navigate("/dashboard"); // Navigate to the dashboard
+      navigate(loc?.state?.from || "/announcements", { replace: true }); // Navigate to the dashboard
       toast({
         title: "Login Successfully",
       });
@@ -72,7 +72,7 @@ const Login = () => {
     if (userData) {
       console.log("userData:", userData);
       setIsDialogOpen(false); // Close dialog on success
-      navigate("/dashboard"); // Navigate to the dashboard
+      // navigate("/dashboard"); // Navigate to the dashboard
     }
   }, [userData, navigate]);
 
@@ -89,7 +89,10 @@ const Login = () => {
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleLogin)} className="space-y-6 py-4">
+          <form
+            onSubmit={form.handleSubmit(handleLogin)}
+            className="space-y-6 py-4"
+          >
             <FormField
               control={form.control}
               name="email"
@@ -132,7 +135,11 @@ const Login = () => {
             </div>
             <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
               <DialogClose asChild>
-                <Button type="button" variant="outline" className="mt-3 sm:mt-0">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="mt-3 sm:mt-0"
+                >
                   Cancel
                 </Button>
               </DialogClose>

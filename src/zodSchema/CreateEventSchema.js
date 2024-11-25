@@ -19,7 +19,7 @@ export const createEventSchema = z.object({
       }
     }),
   eventDate: z
-    .instanceof(Date, { message: "Please select date." }) // Ensures it's a Date object
+    .instanceof(Date, { message: "Please select date." }) 
     .refine((date) => !isNaN(date.getTime()), {
       message: "Date is required.",
     }),
@@ -29,8 +29,7 @@ export const createEventSchema = z.object({
       message: "Time is required.",
     }),
   eventDescription: z.string().optional().default(""),
-
   assignVolunteer: z
-    .string()
-    .min(1, { message: "A volunteer must be assigned." }),
+    .array(z.string()) 
+    .min(1, { message: "At least one volunteer must be assigned." }),
 });

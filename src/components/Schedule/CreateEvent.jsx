@@ -56,7 +56,6 @@ const CreateEvent = () => {
   const { mutate: createEvent, isLoading } = useCreateEvent();
   const { events } = useQuickAccessEvents();
   const { data: volunteers } = useUsersByRole("volunteer");
-  console.log(volunteers);
 
   //Dummy data volunteers
   // const volunteers = [
@@ -73,9 +72,9 @@ const CreateEvent = () => {
       eventVisibility: "",
       ministry: "",
       eventDate: null,
-      eventTime: new Date(),
+      eventTime: "",
       eventDescription: "",
-      assignVolunteer: "",
+      assignVolunteer: [],
     },
   });
 
@@ -91,14 +90,23 @@ const CreateEvent = () => {
 
   const handleEventSelect = (eventItem) => {
     // Convert the event time string to a Date object
-    const eventTime = eventItem.event_time
-      ? new Date(`1970-01-01T${eventItem.event_time}Z`) // Z to indicate UTC time
+    const eventDate = eventItem.event_time
+      ? new Date() // Z to indicate UTC time
       : null;
+
+    // Set the time on the event date
+    if (eventDate && eventItem.event_time) {
+      const [hours, minutes, seconds] = eventItem.event_time
+        .split(":")
+        .map(Number);
+      eventDate.setHours(hours, minutes, seconds);
+    }
 
     setValue("eventName", eventItem.event_name);
     setValue("eventCategory", eventItem.event_category);
     setValue("eventVisibility", eventItem.event_visibility);
-    setValue("eventTime", eventTime); // Set Date object here
+
+    setValue("eventTime", eventDate); // Set Date object here
 
     setPopoverOpen(false); // Close the popover
   };
@@ -113,6 +121,8 @@ const CreateEvent = () => {
       });
       return; // Prevent form submission if no userId
     }
+
+    console.log(data);
 
     // Validate and format date and time
     const formattedDate = data.eventDate
@@ -132,6 +142,7 @@ const CreateEvent = () => {
 
     // Call the create event function with the prepared data
     createEvent(eventData);
+    setDialogOpen(false); // Close the dialog if success
   };
 
   return (
@@ -203,7 +214,9 @@ const CreateEvent = () => {
                         value: volunteer.id, // Use 'id' as the value
                         label: `${volunteer.first_name} ${volunteer.last_name}`, // Combine first name and last name
                       }))}
-                      value={field.value} // Value controlled by react-hook-form
+                      value={
+                        Array.isArray(field.value) ? field.value : [field.value]
+                      } // Ensure it's always an array
                       onChange={field.onChange} // Handle change to update the form state
                       placeholder="Select Volunteer"
                     />
@@ -231,7 +244,7 @@ const CreateEvent = () => {
                           <SelectValue placeholder="Select Category" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="youth">youth</SelectItem>
+                          <SelectItem value="youth">Youth</SelectItem>
                         </SelectContent>
                       </Select>
                     </FormControl>

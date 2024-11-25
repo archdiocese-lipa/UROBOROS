@@ -42,9 +42,14 @@ const getUsersByRole = async (role) => {
   }
 };
 
-const getUsers = async ({ page, limit }) => {
+const getUsers = async ({ page, pageSize, role }) => {
   try {
-    const data = await paginate("users", page, limit);
+    const query = {};
+    if (role) {
+      query.role = role;
+    }
+
+    const data = await paginate({ key: "users", page, pageSize, query });
 
     return data;
   } catch (error) {

@@ -8,10 +8,11 @@ import MainLayout from "@/layouts/main-layout";
 import Announcements from "@/pages/Announcements";
 
 import RequireRole from "@/components/RequireRole";
+import Events from "./pages/Events";
+
+import { ROLES } from "@/constants/roles";
 
 const App = () => {
-  const ROLES = Object.freeze(["admin", "volunteer", "parishioner"]);
-
   return (
     <Router>
       <Routes>
@@ -24,18 +25,19 @@ const App = () => {
           <Route element={<RequireRole roles={[ROLES[0]]} />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/ministries" element={<Ministries />} />
-            <Route path="/schedule" element={<Schedule />} />
             <Route path="/requests" element={<Requests />} />
           </Route>
           {/* ========================================================= */}
           {/* Roles of Admin and Volunteer can access the routes below */}
           <Route element={<RequireRole roles={[ROLES[0], ROLES[1]]} />}>
             {/* Add Route for OrganizedEvents */}
+            <Route path="/schedule" element={<Schedule />} />
           </Route>
           {/* ========================================================= */}
           {/* Roles of Admin and Parishioner can access the routes below */}
           <Route element={<RequireRole roles={[ROLES[0], ROLES[2]]} />}>
             {/* Add Route for Events */}
+            <Route path="/events" element={<Events />} />
             {/* Add Route for Family */}
           </Route>
           {/* ========================================================= */}

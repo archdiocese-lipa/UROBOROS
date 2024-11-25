@@ -15,11 +15,44 @@ const cn = (...inputs) => {
  * @returns {Promise<object>} The paginated items and pagination properties.
  * @throws {Error} If an error occurs while fetching the items.
  */
-const paginate = async (key, page = 1, pageSize = 10, query = {}) => {
+const paginate = async ({
+  key,
+  page = 1,
+  pageSize = 10,
+  query = {},
+  filters = {},
+}) => {
   try {
     // Calculate the range for pagination
     const from = (page - 1) * pageSize;
     const to = from + pageSize - 1;
+
+    // Initialize the query
+    let supabaseQuery = supabase
+      .from(key)
+      .select("*")
+      .range(from, to)
+      .match(query);
+
+    // Apply gte and lte filters if provided
+    if (filters.gte) {
+      for (const [column, value] of Object.entries(filters.gte)) {
+        supabaseQuery = supabaseQuery.gte(column, value);
+      }
+    }
+
+    if (filters.lte) {
+      for (const [column, value] of Object.entries(filters.lte)) {
+        supabaseQuery = supabaseQuery.lte(column, value);
+      }
+    }
+
+    // Apply ilike filters if provided
+    if (filters.ilike) {
+      for (const [column, value] of Object.entries(filters.ilike)) {
+        supabaseQuery = supabaseQuery.ilike(column, `%${value}%`);
+      }
+    }
 
     // Fetch the total count of items
     const { count, error: countError } = await supabase
@@ -29,11 +62,7 @@ const paginate = async (key, page = 1, pageSize = 10, query = {}) => {
     if (countError) throw countError;
 
     // Fetch the paginated items
-    const { data: items, error: itemsError } = await supabase
-      .from(key)
-      .select("*")
-      .range(from, to)
-      .match(query);
+    const { data: items, error: itemsError } = await supabaseQuery;
 
     if (itemsError) throw itemsError;
 
@@ -44,9 +73,9 @@ const paginate = async (key, page = 1, pageSize = 10, query = {}) => {
     const nextPage = page < totalPages;
 
     return {
-      items,
-      currentPage: page,
-      nextPage,
+      items, // data
+      currentPage: page, // page
+      nextPage, // true or false
       totalPages,
       pageSize,
       totalItems: count,

@@ -1,4 +1,7 @@
-import { supabase } from "./supabaseClient"; // Ensure supabase client is imported
+import { paginate } from "@/lib/utils";
+import { supabase } from "@/services/supabaseClient"; // Ensure supabase client is imported
+
+import { ROLES } from "@/constants/roles";
 
 // Function to create an event
 export const createEvent = async (eventData) => {
@@ -85,27 +88,45 @@ export const updateEvent = async (eventId, updatedData) => {
 };
 
 // Function to fetch all events (optionally filter by date, creator, etc.)
-export const getEvents = async ({ creatorId, startDate, endDate } = {}) => {
+export const getEvents = async ({
+  creatorId,
+  startDate,
+  endDate,
+  page = 1,
+  pageSize,
+  query,
+  user,
+} = {}) => {
   try {
-    let query = supabase.from("events").select("*");
+    const filters = {};
+    if (startDate) {
+      filters.gte = { event_date: startDate };
+    }
 
-    // Filter by creator if provided
+    if (endDate) {
+      filters.lte = { event_date: endDate };
+    }
+
+    if (query) {
+      filters.ilike = { event_name: query };
+    }
+
     if (creatorId) {
-      query = query.eq("creator_id", creatorId);
+      filters.eq = { creator_id: creatorId };
     }
 
-    // Filter by date range if provided
-    if (startDate && endDate) {
-      query = query.gte("event_date", startDate).lte("event_date", endDate);
+    if (user?.role !== ROLES[0]) {
+      filters.eq = { assigned_volunteer: user?.id };
     }
 
-    const { data, error } = await query;
+    const data = await paginate({
+      key: "events",
+      page,
+      pageSize,
+      filters,
+    });
 
-    if (error) {
-      throw new Error(error.message);
-    }
-
-    return { success: true, data };
+    return data;
   } catch (error) {
     console.error("Error fetching events:", error);
     return { success: false, error: error.message };
@@ -162,7 +183,7 @@ export const getEventById = async (eventId) => {
       throw new Error(error.message);
     }
 
-    return { success: true, data };
+    return data;
   } catch (error) {
     console.error("Error fetching event by ID:", error);
     return { success: false, error: error.message };
