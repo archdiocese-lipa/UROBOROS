@@ -6,11 +6,14 @@ import Ministries from "@/pages/Ministries";
 import Home from "@/pages/Home";
 import MainLayout from "@/layouts/main-layout";
 import Announcements from "@/pages/Announcements";
+import Family from "@/pages/Family";
+import Events from "@/pages/Events";
 
 import RequireRole from "@/components/RequireRole";
-import Events from "./pages/Events";
+
 
 import { ROLES } from "@/constants/roles";
+
 
 const App = () => {
   return (
@@ -38,6 +41,7 @@ const App = () => {
           <Route element={<RequireRole roles={[ROLES[0], ROLES[2]]} />}>
             {/* Add Route for Events */}
             <Route path="/events" element={<Events />} />
+            <Route path="/family" element={<Family />} />
             {/* Add Route for Family */}
           </Route>
           {/* ========================================================= */}
