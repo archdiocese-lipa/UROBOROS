@@ -37,6 +37,8 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { editRegistrationSchema } from "@/zodSchema/EditRegistrationSchema";
 import { walkInRegisterSchema } from "@/zodSchema/WalkInRegisterSchema";
+import { fetchAttendeesByTicketCode } from "@/services/attendanceService";
+import { handleWalkInData } from "@/services/walkInService";
 
 // Sample events and registered users for demonstration
 const events = [
@@ -58,46 +60,26 @@ const events = [
 ];
 
 // Attendance Coming from the database
-const registeredUsers = [
-  {
-    registrationCode: "123456",
-    event: "Youth Choir Practice",
-    eventId: "event1",
-    dateTime: "2024-12-21T14:00:00Z",
-    parents: [
-      {
-        parentFirstName: "John",
-        parentLastName: "Doe",
-        parentContactNumber: "12345678901",
-        isMainApplicant: true,
-      },
-    ],
-    children: [{ childFirstName: "Anna", childLastName: "Doe" }],
-  },
-  {
-    registrationCode: "111111",
-    eventId: "event2",
-    event: "Youth Choir Practice",
-    dateTime: "2024-12-21T14:00:00Z",
-    parents: [
-      {
-        parentFirstName: "Jane",
-        parentLastName: "Smith",
-        parentContactNumber: "98765432101",
-        isMainApplicant: false,
-      },
-    ],
-    children: [
-      { childFirstName: "Lucas", childLastName: "Smith" },
-      { childFirstName: "Emily", childLastName: "Smith" },
-    ],
-  },
-];
 
 const EditRegistration = () => {
   const [isCodeValid, setIsCodeValid] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [removedParents, setRemovedParents] = useState([]);
+  const [removedChildren, setRemovedChildren] = useState([]);
+
   const { toast } = useToast();
+
+  const handleRemoveParent = (index) => {
+    const removedParent = parentFields[index]; // Get the parent data
+    setRemovedParents((prev) => [...prev, removedParent]); // Add to removedParents list
+    removeParent(index); // Call the remove function from useFieldArray
+  };
+
+  const handleRemoveChild = (index) => {
+    const removedChild = childFields[index]; // Get the child data
+    setRemovedChildren((prev) => [...prev, removedChild]); // Add to removedChildren list
+    removeChild(index); // Call the remove function from useFieldArray
+  };
 
   //Registration Code Form
   const registrationForm = useForm({
@@ -111,56 +93,143 @@ const EditRegistration = () => {
     resolver: zodResolver(walkInRegisterSchema),
     defaultValues: {
       event: "",
+      eventId: "",
+      ticketCode: "", // Ensure ticketCode is part of default values
       parents: [
         {
           parentFirstName: "",
           parentLastName: "",
           parentContactNumber: "",
           isMainApplicant: false,
+          id: "",
         },
       ],
-      children: [
-        {
-          childFirstName: "",
-          childLastName: "",
-        },
-      ],
+      children: [{ childFirstName: "", childLastName: "", id: "" }],
     },
   });
 
-  // Handle the registration code input
-  const handleRegistrationCodeSubmit = (data) => {
-    const user = registeredUsers.find(
-      (user) => user.registrationCode === data.registrationCode.trim()
-    );
+  const handleRegistrationCodeSubmit = async (data) => {
+    try {
+      // Trim and pass the ticketCode from the form data
+      const result = await fetchAttendeesByTicketCode(
+        data.registrationCode.trim()
+      );
 
-    if (user) {
-      setIsCodeValid(true);
-      registrationForm.reset({
-        registrationCode: "",
-      }); // Reset the registration code in Edit Registration Form
+      if (result.success && result.data) {
+        const user = result.data;
 
-      // Populate form fields with the appropriate data
-      attendeeInformation.setValue("eventId", user.eventId);
-      attendeeInformation.setValue("event", user.event);
-      attendeeInformation.setValue("parents", user.parents);
-      attendeeInformation.setValue("children", user.children);
-      console.log(attendeeInformation.getValues());
+        setIsCodeValid(true);
+        registrationForm.reset({ registrationCode: "" }); // Reset the form's registrationCode field
 
-    } else {
+        // Ensure the IDs are correctly passed
+        attendeeInformation.setValue("eventId", user.eventId);
+        attendeeInformation.setValue("event", user.event);
+
+        // Pass the ticket code into the form data
+        attendeeInformation.setValue("ticketCode", user.registrationCode);
+
+        // Set parent and child values with IDs and the rest of the information
+        attendeeInformation.setValue(
+          "parents",
+          user.parents.map((parent) => ({
+            ...parent,
+            id: parent.id || "default_parent_id", // Ensure parent has an ID if missing
+          }))
+        );
+
+        attendeeInformation.setValue(
+          "children",
+          user.children.map((child) => ({
+            id: child.id || "default_child_id", // Ensure child has an ID if missing
+            childFirstName: child.childFirstName,
+            childLastName: child.childLastName,
+          }))
+        );
+      } else {
+        toast({
+          title: "Registration Code Error",
+          description: result.message || "An error occurred. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error handling registration code:", error.message);
       toast({
-        title: "Registration Code Error",
+        title: "Server Error",
         description:
-          "The registration code you entered is invalid. Please try again with a valid code.",
+          "Unable to fetch data at the moment. Please try again later.",
         variant: "destructive",
       });
     }
   };
 
   // Function to submit editted user information
-  const onSubmit = (values) => {
-    // Update user details (In a real app, save this back to the database)
-    console.log(values);
+  const onSubmit = async (values) => {
+    const { eventId, ticketCode } = values;
+
+    // Data to create or update
+    const parentsToCreate = [];
+    const parentsToUpdate = [];
+    const childrenToCreate = [];
+    const childrenToUpdate = [];
+
+    // Separate parents into create or update
+    values.parents.forEach((parent) => {
+      if (parent.id) {
+        parentsToUpdate.push({ ...parent, eventId, ticketCode });
+      } else {
+        parentsToCreate.push({
+          ...parent,
+          id: undefined,
+          eventId,
+          ticketCode,
+        });
+      }
+    });
+
+    // Separate children into create or update
+    values.children.forEach((child) => {
+      if (child.id) {
+        childrenToUpdate.push({ ...child, eventId, ticketCode });
+      } else {
+        childrenToCreate.push({
+          ...child,
+          id: undefined,
+          eventId,
+          ticketCode,
+        });
+      }
+    });
+
+    // Include the removed parents and children in the request
+    try {
+      await handleWalkInData({
+        eventId,
+        ticketCode,
+        parents: [
+          ...parentsToCreate,
+          ...parentsToUpdate,
+          ...removedParents.map((removed) => ({
+            ...removed,
+            eventId,
+            ticketCode,
+            _deleted: true,
+          })),
+        ],
+        children: [
+          ...childrenToCreate,
+          ...childrenToUpdate,
+          ...removedChildren.map((removed) => ({
+            ...removed,
+            eventId,
+            ticketCode,
+            _deleted: true,
+          })),
+        ],
+      });
+    } catch (error) {
+      console.error("Error processing data:", error);
+    }
   };
 
   const {
@@ -184,6 +253,7 @@ const EditRegistration = () => {
   // Add parent function
   const addParentField = () => {
     addParent({
+      parentId: "",
       parentFirstName: "",
       parentLastName: "",
       parentContactNumber: "",
@@ -194,6 +264,7 @@ const EditRegistration = () => {
   // Add child function
   const addChildField = () => {
     addChild({
+      childId: "",
       childFirstName: "",
       childLastName: "",
     });
@@ -299,42 +370,23 @@ const EditRegistration = () => {
                       key={field.id}
                       className="flex flex-col gap-2 sm:flex-row sm:items-start"
                     >
-                      <div className="flex items-center">
-                        <FormField
-                          control={attendeeInformation.control}
-                          name={`parents[${index}].isMainApplicant`}
-                          render={({ field }) => (
-                            <FormItem className="flex flex-row-reverse items-center md:flex-1">
-                              <FormLabel className="sm:hidden">
-                                Check the box choose the main applicant.
-                              </FormLabel>
-                              <FormControl>
-                                <Input
-                                  type="checkbox"
-                                  checked={field.value}
-                                  onChange={(e) => {
-                                    const isChecked = e.target.checked;
-                                    field.onChange(isChecked);
-                                    if (isChecked) {
-                                      // Uncheck all other checkboxes
-                                      parentFields.forEach((_, i) => {
-                                        if (i !== index) {
-                                          attendeeInformation.setValue(
-                                            `parents[${i}].isMainApplicant`,
-                                            false
-                                          );
-                                        }
-                                      });
-                                    }
-                                  }}
-                                  className="h-3 w-5"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
+                      {/* Parent ID (Read-Only Display) */}
+                      <FormField
+                        control={attendeeInformation.control}
+                        name={`parents[${index}].id`}
+                        render={({ field }) => (
+                          <FormItem
+                            className="flex-1"
+                            style={{ display: "none" }}
+                          >
+                            {" "}
+                            {/* Hide this input */}
+                            <FormControl>
+                              <Input placeholder="ID" {...field} readOnly />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
                       <FormField
                         control={attendeeInformation.control}
                         name={`parents[${index}].parentFirstName`}
@@ -371,19 +423,18 @@ const EditRegistration = () => {
                           </FormItem>
                         )}
                       />
-
-                      {/* Remove Button for each parent field */}
                       {parentFields.length > 1 && (
                         <Button
                           type="button"
                           variant="outline"
-                          onClick={() => removeParent(index)}
+                          onClick={() => handleRemoveParent(index)} // Use the updated function
                         >
                           Remove
                         </Button>
                       )}
                     </div>
                   ))}
+
                   {/* Button to add another parent/guardian */}
                   <div className="flex justify-end gap-2">
                     <Button type="button" size="sm" onClick={addParentField}>
@@ -396,6 +447,24 @@ const EditRegistration = () => {
                       key={field.id}
                       className="flex flex-col gap-2 sm:flex-row sm:items-start"
                     >
+                      {/* Child ID (Read-Only Display) */}
+                      <FormField
+                        control={attendeeInformation.control}
+                        name={`children[${index}].id`}
+                        render={({ field }) => (
+                          <FormItem
+                            className="flex-1"
+                            style={{ display: "none" }}
+                          >
+                            {/* Hide this input */}
+                            <FormControl>
+                              <Input placeholder="ID" {...field} readOnly />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* First Name */}
                       <FormField
                         control={attendeeInformation.control}
                         name={`children[${index}].childFirstName`}
@@ -408,6 +477,8 @@ const EditRegistration = () => {
                           </FormItem>
                         )}
                       />
+
+                      {/* Last Name */}
                       <FormField
                         control={attendeeInformation.control}
                         name={`children[${index}].childLastName`}
@@ -426,7 +497,7 @@ const EditRegistration = () => {
                         <Button
                           type="button"
                           variant="outline"
-                          onClick={() => removeChild(index)}
+                          onClick={() => handleRemoveChild(index)} // Use the updated function
                         >
                           Remove
                         </Button>
