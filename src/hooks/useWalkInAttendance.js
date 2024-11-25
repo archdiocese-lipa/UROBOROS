@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { insertEventAttendance } from "@/services/eventService";
+import { insertEventAttendance } from "@/services/attendanceService";
 import { useToast } from "@/hooks/use-toast";
 
 const useWalkInAttendance = () => {
@@ -12,14 +12,12 @@ const useWalkInAttendance = () => {
       toast({
         title: "Submitting Attendance...",
         description: "Your attendance is being recorded.",
-        variant: "info",
       });
     },
     onSuccess: () => {
       toast({
         title: "Attendance Registered",
         description: "Your attendance has been successfully recorded.",
-        variant: "success",
       });
     },
     onError: (error) => {
