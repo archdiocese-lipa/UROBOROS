@@ -56,8 +56,6 @@ const CreateEvent = () => {
   const { mutate: createEvent, isLoading } = useCreateEvent();
   const { events } = useQuickAccessEvents();
   const { data: volunteers } = useUsersByRole("volunteer");
-  console.log(volunteers);
-
   //Dummy data volunteers
   // const volunteers = [
   //   { uuid: "1231231232", userFirstName: "John", userLastName: "Doe" },
@@ -73,7 +71,7 @@ const CreateEvent = () => {
       eventVisibility: "",
       ministry: "",
       eventDate: null,
-      eventTime: new Date(),
+      eventTime: "",
       eventDescription: "",
       assignVolunteer: "",
     },
@@ -91,14 +89,23 @@ const CreateEvent = () => {
 
   const handleEventSelect = (eventItem) => {
     // Convert the event time string to a Date object
-    const eventTime = eventItem.event_time
-      ? new Date(`1970-01-01T${eventItem.event_time}Z`) // Z to indicate UTC time
+    const eventDate = eventItem.event_time
+      ? new Date() // Z to indicate UTC time
       : null;
+
+    // Set the time on the event date
+    if (eventDate && eventItem.event_time) {
+      const [hours, minutes, seconds] = eventItem.event_time
+        .split(":")
+        .map(Number);
+      eventDate.setHours(hours, minutes, seconds);
+    }
 
     setValue("eventName", eventItem.event_name);
     setValue("eventCategory", eventItem.event_category);
     setValue("eventVisibility", eventItem.event_visibility);
-    setValue("eventTime", eventTime); // Set Date object here
+
+    setValue("eventTime", eventDate); // Set Date object here
 
     setPopoverOpen(false); // Close the popover
   };

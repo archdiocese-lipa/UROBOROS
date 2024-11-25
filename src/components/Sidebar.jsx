@@ -50,12 +50,13 @@ export default Sidebar;
 const SidebarProfile = () => {
   const { logout } = useUser(); // Destructure logout and userData
   const navigate = useNavigate(); // Initialize navigate
+  const loc = useLocation(); // Initialize loc
 
   const handleLogout = async () => {
     try {
       await logout(); // Call logout from UserContext
       console.log("User logged out successfully");
-      navigate("/"); // Redirect to the home page
+      navigate("/", { replace: true, state: { from: loc.pathname || "/" } }); // Redirect to the home page
     } catch (error) {
       console.error("Logout failed:", error.message);
     }

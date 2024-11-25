@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import PropTypes from "prop-types";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
 import { useUser } from "@/context/useUser";
@@ -14,6 +14,7 @@ const RequireRole = ({ roles }) => {
   const auth = JSON.parse(localStorage.getItem(`sb-${url_code}-auth-token`));
 
   const nav = useNavigate();
+  const loc = useLocation();
   const { setUserData } = useUser();
 
   const { data, isSuccess } = useQuery({
@@ -27,14 +28,17 @@ const RequireRole = ({ roles }) => {
 
   useEffect(() => {
     if (!auth) {
-      nav("/", { replace: true });
+      nav("/", {
+        replace: true,
+        state: { from: loc.pathname || "/announcements" },
+      });
     }
     if (isSuccess) {
       setUserData(data);
     }
     if (isSuccess && !roles.includes(data.role)) {
       // if the user is authenticated but doesn't have the role needed
-      nav("/unautorized", { replace: true });
+      nav("/unauthorized", { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, isSuccess]);
