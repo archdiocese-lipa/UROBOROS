@@ -68,12 +68,25 @@ const ParishionerRegister = () => {
     } catch (error) {
       console.error("Error creating profile:", error);
 
-      toast({
-        title: "Error",
-        description:
-          "There was an issue creating the profile. Please try again.",
-        variant: "destructive",
-      });
+      // Check for email already exists error
+      if (
+        error.message ===
+        "Email already registered. Please use a different one."
+      ) {
+        toast({
+          title: "Error",
+          description:
+            "This email is already registered. Please use a different one.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description:
+            "There was an issue creating the profile. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   };
 

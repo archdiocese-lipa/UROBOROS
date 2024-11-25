@@ -116,14 +116,14 @@ const WalkInRegistration = () => {
       return;
     }
 
-    //Generate random number
-
+    // Generate random six-digit number for ticket code
     const generatedNumber = getRandomSixDigit();
-    setRandomSixDigit(generatedNumber);
+    setRandomSixDigit(generatedNumber); // Save generated number to state
 
     // Proceed with submission
     const { event, parents, children } = values;
     const submitData = {
+      randomSixDigit: generatedNumber, // Use the generated six-digit ticket code
       event,
       parents: parents.map((parent) => ({
         parentFirstName: parent.parentFirstName,
@@ -137,12 +137,13 @@ const WalkInRegistration = () => {
       })),
     };
 
+    // Register attendance with the submit data (including ticket code)
     registerAttendance(submitData);
 
-    //Close the dialog after success
+    // Close the dialog after success
     setOpenDialog(false);
 
-    // Show success modal with the random number
+    // Show success modal with the random number (ticket code)
     setShowSuccessModal(true);
   };
 
@@ -164,8 +165,8 @@ const WalkInRegistration = () => {
   const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
 
   // Filter events
-  const upcomingEvents = Array.isArray(data?.data)
-    ? data.data.filter((event) => {
+  const upcomingEvents = Array.isArray(data?.items)
+    ? data.items.filter((event) => {
         const eventDateTime = new Date(
           event.dateTime || `${event.event_date}T${event.event_time}`
         );
@@ -369,18 +370,9 @@ const WalkInRegistration = () => {
                 ))}
 
                 <div className="flex justify-end gap-2">
-
-                  <DialogClose>
-                    <Button variant="outline" type="button">
-                      Cancel
-                    </Button>
-                  </DialogClose>
-                  <Button type="submit">Submit</Button>
-
                   <Button type="button" size="sm" onClick={addChildField}>
                     Add Child
                   </Button>
-
                 </div>
                 <DialogFooter>
                   <div className="flex justify-end gap-2">
@@ -406,7 +398,9 @@ const WalkInRegistration = () => {
             </DialogDescription>
           </DialogHeader>
           <div className="text-center">
-            <p className="text-xl font-bold text-primary-text">{randomSixDigit}</p>
+            <p className="text-xl font-bold text-primary-text">
+              {randomSixDigit}
+            </p>
           </div>
           <DialogFooter className="flex justify-end">
             <DialogClose>

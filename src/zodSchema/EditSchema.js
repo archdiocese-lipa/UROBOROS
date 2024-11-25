@@ -1,7 +1,9 @@
 import { z } from "zod";
 
-export const walkInRegisterSchema = z.object({
+export const EditSchema = z.object({
   event: z.string().min(1, "Event is required"), // Event selection is required
+  eventId: z.string().uuid("Event ID must be a valid UUID"), // Event ID must be a valid UUID
+  ticketCode: z.string().min(1, "Ticket code is required"), // Ticket code is required
   parents: z
     .array(
       z.object({
@@ -12,6 +14,7 @@ export const walkInRegisterSchema = z.object({
           .min(1, "Parent's contact number is required")
           .regex(/^[0-9]{11}$/, "Contact number must be exactly 11 digits."),
         isMainApplicant: z.boolean(),
+        id: z.string().uuid("Parent ID must be a valid UUID").optional(), // ID is optional for updates
       })
     )
     .refine(
@@ -32,7 +35,22 @@ export const walkInRegisterSchema = z.object({
       z.object({
         childFirstName: z.string().min(1, "Child's first name is required"), // Child first name is required
         childLastName: z.string().min(1, "Child's last name is required"), // Child last name is required
+        id: z.string().uuid("Child ID must be a valid UUID").optional(), // ID is optional for updates
       })
     )
     .min(1, "At least one child is required"),
+  removedParents: z
+    .array(
+      z.object({
+        id: z.string().uuid("Parent ID must be a valid UUID"), // ID is required for removal
+      })
+    )
+    .optional(), // Optional field to track removed parents
+  removedChildren: z
+    .array(
+      z.object({
+        id: z.string().uuid("Child ID must be a valid UUID"), // ID is required for removal
+      })
+    )
+    .optional(), // Optional field to track removed children
 });
