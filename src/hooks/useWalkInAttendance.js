@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { insertEventAttendance } from "@/services/eventService";
+import { insertEventAttendance } from "@/services/attendanceService";
 import { useToast } from "@/hooks/use-toast";
 
 const useWalkInAttendance = () => {

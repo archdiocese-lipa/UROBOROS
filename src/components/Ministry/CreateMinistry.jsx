@@ -23,20 +23,26 @@ import { Input } from "@/components/ui/input";
 import { PuzzleIcon } from "@/assets/icons/icons";
 import { createMinistrySchema } from "@/zodSchema/CreateMinistrySchema";
 import { Textarea } from "../ui/textarea";
+import { useCreateMinistry } from "@/hooks/useCreateMinistry"; // Import the hook
 
 const CreateMinistry = () => {
   const form = useForm({
     resolver: zodResolver(createMinistrySchema),
     defaultValues: {
       ministryName: "",
-      ministryDescription: "", // Make sure this matches the schema field name
+      ministryDescription: "",
     },
   });
 
+  const createMinistryMutation = useCreateMinistry();
+
   const onSubmit = (values) => {
-    // Do something with the form values.
-    console.log(values);
+    createMinistryMutation.mutate({
+      ministry_name: values.ministryName,
+      ministry_description: values.ministryDescription,
+    });
   };
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -49,11 +55,13 @@ const CreateMinistry = () => {
         <DialogHeader>
           <DialogTitle>Create Ministry</DialogTitle>
           <DialogDescription>
-            This action cannot be undone. This will permanently delete your
-            account and remove your data from our servers.
+            Add details about your ministry. This can be edited later.
           </DialogDescription>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2 text-start">
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-2 text-start"
+            >
               <FormField
                 control={form.control}
                 name="ministryName"
@@ -64,7 +72,7 @@ const CreateMinistry = () => {
                       <Input placeholder="Ministry Name" {...field} />
                     </FormControl>
                     <FormDescription>
-                      This is your public display name.
+                      This is the public name of the ministry.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -87,8 +95,21 @@ const CreateMinistry = () => {
                 <DialogClose asChild>
                   <Button variant="outline">Cancel</Button>
                 </DialogClose>
-                <Button type="submit">Submit</Button>
+                <Button
+                  type="submit"
+                  disabled={createMinistryMutation.isLoading}
+                >
+                  {createMinistryMutation.isLoading ? "Creating..." : "Submit"}
+                </Button>
               </div>
+              {createMinistryMutation.isError && (
+                <p className="text-red-500">
+                  Error: {createMinistryMutation.error.message}
+                </p>
+              )}
+              {createMinistryMutation.isSuccess && (
+                <p className="text-green-500">Ministry created successfully!</p>
+              )}
             </form>
           </Form>
         </DialogHeader>

@@ -1,9 +1,10 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createMeeting } from "@/services/meetingService";
 import { useToast } from "@/hooks/use-toast";
 
 const useCreateMeeting = () => {
   const { toast } = useToast();
+  const queryClient = useQueryClient(); // Accessing the query client
 
   // Ensure correct function signature
   const mutation = useMutation({
@@ -16,11 +17,15 @@ const useCreateMeeting = () => {
       });
     },
     onSuccess: (data) => {
+      // Optionally invalidate or update queries here
       toast({
         title: "Meeting Created",
         description: `The meeting "${data.meeting_name}" has been created successfully!`,
         variant: "success",
       });
+
+      // Invalidate the 'meetings' query to refetch after a new meeting is created
+      queryClient.invalidateQueries(["meetings"]);
     },
     onError: (error) => {
       toast({
@@ -29,7 +34,9 @@ const useCreateMeeting = () => {
         variant: "destructive",
       });
     },
-    onSettled: () => {},
+    onSettled: () => {
+      // Any cleanup or additional tasks after mutation is done
+    },
   });
 
   return mutation;

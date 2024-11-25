@@ -369,9 +369,18 @@ const WalkInRegistration = () => {
                 ))}
 
                 <div className="flex justify-end gap-2">
+
+                  <DialogClose>
+                    <Button variant="outline" type="button">
+                      Cancel
+                    </Button>
+                  </DialogClose>
+                  <Button type="submit">Submit</Button>
+
                   <Button type="button" size="sm" onClick={addChildField}>
                     Add Child
                   </Button>
+
                 </div>
                 <DialogFooter>
                   <div className="flex justify-end gap-2">

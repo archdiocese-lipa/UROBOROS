@@ -1,9 +1,10 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createEvent } from "@/services/eventService";
 import { useToast } from "@/hooks/use-toast";
 
 const useCreateEvent = () => {
   const { toast } = useToast();
+  const queryClient = useQueryClient(); // Accessing the query client
 
   // React Query mutation for creating an event
   const mutation = useMutation({
@@ -19,6 +20,9 @@ const useCreateEvent = () => {
         title: "Event Created",
         description: `The event "${data.event_name}" has been created successfully!`,
       });
+
+      // Invalidate the 'events' query so the list of events is refetched after creating the event
+      queryClient.invalidateQueries(["events"]);
     },
     onError: (error) => {
       toast({
@@ -28,7 +32,7 @@ const useCreateEvent = () => {
       });
     },
     onSettled: () => {
-      // Optional: Handle additional cleanup or refetching if necessary
+      // Optional: Additional logic after mutation is settled (e.g., cleanup)
     },
   });
 
