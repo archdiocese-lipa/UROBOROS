@@ -8,6 +8,7 @@ import MainLayout from "@/layouts/main-layout";
 import Announcements from "@/pages/Announcements";
 
 import RequireRole from "@/components/RequireRole";
+import Events from "./pages/Events";
 
 import { ROLES } from "@/constants/roles";
 
@@ -36,6 +37,7 @@ const App = () => {
           {/* Roles of Admin and Parishioner can access the routes below */}
           <Route element={<RequireRole roles={[ROLES[0], ROLES[2]]} />}>
             {/* Add Route for Events */}
+            <Route path="/events" element={<Events />} />
             {/* Add Route for Family */}
           </Route>
           {/* ========================================================= */}
