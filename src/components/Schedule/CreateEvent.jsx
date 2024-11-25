@@ -56,6 +56,7 @@ const CreateEvent = () => {
   const { mutate: createEvent, isLoading } = useCreateEvent();
   const { events } = useQuickAccessEvents();
   const { data: volunteers } = useUsersByRole("volunteer");
+
   //Dummy data volunteers
   // const volunteers = [
   //   { uuid: "1231231232", userFirstName: "John", userLastName: "Doe" },
@@ -73,7 +74,7 @@ const CreateEvent = () => {
       eventDate: null,
       eventTime: "",
       eventDescription: "",
-      assignVolunteer: "",
+      assignVolunteer: [],
     },
   });
 
@@ -121,6 +122,8 @@ const CreateEvent = () => {
       return; // Prevent form submission if no userId
     }
 
+    console.log(data);
+
     // Validate and format date and time
     const formattedDate = data.eventDate
       ? format(new Date(data.eventDate), "yyyy-MM-dd")
@@ -139,6 +142,7 @@ const CreateEvent = () => {
 
     // Call the create event function with the prepared data
     createEvent(eventData);
+    setDialogOpen(false); // Close the dialog if success
   };
 
   return (
@@ -210,7 +214,9 @@ const CreateEvent = () => {
                         value: volunteer.id, // Use 'id' as the value
                         label: `${volunteer.first_name} ${volunteer.last_name}`, // Combine first name and last name
                       }))}
-                      value={field.value} // Value controlled by react-hook-form
+                      value={
+                        Array.isArray(field.value) ? field.value : [field.value]
+                      } // Ensure it's always an array
                       onChange={field.onChange} // Handle change to update the form state
                       placeholder="Select Volunteer"
                     />

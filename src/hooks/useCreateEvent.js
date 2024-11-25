@@ -12,14 +12,12 @@ const useCreateEvent = () => {
       toast({
         title: "Creating Event...",
         description: "Your event is being created.",
-        variant: "info",
       });
     },
     onSuccess: (data) => {
       toast({
         title: "Event Created",
         description: `The event "${data.event_name}" has been created successfully!`,
-        variant: "success",
       });
     },
     onError: (error) => {
