@@ -36,10 +36,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { editRegistrationSchema } from "@/zodSchema/EditRegistrationSchema";
-import { walkInRegisterSchema } from "@/zodSchema/WalkInRegisterSchema";
+
 import { fetchAttendeesByTicketCode } from "@/services/attendanceService";
 import { handleWalkInData } from "@/services/walkInService";
-
+import { EditRegisterSchema } from "@/zodSchema/editRegisterSchema";
 // Sample events and registered users for demonstration
 const events = [
   {
@@ -90,7 +90,7 @@ const EditRegistration = () => {
   });
   // Form setup with react-hook-form and Zod validation
   const attendeeInformation = useForm({
-    resolver: zodResolver(walkInRegisterSchema),
+    resolver: zodResolver(EditRegisterSchema),
     defaultValues: {
       event: "",
       eventId: "",
