@@ -17,14 +17,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import ViewMembers from "./ViewMembers";
 
 const MinistryCard = ({ title, description, createdDate, members }) => {
-  const maxVisible = 4; // Set the maximum number of avatars to display
+  const maxVisible = 4;
   const visibleAvatars = members.slice(0, maxVisible);
   const remainingCount = Math.max(members.length - maxVisible, 0);
 
   return (
-    <Card className="text-primary-text rounded-2xl border">
+    <Card className="rounded-2xl border text-primary-text">
       <CardHeader className="relative">
         <CardTitle className="font-bold">{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
@@ -54,8 +55,11 @@ const MinistryCard = ({ title, description, createdDate, members }) => {
             <div className="flex flex-wrap items-center justify-center -space-x-4">
               {visibleAvatars.map((avatar, index) => (
                 <Avatar key={index} className="border-4 border-white">
-                  <AvatarImage src={avatar.src} alt={avatar.alt} />
-                  <AvatarFallback>{avatar.alt[0]}</AvatarFallback>
+                  <AvatarImage
+                    src="https://github.com/shadcn.png"
+                    alt="@shadcn"
+                  />
+                  <AvatarFallback>?</AvatarFallback>
                 </Avatar>
               ))}
             </div>
@@ -73,15 +77,18 @@ const MinistryCard = ({ title, description, createdDate, members }) => {
             <p>
               {members
                 .slice(0, 2)
-                .map((m) => m.alt)
+                .map((m) => m.name)
                 .join(", ")}
               .
             </p>
           </div>
           <div>
-            <Button variant="primary" className="rounded-2xl">
-              View Members
-            </Button>
+            <ViewMembers
+              title={title}
+              description={description}
+              createdDate={createdDate}
+              members={members}
+            />
           </div>
         </div>
       </CardContent>
