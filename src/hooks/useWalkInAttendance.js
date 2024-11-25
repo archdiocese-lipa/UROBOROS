@@ -12,14 +12,12 @@ const useWalkInAttendance = () => {
       toast({
         title: "Submitting Attendance...",
         description: "Your attendance is being recorded.",
-        variant: "info",
       });
     },
     onSuccess: () => {
       toast({
         title: "Attendance Registered",
         description: "Your attendance has been successfully recorded.",
-        variant: "success",
       });
     },
     onError: (error) => {
