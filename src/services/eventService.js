@@ -15,7 +15,7 @@ export const createEvent = async (eventData) => {
       eventTime, // formatted time from the form
       eventDescription,
       userId, // Creator's ID
-      assignVolunteer,
+      // assignVolunteer,
     } = eventData;
 
     // Insert event data into Supabase
@@ -31,7 +31,7 @@ export const createEvent = async (eventData) => {
           event_time: eventTime, // formatted time (HH:mm:ss)
           event_description: eventDescription || null, // Optional field
           creator_id: userId, // Assuming userId is passed in the form data
-          assigned_volunteer: assignVolunteer,
+          // assigned_volunteer: assignVolunteer,
         },
       ])
       .single(); // Returns the created row as a single object
