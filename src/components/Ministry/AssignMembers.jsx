@@ -24,14 +24,19 @@ import Select from "react-select";
 import { assignMinistryMemberSchema } from "@/zodSchema/AssignMinistryMemberSchema";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import useFetchAvailableVolunteers from "@/hooks/useFetchAvailableVolunteers";
+import useAssignNewVolunteers from "@/hooks/useAssignNewVolunteers";
 
-const options = [
-  { value: "john_doe", label: "John Doe" },
-  { value: "jane_doe", label: "Jane Doe" },
-  { value: "mark_smith", label: "Mark Smith" },
-];
+const AssignMembers = ({ ministryId, title }) => {
+  const { assignVolunteers } = useAssignNewVolunteers();
 
-const AssignMembers = ({ title }) => {
+  const { availableVolunteers } = useFetchAvailableVolunteers(ministryId);
+
+  const options = availableVolunteers.map((volunteer) => ({
+    value: volunteer.id, // Use the volunteer's ID as the value
+    label: `${volunteer.first_name} ${volunteer.last_name}`, // Combine first and last names as the label
+  }));
+
   const [openDialog, setOpenDialog] = useState(false);
   const { toast } = useToast();
 
@@ -41,13 +46,23 @@ const AssignMembers = ({ title }) => {
       newMember: [],
     },
   });
-
   const onSubmit = (values) => {
     // Log values to check the submission
-    console.log("Form submitted with values:", values);
-    setOpenDialog(false);
+
+    // Ensure that `ministryId` is included in the form data
+    const formData = {
+      ministryId, // Pass the ministryId explicitly
+      newMembers: values.newMember, // Pass the selected new members
+    };
+
+    // Log the form data
+
+    // Pass formData to the mutation function
+    assignVolunteers(formData);
+
+    setOpenDialog(false); // Close the dialog
     toast({
-      description: "Successfully added a new member.",
+      description: "Successfully added new member(s) to the ministry.",
     });
   };
 
@@ -106,6 +121,7 @@ const AssignMembers = ({ title }) => {
 
 AssignMembers.propTypes = {
   title: PropTypes.string.isRequired,
+  ministryId: PropTypes.string.isRequired, // Ensure ministryId is passed as a prop
 };
 
 export default AssignMembers;
