@@ -7,11 +7,24 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import AssignMembers from "./AssignMembers";
 
-const ViewMembers = ({ title, description, createdDate, members }) => {
+// Utility function to get initials from a name
+const getInitials = (firstName, lastName) => {
+  const firstInitial = firstName?.charAt(0)?.toUpperCase() || "";
+  const lastInitial = lastName?.charAt(0)?.toUpperCase() || "";
+  return `${firstInitial}${lastInitial}`;
+};
+
+const ViewMembers = ({
+  ministryId,
+  title,
+  description,
+  createdDate,
+  members,
+}) => {
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -28,27 +41,40 @@ const ViewMembers = ({ title, description, createdDate, members }) => {
         <div>
           <div className="flex justify-between text-xl font-medium text-primary-text">
             <p>Members</p>
-            <AssignMembers title={title} />
+            <AssignMembers
+              title={title}
+              ministryId={ministryId}
+              existingMembers={members}
+            />
           </div>
           <div className="no-scrollbar mt-2 overflow-scroll">
             <ul className="flex h-64 flex-col gap-y-2 text-primary-text">
-              {members.map((member, index) => (
-                <li
-                  key={index}
-                  className="flex items-center gap-x-2 rounded-lg bg-primary p-4"
-                >
-                  <Avatar className="border-2 border-white">
-                    <AvatarImage
-                      src={member.src || "https://github.com/shadcn.png"}
-                      alt={member.alt || member.name || "Anonymous"}
-                    />
-                    <AvatarFallback>
-                      {member.name?.charAt(0) || "?"}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span>{member.name || "Unnamed Member"}</span>
-                </li>
-              ))}
+              {members?.map((member, index) => {
+                // Extract name from the users object
+                const firstName = member.users?.first_name || "";
+                const lastName = member.users?.last_name || "";
+                const memberName =
+                  firstName && lastName
+                    ? `${firstName} ${lastName}`
+                    : "Unnamed Member";
+
+                // Generate initials
+                const initials = getInitials(firstName, lastName);
+
+                return (
+                  <li
+                    key={index}
+                    className="flex items-center gap-x-2 rounded-lg bg-primary p-4"
+                  >
+                    <Avatar className="border-2 border-white">
+                      {/* Use AvatarFallback to display initials */}
+
+                      <AvatarFallback>{initials || "?"}</AvatarFallback>
+                    </Avatar>
+                    <span>{memberName}</span>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         </div>
@@ -58,12 +84,16 @@ const ViewMembers = ({ title, description, createdDate, members }) => {
 };
 
 ViewMembers.propTypes = {
+  ministryId: PropTypes.string.isRequired, // Add this line to validate ministryId
   title: PropTypes.string.isRequired,
   description: PropTypes.string.isRequired,
   createdDate: PropTypes.string.isRequired,
   members: PropTypes.arrayOf(
     PropTypes.shape({
-      name: PropTypes.string.isRequired,
+      users: PropTypes.shape({
+        first_name: PropTypes.string,
+        last_name: PropTypes.string,
+      }),
       src: PropTypes.string, // Optional image source
       alt: PropTypes.string, // Optional alternative text
     })

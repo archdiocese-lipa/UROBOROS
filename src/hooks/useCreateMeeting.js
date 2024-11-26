@@ -13,15 +13,13 @@ const useCreateMeeting = () => {
       toast({
         title: "Creating Meeting...",
         description: "Your meeting is being created.",
-        variant: "info",
       });
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       // Optionally invalidate or update queries here
       toast({
         title: "Meeting Created",
-        description: `The meeting "${data.meeting_name}" has been created successfully!`,
-        variant: "success",
+        description: `The meeting has been created successfully!`,
       });
 
       // Invalidate the 'meetings' query to refetch after a new meeting is created
