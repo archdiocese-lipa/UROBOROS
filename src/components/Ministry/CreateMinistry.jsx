@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import {
@@ -24,11 +25,9 @@ import { PuzzleIcon } from "@/assets/icons/icons";
 import { createMinistrySchema } from "@/zodSchema/CreateMinistrySchema";
 import { Textarea } from "../ui/textarea";
 import { useCreateMinistry } from "@/hooks/useCreateMinistry"; // Import the hook
-import { useRef } from "react";
 
 const CreateMinistry = () => {
-  // Create a ref for the Dialog to control it programmatically
-  const dialogRef = useRef(null);
+  const [openDialog, setOpenDialog] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(createMinistrySchema),
@@ -49,14 +48,14 @@ const CreateMinistry = () => {
       {
         onSuccess: () => {
           // Close the dialog after successful ministry creation
-          dialogRef.current?.close();
+          setOpenDialog(false);
         },
       }
     );
   };
 
   return (
-    <Dialog ref={dialogRef}>
+    <Dialog open={openDialog} onOpenChange={setOpenDialog}>
       <DialogTrigger asChild>
         <Button className="h-14 gap-x-1 rounded-2xl">
           <PuzzleIcon className="text-white" />
@@ -118,9 +117,6 @@ const CreateMinistry = () => {
                 <p className="text-red-500">
                   Error: {createMinistryMutation.error.message}
                 </p>
-              )}
-              {createMinistryMutation.isSuccess && (
-                <p className="text-green-500">Ministry created successfully!</p>
               )}
             </form>
           </Form>

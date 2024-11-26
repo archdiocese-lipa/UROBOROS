@@ -1,8 +1,10 @@
 import PropTypes from "prop-types";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -10,6 +12,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import AssignMembers from "./AssignMembers";
+import { NegativeIcon } from "@/assets/icons/icons";
 
 // Utility function to get initials from a name
 const getInitials = (firstName, lastName) => {
@@ -64,14 +67,39 @@ const ViewMembers = ({
                 return (
                   <li
                     key={index}
-                    className="flex items-center gap-x-2 rounded-lg bg-primary p-4"
+                    className="flex items-center justify-between gap-x-2 rounded-lg bg-primary p-4"
                   >
-                    <Avatar className="border-2 border-white">
-                      {/* Use AvatarFallback to display initials */}
+                    <div className="flex items-center gap-x-2">
+                      <Avatar className="border-2 border-white">
+                        {/* Use AvatarFallback to display initials */}
 
-                      <AvatarFallback>{initials || "?"}</AvatarFallback>
-                    </Avatar>
-                    <span>{memberName}</span>
+                        <AvatarFallback>{initials || "?"}</AvatarFallback>
+                      </Avatar>
+                      <span>{memberName}</span>
+                    </div>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="transparent">
+                          <NegativeIcon className="text-red-500" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="text-primary-text">
+                        <DialogHeader>
+                          <DialogTitle>
+                            Are you sure you want to remove?
+                          </DialogTitle>
+                          <DialogDescription>
+                            This action will remove the item from the list.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                          <DialogClose asChild>
+                            <Button variant="outline">Cancel</Button>
+                          </DialogClose>
+                          <Button>Yes</Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
                   </li>
                 );
               })}
