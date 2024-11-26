@@ -57,9 +57,10 @@ const FamilyRegistration = ({ skipBtn }) => {
 
   const onSubmit = async (data) => {
     const familyData = {
-      userId: regData?.id, // Use `regData` for userId
+      // userId: regData?.id, // Use `regData` for userId
       parents: data.parents,
       children: data.children,
+      familyId: regData?.familyId, // Use `regData` for family
     };
 
     mutate(familyData, {
