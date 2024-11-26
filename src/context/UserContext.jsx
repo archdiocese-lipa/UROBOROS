@@ -50,7 +50,7 @@ export const UserProvider = ({ children }) => {
         .from("users")
         .select("*")
         .eq("email", email)
-        .single(); // Retrieve only one user (since emails are unique)
+        .maybeSingle(); // Use maybeSingle instead of single
 
       if (emailCheckError) throw emailCheckError;
 
