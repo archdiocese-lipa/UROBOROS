@@ -3,8 +3,11 @@ import { supabase } from "@/services/supabaseClient"; // Adjust the import to ma
 export const insertEventAttendance = async (submittedData) => {
   const { randomSixDigit, event, parents, children } = submittedData;
 
+  // get main applicant parent.
+  const mainApplicant = parents.find((parent) => parent.isMainApplicant);
+
   // Insert into the tickets table (this table tracks the tickets themselves)
-  const { error: ticketError } = await supabase
+  const { data: ticket, error: ticketError } = await supabase
     .from("tickets")
     .insert([
       {
@@ -13,53 +16,114 @@ export const insertEventAttendance = async (submittedData) => {
         timestamp: new Date(), // Automatically handled by the database
       },
     ])
-    .select("ticket_code"); // Return the inserted ticket's ticket_code
+    .select(); // Return the inserted ticket's ticket_code
 
   if (ticketError) {
     console.error("Error inserting ticket record:", ticketError.message);
     return { success: false, error: ticketError };
   }
 
+  const { data: walkInUser, error: walkInUserError } = await supabase
+    .from("walk_in_users")
+    .insert({
+      registration_id: ticket[0].ticket_id,
+      first_name: mainApplicant.parentFirstName,
+      last_name: mainApplicant.parentLastName,
+      contact_number: mainApplicant.parentContactNumber,
+    })
+    .select();
+
+  if (walkInUserError) {
+    console.error(
+      "Error inserting walk-in user record:",
+      walkInUserError.message
+    );
+    return { success: false, error: walkInUserError };
+  }
+
+  const { data: familyId, error: familyError } = await supabase
+    .from("family_group")
+    .insert({
+      walk_in_user_id: walkInUser[0].id,
+    })
+    .select("id");
+
+  if (familyError) {
+    console.error("Error inserting family group record:", familyError.message);
+    return { success: false, error: familyError };
+  }
+
   // Prepare parent records with ticket_code
   const parentRecords = parents.map((parent) => ({
-    event_id: event,
-    ticket_code: randomSixDigit, // Use the generated ticket code
     first_name: parent.parentFirstName,
     last_name: parent.parentLastName,
     contact_number: parent.parentContactNumber,
-    type: "parent",
-    is_main_applicant: parent.isMainApplicant,
+    family_id: familyId[0].id,
   }));
 
-  // Prepare child records with ticket_code and guardian names
-  const childRecords = children.map((child) => {
-    const mainApplicant = parents.find((parent) => parent.isMainApplicant);
-    return {
-      event_id: event,
-      ticket_code: randomSixDigit, // Use the generated ticket code
-      first_name: child.childFirstName,
-      last_name: child.childLastName,
-      type: "child",
-      is_main_applicant: false, // Children are not main applicants
-      guardian_first_name: mainApplicant ? mainApplicant.parentFirstName : null,
-      guardian_last_name: mainApplicant ? mainApplicant.parentLastName : null,
-    };
-  });
+  const childrenRecords = children.map((child) => ({
+    first_name: child.childFirstName,
+    last_name: child.childLastName,
+    family_id: familyId[0].id,
+  }));
 
-  // Combine all records
-  const allRecords = [...parentRecords, ...childRecords];
+  const { data: parentsData, error: parentsError } = await supabase
+    .from("parents")
+    .upsert(parentRecords)
+    .select();
 
-  // Insert into the event_attendance table
-  const { data, error } = await supabase
-    .from("event_attendance")
-    .insert(allRecords);
-
-  if (error) {
-    console.error("Error inserting event attendance records:", error.message);
-    return { success: false, error };
+  if (parentsError) {
+    console.error("Error inserting parent records:", parentsError.message);
+    return { success: false, error: parentsError };
   }
 
-  return { success: true, data };
+  const { data: childrenData, error: childrenError } = await supabase
+    .from("children")
+    .upsert(childrenRecords)
+    .select();
+
+  if (childrenError) {
+    console.error("Error inserting child records:", childrenError.message);
+    return { success: false, error: childrenError };
+  }
+
+  // Add the type property to each item in the parentsData and childrenData arrays
+  const parentsWithType = parentsData.map((parent) => ({
+    ...parent,
+    type: "parents",
+  }));
+
+  const childrenWithType = childrenData.map((child) => ({
+    ...child,
+    type: "children",
+  }));
+
+  // Combine the arrays into a single attendeesData array
+  const attendeesData = [
+    // ...walkInUser.map((user) => ({ ...user, type: "walk_in_users" })),
+    ...parentsWithType,
+    ...childrenWithType,
+  ];
+
+  const { data: attendanceData, error: attendanceError } = await supabase
+    .from("attendance")
+    .insert(
+      attendeesData.map((attendee) => ({
+        event_id: event,
+        attendee_id: attendee.id,
+        attendee_type: attendee.type,
+      }))
+    );
+
+  if (attendanceError) {
+    console.error(
+      "Error inserting attendance records:",
+      attendanceError.message
+    );
+    return { success: false, error: attendanceError };
+  }
+
+  return { success: true, attendanceData };
 };
 
 export const fetchAttendeesByTicketCode = async (ticketCode) => {
@@ -138,19 +202,84 @@ export const fetchAttendeesByTicketCode = async (ticketCode) => {
 
 const getEventAttendance = async (eventId) => {
   try {
-    const { data, error } = await supabase
-      .from("event_attendance")
+    // Fetch the attendance records
+    const { data: attendanceData, error: attendanceError } = await supabase
+      .from("attendance")
       .select("*")
       .eq("event_id", eventId);
 
-    if (error) {
-      throw new Error(error.message);
+    if (attendanceError) {
+      console.error("Error fetching attendance data:", attendanceError);
+      return { success: false, error: attendanceError.message };
     }
 
-    return data;
+    // Initialize arrays to hold the IDs for each type
+    const parentIds = [];
+    const childIds = [];
+    // const userIds = [];
+    // const walkInUserIds = [];
+
+    // Populate the arrays based on the attendee_type
+    attendanceData.forEach((record) => {
+      if (record.attendee_type === "parents") {
+        parentIds.push(record.attendee_id);
+      } else if (record.attendee_type === "children") {
+        childIds.push(record.attendee_id);
+        // } else if (record.attendee_type === "users") {
+        //   userIds.push(record.attendee_id);
+        // } else if (record.attendee_type === "walk_in_users") {
+        //   walkInUserIds.push(record.attendee_id);
+      }
+    });
+
+    // Fetch the related records based on the IDs
+    const [parentsData, childrenData, _usersData, _walkInUsersData] =
+      await Promise.all([
+        supabase.from("parents").select("*").in("id", parentIds),
+        supabase.from("children").select("*").in("id", childIds),
+        // supabase.from("users").select("*").in("id", userIds),
+        // supabase.from("walk_in_users").select("*").in("id", walkInUserIds),
+      ]);
+
+    // Combine the results
+    const combinedData = attendanceData.map((record) => {
+      let attendee = null;
+      if (record.attendee_type === "parents") {
+        attendee = parentsData.data.find(
+          (parent) => parent.id === record.attendee_id
+        );
+      } else if (record.attendee_type === "children") {
+        attendee = childrenData.data.find(
+          (child) => child.id === record.attendee_id
+        );
+        // } else if (record.attendee_type === "users") {
+        //   attendee = usersData.data.find(
+        //     (user) => user.id === record.attendee_id
+        //   );
+        // } else if (record.attendee_type === "walk_in_users") {
+        //   attendee = walkInUsersData.data.find(
+        //     (walkInUser) => walkInUser.id === record.attendee_id
+        //   );
+      }
+
+      // Spread the attendee object properties and remove the attendee.id property
+      const { id: _unused_id, ...attendeeWithoutId } = attendee || {};
+
+      console.log({
+        ...record,
+        ...attendeeWithoutId,
+      });
+
+      return {
+        ...record,
+        ...attendeeWithoutId,
+      };
+    });
+
+    return combinedData;
   } catch (error) {
     console.error("Error fetching event attendance:", error);
-    throw new Error(error.message);
+    return { success: false, error: error.message };
   }
 };
 

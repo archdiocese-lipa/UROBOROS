@@ -86,7 +86,9 @@ const ScheduleDetails = () => {
               </TableCell>
               <TableCell>{`${attendee.first_name} ${attendee.last_name}`}</TableCell>
               <TableCell>{attendee.contact_number}</TableCell>
-              <TableCell>Attended</TableCell>
+              <TableCell>
+                {attendee.attended ? "Attended" : "Pending"}
+              </TableCell>
               <TableCell>...</TableCell>
             </TableRow>
           ))}
