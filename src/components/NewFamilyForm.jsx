@@ -1,6 +1,5 @@
 import PropTypes from "prop-types"; // Import PropTypes
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
@@ -20,32 +19,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const newFamilySchema = z.object({
-  first_name: z.string().min(1, "First Name is Required"),
-  last_name: z.string().min(1, "Last Name is Required"),
-  type: z.string().min(1, "Type is Required"),
-  contact_number: z
-    .string()
-    //   .regex(/^\d{11}$/, "Contact Number must be 11 digits")
-    .optional(),
-});
-// .refine(
-//   (data) => {
-//     if (data.type === "guardian" && !data.contact_number) {
-//       return false; // Contact number is required for guardians
-//     }
-//     return true;
-//   },
-//   {
-//     message: "Contact Number is required for guardians.",
-//     path: ["contact_number"],
-//   }
-// );
-
 import { useToast } from "@/hooks/use-toast";
+import { newFamilySchema } from "@/zodSchema/NewFamilyFormSchema";
+import {
+  addChild,
+  addParent,
+  checkDuplicateFamilyMember,
+  getFamilyId,
+} from "@/services/familyService";
+import { useUser } from "@/context/useUser";
 
-const NewFamilyForm = ({ id = "new-family-form", onSuccess }) => {
+const NewFamilyForm = ({ id = "new-family-form" }) => {
   const { toast } = useToast();
+  const { userData } = useUser();
+  const userId = userData?.id;
 
   const form = useForm({
     resolver: zodResolver(newFamilySchema),
@@ -67,19 +54,97 @@ const NewFamilyForm = ({ id = "new-family-form", onSuccess }) => {
     }
   };
 
-  const onSubmit = (values) => {
-    try {
-      console.log(values);
+  const onSubmit = async (data) => {
+    if (data.type === "guardian") {
+      try {
+        // Fetch user id
+        const familyId = await getFamilyId(userId);
+        const newGuardian = {
+          firstName: data.first_name.trim(),
+          lastName: data.last_name.trim(),
+          contactNumber: data.contact_number.trim(),
+        };
 
-      toast({
-        title: "Successfully added a new family",
-      });
+        if (
+          !newGuardian.firstName ||
+          !newGuardian.lastName ||
+          !newGuardian.contactNumber
+        ) {
+          toast({
+            title: "Validation Error",
+            description: "Please fill out all required fields.",
+            variant: "destructive",
+          });
+          return;
+        }
 
-      onSuccess(); // Close the dialog if success
-    } catch (error) {
+        // Check if the new family member already exists
+        const isDuplicate = await checkDuplicateFamilyMember(
+          familyId.id,
+          newGuardian.firstName
+        );
+        if (isDuplicate) {
+          toast({
+            title: "Failed",
+            description:
+              "Family member with this first name already exists in the family.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        // Add parent
+        await addParent([newGuardian], familyId.id);
+
+        toast({
+          title: "Success",
+          description: `Guardian ${newGuardian.firstName} ${newGuardian.lastName} added successfully.`,
+        });
+      } catch (error) {
+        console.error("Error adding parent:", error);
+        toast({
+          title: "Error",
+          description: "Failed to add guardian. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } else if (data.type === "child") {
+      try {
+        const familyId = await getFamilyId(userId);
+        const newChild = {
+          firstName: data.first_name.trim(),
+          lastName: data.last_name.trim(),
+        };
+
+        if (!newChild.firstName || !newChild.lastName) {
+          toast({
+            title: "Validation Error",
+            description: "Please fill out all required fields.",
+            variant: "error",
+          });
+          return;
+        }
+
+        // Submit data
+        await addChild([newChild], familyId.id);
+
+        toast({
+          title: "Success",
+          description: `${newChild.firstName} ${newChild.lastName} added successfully.`,
+        });
+      } catch (error) {
+        console.error("Error adding child:", error);
+        toast({
+          title: "Error",
+          description: "Failed to add child. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } else {
       toast({
-        title: "Failed to add",
-        description: error.message,
+        title: "Invalid Type",
+        description: "Submission type is not supported.",
+        variant: "error",
       });
     }
   };
@@ -169,8 +234,8 @@ const NewFamilyForm = ({ id = "new-family-form", onSuccess }) => {
 
 // Prop validation
 NewFamilyForm.propTypes = {
-  id: PropTypes.string, 
-  onSuccess: PropTypes.func.isRequired, 
+  id: PropTypes.string,
+  onSuccess: PropTypes.func.isRequired,
 };
 
 export default NewFamilyForm;

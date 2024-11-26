@@ -390,7 +390,6 @@ const EditRegistration = () => {
                             className="flex-1"
                             style={{ display: "none" }}
                           >
-                            {" "}
                             {/* Hide this input */}
                             <FormControl>
                               <Input placeholder="ID" {...field} readOnly />

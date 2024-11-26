@@ -125,27 +125,11 @@ const insertEventAttendance = async (submittedData) => {
 const fetchAttendeesByTicketCode = async (ticketCode) => {
   try {
     const { data, error } = await supabase
-      .from("event_attendance")
-      .select(
-        `
-            id,
-            first_name,
-            last_name,
-            contact_number,
-            ticket_code,
-            event_id,
-            type,
-            is_main_applicant,
-            event:events (
-              id,
-              event_name,
-              event_description,
-              event_time,
-              event_date
-            )
-          `
-      )
+      .from("attendance")
+      .select("*")
       .eq("ticket_code", ticketCode); // Filter by ticket code
+
+    console.log(data);
 
     if (error) {
       throw error;
