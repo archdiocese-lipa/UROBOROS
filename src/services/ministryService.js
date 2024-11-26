@@ -67,7 +67,7 @@ export const fetchAvailableVolunteers = async (ministryId) => {
     const { data: allVolunteers, error: volunteersError } = await supabase
       .from("users")
       .select("id, first_name, last_name, role")
-      .eq("role", "volunteer");
+      // .eq("role", "volunteer");
 
     if (volunteersError) {
       console.error("Error fetching all volunteers:", volunteersError.message);

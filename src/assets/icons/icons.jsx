@@ -270,7 +270,7 @@ ThreeDotsIcon.propTypes = {
   className: PropTypes.string,
 };
 
-const PuzzleIcon = ({className = "text-black"}) => {
+const PuzzleIcon = ({ className = "text-black" }) => {
   return (
     <svg
       width="1em"
@@ -292,6 +292,28 @@ PuzzleIcon.propTypes = {
   className: PropTypes.string,
 };
 
+const NegativeIcon = ({ className = "text-black" }) => {
+  return (
+    <svg
+      width="1em"
+      height="1em"
+      viewBox="0 0 18 18"
+      fill="none"
+      className={cn(className)}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M9 1.5C13.1423 1.5 16.5 4.85775 16.5 9C16.5 13.1423 13.1423 16.5 9 16.5C4.85775 16.5 1.5 13.1423 1.5 9C1.5 4.85775 4.85775 1.5 9 1.5ZM12 8.25H6C5.80109 8.25 5.61032 8.32902 5.46967 8.46967C5.32902 8.61032 5.25 8.80109 5.25 9C5.25 9.19891 5.32902 9.38968 5.46967 9.53033C5.61032 9.67098 5.80109 9.75 6 9.75H12C12.1989 9.75 12.3897 9.67098 12.5303 9.53033C12.671 9.38968 12.75 9.19891 12.75 9C12.75 8.80109 12.671 8.61032 12.5303 8.46967C12.3897 8.32902 12.1989 8.25 12 8.25Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+};
+
+NegativeIcon.propTypes = {
+  className: PropTypes.string,
+};
+
 export {
   EventIcon,
   Users,
@@ -300,5 +322,6 @@ export {
   ChevronUp,
   DownIcon,
   ThreeDotsIcon,
-  PuzzleIcon
+  PuzzleIcon,
+  NegativeIcon
 };

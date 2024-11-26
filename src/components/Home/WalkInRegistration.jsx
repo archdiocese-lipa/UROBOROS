@@ -52,7 +52,7 @@ const WalkInRegistration = () => {
           parentFirstName: "",
           parentLastName: "",
           parentContactNumber: "",
-          isMainApplicant: false,
+          isMainApplicant: true,
         },
       ],
       children: [
