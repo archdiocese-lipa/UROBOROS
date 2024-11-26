@@ -84,7 +84,7 @@ const Schedule = () => {
 
   return (
     <div className="flex h-full w-full gap-8">
-      <div className="flex flex-col gap-8 lg:min-w-[400px]">
+      <div className="no-scrollbar flex w-fit flex-col gap-8 overflow-y-auto overflow-x-visible lg:min-w-[400px]">
         <div>
           <Title>Scheduler</Title>
           <Description>Manage schedules for your organisation.</Description>
@@ -163,7 +163,7 @@ const Schedule = () => {
                       className={cn(
                         "flex cursor-pointer gap-3 rounded-[10px] bg-primary/50 px-5 py-4",
                         event.id === urlPrms.get("event") &&
-                          "outline outline-2 outline-primary-outline"
+                          "border border-primary-outline"
                       )}
                       onClick={() => onEventClick(event.id)}
                     >

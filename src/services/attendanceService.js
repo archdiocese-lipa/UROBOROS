@@ -1,6 +1,6 @@
 import { supabase } from "@/services/supabaseClient"; // Adjust the import to match the final location of supabaseClient
 
-export const insertEventAttendance = async (submittedData) => {
+const insertEventAttendance = async (submittedData) => {
   const { randomSixDigit, event, parents, children } = submittedData;
 
   // get main applicant parent.
@@ -99,11 +99,7 @@ export const insertEventAttendance = async (submittedData) => {
   }));
 
   // Combine the arrays into a single attendeesData array
-  const attendeesData = [
-    // ...walkInUser.map((user) => ({ ...user, type: "walk_in_users" })),
-    ...parentsWithType,
-    ...childrenWithType,
-  ];
+  const attendeesData = [...parentsWithType, ...childrenWithType];
 
   const { data: attendanceData, error: attendanceError } = await supabase
     .from("attendance")
@@ -126,7 +122,7 @@ export const insertEventAttendance = async (submittedData) => {
   return { success: true, attendanceData };
 };
 
-export const fetchAttendeesByTicketCode = async (ticketCode) => {
+const fetchAttendeesByTicketCode = async (ticketCode) => {
   try {
     const { data, error } = await supabase
       .from("event_attendance")
@@ -216,8 +212,6 @@ const getEventAttendance = async (eventId) => {
     // Initialize arrays to hold the IDs for each type
     const parentIds = [];
     const childIds = [];
-    // const userIds = [];
-    // const walkInUserIds = [];
 
     // Populate the arrays based on the attendee_type
     attendanceData.forEach((record) => {
@@ -225,10 +219,6 @@ const getEventAttendance = async (eventId) => {
         parentIds.push(record.attendee_id);
       } else if (record.attendee_type === "children") {
         childIds.push(record.attendee_id);
-        // } else if (record.attendee_type === "users") {
-        //   userIds.push(record.attendee_id);
-        // } else if (record.attendee_type === "walk_in_users") {
-        //   walkInUserIds.push(record.attendee_id);
       }
     });
 
@@ -237,8 +227,6 @@ const getEventAttendance = async (eventId) => {
       await Promise.all([
         supabase.from("parents").select("*").in("id", parentIds),
         supabase.from("children").select("*").in("id", childIds),
-        // supabase.from("users").select("*").in("id", userIds),
-        // supabase.from("walk_in_users").select("*").in("id", walkInUserIds),
       ]);
 
     // Combine the results
@@ -252,23 +240,10 @@ const getEventAttendance = async (eventId) => {
         attendee = childrenData.data.find(
           (child) => child.id === record.attendee_id
         );
-        // } else if (record.attendee_type === "users") {
-        //   attendee = usersData.data.find(
-        //     (user) => user.id === record.attendee_id
-        //   );
-        // } else if (record.attendee_type === "walk_in_users") {
-        //   attendee = walkInUsersData.data.find(
-        //     (walkInUser) => walkInUser.id === record.attendee_id
-        //   );
       }
 
       // Spread the attendee object properties and remove the attendee.id property
       const { id: _unused_id, ...attendeeWithoutId } = attendee || {};
-
-      console.log({
-        ...record,
-        ...attendeeWithoutId,
-      });
 
       return {
         ...record,
@@ -276,11 +251,53 @@ const getEventAttendance = async (eventId) => {
       };
     });
 
-    return combinedData;
+    // Group the results by family_id and then by attendee_type
+    const groupedData = await combinedData.reduce(
+      async (accPromise, record) => {
+        const acc = await accPromise;
+        const { family_id, attendee_type } = record;
+
+        // Fetch the family surname based on the family_id
+        const { data: familySurname, error: familyError } = await supabase
+          .from("parents")
+          .select("last_name")
+          .eq("family_id", family_id);
+
+        if (familyError) {
+          console.error("Error fetching family surname:", familyError);
+          return acc;
+        }
+
+        let family = acc.find((f) => f.family_id === family_id);
+        if (!family) {
+          family = {
+            family_id,
+            family_surname: familySurname[0]?.last_name || "Unknown",
+            children: [],
+            parents: [],
+          };
+          acc.push(family);
+        }
+
+        if (attendee_type === "parents") {
+          family.parents.push(record);
+        } else if (attendee_type === "children") {
+          family.children.push(record);
+        }
+
+        return acc;
+      },
+      Promise.resolve([])
+    );
+    return groupedData;
   } catch (error) {
     console.error("Error fetching event attendance:", error);
     return { success: false, error: error.message };
   }
 };
 
-export { getEventAttendance };
+export {
+  getEventAttendance,
+  fetchAttendeesByTicketCode,
+  insertEventAttendance,
+};
