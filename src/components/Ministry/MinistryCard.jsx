@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Card,
   CardContent,
@@ -18,8 +18,18 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import ViewMembers from "./ViewMembers";
+import useMinistryMembers from "@/hooks/useMinistryMembers"; // Import the custom hook
 
-const MinistryCard = ({ title, description, createdDate, members }) => {
+// Utility function to get initials from a name
+const getInitials = (firstName, lastName) => {
+  const firstInitial = firstName?.charAt(0)?.toUpperCase() || "";
+  const lastInitial = lastName?.charAt(0)?.toUpperCase() || "";
+  return `${firstInitial}${lastInitial}`;
+};
+
+const MinistryCard = ({ ministryId, title, description, createdDate }) => {
+  const { members, loading, error } = useMinistryMembers(ministryId); // Use the custom hook
+
   const maxVisible = 4;
   const visibleAvatars = members.slice(0, maxVisible);
   const remainingCount = Math.max(members.length - maxVisible, 0);
@@ -51,17 +61,22 @@ const MinistryCard = ({ title, description, createdDate, members }) => {
       </CardHeader>
       <CardContent>
         <div className="flex flex-col gap-y-3 rounded-2xl bg-primary px-5 py-3">
+          {loading && <p>Loading members...</p>}
+          {error && <p className="text-red-500">{error}</p>}
           <div className="flex items-center gap-x-6">
             <div className="flex flex-wrap items-center justify-center -space-x-4">
-              {visibleAvatars.map((avatar, index) => (
-                <Avatar key={index} className="border-4 border-white">
-                  <AvatarImage
-                    src="https://github.com/shadcn.png"
-                    alt="@shadcn"
-                  />
-                  <AvatarFallback>?</AvatarFallback>
-                </Avatar>
-              ))}
+              {visibleAvatars.map((member, index) => {
+                const initials = getInitials(
+                  member.users?.first_name,
+                  member.users?.last_name
+                );
+
+                return (
+                  <Avatar key={index} className="border-4 border-white">
+                    <AvatarFallback>{initials || "?"}</AvatarFallback>
+                  </Avatar>
+                );
+              })}
             </div>
             {remainingCount > 0 && (
               <div className="bg-muted text-muted-foreground -ml-2 flex h-10 w-10 justify-center rounded-full text-sm font-medium">
@@ -72,19 +87,10 @@ const MinistryCard = ({ title, description, createdDate, members }) => {
               </div>
             )}
           </div>
-          <div className="-space-y-2 text-primary-text">
-            <p className="font-bold">Members Preview:</p>
-            <p>
-              {members
-                .slice(0, 2)
-                .map((m) => m.name)
-                .join(", ")}
-              .
-            </p>
-          </div>
           <div>
             <ViewMembers
               title={title}
+              ministryId={ministryId}
               description={description}
               createdDate={createdDate}
               members={members}
@@ -100,12 +106,7 @@ MinistryCard.propTypes = {
   title: PropTypes.string.isRequired,
   description: PropTypes.string.isRequired,
   createdDate: PropTypes.string.isRequired,
-  members: PropTypes.arrayOf(
-    PropTypes.shape({
-      src: PropTypes.string.isRequired,
-      alt: PropTypes.string.isRequired,
-    })
-  ).isRequired,
+  ministryId: PropTypes.string.isRequired,
 };
 
 export default MinistryCard;
