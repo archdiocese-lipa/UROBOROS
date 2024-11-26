@@ -84,13 +84,26 @@ export const UserProvider = ({ children }) => {
 
       if (insertError) throw insertError;
 
+      const { data: newUserFamily, error: familyError } = await supabase
+        .from("family_group")
+        .upsert([
+          {
+            user_id: user.user.id,
+          },
+        ])
+        .select();
+
+      if (familyError) throw familyError;
+
       // Set regData after successful registration
       setRegData({
         id: user.user.id,
         firstName,
         lastName,
         contact_number: contactNumber,
+        familyId: newUserFamily[0].id,
       });
+      return;
     } catch (error) {
       console.error("Registration failed:", error.message);
       throw error;

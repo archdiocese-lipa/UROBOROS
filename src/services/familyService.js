@@ -1,42 +1,67 @@
 import { supabase } from "./supabaseClient";
 
-// Function to add family members (parents and children)
-export const addFamilyMembers = async (familyData) => {
+export const addParent = async (parentsData, familyId) => {
   try {
-    // Begin a transaction or use upsert to ensure data integrity
-    const { userId, parents, children } = familyData;
-
-    // Insert parents
-    const { data: parentData, error: parentError } = await supabase
-      .from("family_members")
+    const { data, error } = await supabase
+      .from("parents")
       .upsert(
-        parents.map((parent) => ({
-          user_id: userId,
-          role: "parent",
+        parentsData.map((parent) => ({
+          family_id: familyId,
           first_name: parent.firstName,
           last_name: parent.lastName,
           contact_number: parent.contactNumber,
         }))
-      );
+      )
+      .select();
 
-    if (parentError) {
-      throw new Error(parentError.message);
+    if (error) {
+      throw new Error(error.message);
     }
 
-    // Insert children
-    const { data: childData, error: childError } = await supabase
-      .from("family_members")
+    return data;
+  } catch (error) {
+    console.error("Error adding parent:", error);
+    return { success: false, error: error.message };
+  }
+};
+
+export const addChild = async (childrenData, familyId) => {
+  try {
+    const { data, error } = await supabase
+      .from("children")
       .upsert(
-        children.map((child) => ({
-          user_id: userId,
-          role: "child",
+        childrenData.map((child) => ({
+          family_id: familyId,
           first_name: child.firstName,
           last_name: child.lastName,
         }))
-      );
+      )
+      .select();
 
-    if (childError) {
-      throw new Error(childError.message);
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error adding child:", error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Function to add family members (parents and children)
+export const addFamilyMembers = async (familyData) => {
+  try {
+    // Begin a transaction or use upsert to ensure data integrity
+    const { parents, children, familyId } = familyData;
+    let parentData;
+    let childData;
+
+    if (parents.length > 0) {
+      parentData = await addParent(parents, familyId);
+    }
+    if (children.length > 0) {
+      childData = await addChild(children, familyId);
     }
 
     return { success: true, parentData, childData };
