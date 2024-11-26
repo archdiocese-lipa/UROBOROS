@@ -24,8 +24,12 @@ import { PuzzleIcon } from "@/assets/icons/icons";
 import { createMinistrySchema } from "@/zodSchema/CreateMinistrySchema";
 import { Textarea } from "../ui/textarea";
 import { useCreateMinistry } from "@/hooks/useCreateMinistry"; // Import the hook
+import { useRef } from "react";
 
 const CreateMinistry = () => {
+  // Create a ref for the Dialog to control it programmatically
+  const dialogRef = useRef(null);
+
   const form = useForm({
     resolver: zodResolver(createMinistrySchema),
     defaultValues: {
@@ -37,14 +41,22 @@ const CreateMinistry = () => {
   const createMinistryMutation = useCreateMinistry();
 
   const onSubmit = (values) => {
-    createMinistryMutation.mutate({
-      ministry_name: values.ministryName,
-      ministry_description: values.ministryDescription,
-    });
+    createMinistryMutation.mutate(
+      {
+        ministry_name: values.ministryName,
+        ministry_description: values.ministryDescription,
+      },
+      {
+        onSuccess: () => {
+          // Close the dialog after successful ministry creation
+          dialogRef.current?.close();
+        },
+      }
+    );
   };
 
   return (
-    <Dialog>
+    <Dialog ref={dialogRef}>
       <DialogTrigger asChild>
         <Button className="h-14 gap-x-1 rounded-2xl">
           <PuzzleIcon className="text-white" />
