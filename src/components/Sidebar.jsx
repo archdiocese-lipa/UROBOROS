@@ -55,7 +55,7 @@ const SidebarProfile = () => {
   const handleLogout = async () => {
     try {
       await logout(); // Call logout from UserContext
-      console.log("User logged out successfully");
+
       navigate("/", { replace: true, state: { from: loc.pathname || "/" } }); // Redirect to the home page
     } catch (error) {
       console.error("Logout failed:", error.message);

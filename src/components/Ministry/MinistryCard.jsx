@@ -28,6 +28,20 @@ const getInitials = (firstName, lastName) => {
 };
 
 const MinistryCard = ({ ministryId, title, description, createdDate }) => {
+  const formatDateToUK = (dateString) => {
+    const date = new Date(dateString); // Convert the date string to a Date object
+    return new Intl.DateTimeFormat("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true, // Optional: for 12-hour format with AM/PM
+    }).format(date);
+  };
+
+  const formattedCreatedDate = formatDateToUK(createdDate);
+
   const { members, loading, error } = useMinistryMembers(ministryId); // Use the custom hook
 
   const maxVisible = 4;
@@ -39,10 +53,10 @@ const MinistryCard = ({ ministryId, title, description, createdDate }) => {
       <CardHeader className="relative">
         <CardTitle className="font-bold">{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
-        {/* <p>
-          <span className="font-medium">Created:</span>
-          {createdDate}
-        </p> */}
+        <p>
+          <span className="font-medium">Created: </span>
+          {formattedCreatedDate}
+        </p>
         <div className="absolute right-5 top-5">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

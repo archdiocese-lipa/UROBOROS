@@ -49,16 +49,23 @@ export const deleteMinistry = async (id) => {
 };
 
 export const fetchMinistryAssignedUsers = async (ministryId) => {
-  const { data, error } = await supabase
+  let query = supabase
     .from("ministry_assignments")
-    .select("*, users(first_name, last_name)") // Select first_name and last_name from the users table
-    .eq("ministry_id", ministryId); // Filter by ministry_id
+    .select("*, users(first_name, last_name, id)"); // Select first_name, last_name from the users table
 
-  if (error) {
-    throw new Error(error.message); // throw error so react-query can catch it
+  // Check if ministryId is null or a valid ID
+  if (ministryId) {
+    // If ministryId is valid, filter by ministry_id
+    query = query.eq("ministry_id", ministryId);
   }
 
-  return data; // Return the list of ministry assignments with user first_name and last_name
+  const { data, error } = await query;
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
 };
 
 export const fetchAvailableVolunteers = async (ministryId) => {
@@ -66,8 +73,8 @@ export const fetchAvailableVolunteers = async (ministryId) => {
     // Fetch all volunteers (role = "volunteer")
     const { data: allVolunteers, error: volunteersError } = await supabase
       .from("users")
-      .select("id, first_name, last_name, role")
-      // .eq("role", "volunteer");
+      .select("id, first_name, last_name, role");
+    // .eq("role", "volunteer");
 
     if (volunteersError) {
       console.error("Error fetching all volunteers:", volunteersError.message);
@@ -122,5 +129,24 @@ export const assignNewVolunteers = async (ministryId, newMembers) => {
   } catch (error) {
     console.error("Error during insertion:", error.message);
     throw error;
+  }
+};
+
+export const removeMinistryVolunteer = async (ministryId, memberId) => {
+  try {
+    const { data, error } = await supabase
+      .from("ministry_assignments") // Targeting the right table
+      .delete() // Deleting the assignment
+      .eq("ministry_id", ministryId) // Filter by ministry_id
+      .eq("user_id", memberId); // Filter by user_id (adjust based on actual column names)
+
+    if (error) {
+      throw new Error(error.message); // Handle error if deletion fails
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error removing ministry volunteer:", error.message);
+    throw error; // Re-throw the error to be handled in the component
   }
 };
