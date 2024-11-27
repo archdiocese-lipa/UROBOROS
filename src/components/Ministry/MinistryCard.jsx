@@ -39,10 +39,10 @@ const MinistryCard = ({ ministryId, title, description, createdDate }) => {
       <CardHeader className="relative">
         <CardTitle className="font-bold">{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
-        <p>
+        {/* <p>
           <span className="font-medium">Created:</span>
           {createdDate}
-        </p>
+        </p> */}
         <div className="absolute right-5 top-5">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
