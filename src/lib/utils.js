@@ -85,5 +85,12 @@ const paginate = async ({
     throw error;
   }
 };
+/**
+ * Paginate items from a Supabase table.
+ * @returns {string} The paginated items and pagination properties.
+ */
+const getInitial = (name) => {
+  return name?.split(" ").map((word) => word[0])[0].toUpperCase();
+}
 
-export { cn, paginate };
+export { cn, paginate,getInitial };

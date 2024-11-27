@@ -66,8 +66,8 @@ export const fetchAvailableVolunteers = async (ministryId) => {
     // Fetch all volunteers (role = "volunteer")
     const { data: allVolunteers, error: volunteersError } = await supabase
       .from("users")
-      .select("id, first_name, last_name, role")
-      // .eq("role", "volunteer");
+      .select("id, first_name, last_name, role");
+    // .eq("role", "volunteer");
 
     if (volunteersError) {
       console.error("Error fetching all volunteers:", volunteersError.message);
@@ -123,4 +123,19 @@ export const assignNewVolunteers = async (ministryId, newMembers) => {
     console.error("Error during insertion:", error.message);
     throw error;
   }
+};
+
+export const fetchMinistryMembersFirstNamesAndCount = async (ministryId) => {
+  const { data, error, count } = await supabase
+    .from("ministry_assignments")
+    .select("users(first_name)", { count: "exact" })
+    .eq("ministry_id", ministryId)
+    .limit(4);
+
+  if (error) throw new Error(error.message);
+
+  return {
+    firstNames: data.map((user) => user.users.first_name),
+    count
+  };
 };
