@@ -44,10 +44,10 @@ import useCreateEvent from "@/hooks/useCreateEvent";
 import useQuickAccessEvents from "@/hooks/useQuickAccessEvents";
 import useUsersByRole from "@/hooks/useUsersByRole";
 import useGetAllMinistries from "@/hooks/useGetAllMinistries";
-// import { useFetchMinistryAssignedUsers } from "@/hooks/useFetchMinistryAssignedUsers";
 
 const CreateEvent = () => {
   const { userData } = useUser(); // Get userData from the context
+
   const userId = userData?.id; // Extract the userId, safely checking if userData exists
   const { data: ministries } = useGetAllMinistries();
 
