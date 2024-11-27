@@ -13,7 +13,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import AssignMembers from "./AssignMembers";
 import { NegativeIcon } from "@/assets/icons/icons";
-
+import useRemoveMinistryVolunteer from "@/hooks/useRemoveMinistryVolunteer";
+import { useState } from "react";
 // Utility function to get initials from a name
 const getInitials = (firstName, lastName) => {
   const firstInitial = firstName?.charAt(0)?.toUpperCase() || "";
@@ -28,6 +29,22 @@ const ViewMembers = ({
   createdDate,
   members,
 }) => {
+  const [openDialog, setOpenDialog] = useState(false);
+  const formatDateToUK = (dateString) => {
+    const date = new Date(dateString); // Convert the date string to a Date object
+    return new Intl.DateTimeFormat("en-GB").format(date); // Format it to DD/MM/YYYY
+  };
+
+  const formattedCreatedDate = formatDateToUK(createdDate);
+
+  const { removeVolunteer, isLoading } = useRemoveMinistryVolunteer();
+
+  const handleRemoveMember = (id) => {
+    // Trigger the mutation to remove the volunteer
+    removeVolunteer({ ministryId, memberId: id });
+    setOpenDialog(false);
+  };
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -39,7 +56,7 @@ const ViewMembers = ({
         <DialogHeader className="text-primary-text">
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
-          <span>{createdDate}</span>
+          <span> {formattedCreatedDate}</span>
         </DialogHeader>
         <div>
           <div className="flex justify-between text-xl font-medium text-primary-text">
@@ -56,6 +73,7 @@ const ViewMembers = ({
                 // Extract name from the users object
                 const firstName = member.users?.first_name || "";
                 const lastName = member.users?.last_name || "";
+                const memberId = member?.users?.id || null; // Safely access users.id
                 const memberName =
                   firstName && lastName
                     ? `${firstName} ${lastName}`
@@ -77,7 +95,7 @@ const ViewMembers = ({
                       </Avatar>
                       <span>{memberName}</span>
                     </div>
-                    <Dialog>
+                    <Dialog open={openDialog} onOpenChange={setOpenDialog}>
                       <DialogTrigger asChild>
                         <Button variant="transparent">
                           <NegativeIcon className="text-red-500" />
@@ -96,7 +114,12 @@ const ViewMembers = ({
                           <DialogClose asChild>
                             <Button variant="outline">Cancel</Button>
                           </DialogClose>
-                          <Button>Yes</Button>
+                          <Button
+                            onClick={() => handleRemoveMember(memberId)} // Use the safely extracted ID
+                            disabled={isLoading} // Disable the button while loading
+                          >
+                            {isLoading ? "Removing..." : "Yes"}
+                          </Button>
                         </DialogFooter>
                       </DialogContent>
                     </Dialog>

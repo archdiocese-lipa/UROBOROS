@@ -15,8 +15,6 @@ const registerUser = async ({
       password,
     });
 
-    console.log("User after signUp:", user);
-
     if (signUpError) throw signUpError;
 
     // Insert user details into the 'users' table
@@ -35,8 +33,6 @@ const registerUser = async ({
 
     if (insertError) throw insertError;
 
-    // Ensure returning the user object after successful insert
-    console.log("User after insert:", user);
     return user; // Explicitly return the user object
   } catch (error) {
     console.error("Error during sign-up:", error);

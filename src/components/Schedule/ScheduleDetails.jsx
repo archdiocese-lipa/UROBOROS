@@ -31,9 +31,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 
-import { getEventById } from "@/services/eventService";
+import { getEventById, fetchEventVolunteers } from "@/services/eventService";
 import { getEventAttendance } from "@/services/attendanceService";
+
 import { cn } from "@/lib/utils";
+import { Label } from "../ui/label";
 
 const ScheduleDetails = () => {
   const [qrCode, setQRCode] = useState(null);
@@ -49,11 +51,19 @@ const ScheduleDetails = () => {
     enabled: !!eventId,
   });
 
+  const { data: volunteers, isLoading: volunteersLoading } = useQuery({
+    queryKey: ["eventVolunteers", eventId],
+    queryFn: async () => {
+      const response = await fetchEventVolunteers(eventId);
+      return response.data;
+    },
+    enabled: !!eventId,
+  });
+
   const { data: attendance, isLoading: attendanceLoading } = useQuery({
     queryKey: ["attendance", eventId],
     queryFn: async () => {
       const response = await getEventAttendance(eventId);
-
       return response;
     },
     enabled: !!eventId,
@@ -69,7 +79,8 @@ const ScheduleDetails = () => {
     }
   };
 
-  if (isLoading || attendanceLoading) return <div>Loading...</div>;
+  if (isLoading || attendanceLoading || volunteersLoading)
+    return <div>Loading...</div>;
 
   if (!eventId)
     return (
@@ -78,13 +89,23 @@ const ScheduleDetails = () => {
       </div>
     );
 
+  const capitalizeFirstLetter = (string) => {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  };
+
   return (
     <div className="no-scrollbar flex grow flex-col gap-8 overflow-y-auto rounded-2xl px-9 py-6 outline outline-2 outline-[#e7dad3]">
       <div className="flex justify-between">
         <div>
           <Title>{event?.event_name}</Title>
-          {/* <Description>{`${event.event_category} - ${event.event_visibility}`}</Description> */}
           <Description>{event.event_description}</Description>
+          <Label className="text-primary-text">Assign Volunteer:</Label>
+          {volunteers?.map((volunteer, index) => (
+            <p
+              key={volunteer.id}
+              className="text-primary-text"
+            >{`${index + 1}. ${capitalizeFirstLetter(volunteer.users.first_name)} ${capitalizeFirstLetter(volunteer.users.last_name)}`}</p>
+          ))}
         </div>
         <div className="flex gap-1">
           <Button>
@@ -111,6 +132,7 @@ const ScheduleDetails = () => {
           </Dialog>
         </div>
       </div>
+
       {attendance?.map((family, i) => (
         <Card key={i}>
           <CardHeader>

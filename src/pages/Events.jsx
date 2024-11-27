@@ -1,10 +1,56 @@
+import EventCard from "@/components/Events/EventCard";
 import { Description, Title } from "@/components/Title";
+import { Button } from "@/components/ui/button";
+import { getParishionerEvents } from "@/services/eventService";
+
+import { useInfiniteQuery } from "@tanstack/react-query";
 
 const Events = () => {
+  const { data, isLoading } = useInfiniteQuery({
+    queryKey: ["schedules"],
+    queryFn: async ({ pageParam }) => {
+      // Fetch filtered events
+      const response = await getParishionerEvents({
+        page: pageParam,
+        pageSize: 10,
+      });
+
+      return response;
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      if (lastPage.nextPage) {
+        return lastPage.currentPage + 1;
+      }
+      return undefined;
+    },
+  });
+
   return (
     <>
       <Title>Events</Title>
       <Description>Latest upcoming events at the church</Description>
+      <div className="mt-5 flex gap-x-2">
+        <Button>Calendar</Button>
+        <Button>QR Scanner</Button>
+      </div>
+      <div className="mt-5 grid gap-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+        {isLoading ? (
+          <p>Loading events...</p>
+        ) : (
+          data?.pages.flatMap((page) =>
+            page.items.map((event, i) => (
+              <EventCard
+                key={i}
+                eventName={event.event_name}
+                eventDescription={event.description}
+                eventDate={event.event_date}
+                eventTime={event.event_time}
+              />
+            ))
+          )
+        )}
+      </div>
     </>
   );
 };

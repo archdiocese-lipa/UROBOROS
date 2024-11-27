@@ -129,8 +129,6 @@ const fetchAttendeesByTicketCode = async (ticketCode) => {
       .select("*")
       .eq("ticket_code", ticketCode); // Filter by ticket code
 
-    console.log(data);
-
     if (error) {
       throw error;
     }

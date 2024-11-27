@@ -43,10 +43,13 @@ import { useUser } from "@/context/useUser";
 import useCreateEvent from "@/hooks/useCreateEvent";
 import useQuickAccessEvents from "@/hooks/useQuickAccessEvents";
 import useUsersByRole from "@/hooks/useUsersByRole";
+import useGetAllMinistries from "@/hooks/useGetAllMinistries";
+// import { useFetchMinistryAssignedUsers } from "@/hooks/useFetchMinistryAssignedUsers";
 
 const CreateEvent = () => {
   const { userData } = useUser(); // Get userData from the context
   const userId = userData?.id; // Extract the userId, safely checking if userData exists
+  const { data: ministries } = useGetAllMinistries();
 
   const [isPopoverOpen, setPopoverOpen] = useState(false);
   const [isDialogOpen, setDialogOpen] = useState(false);
@@ -56,13 +59,6 @@ const CreateEvent = () => {
   const { mutate: createEvent, isLoading } = useCreateEvent();
   const { events } = useQuickAccessEvents();
   const { data: volunteers } = useUsersByRole("volunteer");
-
-  //Dummy data volunteers
-  // const volunteers = [
-  //   { uuid: "1231231232", userFirstName: "John", userLastName: "Doe" },
-  //   { uuid: "233323232", userFirstName: "Jane", userLastName: "Smith" },
-  //   { uuid: "323232425235", userFirstName: "Alice", userLastName: "Johnson" },
-  // ];
 
   const eventForm = useForm({
     resolver: zodResolver(createEventSchema),
@@ -121,8 +117,6 @@ const CreateEvent = () => {
       });
       return; // Prevent form submission if no userId
     }
-
-    console.log(data);
 
     // Validate and format date and time
     const formattedDate = data.eventDate
@@ -202,29 +196,6 @@ const CreateEvent = () => {
                 </FormItem>
               )}
             />
-            <FormField
-              control={control}
-              name="assignVolunteer"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Assign Volunteer</FormLabel>
-                  <FormControl>
-                    <AssignVolunteerComboBox
-                      options={volunteers.map((volunteer) => ({
-                        value: volunteer.id, // Use 'id' as the value
-                        label: `${volunteer.first_name} ${volunteer.last_name}`, // Combine first name and last name
-                      }))}
-                      value={
-                        Array.isArray(field.value) ? field.value : [field.value]
-                      } // Ensure it's always an array
-                      onChange={field.onChange} // Handle change to update the form state
-                      placeholder="Select Volunteer"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
             {/* Event Category, Visibility & Ministry */}
             <div className="flex flex-wrap gap-2">
@@ -296,9 +267,22 @@ const CreateEvent = () => {
                             <SelectValue placeholder="Select Ministry" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="ministrygroupone">
-                              Ministry Group One
-                            </SelectItem>
+                            {/* Ensure ministries.data is an array before mapping */}
+                            {Array.isArray(ministries?.data) &&
+                            ministries.data.length > 0 ? (
+                              ministries.data.map((ministry) => (
+                                <SelectItem
+                                  key={ministry.id}
+                                  value={ministry.id}
+                                >
+                                  {ministry.ministry_name}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <SelectItem disabled>
+                                No ministries available
+                              </SelectItem>
+                            )}
                           </SelectContent>
                         </Select>
                       </FormControl>
@@ -308,6 +292,29 @@ const CreateEvent = () => {
                 />
               )}
             </div>
+            <FormField
+              control={control}
+              name="assignVolunteer"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Assign Volunteer</FormLabel>
+                  <FormControl>
+                    <AssignVolunteerComboBox
+                      options={volunteers.map((volunteer) => ({
+                        value: volunteer.id, // Use 'id' as the value
+                        label: `${volunteer.first_name} ${volunteer.last_name}`, // Combine first name and last name
+                      }))}
+                      value={
+                        Array.isArray(field.value) ? field.value : [field.value]
+                      } // Ensure it's always an array
+                      onChange={field.onChange} // Handle change to update the form state
+                      placeholder="Select Volunteer"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             {/* Event Date, Time */}
             <div className="flex items-center gap-x-2">

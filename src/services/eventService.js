@@ -15,11 +15,11 @@ export const createEvent = async (eventData) => {
       eventTime, // formatted time from the form
       eventDescription,
       userId, // Creator's ID
-      // assignVolunteer,
+      assignVolunteer, // Array of volunteer IDs
     } = eventData;
 
-    // Insert event data into Supabase
-    const { data, error } = await supabase
+    // Step 1: Insert event data into Supabase
+    const { data: event, error: eventError } = await supabase
       .from("events")
       .insert([
         {
@@ -31,16 +31,32 @@ export const createEvent = async (eventData) => {
           event_time: eventTime, // formatted time (HH:mm:ss)
           event_description: eventDescription || null, // Optional field
           creator_id: userId, // Assuming userId is passed in the form data
-          // assigned_volunteer: assignVolunteer,
         },
       ])
-      .single(); // Returns the created row as a single object
+      .select("id") // Return the new event ID
+      .single(); // Single object
 
-    if (error) {
-      throw new Error(error.message); // Handle any errors
+    if (eventError) {
+      throw new Error(eventError.message); // Handle any errors
     }
 
-    return { success: true, data }; // Return success structure
+    // Step 2: Insert assigned volunteers into event_volunteers table
+    if (assignVolunteer?.length > 0) {
+      const volunteerData = assignVolunteer.map((volunteerId) => ({
+        event_id: event.id, // Use the created event ID
+        volunteer_id: volunteerId,
+      }));
+
+      const { error: volunteerError } = await supabase
+        .from("event_volunteers")
+        .insert(volunteerData);
+
+      if (volunteerError) {
+        throw new Error(volunteerError.message); // Handle any errors
+      }
+    }
+
+    return { success: true, data: event }; // Return success structure
   } catch (error) {
     console.error("Error creating event:", error);
     return { success: false, error: error.message }; // Return error structure
@@ -202,5 +218,51 @@ export const getAllEvents = async () => {
   } catch (error) {
     console.error("Error fetching events:", error);
     return { success: false, error: error.message }; // Return error structure
+  }
+};
+
+export const fetchEventVolunteers = async (eventId) => {
+  try {
+    // Query the event_volunteers table for the given event ID
+    const { data, error } = await supabase
+      .from("event_volunteers")
+      .select(
+        `
+        volunteer_id,
+        assigned_at,
+        users (
+          first_name,
+          last_name,
+          email
+        )
+        `
+      )
+      .eq("event_id", eventId); // Filter by event ID
+
+    if (error) {
+      throw new Error(error.message); // Handle errors
+    }
+
+    return { success: true, data }; // Return the fetched data
+  } catch (error) {
+    console.error("Error fetching event volunteers:", error);
+    return { success: false, error: error.message }; // Return error structure
+  }
+};
+
+// Function to fetch all events (optionally filter by date, creator, etc.)
+export const getParishionerEvents = async ({ page = 1, pageSize } = {}) => {
+  try {
+    const data = await paginate({
+      key: "events",
+      page,
+      pageSize,
+      order: [{ column: "event_date", ascending: true }],
+    });
+
+    return data;
+  } catch (error) {
+    console.error("Error fetching events:", error);
+    return { success: false, error: error.message };
   }
 };
