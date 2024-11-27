@@ -1,48 +1,44 @@
 import { supabase } from "./supabaseClient";
 
-// Check duplicated name for family members
-export const checkDuplicateFamilyMember = async (familyId, firstName) => {
+// Check for duplicate names of all family members
+export const checkDuplicatedFamilyMember = async (familyId, firstName) => {
   try {
-    const { data, error } = await supabase
+    // Ensure firstName is a valid string
+    if (!firstName || typeof firstName !== "string") {
+      throw new Error("Invalid first name provided.");
+    }
+
+    // Query parents and children tables for duplicate names
+    const { data: parentsData, error: parentsError } = await supabase
       .from("parents")
-      .select("*")
-      .eq("family_id", familyId) 
-      .eq("first_name", firstName.trim()); 
+      .select("first_name")
+      .eq("family_id", familyId)
+      .eq("first_name", firstName.trim());
 
-    if (error) {
-      throw new Error(error.message);
-    }
+    const { data: childrenData, error: childrenError } = await supabase
+      .from("children")
+      .select("first_name")
+      .eq("family_id", familyId)
+      .eq("first_name", firstName.trim());
 
-    // If the query returns any data, it means the first name already exists for this family
-    if (data.length > 0) {
-      return true; 
-    }
+    // Handle errors
+    if (parentsError) throw new Error(parentsError.message);
+    if (childrenError) throw new Error(childrenError.message);
 
-    // If no matching family member is found
-    return false; 
+    // Check if the name exists in either table
+    const isDuplicate =
+      (parentsData && parentsData.length > 0) ||
+      (childrenData && childrenData.length > 0);
+
+    return isDuplicate;
   } catch (error) {
     console.error("Error checking for duplicate family member:", error);
-    return false; 
+    return false;
   }
 };
 
 export const addParent = async (parentsData, familyId) => {
   try {
-    // Loop through each parent and check for duplicates
-    for (const parent of parentsData) {
-      const isDuplicate = await checkDuplicateFamilyMember(
-        familyId,
-        parent.firstName
-      );
-      if (isDuplicate) {
-        return {
-          success: false,
-          message: `Family member with the first name "${parent.firstName}" already exists in this family.`,
-        };
-      }
-    }
-
-    // If no duplicates, insert the data
     const { data, error } = await supabase
       .from("parents")
       .upsert(
@@ -130,4 +126,130 @@ export const getFamilyId = async (userId) => {
     console.error("Error fetching user id", error);
     return { success: false, error: error.message };
   }
+};
+
+// Fetch parents/guardian
+export const getGuardian = async (familyId) => {
+  try {
+    const { data, error } = await supabase
+      .from("parents")
+      .select("*")
+      .eq("family_id", familyId); // Equal to family group
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error fetching user id", error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Fetchchildren
+export const getChildren = async (familyId) => {
+  try {
+    const { data, error } = await supabase
+      .from("children")
+      .select("*")
+      .eq("family_id", familyId); // Equal to family group
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error fetching user id", error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Edit parent
+export const updateParent = async (parentId, data) => {
+  if (!data) {
+    throw new Error("Data is undefined");
+  }
+
+  const { firstName, lastName, contactNumber } = data;
+
+  if (!firstName || !lastName || !contactNumber) {
+    throw new Error("First name or last name is missing");
+  }
+
+  const { data: updatedParent, error } = await supabase
+    .from("parents")
+    .update({
+      first_name: firstName,
+      last_name: lastName,
+      contact_number: contactNumber,
+    })
+    .eq("id", parentId)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(error.message); // Throw an error to be caught by the mutation
+  }
+
+  return updatedParent; // Return the updated child data
+};
+
+// Delete parent
+export const deleteParent = async (parentId) => {
+  const { data, error } = await supabase
+    .from("parents")
+    .delete()
+    .eq("id", parentId)
+    .select()
+    .single(); // Specify the child ID to delete
+
+  if (error) {
+    throw new Error(error.message); // Handle error from Supabase
+  }
+
+  return data; // Return the deleted data if successful
+};
+
+// Edit Children
+export const updateChild = async (childId, data) => {
+  if (!data) {
+    throw new Error("Data is undefined");
+  }
+
+  const { firstName, lastName } = data;
+
+  if (!firstName || !lastName) {
+    throw new Error("First name or last name is missing");
+  }
+
+  const { data: updatedChild, error } = await supabase
+    .from("children")
+    .update({ first_name: firstName, last_name: lastName })
+    .eq("id", childId)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(error.message); // Throw an error to be caught by the mutation
+  }
+
+  return updatedChild; // Return the updated child data
+};
+
+// Delete child
+export const deleteChild = async (childId) => {
+  const { data, error } = await supabase
+    .from("children")
+    .delete()
+    .eq("id", childId)
+    .select()
+    .single(); // Specify the child ID to delete
+
+  if (error) {
+    throw new Error(error.message); // Handle error from Supabase
+  }
+
+  return data; // Return the deleted data if successful
 };
