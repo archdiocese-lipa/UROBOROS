@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import Select from "react-select";
 import TimePicker from "./TimePicker";
@@ -33,18 +34,20 @@ import { useToast } from "@/hooks/use-toast";
 import useCreateMeeting from "@/hooks/useCreateMeeting";
 import { useUser } from "@/context/useUser";
 
-// Dummy participants
-const options = [
-  { value: "john_doe", label: "John Doe" },
-  { value: "jane_doe", label: "Jane Doe" },
-  { value: "mark_smith", label: "Mark Smith" },
-];
+import useUsersByRole from "@/hooks/useUsersByRole";
+// import useGetAllMinistries from "@/hooks/useGetAllMinistries";
 
+// Dummy participants removed and using real volunteers
 const CreateMeeting = () => {
   const { userData } = useUser(); // Get userData from the context
   const userId = userData?.id; // Extract the userId, safely checking if userData exists
   const { toast } = useToast();
   const { mutate: createMeeting, isLoading } = useCreateMeeting();
+
+  // const { data: ministries } = useGetAllMinistries();
+  const { data: volunteers } = useUsersByRole("volunteer"); // Get volunteers
+
+  const [isDialogOpen, setDialogOpen] = useState(false);
 
   const meetingForm = useForm({
     resolver: zodResolver(createMeetingSchema),
@@ -86,10 +89,18 @@ const CreateMeeting = () => {
 
     // Call the create meeting function with the prepared data
     createMeeting(meetingData);
+    setDialogOpen(false); // Close the dialog if success
   };
 
+  // Convert volunteers data into the format expected by react-select
+  const volunteerOptions =
+    volunteers?.map((volunteer) => ({
+      value: volunteer.id,
+      label: `${volunteer.first_name} ${volunteer.last_name}`,
+    })) || [];
+
   return (
-    <Dialog>
+    <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>
         <Button size="primary" className="px-3.5 py-2">
           <Users className="text-primary" />
@@ -135,8 +146,8 @@ const CreateMeeting = () => {
                     <FormControl>
                       <Select
                         isMulti
-                        options={options}
-                        value={options.filter((option) =>
+                        options={volunteerOptions} // Use the dynamic volunteer options
+                        value={volunteerOptions.filter((option) =>
                           field.value.includes(option.value)
                         )}
                         onChange={(selected) =>
