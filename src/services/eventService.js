@@ -253,11 +253,17 @@ export const fetchEventVolunteers = async (eventId) => {
 // Function to fetch all events (optionally filter by date, creator, etc.)
 export const getParishionerEvents = async ({ page = 1, pageSize } = {}) => {
   try {
+    // Get the current date in "YYYY-MM-DD" format
+    const today = new Date().toISOString().split("T")[0];
+
     const data = await paginate({
       key: "events",
       page,
       pageSize,
       order: [{ column: "event_date", ascending: true }],
+      filters: {
+        gte: { event_date: today }, // Include events with dates greater than or equal to today
+      },
     });
 
     return data;
