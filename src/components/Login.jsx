@@ -51,7 +51,7 @@ const Login = () => {
   const handleLogin = async (data) => {
     try {
       const user = await login(data); // Trigger login and get user data
-      console.log("Login successful! user:", user);
+      console.log(user);
 
       setIsDialogOpen(false); // Close dialog
       navigate(loc?.state?.from || "/announcements", { replace: true }); // Navigate to the dashboard
@@ -70,7 +70,6 @@ const Login = () => {
   // Effect to watch for userData and trigger navigation when it's updated
   useEffect(() => {
     if (userData) {
-      console.log("userData:", userData);
       setIsDialogOpen(false); // Close dialog on success
       // navigate("/dashboard"); // Navigate to the dashboard
     }

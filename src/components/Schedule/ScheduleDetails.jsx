@@ -31,8 +31,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 
-import { getEventById } from "@/services/eventService";
+import { getEventById, fetchEventVolunteers } from "@/services/eventService";
 import { getEventAttendance } from "@/services/attendanceService";
+
 import { cn } from "@/lib/utils";
 
 const ScheduleDetails = () => {
@@ -49,11 +50,19 @@ const ScheduleDetails = () => {
     enabled: !!eventId,
   });
 
+  const { data: volunteers, isLoading: volunteersLoading } = useQuery({
+    queryKey: ["eventVolunteers", eventId],
+    queryFn: async () => {
+      const response = await fetchEventVolunteers(eventId);
+      return response.data;
+    },
+    enabled: !!eventId,
+  });
+
   const { data: attendance, isLoading: attendanceLoading } = useQuery({
     queryKey: ["attendance", eventId],
     queryFn: async () => {
       const response = await getEventAttendance(eventId);
-
       return response;
     },
     enabled: !!eventId,
@@ -69,7 +78,8 @@ const ScheduleDetails = () => {
     }
   };
 
-  if (isLoading || attendanceLoading) return <div>Loading...</div>;
+  if (isLoading || attendanceLoading || volunteersLoading)
+    return <div>Loading...</div>;
 
   if (!eventId)
     return (
@@ -83,7 +93,6 @@ const ScheduleDetails = () => {
       <div className="flex justify-between">
         <div>
           <Title>{event?.event_name}</Title>
-          {/* <Description>{`${event.event_category} - ${event.event_visibility}`}</Description> */}
           <Description>{event.event_description}</Description>
         </div>
         <div className="flex gap-1">
@@ -111,6 +120,35 @@ const ScheduleDetails = () => {
           </Dialog>
         </div>
       </div>
+
+      {/* Conditionally render Assigned Volunteers */}
+      {volunteers && volunteers.length > 0 && (
+        <div>
+          <h3 className="text-xl font-bold text-accent">Assigned Volunteers</h3>
+          <Table>
+            <TableHeader className="bg-primary">
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {volunteers?.map((volunteer, index) => (
+                <TableRow
+                  key={index}
+                  className={cn(
+                    index % 2 !== 0 ? "bg-primary bg-opacity-35" : "bg-white"
+                  )}
+                >
+                  <TableCell>{`${volunteer.users.first_name} ${volunteer.users.last_name}`}</TableCell>
+                  <TableCell>{volunteer.users.email}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+
       {attendance?.map((family, i) => (
         <Card key={i}>
           <CardHeader>
