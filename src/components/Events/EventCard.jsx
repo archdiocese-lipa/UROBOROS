@@ -6,10 +6,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Description } from "../Title";
+import ManualAttendEvents from "./ManualAttendEvents";
 
-const EventCard = ({ eventName, eventDescription, eventDate, eventTime }) => {
+const EventCard = ({
+  eventId,
+  eventName,
+  eventDescription,
+  eventDate = "No description available",
+  eventTime,
+}) => {
   return (
     <Card className="border-primary text-primary-text">
       <CardHeader>
@@ -23,7 +29,7 @@ const EventCard = ({ eventName, eventDescription, eventDate, eventTime }) => {
         <Description>Organiser</Description>
       </CardContent>
       <CardFooter>
-        <Button>Attend</Button>
+        <ManualAttendEvents eventId={eventId} />
       </CardFooter>
     </Card>
   );
@@ -31,15 +37,11 @@ const EventCard = ({ eventName, eventDescription, eventDate, eventTime }) => {
 
 // Add PropTypes validation
 EventCard.propTypes = {
+  eventId: PropTypes.string.isRequired,
   eventName: PropTypes.string.isRequired, // Must be a string and required
   eventDescription: PropTypes.string, // Optional string
   eventDate: PropTypes.string.isRequired, // Must be a string in date format
   eventTime: PropTypes.string.isRequired, // Must be a string in time format
-};
-
-// Provide default values for optional props
-EventCard.defaultProps = {
-  eventDescription: "No description available", // Default text for description
 };
 
 export default EventCard;

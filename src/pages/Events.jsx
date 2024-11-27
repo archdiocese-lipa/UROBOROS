@@ -6,13 +6,13 @@ import { getParishionerEvents } from "@/services/eventService";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
 const Events = () => {
-  const { data, isLoading } = useInfiniteQuery({
+  const { data, isLoading, fetchNextPage, hasNextPage } = useInfiniteQuery({
     queryKey: ["schedules"],
     queryFn: async ({ pageParam }) => {
       // Fetch filtered events
       const response = await getParishionerEvents({
         page: pageParam,
-        pageSize: 10,
+        pageSize: 8,
       });
 
       return response;
@@ -42,6 +42,7 @@ const Events = () => {
             page.items.map((event, i) => (
               <EventCard
                 key={i}
+                eventId={event.id}
                 eventName={event.event_name}
                 eventDescription={event.description}
                 eventDate={event.event_date}
@@ -51,6 +52,13 @@ const Events = () => {
           )
         )}
       </div>
+      {hasNextPage && (
+        <div className="mt-2 text-center md:text-end">
+          <Button variant="outline" onClick={() => fetchNextPage()}>
+            See more events
+          </Button>
+        </div>
+      )}
     </>
   );
 };
