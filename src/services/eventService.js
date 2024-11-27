@@ -249,3 +249,20 @@ export const fetchEventVolunteers = async (eventId) => {
     return { success: false, error: error.message }; // Return error structure
   }
 };
+
+// Function to fetch all events (optionally filter by date, creator, etc.)
+export const getParishionerEvents = async ({ page = 1, pageSize } = {}) => {
+  try {
+    const data = await paginate({
+      key: "events",
+      page,
+      pageSize,
+      order: [{ column: "event_date", ascending: true }],
+    });
+
+    return data;
+  } catch (error) {
+    console.error("Error fetching events:", error);
+    return { success: false, error: error.message };
+  }
+};
