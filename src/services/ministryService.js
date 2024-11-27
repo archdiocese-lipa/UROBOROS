@@ -132,6 +132,21 @@ export const assignNewVolunteers = async (ministryId, newMembers) => {
   }
 };
 
+
+export const fetchMinistryMembersFirstNamesAndCount = async (ministryId) => {
+  const { data, error, count } = await supabase
+    .from("ministry_assignments")
+    .select("users(first_name)", { count: "exact" })
+    .eq("ministry_id", ministryId)
+    .limit(4);
+
+  if (error) throw new Error(error.message);
+
+  return {
+    firstNames: data.map((user) => user.users.first_name),
+    count
+  };
+
 export const removeMinistryVolunteer = async (ministryId, memberId) => {
   try {
     const { data, error } = await supabase
@@ -149,4 +164,5 @@ export const removeMinistryVolunteer = async (ministryId, memberId) => {
     console.error("Error removing ministry volunteer:", error.message);
     throw error; // Re-throw the error to be handled in the component
   }
+
 };

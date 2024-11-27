@@ -15,7 +15,7 @@ import {
 import { Check, ChevronsUpDown } from "lucide-react";
 import PropTypes from "prop-types";
 
-const AssignVolunteerComboBox = ({ options, value, onChange, placeholder }) => {
+const AssignVolunteerComboBox = ({ options, value, onChange, placeholder,disabled }) => {
   const [open, setOpen] = useState(false);
 
   // Helper function to toggle selection
@@ -34,6 +34,7 @@ const AssignVolunteerComboBox = ({ options, value, onChange, placeholder }) => {
           variant="outline"
           role="combobox"
           aria-expanded={open}
+          disabled={disabled}
           className="w-full justify-between bg-primary hover:bg-primary"
         >
           {value.length > 0
@@ -41,7 +42,7 @@ const AssignVolunteerComboBox = ({ options, value, onChange, placeholder }) => {
                 .filter((opt) => value.includes(opt.value))
                 .map((opt) => opt.label)
                 .join(", ") // Display selected labels
-            : placeholder}
+            : placeholder} {/* Show placeholder if no value is selected */}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -54,6 +55,7 @@ const AssignVolunteerComboBox = ({ options, value, onChange, placeholder }) => {
               <CommandItem
                 key={opt.value}
                 onSelect={() => toggleSelection(opt.value)}
+                disabled={disabled} 
               >
                 {opt.label}
                 <Check
@@ -70,6 +72,7 @@ const AssignVolunteerComboBox = ({ options, value, onChange, placeholder }) => {
   );
 };
 
+
 AssignVolunteerComboBox.propTypes = {
   options: PropTypes.arrayOf(
     PropTypes.shape({
@@ -80,6 +83,7 @@ AssignVolunteerComboBox.propTypes = {
   value: PropTypes.arrayOf(PropTypes.string).isRequired, // Changed to an array for multi-select
   onChange: PropTypes.func.isRequired,
   placeholder: PropTypes.string,
+  disabled: PropTypes.bool
 };
 
 export default AssignVolunteerComboBox;
