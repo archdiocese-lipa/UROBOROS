@@ -1,6 +1,7 @@
 import { Button } from "../ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import PropTypes from "prop-types";
+import { ReplyIcon, KebabIcon} from "@/assets/icons/icons";
 
 import {
   Dialog,
@@ -17,7 +18,7 @@ import { getInitial } from "@/lib/utils";
 import CommentDate from "./CommentDate";
 import ReplyInput from "./ReplyInput";
 // import kebab from "@/assets/svg/threeDots.svg";
-import { KebabIcon } from "@/assets/icons/icons";
+
 import EditCommentForm from "./EditCommentForm";
 
 import SetShowReplyButton from "./SetShowReplyButton";
@@ -196,7 +197,8 @@ import TriggerDislikeIcon from "./TriggerDislikeIcon";
         </Popover>
       )}
       <button onClick={() => setIsReplying(true)} className="ml-2 rounded-2xl">
-        reply
+      <ReplyIcon className="w-5 h-5 hover:cursor-pointer"/>
+
       </button>
     </div>
   );

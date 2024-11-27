@@ -27,7 +27,7 @@ import PropTypes from "prop-types";
 
 
   return (
-    <div className="mr-2 flex flex-col gap-2 mt-2">
+    <div className="mr-2 flex flex-col gap-2 mt-5">
       {isReplying && (
         <form
           onSubmit={handleSubmit((inputs) =>

@@ -1,6 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import CommentDate from "./CommentDate";
-// import kebab from "@/assets/svg/threeDots.svg";
+import { ReplyIcon, KebabIcon } from "@/assets/icons/icons";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import {
   Dialog,
@@ -19,7 +19,6 @@ import EditReplyForm from "./EditReplyForm";
 import PropTypes from "prop-types";
 import { useUser } from "@/context/useUser";
 import { useState } from "react";
-import { KebabIcon } from "@/assets/icons/icons";
 import TriggerLikeIcon from "./TriggerLikeIcon";
 import TriggerDislikeIcon from "./TriggerDislikeIcon";
 
@@ -147,13 +146,13 @@ const Replies = ({
             </PopoverContent>
           </Popover>
         )}
-        <Button
+        <button
           onClick={() => setIsReplying(true)}
-          variant={"ghost"}
           className="ml-2 rounded-2xl"
         >
-          reply
-        </Button>
+          <ReplyIcon className="w-5 h-5 hover:cursor-pointer"/>
+          
+        </button>
       </div>
       <ReplyInput
         replyTo={`${reply.users.first_name} ${reply.users.last_name}`}
