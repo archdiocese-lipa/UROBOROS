@@ -21,6 +21,7 @@ const paginate = async ({
   pageSize = 10,
   query = {},
   filters = {},
+  order = [],
 }) => {
   try {
     // Calculate the range for pagination
@@ -32,7 +33,14 @@ const paginate = async ({
       .from(key)
       .select("*")
       .range(from, to)
-      .match(query);
+      .match(query)
+
+    // Apply ordering dynamically
+    if (order.length > 0) {
+      order.forEach(({ column, ascending }) => {
+        supabaseQuery = supabaseQuery.order(column, { ascending });
+      });
+    }
 
     // Apply gte and lte filters if provided
     if (filters.gte) {

@@ -35,6 +35,7 @@ import { getEventById, fetchEventVolunteers } from "@/services/eventService";
 import { getEventAttendance } from "@/services/attendanceService";
 
 import { cn } from "@/lib/utils";
+import { Label } from "../ui/label";
 
 const ScheduleDetails = () => {
   const [qrCode, setQRCode] = useState(null);
@@ -88,12 +89,23 @@ const ScheduleDetails = () => {
       </div>
     );
 
+  const capitalizeFirstLetter = (string) => {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  };
+
   return (
     <div className="no-scrollbar flex grow flex-col gap-8 overflow-y-auto rounded-2xl px-9 py-6 outline outline-2 outline-[#e7dad3]">
       <div className="flex justify-between">
         <div>
           <Title>{event?.event_name}</Title>
           <Description>{event.event_description}</Description>
+          <Label className="text-primary-text">Assign Volunteer:</Label>
+          {volunteers?.map((volunteer, index) => (
+            <p
+              key={volunteer.id}
+              className="text-primary-text"
+            >{`${index + 1}. ${capitalizeFirstLetter(volunteer.users.first_name)} ${capitalizeFirstLetter(volunteer.users.last_name)}`}</p>
+          ))}
         </div>
         <div className="flex gap-1">
           <Button>
@@ -120,34 +132,6 @@ const ScheduleDetails = () => {
           </Dialog>
         </div>
       </div>
-
-      {/* Conditionally render Assigned Volunteers */}
-      {volunteers && volunteers.length > 0 && (
-        <div>
-          <h3 className="text-xl font-bold text-accent">Assigned Volunteers</h3>
-          <Table>
-            <TableHeader className="bg-primary">
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {volunteers?.map((volunteer, index) => (
-                <TableRow
-                  key={index}
-                  className={cn(
-                    index % 2 !== 0 ? "bg-primary bg-opacity-35" : "bg-white"
-                  )}
-                >
-                  <TableCell>{`${volunteer.users.first_name} ${volunteer.users.last_name}`}</TableCell>
-                  <TableCell>{volunteer.users.email}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
 
       {attendance?.map((family, i) => (
         <Card key={i}>
