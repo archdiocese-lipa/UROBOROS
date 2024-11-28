@@ -99,7 +99,6 @@ const removeUser = async (id) => {
 };
 
 const activateUser = async ({ id, payload }) => {
-  console.log("Activating user with ID:", id, "and payload:", payload); // Log to check values
   try {
     const { data: user, error } = await supabase
       .from("users")
