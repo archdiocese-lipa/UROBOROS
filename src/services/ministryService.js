@@ -70,7 +70,6 @@ export const fetchMinistryAssignedUsers = async (ministryId) => {
 
 export const fetchUserMinistries = async (user_id) => {
   // Accept userData as argument
-
   try {
     const { data, error } = await supabase
       .from("ministry_assignments")

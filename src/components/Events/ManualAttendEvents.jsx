@@ -2,7 +2,6 @@ import { useState } from "react";
 import PropTypes from "prop-types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import {
   Form,
   FormControl,
@@ -23,62 +22,23 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "../ui/label";
 import { useUser } from "@/context/useUser";
 import {
-  useFetchChildren,
-  useFetchFamilyId,
-  useFetchGuardian,
-} from "@/hooks/useFetchFamily";
-import {
   useChildrenManualAttendance,
   useGuardianManualAttendEvent,
   useMainApplicantAttendEvent,
 } from "@/hooks/useManualAttendEvent";
-
-// Zod schema for form validation
-const formSchema = z.object({
-  parents: z
-    .array(
-      z.object({
-        id: z.string().optional(),
-      })
-    )
-    .optional(),
-  children: z
-    .array(
-      z.object({
-        id: z.string(),
-      })
-    )
-    .min(1, { message: "Please select at least one child" }), // Ensure the array has at least one child
-});
+import { useFamilyData } from "@/hooks/useFamilyData";
+import { manualAttendEventsSchema } from "@/zodSchema/ManualAttendEventsSchema";
 
 const ManualAttendEvents = ({ eventId, eventName }) => {
-  const [selectedEvent, setselectedEvent] = useState("");
+  const [selectedEvent, setselectedEvent] = useState(""); // set the selected event
 
-  const { userData } = useUser();
+  const { userData } = useUser(); // Get the userId
   const userId = userData?.id;
-  // Fetch familyId based on the userId
-  const {
-    data: familyData,
-    isLoading: isFamilyLoading,
-    error: _familyError,
-  } = useFetchFamilyId(userId);
 
-  // Fetch guardian data based on familyId
-  const {
-    data: parentData,
-    isLoading: isParentLoading,
-    error: _parentError,
-  } = useFetchGuardian(familyData?.id);
-
-  // Fetch child data based on familyId
-  const {
-    data: childData,
-    isLoading: isChildLoading,
-    error: _childError,
-  } = useFetchChildren(familyData?.id);
+  const { parentData, childData, isLoading, error } = useFamilyData(); // Fetch family data
 
   const form = useForm({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(manualAttendEventsSchema),
     defaultValues: {
       parents: [],
       children: [],
@@ -88,6 +48,7 @@ const ManualAttendEvents = ({ eventId, eventName }) => {
   const { mutate: mainApplicantAttend } = useMainApplicantAttendEvent();
   const { mutate: guardianManualAttend } = useGuardianManualAttendEvent();
   const { mutate: childrenManualAttend } = useChildrenManualAttendance();
+
   const onSubmit = (data) => {
     // Main applicant data (always included)
     const mainApplicant = [
@@ -145,7 +106,7 @@ const ManualAttendEvents = ({ eventId, eventName }) => {
               className="flex flex-col space-y-2"
             >
               <Label className="text-primary-text">Parent/Guardian</Label>
-              {!isFamilyLoading || !isParentLoading ? (
+              {!isLoading ? (
                 parentData?.map((parent) => (
                   <FormField
                     key={parent.id}
@@ -189,6 +150,7 @@ const ManualAttendEvents = ({ eventId, eventName }) => {
               ) : (
                 <p>Loading...</p>
               )}
+              {error && <p>Error fetching guardian</p>}
               {form.formState.errors.children && (
                 <FormMessage>
                   {form.formState.errors.children.message}
@@ -196,7 +158,7 @@ const ManualAttendEvents = ({ eventId, eventName }) => {
               )}
               <Label className="text-primary-text">Children</Label>
 
-              {!isFamilyLoading || !isChildLoading ? (
+              {!isLoading ? (
                 childData?.map((child) => (
                   <FormField
                     key={child.id}
@@ -241,6 +203,7 @@ const ManualAttendEvents = ({ eventId, eventName }) => {
               ) : (
                 <p>Loading...</p>
               )}
+              {error && <p>Error fetching guardian</p>}
               <div className="text-end">
                 <Button type="submit">Attend</Button>
               </div>

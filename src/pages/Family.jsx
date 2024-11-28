@@ -19,65 +19,33 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ThreeDotsIcon } from "@/assets/icons/icons";
 
-import {
-  useFetchChildren,
-  useFetchFamilyId,
-  useFetchGuardian,
-} from "@/hooks/useFetchFamily";
-import { useUser } from "@/context/useUser";
+import { useFamilyData } from "@/hooks/useFamilyData";
+import { useDeleteChild, useDeleteParent } from "@/hooks/useFamily";
 import EditChild from "@/components/Family/EditChild";
 import EditParent from "@/components/Family/EditParent";
-import { useDeleteChild, useDeleteParent } from "@/hooks/useUpdateFamily";
 
 const Family = () => {
-  const { userData } = useUser();
-  const userId = userData?.id;
+  const { parentData, childData, isLoading, error } = useFamilyData();
 
-  // Fetch familyId based on the userId
-  const {
-    data: familyData,
-    isLoading: isFamilyLoading,
-    error: _familyError,
-  } = useFetchFamilyId(userId);
-
-  // Fetch guardian data based on familyId
-  const {
-    data: parentData,
-    isLoading: isParentLoading,
-    error: _parentError,
-  } = useFetchGuardian(familyData?.id);
-
-  // Fetch child data based on familyId
-  const {
-    data: childData,
-    isLoading: isChildLoading,
-    error: _childError,
-  } = useFetchChildren(familyData?.id);
-
-  // Delete Child
   const { mutateAsync: deleteParent } = useDeleteParent();
-
-  const handleDeleteParent = async (parentId) => {
-    try {
-      await deleteParent(parentId);
-    } catch (error) {
-      console.error("Error deleting parent:", error.message);
-    }
-  };
-
-  // Delete Child
   const { mutateAsync: deleteChild } = useDeleteChild();
 
-  const handleDeleteChild = async (childId) => {
-    try {
-      await deleteChild(childId);
-    } catch (error) {
-      console.error("Error deleting child:", error.message);
-    }
+  // Handle parent deletion
+  const handleDeleteParent = async (parentId) => {
+    await deleteParent(parentId); // Error automatically handled by useMutation's onError
   };
 
-  if (isFamilyLoading || isParentLoading || isChildLoading) {
+  // Handle child deletion
+  const handleDeleteChild = async (childId) => {
+    await deleteChild(childId);
+  };
+
+  if (isLoading) {
     return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error.message}</div>;
   }
 
   return (
