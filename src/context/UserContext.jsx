@@ -17,21 +17,29 @@ export const UserProvider = ({ children }) => {
         await supabase.auth.signInWithPassword(credentials);
       if (loginError) throw loginError;
 
+      // Fetch the full user data from the "users" table
       const { data: fullUser, error: fetchError } = await supabase
         .from("users")
         .select("*")
         .eq("id", authUser.user.id)
         .single();
+
       if (fetchError) throw fetchError;
 
-      setUserData(fullUser);
+      // Check if the user's account is confirmed
+      if (!fullUser.is_confirmed) {
+        throw new Error(
+          "Your account is not confirmed. Please contact an admin"
+        );
+      }
 
-      return fullUser;
+      setUserData(fullUser); // Set the user data in your state
+      return fullUser; // Return the full user data
     } catch (error) {
       console.error("Login failed:", error.message);
-      throw error;
+      throw error; // Propagate the error to the caller
     } finally {
-      setLoading(false);
+      setLoading(false); // Stop the loading state
     }
   };
 

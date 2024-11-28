@@ -98,4 +98,30 @@ const removeUser = async (id) => {
   }
 };
 
-export { getUser, getUsersByRole, getUsers, updateUser, removeUser };
+const activateUser = async ({ id, payload }) => {
+  console.log("Activating user with ID:", id, "and payload:", payload); // Log to check values
+  try {
+    const { data: user, error } = await supabase
+      .from("users")
+      .update({ is_confirmed: payload }) // Set the is_confirmed field to the boolean payload
+      .eq("id", id) // Find the user by ID
+      .select()
+      .single(); // Ensure you update only one user
+
+    if (error) throw error;
+
+    return user;
+  } catch (error) {
+    console.error("Error updating user", error.message);
+    throw error;
+  }
+};
+
+export {
+  getUser,
+  getUsersByRole,
+  getUsers,
+  updateUser,
+  removeUser,
+  activateUser,
+};
