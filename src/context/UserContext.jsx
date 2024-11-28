@@ -10,6 +10,7 @@ export const UserProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
 
   // Login function
+  // Login function
   const login = async (credentials) => {
     setLoading(true);
     try {
@@ -17,21 +18,29 @@ export const UserProvider = ({ children }) => {
         await supabase.auth.signInWithPassword(credentials);
       if (loginError) throw loginError;
 
+      // Fetch the full user data from the "users" table
       const { data: fullUser, error: fetchError } = await supabase
         .from("users")
         .select("*")
         .eq("id", authUser.user.id)
         .single();
+
       if (fetchError) throw fetchError;
 
-      setUserData(fullUser);
+      // Allow login if the user's role is "admin" or if their account is confirmed
+      if (!fullUser.is_confirmed && fullUser.role !== "admin") {
+        throw new Error(
+          "Your account is not confirmed. Please contact an admin"
+        );
+      }
 
-      return fullUser;
+      setUserData(fullUser); // Set the user data in your state
+      return fullUser; // Return the full user data
     } catch (error) {
       console.error("Login failed:", error.message);
-      throw error;
+      throw error; // Propagate the error to the caller
     } finally {
-      setLoading(false);
+      setLoading(false); // Stop the loading state
     }
   };
 

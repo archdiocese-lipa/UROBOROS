@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Icon } from "@iconify/react";
+import { Switch } from "@/components/ui/switch";
 
 import { Title, Description } from "@/components/Title";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -32,11 +33,13 @@ import { getUsers, removeUser } from "@/services/userService";
 
 import { cn } from "@/lib/utils";
 import DownIcon from "@/assets/icons/down-icon.svg";
+import useActivateUser from "@/hooks/useActivateUser";
 
 const Requests = () => {
   const [tab, setTab] = useState("volunteer");
   const [open, setOpen] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
+  const { mutate: activateUser } = useActivateUser(); // Use activateUser mutation hook
 
   const {
     data,
@@ -91,6 +94,16 @@ const Requests = () => {
       await refetch();
     } catch (error) {
       console.error("Error deleting user", error.message);
+    }
+  };
+
+  const handleStatusChange = (checked, id) => {
+    // Check if the mutate function is available
+    if (activateUser) {
+      activateUser({
+        id, // User ID
+        payload: checked, // Passing the boolean value directly for activation/deactivation
+      });
     }
   };
 
@@ -157,9 +170,11 @@ const Requests = () => {
         <Table>
           <TableHeader className="bg-primary">
             <TableRow>
+              <TableHead className="text-center">Active</TableHead>
               <TableHead className="rounded-l-lg text-center">Email</TableHead>
               <TableHead className="text-center">Name</TableHead>
               <TableHead className="text-center">Contact</TableHead>
+
               <TableHead className="rounded-r-lg text-center">Action</TableHead>
             </TableRow>
           </TableHeader>
@@ -172,6 +187,15 @@ const Requests = () => {
                     j % 2 !== 0 ? "bg-primary bg-opacity-35" : "bg-white"
                   )}
                 >
+                  <TableCell className="text-center">
+                    <Switch
+                      checked={row.is_confirmed}
+                      onCheckedChange={(checked) =>
+                        handleStatusChange(checked, row.id)
+                      } // Trigger optimistic update
+                      aria-label="Confirmation Status"
+                    />
+                  </TableCell>
                   <TableCell className="w-[300px] text-center">
                     {row.email}
                   </TableCell>
@@ -181,6 +205,7 @@ const Requests = () => {
                   <TableCell className="w-[300px] text-center">
                     {row.contact_number}
                   </TableCell>
+
                   <TableCell className="w-[300px] text-center">
                     <div className="flex items-center justify-center gap-2">
                       <Button
