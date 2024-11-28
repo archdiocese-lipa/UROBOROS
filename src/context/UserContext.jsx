@@ -10,6 +10,7 @@ export const UserProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
 
   // Login function
+  // Login function
   const login = async (credentials) => {
     setLoading(true);
     try {
@@ -26,8 +27,8 @@ export const UserProvider = ({ children }) => {
 
       if (fetchError) throw fetchError;
 
-      // Check if the user's account is confirmed
-      if (!fullUser.is_confirmed) {
+      // Allow login if the user's role is "admin" or if their account is confirmed
+      if (!fullUser.is_confirmed && fullUser.role !== "admin") {
         throw new Error(
           "Your account is not confirmed. Please contact an admin"
         );
