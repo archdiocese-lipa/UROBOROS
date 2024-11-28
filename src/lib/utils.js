@@ -22,7 +22,7 @@ const paginate = async ({
   query = {},
   filters = {},
   order = [],
-  select = '*',
+  select = "*",
 }) => {
   try {
     // Calculate the range for pagination
@@ -34,13 +34,19 @@ const paginate = async ({
       .from(key)
       .select(select)
       .range(from, to)
-      .match(query)
+      .match(query);
 
     // Apply ordering dynamically
     if (order.length > 0) {
       order.forEach(({ column, ascending }) => {
         supabaseQuery = supabaseQuery.order(column, { ascending });
       });
+    }
+    // Apply the is_confirmed filter if provided
+    if (filters.active && filters.active !== "all") {
+      // Filter by `is_confirmed` column based on activeFilter value
+      const isConfirmed = filters.active === "active"; // Map activeFilter to is_confirmed value
+      supabaseQuery = supabaseQuery.eq("is_confirmed", isConfirmed);
     }
 
     // Apply gte and lte filters if provided
@@ -99,7 +105,10 @@ const paginate = async ({
  * @returns {string} The paginated items and pagination properties.
  */
 const getInitial = (name) => {
-  return name?.split(" ").map((word) => word[0])[0].toUpperCase();
-}
+  return name
+    ?.split(" ")
+    .map((word) => word[0])[0]
+    .toUpperCase();
+};
 
-export { cn, paginate,getInitial };
+export { cn, paginate, getInitial };

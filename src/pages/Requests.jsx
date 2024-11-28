@@ -23,6 +23,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  // SelectLabel,
+  SelectGroup,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import NewProfileForm from "@/components/NewProfileForm";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -32,13 +41,14 @@ import useInterObserver from "@/hooks/useInterObserver";
 import { getUsers, removeUser } from "@/services/userService";
 
 import { cn } from "@/lib/utils";
-import DownIcon from "@/assets/icons/down-icon.svg";
+// import DownIcon from "@/assets/icons/down-icon.svg";
 import useActivateUser from "@/hooks/useActivateUser";
 
 const Requests = () => {
   const [tab, setTab] = useState("volunteer");
   const [open, setOpen] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
+  const [activeFilter, setActiveFilter] = useState(null);
   const { mutate: activateUser } = useActivateUser(); // Use activateUser mutation hook
 
   const {
@@ -50,9 +60,10 @@ const Requests = () => {
     _isFetchingNextPage,
     error,
   } = useInfiniteQuery({
-    queryKey: ["users-list", tab],
+    queryKey: ["users-list", tab, activeFilter], // Include activeFilter in the query key
     queryFn: async ({ pageParam }) => {
       const response = await getUsers({
+        activeFilter,
         page: pageParam,
         pageSize: 10,
         role: tab,
@@ -127,16 +138,29 @@ const Requests = () => {
           </TabsList>
         </Tabs>
         <div className="mt-2 flex h-fit w-fit items-center gap-3">
-          <div className="w-fit rounded-full border border-primary py-2 pl-4 pr-1">
+          {/* <div className="w-fit rounded-full border border-primary py-2 pl-4 pr-1">
             <div className="flex items-center gap-4">
               <p className="text-md font-semibold text-accent">
                 All Volunteers
               </p>
+
               <div className="flex h-7 w-11 items-center justify-center rounded-[18.5px] bg-secondary-accent px-2 text-white hover:cursor-pointer">
                 <img src={DownIcon} alt={`up icon`} className="h-2 w-4" />
               </div>
             </div>
-          </div>
+          </div> */}
+          <Select onValueChange={(value) => setActiveFilter(value)}>
+            <SelectTrigger className="rounded-full">
+              <SelectValue placeholder="Select active status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="inactive">Inactive</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
           <Dialog
             open={open}
             onOpenChange={(state) => onDialogStateChange(state)}
