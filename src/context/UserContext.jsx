@@ -45,7 +45,6 @@ export const UserProvider = ({ children }) => {
   };
 
   // Register function
-  // Register function with email check
   const register = async ({
     firstName,
     lastName,
@@ -88,7 +87,6 @@ export const UserProvider = ({ children }) => {
           contact_number: contactNumber,
           role: "parishioner",
           is_confirmed: false,
-          is_active: true,
         },
       ]);
 
@@ -104,6 +102,21 @@ export const UserProvider = ({ children }) => {
         .select();
 
       if (familyError) throw familyError;
+
+      // Insert the user data into the 'parents' table
+      const { error: parentsInsertError } = await supabase
+        .from("parents")
+        .insert([
+          {
+            parishioner_id: user.user.id,
+            first_name: firstName,
+            last_name: lastName,
+            contact_number: contactNumber,
+            family_id: newUserFamily[0].id,
+          },
+        ]);
+
+      if (parentsInsertError) throw parentsInsertError;
 
       // Set regData after successful registration
       setRegData({

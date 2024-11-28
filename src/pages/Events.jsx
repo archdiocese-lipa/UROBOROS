@@ -1,16 +1,11 @@
 import EventCard from "@/components/Events/EventCard";
 import { Description, Title } from "@/components/Title";
 import { Button } from "@/components/ui/button";
-import { useUser } from "@/context/useUser";
 import { getParishionerEvents } from "@/services/eventService";
 
 import { useInfiniteQuery } from "@tanstack/react-query";
 
 const Events = () => {
-  const { userData } = useUser();
-  const userId = userData?.id;
-  console.log(userId);
-
   const { data, isLoading, fetchNextPage, hasNextPage } = useInfiniteQuery({
     queryKey: ["schedules"],
     queryFn: async ({ pageParam }) => {
