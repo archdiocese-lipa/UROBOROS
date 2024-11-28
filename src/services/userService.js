@@ -42,14 +42,24 @@ const getUsersByRole = async (role) => {
   }
 };
 
-const getUsers = async ({ page, pageSize, role }) => {
+const getUsers = async ({ activeFilter, page, pageSize, role }) => {
   try {
     const query = {};
     if (role) {
       query.role = role;
     }
 
-    const data = await paginate({ key: "users", page, pageSize, query });
+    const filters = {
+      active: activeFilter, // Use activeFilter to filter by is_confirmed
+    };
+
+    const data = await paginate({
+      key: "users",
+      page,
+      pageSize,
+      query,
+      filters, // Apply filters to the pagination function
+    });
 
     return data;
   } catch (error) {
