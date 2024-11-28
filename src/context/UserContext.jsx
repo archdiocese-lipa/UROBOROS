@@ -30,7 +30,7 @@ export const UserProvider = ({ children }) => {
       // Allow login if the user's role is "admin" or if their account is confirmed
       if (!fullUser.is_confirmed && fullUser.role !== "admin") {
         throw new Error(
-          "Your account is not confirmed. Please contact an admin"
+          "Your account has not been confirmed yet. Please contact an admin"
         );
       }
 
