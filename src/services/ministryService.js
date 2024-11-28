@@ -68,7 +68,7 @@ export const fetchMinistryAssignedUsers = async (ministryId) => {
   return data;
 };
 
-export const fetchUserMinistries = async (userData) => {
+export const fetchUserMinistries = async (user_id) => {
   // Accept userData as argument
 
   try {
@@ -79,7 +79,7 @@ export const fetchUserMinistries = async (userData) => {
         ministries(*)
       `
       )
-      .eq("user_id", userData.id); // Use the userData passed as an argument
+      .eq("user_id", user_id); // Use the userData passed as an argument
 
     if (error) {
       console.error("Error fetching ministries:", error);

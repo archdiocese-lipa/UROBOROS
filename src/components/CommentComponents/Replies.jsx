@@ -81,30 +81,35 @@ const Replies = ({
             <div>
               <p className="text-sm text-accent">{reply.comment_content}</p>
               <div className="flex items-center">
-                <TriggerLikeIcon
+                <TriggerDislikeIcon
                   className="absolute -bottom-4 right-2 w-14 rounded-3xl bg-white p-1"
                   comment_id={reply.id}
                   user_id={userData?.id}
+                  columnName="comment_id"
                 />
-                <TriggerDislikeIcon
+                <TriggerLikeIcon
                   className="absolute -bottom-4 right-16 w-14 rounded-3xl bg-white p-1"
                   comment_id={reply.id}
                   user_id={userData?.id}
+                  columnName="comment_id"
                 />
               </div>
             </div>
           </div>
         )}
-        {userData?.user_id === reply?.users?.user_id && (
+        {userData?.id === reply?.users?.id && (
           <Popover>
             <PopoverTrigger>
               {/* <img src={kebab} alt="kebab icon" /> */}
-              <KebabIcon className="h-5 w-5" />
+              <KebabIcon className="h-5 w-5 text-accent" />
             </PopoverTrigger>
-            <PopoverContent className="flex w-28 flex-col overflow-hidden rounded-2xl p-0">
+            <PopoverContent
+              align="center"
+              className="w-32 overflow-hidden rounded-2xl p-0 outline-none"
+            >
               <Button
                 onClick={() => setEditting(true)}
-                className="w-full rounded-none"
+                className="w-full p-3 text-center text-accent hover:cursor-pointer"
                 variant={"outline"}
               >
                 Edit
@@ -112,7 +117,7 @@ const Replies = ({
               <Dialog>
                 <DialogTrigger asChild>
                   <Button
-                    className="w-full rounded-none"
+                    className="w-full rounded-t-none text-center hover:cursor-pointer"
                     variant={"destructive"}
                   >
                     Delete
@@ -150,8 +155,7 @@ const Replies = ({
           onClick={() => setIsReplying(true)}
           className="ml-2 rounded-2xl"
         >
-          <ReplyIcon className="w-5 h-5 hover:cursor-pointer"/>
-          
+          <ReplyIcon className="h-5 w-5 hover:cursor-pointer text-accent" />
         </button>
       </div>
       <ReplyInput
@@ -176,11 +180,13 @@ Replies.propTypes = {
       first_name: PropTypes.string.isRequired,
       last_name: PropTypes.string.isRequired,
       user_image: PropTypes.string,
-      user_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+        .isRequired,
     }).isRequired,
   }).isRequired,
   showReply: PropTypes.bool.isRequired,
-  commentId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  commentId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+    .isRequired,
   handleUpdateReply: PropTypes.func.isRequired,
   handleDeleteReply: PropTypes.func.isRequired,
   handleAddReply: PropTypes.func.isRequired,

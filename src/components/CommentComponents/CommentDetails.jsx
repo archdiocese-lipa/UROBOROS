@@ -17,7 +17,6 @@ import { useState } from "react";
 import { getInitial } from "@/lib/utils";
 import CommentDate from "./CommentDate";
 import ReplyInput from "./ReplyInput";
-// import kebab from "@/assets/svg/threeDots.svg";
 
 import EditCommentForm from "./EditCommentForm";
 
@@ -29,7 +28,7 @@ import { useUser } from "@/context/useUser";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import Replies from "./Replies";
 import TriggerLikeIcon from "./TriggerLikeIcon";
-import TriggerDislikeIcon from "./TriggerDislikeIcon";
+// import TriggerDislikeIcon from "./TriggerDislikeIcon";
  const CommentDetails = ({
   announcement_id,
   comment,
@@ -82,18 +81,20 @@ import TriggerDislikeIcon from "./TriggerDislikeIcon";
             <div className="flex items-center">
              
                 <TriggerLikeIcon
-                  className="absolute -bottom-4 right-16 w-14 rounded-3xl bg-white p-1"
+                  className="absolute -bottom-4 right-8 w-14 rounded-3xl bg-white p-1"
                   comment_id={comment.id}
                   user_id={userData?.id}
                   columnName={"comment_id"}
                 />
-          
+                
+                {/* 
+                Incase dislike id needed in the future
                 <TriggerDislikeIcon
                   className="absolute -bottom-4 right-2 w-14 rounded-3xl bg-white p-1"
                   comment_id={comment.id}
                   user_id={userData?.id}
                   columnName={"comment_id"}
-                />
+                /> */}
             </div>
           </div>
         ) : (
@@ -144,7 +145,7 @@ import TriggerDislikeIcon from "./TriggerDislikeIcon";
       {userData?.id === comment.users.id && (
         <Popover>
           <PopoverTrigger>
-            <KebabIcon className="h-5 w-5" />
+            <KebabIcon className="h-5 w-5 text-accent" />
           </PopoverTrigger>
           <PopoverContent className="flex w-28 flex-col overflow-hidden rounded-2xl p-0">
             <Button
@@ -197,7 +198,7 @@ import TriggerDislikeIcon from "./TriggerDislikeIcon";
         </Popover>
       )}
       <button onClick={() => setIsReplying(true)} className="ml-2 rounded-2xl">
-      <ReplyIcon className="w-5 h-5 hover:cursor-pointer"/>
+      <ReplyIcon className="w-5 h-5 hover:cursor-pointer text-accent"/>
 
       </button>
     </div>
@@ -208,7 +209,7 @@ CommentDetails.propTypes = {
   announcement_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
     .isRequired,
   comment: PropTypes.shape({
-    id: PropTypes.number.isRequired,
+    id: PropTypes.string.isRequired,
     comment_content: PropTypes.string.isRequired,
     created_at: PropTypes.string.isRequired,
     edited: PropTypes.bool.isRequired,
@@ -216,7 +217,7 @@ CommentDetails.propTypes = {
       first_name: PropTypes.string.isRequired,
       last_name: PropTypes.string.isRequired,
       user_image: PropTypes.string,
-      id: PropTypes.number.isRequired,
+      id: PropTypes.string.isRequired,
     }).isRequired,
     reply_count: PropTypes.number.isRequired,
   }).isRequired,

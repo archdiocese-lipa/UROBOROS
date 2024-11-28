@@ -42,8 +42,9 @@ import useAnnouncements from "@/hooks/useAnnouncements";
 import { useUser } from "@/context/useUser";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
-import { getAllMinistries } from "@/services/ministryService";
+import { fetchUserMinistries } from "@/services/ministryService";
 import AssignVolunteerComboBox from "@/components/Schedule/AssignVolunteerComboBox";
+import useInterObserver from "@/hooks/useInterObserver";
 
 const Announcements = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -53,8 +54,9 @@ const Announcements = () => {
   const [selectedMinistry, setSelectedMinistry] = useState("");
 
   const { data: ministries } = useQuery({
-    queryFn: async () => await getAllMinistries(),
-    queryKey: ["ministries"],
+    queryFn: async () => await fetchUserMinistries(userData?.id),
+    queryKey: ["ministries", userData?.id],
+    enabled: !!userData?.id,
   });
 
   const form = useForm({
@@ -70,26 +72,31 @@ const Announcements = () => {
 
   const {
     addAnnouncementMutation,
+    fetchNextPage,
     deleteAnnouncementMutation,
+    hasNextPage,
     editAnnouncementMutation,
     data,
     isLoading,
   } = useAnnouncements(selectedMinistry);
 
-  const { reset, formState } = form;
+  const { reset } = form;
 
   const onSubmit = (announcementData) => {
-
-    console.log("Form data before submit:",announcementData, form.getValues()); // Log form values
     addAnnouncementMutation.mutate({
       announcementData,
-      user_id: userData.id,
+      user_id: userData?.id,
       reset,
       setIsOpen,
     });
   };
 
-  console.log(formState.errors);
+  // Ensure useInterObserver is called unconditionally
+  const { ref } = useInterObserver(fetchNextPage);
+
+  if (!userData) return <div>Loading...</div>; 
+
+
   return (
     <div className="flex h-full w-full gap-8">
       <div className="flex w-3/4 flex-col">
@@ -224,11 +231,13 @@ const Announcements = () => {
                         <FormLabel>Announcement Ministry</FormLabel>
                         <FormControl>
                           <AssignVolunteerComboBox
-                            options={ministries?.data?.map((ministry) => ({
+                            options={ministries?.map((ministry) => ({
                               value: ministry.id, // Use 'id' as the value
                               label: `${ministry.ministry_name}`, // Combine first name and last name
                             }))}
-                            value={Array.isArray(field.value) ? field.value : []} // Ensure it's always an array
+                            value={
+                              Array.isArray(field.value) ? field.value : []
+                            } // Ensure it's always an array
                             onChange={field.onChange} // Handle change to update the form state
                             placeholder="Select Ministry"
                             disabled={formVisibility !== "private"} // Disable combo box if visibility is not private
@@ -261,19 +270,23 @@ const Announcements = () => {
         <div className="no-scrollbar w-full flex-1 overflow-y-scroll rounded-2xl border border-primary-outline bg-primary px-9 py-6">
           {isLoading && <p>Loading...</p>}
 
-          {data?.map((announcement, index) => (
-            <div
-              key={index}
-              className="mb-3 w-full rounded-[10px] border border-primary-outline bg-white px-8 pb-6 pt-5"
-            >
-              <Announcement
-                // form={editform}
-                announcement={announcement}
-                editAnnouncementMutation={editAnnouncementMutation}
-                deleteAnnouncementMutation={deleteAnnouncementMutation}
-              />
-            </div>
-          ))}
+          {data?.pages?.flatMap((page) =>
+            page?.items?.map((announcement, index) => (
+              <div
+                key={index}
+                className="mb-3 w-full rounded-[10px] border border-primary-outline bg-white px-8 pb-6 pt-5"
+              >
+                <Announcement
+                  // form={editform}
+                  fetchNextPage={fetchNextPage}
+                  announcement={announcement}
+                  editAnnouncementMutation={editAnnouncementMutation}
+                  deleteAnnouncementMutation={deleteAnnouncementMutation}
+                />
+              </div>
+            ))
+          )}
+          {hasNextPage && <div ref={ref}></div>}
         </div>
       </div>
 
@@ -339,7 +352,7 @@ const Announcements = () => {
 
         <Separator className="my-3 bg-gray" />
         <div className="mb-3">
-          {ministries?.data?.map((ministry, i) => (
+          {ministries?.map((ministry, i) => (
             <Filter
               key={i}
               ministry={ministry}
