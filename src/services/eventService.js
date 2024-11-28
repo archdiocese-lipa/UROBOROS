@@ -272,3 +272,19 @@ export const getParishionerEvents = async ({ page = 1, pageSize } = {}) => {
     return { success: false, error: error.message };
   }
 };
+
+export const getWalkInEvents = async () => {
+  // Get the current date in "YYYY-MM-DD" format
+  const today = new Date().toISOString().split("T")[0];
+
+  // Query the Supabase database for events
+  const { data, error } = await supabase
+    .from("events")
+    .select("*")
+    .order("event_date", { ascending: true })
+    .gte("event_date", today);
+
+  if (error) throw error; // React Query will handle this as a query failure
+
+  return data; // Return the data directly
+};
