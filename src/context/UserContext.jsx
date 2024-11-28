@@ -35,29 +35,6 @@ export const UserProvider = ({ children }) => {
     }
   };
 
-  // const _fetchUserMinistries = async () => {
-  //   try {
-  //     const { data, error } = await supabase
-  //       .from("ministry_assignments") // The table where user-ministry relationships are stored
-  //       .select(
-  //         `
-  //         ministries(*)
-  //       `
-  //       )
-  //       .eq("user_id", userData.id);
-
-  //     if (error) {
-  //       console.error("Error fetching ministries:", error);
-  //       throw error;
-  //     }
-
-  //     return data; // Returns an array of ministries
-  //   } catch (err) {
-  //     console.error("Unexpected error:", err);
-  //     throw err;
-  //   }
-  // };
-
   // Register function
   // Register function with email check
   const register = async ({
@@ -156,6 +133,7 @@ export const UserProvider = ({ children }) => {
         userData,
         regData,
         setUserData,
+
         loading,
         login,
         register,

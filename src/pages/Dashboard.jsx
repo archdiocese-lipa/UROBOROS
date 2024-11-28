@@ -1,5 +1,17 @@
+import useUserMinistries from "@/hooks/useUserMinistries";
+
 const Dashboard = () => {
-  return <div className=" text-heading text-accent font-bold ">Dashboard</div>;
+  const { error, isLoading } = useUserMinistries(); // Use the hook
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error.message}</div>;
+  }
+
+  return <div className="text-heading font-bold text-accent">Dashboard</div>;
 };
 
 export default Dashboard;

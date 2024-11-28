@@ -68,6 +68,34 @@ export const fetchMinistryAssignedUsers = async (ministryId) => {
   return data;
 };
 
+export const fetchUserMinistries = async (userData) => {
+  // Accept userData as argument
+
+  try {
+    const { data, error } = await supabase
+      .from("ministry_assignments")
+      .select(
+        `
+        ministries(*)
+      `
+      )
+      .eq("user_id", userData.id); // Use the userData passed as an argument
+
+    if (error) {
+      console.error("Error fetching ministries:", error);
+      throw error;
+    }
+
+    // Dynamically extract all ministries from the data array
+    const ministries = data.map((item) => item.ministries);
+
+    return ministries; // Return the array of ministries
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    throw err;
+  }
+};
+
 export const fetchAvailableVolunteers = async (ministryId) => {
   try {
     // Fetch all volunteers (role = "volunteer")
