@@ -102,7 +102,7 @@ const ScheduleDetails = () => {
           <Label className="text-primary-text">Assign Volunteer:</Label>
           {volunteers?.map((volunteer, index) => (
             <p
-              key={volunteer.id}
+              key={volunteer.volunteer_id}
               className="text-primary-text"
             >{`${index + 1}. ${capitalizeFirstLetter(volunteer.users.first_name)} ${capitalizeFirstLetter(volunteer.users.last_name)}`}</p>
           ))}
