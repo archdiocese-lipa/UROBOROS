@@ -28,6 +28,7 @@ import {
   useFetchGuardian,
 } from "@/hooks/useFetchFamily";
 import {
+  useChildrenManualAttendance,
   useGuardianManualAttendEvent,
   useMainApplicantAttendEvent,
 } from "@/hooks/useManualAttendEvent";
@@ -41,6 +42,13 @@ const formSchema = z.object({
       })
     )
     .optional(),
+  children: z
+    .array(
+      z.object({
+        id: z.string(),
+      })
+    )
+    .min(1, { message: "Please select at least one child" }), // Ensure the array has at least one child
 });
 
 const ManualAttendEvents = ({ eventId, eventName }) => {
@@ -73,12 +81,13 @@ const ManualAttendEvents = ({ eventId, eventName }) => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       parents: [],
+      children: [],
     },
   });
 
   const { mutate: mainApplicantAttend } = useMainApplicantAttendEvent();
   const { mutate: guardianManualAttend } = useGuardianManualAttendEvent();
-
+  const { mutate: childrenManualAttend } = useChildrenManualAttendance();
   const onSubmit = (data) => {
     // Main applicant data (always included)
     const mainApplicant = [
@@ -98,10 +107,19 @@ const ManualAttendEvents = ({ eventId, eventName }) => {
         attendee_type: "parents",
         attended: false,
         main_applicant: false,
-      })) || []; // If no parents selected, default to an empty array
+      })) || [];
 
-    guardianManualAttend(parentsData);
+    const childrenData = data.children?.map((children) => ({
+      ...children,
+      event_id: selectedEvent,
+      attendee_type: "children",
+      attended: false,
+      main_applicant: false,
+    }));
+
     mainApplicantAttend(mainApplicant);
+    guardianManualAttend(parentsData);
+    childrenManualAttend(childrenData);
   };
 
   const handleSelectEvent = () => {
@@ -171,7 +189,13 @@ const ManualAttendEvents = ({ eventId, eventName }) => {
               ) : (
                 <p>Loading...</p>
               )}
+              {form.formState.errors.children && (
+                <FormMessage>
+                  {form.formState.errors.children.message}
+                </FormMessage>
+              )}
               <Label className="text-primary-text">Children</Label>
+
               {!isFamilyLoading || !isChildLoading ? (
                 childData?.map((child) => (
                   <FormField
@@ -179,34 +203,38 @@ const ManualAttendEvents = ({ eventId, eventName }) => {
                     control={form.control}
                     name="children"
                     render={({ field }) => (
-                      <FormItem className="space-x-2 space-y-0">
-                        <div className="flex items-center gap-x-2">
-                          <FormControl>
-                            <Checkbox
-                              checked={
-                                Array.isArray(field.value) &&
-                                field.value.some((item) => item.id === child.id) // Check if the array contains the object with the same id
-                              }
-                              onCheckedChange={(checked) => {
-                                const updatedValue = checked
-                                  ? [
-                                      ...(field.value || []),
-                                      {
-                                        id: child.id,
-                                      },
-                                    ]
-                                  : (field.value || []).filter(
-                                      (item) => item.id !== child.id
-                                    ); // Remove the object if unchecked
+                      <>
+                        <FormItem className="space-x-2 space-y-0">
+                          <div className="flex items-center gap-x-2">
+                            <FormControl>
+                              <Checkbox
+                                checked={
+                                  Array.isArray(field.value) &&
+                                  field.value.some(
+                                    (item) => item.id === child.id
+                                  ) // Check if the array contains the object with the same id
+                                }
+                                onCheckedChange={(checked) => {
+                                  const updatedValue = checked
+                                    ? [
+                                        ...(field.value || []),
+                                        {
+                                          id: child.id,
+                                        },
+                                      ]
+                                    : (field.value || []).filter(
+                                        (item) => item.id !== child.id
+                                      ); // Remove the object if unchecked
 
-                                // Update the field value
-                                field.onChange(updatedValue);
-                              }}
-                            />
-                          </FormControl>
-                          <Label>{`${child.first_name} ${child.last_name}`}</Label>
-                        </div>
-                      </FormItem>
+                                  // Update the field value
+                                  field.onChange(updatedValue);
+                                }}
+                              />
+                            </FormControl>
+                            <Label>{`${child.first_name} ${child.last_name}`}</Label>
+                          </div>
+                        </FormItem>
+                      </>
                     )}
                   />
                 ))
