@@ -30,8 +30,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { walkInRegisterSchema } from "@/zodSchema/WalkInRegisterSchema";
-import { useGetAllEvents } from "@/hooks/useGetAllEvents";
+
 import useWalkInAttendance from "@/hooks/useWalkInAttendance";
+import { useGetWalkInEvents } from "@/hooks/useGetWalkInEvents";
 import { useToast } from "@/hooks/use-toast";
 
 const WalkInRegistration = () => {
@@ -39,7 +40,8 @@ const WalkInRegistration = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [randomSixDigit, setRandomSixDigit] = useState(null);
 
-  const { data } = useGetAllEvents();
+  const { data: walkInEvents } = useGetWalkInEvents();
+
   const { mutate: registerAttendance } = useWalkInAttendance(); // Initialize the mutation hook
   const { toast } = useToast();
 
@@ -122,6 +124,7 @@ const WalkInRegistration = () => {
 
     // Proceed with submission
     const { event, parents, children } = values;
+    
     const submitData = {
       randomSixDigit: generatedNumber, // Use the generated six-digit ticket code
       event,
@@ -159,19 +162,14 @@ const WalkInRegistration = () => {
     }).format(new Date(dateTime));
   };
 
-  const now = new Date();
-
-  // Removing the past two hours event
-  const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
-
   // Filter events
-  const upcomingEvents = Array.isArray(data?.items)
-    ? data.items.filter((event) => {
+  const upcomingEvents = Array.isArray(walkInEvents)
+    ? walkInEvents.filter((event) => {
         const eventDateTime = new Date(
           event.dateTime || `${event.event_date}T${event.event_time}`
         );
 
-        return eventDateTime >= twoHoursAgo;
+        return eventDateTime;
       })
     : [];
 

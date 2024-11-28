@@ -37,24 +37,24 @@ const Family = () => {
   const {
     data: familyData,
     isLoading: isFamilyLoading,
-    error: familyError,
+    error: _familyError,
   } = useFetchFamilyId(userId);
 
   // Fetch guardian data based on familyId
   const {
     data: parentData,
     isLoading: isParentLoading,
-    error: parentError,
+    error: _parentError,
   } = useFetchGuardian(familyData?.id);
 
-  // Fetch guardian data based on familyId
+  // Fetch child data based on familyId
   const {
     data: childData,
     isLoading: isChildLoading,
-    error: childError,
+    error: _childError,
   } = useFetchChildren(familyData?.id);
 
-  // Delete pa // Delete Child
+  // Delete Child
   const { mutateAsync: deleteParent } = useDeleteParent();
 
   const handleDeleteParent = async (parentId) => {
@@ -78,14 +78,6 @@ const Family = () => {
 
   if (isFamilyLoading || isParentLoading || isChildLoading) {
     return <div>Loading...</div>;
-  }
-
-  if (familyError) {
-    return <div>Error fetching family data: {familyError.message}</div>;
-  }
-
-  if (parentError || childError) {
-    return <div>Error fetching parent data: {parentError.message}</div>;
   }
 
   return (
@@ -112,7 +104,7 @@ const Family = () => {
               {!parentData?.length ? (
                 <p>No parent/guardian data available.</p>
               ) : (
-                parentData.flatMap((parent) => (
+                parentData?.flatMap((parent) => (
                   <TableRow key={parent.id}>
                     <TableCell className="text-center">{`${parent.first_name} ${parent.last_name}`}</TableCell>
                     <TableCell className="text-center">
@@ -161,7 +153,7 @@ const Family = () => {
               {!childData?.length ? (
                 <p>No children data available.</p>
               ) : (
-                childData.flatMap((child) => (
+                childData?.flatMap((child) => (
                   <TableRow key={child.id}>
                     <TableCell className="text-center">{`${child.first_name} ${child.last_name}`}</TableCell>
                     <TableCell className="text-center">

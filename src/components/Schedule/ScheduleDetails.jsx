@@ -102,7 +102,7 @@ const ScheduleDetails = () => {
           <Label className="text-primary-text">Assign Volunteer:</Label>
           {volunteers?.map((volunteer, index) => (
             <p
-              key={volunteer.id}
+              key={volunteer.volunteer_id}
               className="text-primary-text"
             >{`${index + 1}. ${capitalizeFirstLetter(volunteer.users.first_name)} ${capitalizeFirstLetter(volunteer.users.last_name)}`}</p>
           ))}
@@ -136,7 +136,15 @@ const ScheduleDetails = () => {
       {attendance?.map((family, i) => (
         <Card key={i}>
           <CardHeader>
-            <CardTitle className="font-montserrat font-bold text-accent">{`${family.family_surname} Family`}</CardTitle>
+            <CardTitle className="font-montserrat font-bold text-accent">
+              {family.parents.filter((parent) => parent.main_applicant === true) // Get the main applicant
+                ? `${
+                    family.parents
+                      .filter((parent) => parent.main_applicant === true)
+                      .map((parent) => parent.last_name)[0]
+                  } Family`
+                : `Unknown Family`}
+            </CardTitle>
             <CardDescription className="sr-only">
               Family Details
             </CardDescription>
