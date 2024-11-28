@@ -136,7 +136,15 @@ const ScheduleDetails = () => {
       {attendance?.map((family, i) => (
         <Card key={i}>
           <CardHeader>
-            <CardTitle className="font-montserrat font-bold text-accent">{`${family.family_surname} Family`}</CardTitle>
+            <CardTitle className="font-montserrat font-bold text-accent">
+              {family.parents.filter((parent) => parent.main_applicant === true) // Get the main applicant
+                ? `${
+                    family.parents
+                      .filter((parent) => parent.main_applicant === true)
+                      .map((parent) => parent.last_name)[0]
+                  } Family`
+                : `Unknown Family`}
+            </CardTitle>
             <CardDescription className="sr-only">
               Family Details
             </CardDescription>

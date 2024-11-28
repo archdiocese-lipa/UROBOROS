@@ -54,7 +54,7 @@ const Family = () => {
     error: childError,
   } = useFetchChildren(familyData?.id);
 
-  // Delete pa // Delete Child
+   // Delete Child
   const { mutateAsync: deleteParent } = useDeleteParent();
 
   const handleDeleteParent = async (parentId) => {

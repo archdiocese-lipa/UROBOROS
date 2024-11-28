@@ -91,11 +91,16 @@ const insertEventAttendance = async (submittedData) => {
   const parentsWithType = parentsData.map((parent) => ({
     ...parent,
     type: "parents",
+    main_applicant:
+      mainApplicant &&
+      parent.first_name === mainApplicant.parentFirstName &&
+      parent.last_name === mainApplicant.parentLastName, // Check the main applicant in walk in registration
   }));
 
   const childrenWithType = childrenData.map((child) => ({
     ...child,
     type: "children",
+    main_applicant: null,
   }));
 
   // Combine the arrays into a single attendeesData array
@@ -108,6 +113,8 @@ const insertEventAttendance = async (submittedData) => {
         event_id: event,
         attendee_id: attendee.id,
         attendee_type: attendee.type,
+        main_applicant:
+          attendee.type === "parents" ? attendee.main_applicant : null,
       }))
     );
 
@@ -120,62 +127,6 @@ const insertEventAttendance = async (submittedData) => {
   }
 
   return { success: true, attendanceData };
-};
-
-const fetchAttendeesByTicketCode = async (ticketCode) => {
-  try {
-    const { data, error } = await supabase
-      .from("attendance")
-      .select("*")
-      .eq("ticket_code", ticketCode); // Filter by ticket code
-
-    if (error) {
-      throw error;
-    }
-
-    if (data && data.length > 0) {
-      // Ensure that the parents and children both include IDs
-      const parents = data
-        .filter((item) => item.type === "parent")
-        .map((parent) => ({
-          id: parent.id, // Include parent ID
-          parentFirstName: parent.first_name,
-          parentLastName: parent.last_name,
-          parentContactNumber: parent.contact_number || null,
-          isMainApplicant: parent.is_main_applicant,
-        }));
-
-      const children = data
-        .filter((item) => item.type === "child")
-        .map((child) => ({
-          id: child.id, // Include child ID
-          childFirstName: child.first_name,
-          childLastName: child.last_name,
-        }));
-
-      const eventInfo = data[0]?.event || {};
-      const registrationCode = data[0]?.ticket_code || "";
-
-      const transformedData = {
-        registrationCode,
-        event: eventInfo.event_name || "Unknown Event",
-        eventId: eventInfo.id || "",
-        dateTime: `${eventInfo.event_date}T${eventInfo.event_time}Z`,
-        parents,
-        children,
-      };
-
-      return { success: true, data: transformedData };
-    } else {
-      return {
-        success: false,
-        message: "No attendees found for this ticket code.",
-      };
-    }
-  } catch (error) {
-    console.error("Error fetching attendees and event:", error.message);
-    return { success: false, error };
-  }
 };
 
 const getEventAttendance = async (eventId) => {
@@ -275,6 +226,62 @@ const getEventAttendance = async (eventId) => {
   } catch (error) {
     console.error("Error fetching event attendance:", error);
     return { success: false, error: error.message };
+  }
+};
+
+const fetchAttendeesByTicketCode = async (ticketCode) => {
+  try {
+    const { data, error } = await supabase
+      .from("attendance")
+      .select("*")
+      .eq("ticket_code", ticketCode); // Filter by ticket code
+
+    if (error) {
+      throw error;
+    }
+
+    if (data && data.length > 0) {
+      // Ensure that the parents and children both include IDs
+      const parents = data
+        .filter((item) => item.type === "parent")
+        .map((parent) => ({
+          id: parent.id, // Include parent ID
+          parentFirstName: parent.first_name,
+          parentLastName: parent.last_name,
+          parentContactNumber: parent.contact_number || null,
+          isMainApplicant: parent.is_main_applicant,
+        }));
+
+      const children = data
+        .filter((item) => item.type === "child")
+        .map((child) => ({
+          id: child.id, // Include child ID
+          childFirstName: child.first_name,
+          childLastName: child.last_name,
+        }));
+
+      const eventInfo = data[0]?.event || {};
+      const registrationCode = data[0]?.ticket_code || "";
+
+      const transformedData = {
+        registrationCode,
+        event: eventInfo.event_name || "Unknown Event",
+        eventId: eventInfo.id || "",
+        dateTime: `${eventInfo.event_date}T${eventInfo.event_time}Z`,
+        parents,
+        children,
+      };
+
+      return { success: true, data: transformedData };
+    } else {
+      return {
+        success: false,
+        message: "No attendees found for this ticket code.",
+      };
+    }
+  } catch (error) {
+    console.error("Error fetching attendees and event:", error.message);
+    return { success: false, error };
   }
 };
 
