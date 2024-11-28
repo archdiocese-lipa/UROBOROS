@@ -11,7 +11,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { z } from "zod";
 import {
   Dialog,
   DialogClose,
@@ -23,16 +22,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useEditChild } from "@/hooks/useUpdateFamily";
-
-const editChildSchema = z.object({
-  firstName: z.string().min(2, {
-    message: "First name must be at least 2 characters.",
-  }),
-  lastName: z.string().min(2, {
-    message: "Last name must be at least 2 characters.",
-  }),
-});
+import { useEditChild } from "@/hooks/useFamily";
+import { editChildSchema } from "@/zodSchema/Family/EditChildSchema";
 
 const EditChild = ({ childId, childFirstName, childLastName }) => {
   const [openDialog, setOpenDialog] = useState(false);

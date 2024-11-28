@@ -1,9 +1,42 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { updateChild, deleteChild, updateParent, deleteParent } from "@/services/familyService";
+import { useState } from "react";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import {
+  addFamilyMembers,
+  updateChild,
+  deleteChild,
+  updateParent,
+  deleteParent,
+  getChildren,
+  getFamilyId,
+  getGuardian,
+} from "@/services/familyService"; // Import the service
 import { useToast } from "./use-toast";
 
+const useAddFamily = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Function to add family members
+  const mutate = async (familyData) => {
+    setIsLoading(true);
+    setError(null);
+
+    const response = await addFamilyMembers(familyData);
+
+    if (response.success) {
+      setIsLoading(false);
+      return response;
+    } else {
+      setIsLoading(false);
+      setError(response.error);
+    }
+  };
+
+  return { mutate, isLoading, error };
+};
+
 // Edit parent
-export const useEditParent = () => {
+const useEditParent = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -32,7 +65,7 @@ export const useEditParent = () => {
 };
 
 // Delete parent
-export const useDeleteParent = () => {
+const useDeleteParent = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -59,7 +92,7 @@ export const useDeleteParent = () => {
 };
 
 //Edit child
-export const useEditChild = () => {
+const useEditChild = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -69,10 +102,8 @@ export const useEditChild = () => {
       toast({
         title: "Child updated successfully",
       });
-
       // Invalidate the query related to "children"
       queryClient.invalidateQueries(["children"]);
-
       // Optionally invalidate a specific child's query
       queryClient.invalidateQueries(["child", data.id]);
     },
@@ -87,7 +118,7 @@ export const useEditChild = () => {
   });
 };
 // Delete child
-export const useDeleteChild = () => {
+const useDeleteChild = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -111,4 +142,39 @@ export const useDeleteChild = () => {
       });
     },
   });
+};
+
+const useFetchFamilyId = (userId) => {
+  return useQuery({
+    queryKey: ["family_group", userId], // Include userId in the query key to ensure unique caching
+    queryFn: () => getFamilyId(userId), // Pass the userId to getGuardian
+    enabled: !!userId, // Only run the query if userId is available
+  });
+};
+
+const useFetchGuardian = (familyId) => {
+  return useQuery({
+    queryKey: ["parents", familyId], // Include userId in the query key to ensure unique caching
+    queryFn: () => getGuardian(familyId), // Pass the userId to getGuardian
+    enabled: !!familyId, // Only run the query if userId is available
+  });
+};
+
+const useFetchChildren = (familyId) => {
+  return useQuery({
+    queryKey: ["children", familyId], // Include userId in the query key to ensure unique caching
+    queryFn: () => getChildren(familyId), // Pass the userId to getGuardian
+    enabled: !!familyId, // Only run the query if userId is available
+  });
+};
+
+export {
+  useAddFamily,
+  useEditParent,
+  useEditChild,
+  useDeleteParent,
+  useDeleteChild,
+  useFetchFamilyId,
+  useFetchGuardian,
+  useFetchChildren,
 };

@@ -31,7 +31,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 import { useToast } from "@/hooks/use-toast";
-import { newFamilySchema } from "@/zodSchema/NewFamilyFormSchema";
+import { newFamilySchema } from "@/zodSchema/Family/NewFamilyFormSchema";
 import {
   addChild,
   addParent,
