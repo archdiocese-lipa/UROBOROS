@@ -131,18 +131,43 @@ export const getFamilyId = async (userId) => {
 // Fetch parents/guardian
 export const getGuardian = async (familyId) => {
   try {
-    const { data, error } = await supabase
+    // Fetch parents data based on familyId
+    const { data: parents, error: parentsError } = await supabase
       .from("parents")
       .select("*")
-      .eq("family_id", familyId); // Equal to family group
+      .eq("family_id", familyId);
 
-    if (error) {
-      throw new Error(error.message);
+    if (parentsError) {
+      console.error("Error fetching parents:", parentsError);
+      return { success: false, error: parentsError.message };
     }
 
-    return data;
+    // Fetch user data (IDs)
+    const { data: users, error: usersError } = await supabase
+      .from("users")
+      .select("id");
+
+    if (usersError) {
+      console.error("Error fetching user IDs:", usersError);
+      return { success: false, error: usersError.message };
+    }
+
+    // If both parents and users data are retrieved
+    if (parents && users) {
+      // Create a Set of user IDs for fast lookups
+      const userIds = new Set(users.map((user) => user.id));
+
+      // Filter out parents whose parishioner_id matches any user ID
+      const filteredParents = parents.filter(
+        (parent) => !userIds.has(parent.parishioner_id)
+      );
+
+      return filteredParents;
+    } else {
+      return { success: false, error: "Parents or Users data is empty" };
+    }
   } catch (error) {
-    console.error("Error fetching user id", error);
+    console.error("Error fetching data:", error);
     return { success: false, error: error.message };
   }
 };

@@ -154,11 +154,15 @@ const getEventAttendance = async (eventId) => {
         childIds.push(record.attendee_id);
       }
     });
-
     // Fetch the related records based on the IDs
     const [parentsData, childrenData, _usersData, _walkInUsersData] =
       await Promise.all([
-        supabase.from("parents").select("*").in("id", parentIds),
+        supabase
+          .from("parents")
+          .select("*")
+          .or(
+            `id.in.(${parentIds.join(",")}),parishioner_id.in.(${parentIds.join(",")})`
+          ),
         supabase.from("children").select("*").in("id", childIds),
       ]);
 
@@ -167,7 +171,9 @@ const getEventAttendance = async (eventId) => {
       let attendee = null;
       if (record.attendee_type === "parents") {
         attendee = parentsData.data.find(
-          (parent) => parent.id === record.attendee_id
+          (parent) =>
+            parent.id === record.attendee_id ||
+            parent.parishioner_id === record.attendee_id
         );
       } else if (record.attendee_type === "children") {
         attendee = childrenData.data.find(
@@ -267,9 +273,37 @@ export const insertGuardians = async (guardiansData) => {
           event_id: guardian.event_id,
           attendee_type: guardian.attendee_type,
           attended: guardian.attended,
+          main_applicant: guardian.main_applicant,
         }))
       )
       .select();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error adding guardian", error);
+    throw error;
+  }
+};
+
+// Insert main applicant
+export const insertMainApplicant = async (guardiansData) => {
+  try {
+    const { data, error } = await supabase
+      .from("attendance")
+      .upsert(
+        guardiansData.map((guardian) => ({
+          attendee_id: guardian.attendee_id,
+          event_id: guardian.event_id,
+          attendee_type: guardian.attendee_type,
+          attended: guardian.attended,
+          main_applicant: guardian.main_applicant,
+        }))
+      )
+      .single();
 
     if (error) {
       throw new Error(error.message);

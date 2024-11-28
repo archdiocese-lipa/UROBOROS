@@ -29,11 +29,7 @@ const EventCard = ({
         <Description>Organiser</Description>
       </CardContent>
       <CardFooter>
-        <ManualAttendEvents
-          eventId={eventId}
-          eventName={eventName}
-          eventDescription={eventDescription}
-        />
+        <ManualAttendEvents eventId={eventId} eventName={eventName} />
       </CardFooter>
     </Card>
   );
