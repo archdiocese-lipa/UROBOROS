@@ -30,6 +30,7 @@ const Comments = ({ announcement_id }) => {
             key={index}
             comment={comment}
             announcement_id={announcement_id}
+            columnName="comment_id"
           />
         ))
       )}
@@ -41,6 +42,7 @@ const Comments = ({ announcement_id }) => {
         <CommentInput
           HandleAddComment={HandleAddComment}
           announcement_id={announcement_id}
+          columnName="comment_id"
         />
       </div>
       {/* <Separator className="my-3" /> */}

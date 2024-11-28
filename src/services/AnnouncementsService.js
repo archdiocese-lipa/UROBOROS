@@ -1,3 +1,4 @@
+import { paginate } from "@/lib/utils";
 import { supabase } from "./supabaseClient";
 
 export const createAnnouncements = async ({ announcementData, user_id }) => {
@@ -61,34 +62,48 @@ export const createAnnouncements = async ({ announcementData, user_id }) => {
   }
 };
 
-export const fetchAnnouncements = async (ministry) => {
+export const fetchAnnouncements = async (page, pageSize, ministry_id) => {
   try {
-    let query = supabase
-      .from("announcement")
-      .select("*, users(first_name, last_name)")
-      .order("created_at", { ascending: false });
+    const query = {};
+    const select = " *, users(first_name, last_name)";
 
-    //   query = query.eq("visibility", visibility);
-
-    if (ministry !== "") {
-      query = query.eq("ministry_id", ministry);
+    if (ministry_id !== "") {
+      query.ministry_id = ministry_id;
     } else {
-      query = query.eq("visibility", "public");
+      query.visibility = "public";
     }
-    //   } else {
-    //     // If ministry is null, we want to fetch announcements with public visibility
-    //     query = query.eq("visibility", "public");
-    //   }
 
-    const { data, error } = await query;
+    const order = [
+        {
+          column: 'created_at', 
+          ascending: false, 
+        },
+      ];
 
-    if (error) {
-      throw new Error(error.message || "Error fetching announcements");
-    }
+    const data = await paginate({
+      key: "announcement",
+      page,
+      pageSize,
+      query,
+      order,
+      select,
+    });
+    // console.log("data from paginate", data);
+
+    // let query = supabase
+    //   .from("announcement")
+    //   .select("*, users(first_name, last_name)")
+    //   .order("created_at", { ascending: false });
+
+    // const { data, error } = await query;
+
+    // if (error) {
+    //   throw new Error(error.message || "Error fetching announcements");
+    // }
 
     // Fetch file URLs and map them to the announcements
     const announcementsWithURL = await Promise.all(
-      data.map(async (item) => {
+      data?.items?.map(async (item) => {
         const { data: urlData, error: urlError } = supabase.storage
           .from("Uroboros")
           .getPublicUrl(item.file_path);
@@ -102,7 +117,16 @@ export const fetchAnnouncements = async (ministry) => {
       })
     );
 
-    return announcementsWithURL;
+    // console.log("processed data", announcementsWithURL);
+
+    return {
+      items: announcementsWithURL,
+      pageSize: data.pageSize,
+      nextPage: data.nextPage,
+      totalItems: data.totalItems,
+      totalPages: data.totalPages,
+      currentPage: data.currentPage
+    };
   } catch (error) {
     console.error("Error fetching announcements:", error);
     throw new Error(

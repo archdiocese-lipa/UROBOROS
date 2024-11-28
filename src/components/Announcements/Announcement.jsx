@@ -47,6 +47,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getAllMinistries } from "@/services/ministryService";
 import AssignVolunteerComboBox from "../Schedule/AssignVolunteerComboBox";
 
+
 const Announcement = ({
   announcement,
   editAnnouncementMutation,
@@ -88,6 +89,12 @@ const Announcement = ({
     });
   };
 
+  if(!userData){
+    return null
+  }
+
+
+
   return (
     <div>
       <div className="mb-3 flex justify-between">
@@ -104,242 +111,248 @@ const Announcement = ({
             </p>
             {/* <img src={GlobeIcon} alt="icon" /> */}
             {announcement.visibility === "public" ? (
-              <GlobeIcon className="h-4 w-4" />
+              <GlobeIcon className="h-4 w-4 text-accent" />
             ) : (
               <PersonIcon className="h-4 w-4" />
             )}
           </div>
         </div>
 
-        <Popover>
-          <PopoverTrigger>
-            <KebabIcon className="h-6 w-6" />
-          </PopoverTrigger>
-          <PopoverContent
-            align="center"
-            className="w-32 overflow-hidden rounded-2xl p-0"
-          >
-            <Dialog
-              open={editDialogOpen}
-              onOpenChange={(open) => {
-                setEditDialogOpen(open);
-                // open && editSetValue("classname", classdata.class_name);
-                // !open && reset();
-              }}
+        {userData?.id === announcement?.id && (
+          <Popover>
+            <PopoverTrigger>
+              <KebabIcon className="h-6 w-6 text-accent" />
+            </PopoverTrigger>
+            <PopoverContent
+              align="center"
+              className="w-32 overflow-hidden rounded-2xl p-0"
             >
-              <DialogTrigger className="w-full">
-                <Button
-                  variant="ghost"
-                  // onClick={() => deleteClassMutation.mutate(classdata.id)}
-                  className="w-full p-3 text-center text-accent hover:cursor-pointer"
-                >
-                  Edit
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="rounded-md">
-                <DialogHeader>
-                  <DialogTitle className="text-2xl font-bold text-accent">
-                    Edit Announcement
-                  </DialogTitle>
-                  {/* <Separator /> */}
-                </DialogHeader>
-                <div>
-                  <Form id="announcement-form" {...form}>
-                    <form
-                      onSubmit={form.handleSubmit(onSubmit)}
-                      className="space-y-2"
-                      encType="multipart/form-data"
+              <Dialog
+                open={editDialogOpen}
+                onOpenChange={(open) => {
+                  setEditDialogOpen(open);
+                  // open && editSetValue("classname", classdata.class_name);
+                  // !open && reset();
+                }}
+              >
+                <DialogTrigger className="w-full" asChild>
+                  <Button
+                    variant="ghost"
+                    // onClick={() => deleteClassMutation.mutate(classdata.id)}
+                    className="w-full p-3 text-center text-accent hover:cursor-pointer"
+                  >
+                    Edit
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="rounded-md">
+                  <DialogHeader>
+                    <DialogTitle className="text-2xl font-bold text-accent">
+                      Edit Announcement
+                    </DialogTitle>
+                    {/* <Separator /> */}
+                  </DialogHeader>
+                  <div>
+                    <Form id="announcement-form" {...form}>
+                      <form
+                        onSubmit={form.handleSubmit(onSubmit)}
+                        className="space-y-2"
+                        encType="multipart/form-data"
+                      >
+                        {/* Title Field */}
+                        <FormField
+                          control={form.control}
+                          name="title"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Announcement Title</FormLabel>
+                              <FormControl>
+                                <Input
+                                  className="text-accent"
+                                  placeholder="Title of your announcement"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Content Field */}
+                        <FormField
+                          control={form.control}
+                          name="content"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Announcement Content</FormLabel>
+                              <FormControl>
+                                <Textarea
+                                  className="focus:ring-none no-scrollbar rounded-3xl border-none bg-primary text-accent placeholder:text-accent"
+                                  placeholder="Content of your announcement"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Image Field */}
+                        <FormField
+                          control={form.control}
+                          name="file"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Announcement Image</FormLabel>
+                              <FormControl>
+                                <Input
+                                  // {...fieldProps}
+                                  type="file"
+                                  onChange={(e) =>
+                                    field.onChange(e.target.files?.[0])
+                                  }
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Visibility Select */}
+                        <FormField
+                          control={form.control}
+                          name="visibility"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Announcement Visibility</FormLabel>
+                              <FormControl>
+                                <Select
+                                  {...field}
+                                  onValueChange={(value) => {
+                                    form.setValue("ministry", []);
+                                    setFormVisibility(`${value}`),
+                                      field.onChange(value);
+                                  }}
+                                >
+                                  <SelectTrigger className="w-full rounded-3xl">
+                                    <SelectValue placeholder="Select visibility" />
+                                  </SelectTrigger>
+                                  <SelectContent className="rounded-3xl">
+                                    <SelectGroup>
+                                      <SelectItem value="public">
+                                        Public
+                                      </SelectItem>
+                                      <SelectItem value="private">
+                                        Private
+                                      </SelectItem>
+                                    </SelectGroup>
+                                  </SelectContent>
+                                </Select>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        {/* Ministry Select */}
+                        <FormField
+                          control={form.control}
+                          name="ministry"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Announcement Ministry</FormLabel>
+                              <FormControl>
+                                <AssignVolunteerComboBox
+                                  options={ministries?.data?.map(
+                                    (ministry) => ({
+                                      value: ministry.id, // Use 'id' as the value
+                                      label: `${ministry.ministry_name}`, // Combine first name and last name
+                                    })
+                                  )}
+                                  value={
+                                    Array.isArray(field.value)
+                                      ? field.value
+                                      : []
+                                  } // Ensure it's always an array
+                                  onChange={field.onChange} // Handle change to update the form state
+                                  placeholder="Select Ministry"
+                                  disabled={formVisibility !== "private"} // Disable combo box if visibility is not private
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        {/* Submit Button */}
+                        <DialogFooter>
+                          <Button
+                            disabled={editAnnouncementMutation.isPending}
+                            className="w-full"
+                            type="submit"
+                          >
+                            {editAnnouncementMutation.isPending
+                              ? "Submitting..."
+                              : "Submit"}
+                          </Button>
+                        </DialogFooter>
+                      </form>
+                    </Form>
+                  </div>
+                </DialogContent>
+              </Dialog>
+
+              <Dialog
+                open={deleteDialogOpen}
+                onOpenChange={(isOpen) => {
+                  setDeleteDialogOpen(isOpen);
+                }}
+              >
+                <DialogTrigger className="w-full">
+                  <Button
+                    variant="destructive"
+                    // onClick={() => deleteClassMutation.mutate(classdata.id)}
+                    className="w-full rounded-t-none text-center hover:cursor-pointer"
+                  >
+                    Delete
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:rounded-3xl">
+                  <DialogHeader>
+                    <DialogTitle className="text-2xl text-accent">
+                      Delete Announcement?
+                    </DialogTitle>
+                  </DialogHeader>
+                  <DialogDescription className="text-accent opacity-80">
+                    Are you sure you want to delete this Announcement?
+                  </DialogDescription>
+                  <DialogFooter className="mx-2 flex gap-2">
+                    <Button
+                      onClick={() => setDeleteDialogOpen(false)}
+                      className="rounded-xl"
+                      variant="default"
                     >
-                      {/* Title Field */}
-                      <FormField
-                        control={form.control}
-                        name="title"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Announcement Title</FormLabel>
-                            <FormControl>
-                              <Input
-                                className="text-accent"
-                                placeholder="Title of your announcement"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      {/* Content Field */}
-                      <FormField
-                        control={form.control}
-                        name="content"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Announcement Content</FormLabel>
-                            <FormControl>
-                              <Textarea
-                                className="focus:ring-none no-scrollbar rounded-3xl border-none bg-primary text-accent placeholder:text-accent"
-                                placeholder="Content of your announcement"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      {/* Image Field */}
-                      <FormField
-                        control={form.control}
-                        name="file"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Announcement Image</FormLabel>
-                            <FormControl>
-                              <Input
-                                // {...fieldProps}
-                                type="file"
-                                onChange={(e) =>
-                                  field.onChange(e.target.files?.[0])
-                                }
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      {/* Visibility Select */}
-                      <FormField
-                        control={form.control}
-                        name="visibility"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Announcement Visibility</FormLabel>
-                            <FormControl>
-                              <Select
-                                {...field}
-                                onValueChange={(value) => {
-                                  form.setValue("ministry",[])
-                                  setFormVisibility(`${value}`),
-                                    field.onChange(value);
-                                }}
-                              >
-                                <SelectTrigger className="w-full rounded-3xl">
-                                  <SelectValue placeholder="Select visibility" />
-                                </SelectTrigger>
-                                <SelectContent className="rounded-3xl">
-                                  <SelectGroup>
-                                    <SelectItem value="public">
-                                      Public
-                                    </SelectItem>
-                                    <SelectItem value="private">
-                                      Private
-                                    </SelectItem>
-                                  </SelectGroup>
-                                </SelectContent>
-                              </Select>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      {/* Ministry Select */}
-                      <FormField
-                        control={form.control}
-                        name="ministry"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Announcement Ministry</FormLabel>
-                            <FormControl>
-                              <AssignVolunteerComboBox
-                                options={ministries?.data?.map((ministry) => ({
-                                  value: ministry.id, // Use 'id' as the value
-                                  label: `${ministry.ministry_name}`, // Combine first name and last name
-                                }))}
-                                value={
-                                  Array.isArray(field.value) ? field.value : []
-                                } // Ensure it's always an array
-                                onChange={field.onChange} // Handle change to update the form state
-                                placeholder="Select Ministry"
-                                disabled={formVisibility !== "private"} // Disable combo box if visibility is not private
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      {/* Submit Button */}
-                      <DialogFooter>
-                        <Button
-                          disabled={editAnnouncementMutation.isPending}
-                          className="w-full"
-                          type="submit"
-                        >
-                          {editAnnouncementMutation.isPending
-                            ? "Submitting..."
-                            : "Submit"}
-                        </Button>
-                      </DialogFooter>
-                    </form>
-                  </Form>
-                </div>
-              </DialogContent>
-            </Dialog>
-
-            <Dialog
-              open={deleteDialogOpen}
-              onOpenChange={(isOpen) => {
-                setDeleteDialogOpen(isOpen);
-              }}
-            >
-              <DialogTrigger className="w-full">
-                <Button
-                  variant="destructive"
-                  // onClick={() => deleteClassMutation.mutate(classdata.id)}
-                  className="w-full rounded-t-none text-center hover:cursor-pointer"
-                >
-                  Delete
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:rounded-3xl">
-                <DialogHeader>
-                  <DialogTitle className="text-2xl text-accent">
-                    Delete Announcement?
-                  </DialogTitle>
-                </DialogHeader>
-                <DialogDescription className="text-accent opacity-80">
-                  Are you sure you want to delete this Announcement?
-                </DialogDescription>
-                <DialogFooter className="mx-2 flex gap-2">
-                  <Button
-                    onClick={() => setDeleteDialogOpen(false)}
-                    className="rounded-xl"
-                    variant="default"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    className="rounded-xl"
-                    variant={"destructive"}
-                    onClick={() => {
-                      deleteAnnouncementMutation.mutate({
-                        announcement_id: announcement.id,
-                        filePath: announcement.file_path,
-                        setDeleteDialogOpen,
-                      });
-                    }}
-                    disabled={deleteAnnouncementMutation.isPending}
-                  >
-                    {deleteAnnouncementMutation.isPending
-                      ? "Deleting..."
-                      : "Delete"}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </PopoverContent>
-        </Popover>
+                      Cancel
+                    </Button>
+                    <Button
+                      className="rounded-xl"
+                      variant={"destructive"}
+                      onClick={() => {
+                        deleteAnnouncementMutation.mutate({
+                          announcement_id: announcement.id,
+                          filePath: announcement.file_path,
+                          setDeleteDialogOpen,
+                        });
+                      }}
+                      disabled={deleteAnnouncementMutation.isPending}
+                    >
+                      {deleteAnnouncementMutation.isPending
+                        ? "Deleting..."
+                        : "Delete"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </PopoverContent>
+          </Popover>
+        )}
       </div>
       <p className="mb-4 text-justify text-accent">{announcement.content}</p>
 

@@ -15,14 +15,7 @@ const useLikeDislike = (comment_id, user_id,columnName) => {
 
   const addLikeMutation = useMutation({
     mutationFn: likeComment,
-    // onSuccess: () => {
-    //   toast({
-    //     title: "Success",
-    //     description: "Comment Liked.",
-    //   });
-    // },
     onError: (error) => {
-      // console.error("Mutation error:", error);
       toast({
         title: "Something went wrong",
         description: `${error.message}`,
@@ -87,14 +80,14 @@ const useLikeDislike = (comment_id, user_id,columnName) => {
     enabled: !!comment_id,
   });
 
-  const handleLike = (comment_id, user_id) => {
-    addLikeMutation.mutate({ comment_id, user_id,columnName });
-  };
+  // const handleLike = (comment_id, user_id) => {
+  //   addLikeMutation.mutate({ comment_id, user_id,columnName });
+  // };
 
-  const handleDislike = (comment_id, user_id) => {
-    addDislikeMutation.mutate({ comment_id, user_id,columnName });
-  };
+  // const handleDislike = (comment_id, user_id) => {
+  //   addDislikeMutation.mutate({ comment_id, user_id,columnName });
+  // };
 
-  return { handleLike, handleDislike, data, dislikeCount, likeCount };
+  return { addLikeMutation, addDislikeMutation, data, dislikeCount, likeCount };
 };
 export default useLikeDislike;

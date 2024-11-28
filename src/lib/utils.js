@@ -22,6 +22,7 @@ const paginate = async ({
   query = {},
   filters = {},
   order = [],
+  select = '*',
 }) => {
   try {
     // Calculate the range for pagination
@@ -31,7 +32,7 @@ const paginate = async ({
     // Initialize the query
     let supabaseQuery = supabase
       .from(key)
-      .select("*")
+      .select(select)
       .range(from, to)
       .match(query)
 

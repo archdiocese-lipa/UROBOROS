@@ -31,7 +31,7 @@ const CommentInput = ({ announcement_id, HandleAddComment, columnName }) => {
           {...register(`comment${announcement_id}`,{ required: true })}
           onFocus={() => setIsCommenting(true)}
           name={`comment${announcement_id}`}
-          placeholder="Write Your Comment Here"
+          placeholder="Write a comment..."
         />
       </form>
 

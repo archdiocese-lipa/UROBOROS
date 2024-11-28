@@ -332,7 +332,7 @@ export const getCommentStatus = async ({ comment_id, user_id, columnName }) => {
 };
 
 export const getLikeCount = async ({ comment_id, columnName }) => {
-  console.log("fetching",columnName)
+
   if (!comment_id || !columnName) {
     throw new Error("comment_id and columnName is required!");
   }

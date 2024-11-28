@@ -36,9 +36,9 @@ const Filter = ({
         }}
         className="relative w-full px-[18px] py-3"
       >
-        <div className="flex justify-between">
+        <div className="flex justify-between flex-wrap">
           <h3
-            className={cn("font-bold text-accent", {
+            className={cn("font-bold text-start text-accent", {
               "text-white": ministry.id === selectedMinistry,
             })}
           >
