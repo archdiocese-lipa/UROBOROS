@@ -122,6 +122,7 @@ const WalkInRegistration = () => {
 
     // Proceed with submission
     const { event, parents, children } = values;
+    
     const submitData = {
       randomSixDigit: generatedNumber, // Use the generated six-digit ticket code
       event,

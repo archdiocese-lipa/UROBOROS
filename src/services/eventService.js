@@ -250,7 +250,7 @@ export const fetchEventVolunteers = async (eventId) => {
   }
 };
 
-// Function to fetch all events (optionally filter by date, creator, etc.)
+// Function to fetch parishioner events
 export const getParishionerEvents = async ({ page = 1, pageSize } = {}) => {
   try {
     // Get the current date in "YYYY-MM-DD" format
