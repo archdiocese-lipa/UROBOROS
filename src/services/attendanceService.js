@@ -229,6 +229,59 @@ const getEventAttendance = async (eventId) => {
   }
 };
 
+// Parishioner insert family/guardian
+export const insertGuardians = async (guardiansData) => {
+  try {
+    // Step 1: Check for existing attendance
+    const guardianIds = guardiansData.map((guardian) => guardian.id);
+    const { data: existingEntries, error: fetchError } = await supabase
+      .from("attendance")
+      .select("attendee_id, event_id")
+      .in("attendee_id", guardianIds)
+      .eq("attended", false);
+
+    if (fetchError) {
+      throw new Error(fetchError.message);
+    }
+
+    // Step 2: Identify duplicates
+    const duplicateIds = existingEntries
+      .filter((entry) =>
+        guardiansData.some(
+          (guardian) =>
+            guardian.id === entry.attendee_id &&
+            guardian.event_id === entry.event_id
+        )
+      )
+      .map((entry) => entry.attendee_id);
+
+    if (duplicateIds.length > 0) {
+      throw new Error("Some guardians have already attended this event.");
+    }
+
+    const { data, error } = await supabase
+      .from("attendance")
+      .upsert(
+        guardiansData.map((guardian) => ({
+          attendee_id: guardian.id,
+          event_id: guardian.event_id,
+          attendee_type: guardian.attendee_type,
+          attended: guardian.attended,
+        }))
+      )
+      .select();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error adding guardian", error);
+    throw error;
+  }
+};
+
 const fetchAttendeesByTicketCode = async (ticketCode) => {
   try {
     const { data, error } = await supabase

@@ -15,72 +15,69 @@ import {
 import { Button } from "../ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "../ui/label";
-import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/context/useUser";
 import {
   useFetchChildren,
   useFetchFamilyId,
   useFetchGuardian,
 } from "@/hooks/useFetchFamily";
+import useGuardianManualAttendEvent from "@/hooks/useManualAttendEvent";
 
 // Zod schema for form validation
 const formSchema = z.object({
   parents: z
-    .array(z.string()) // Validates an array of strings (IDs)
-    .min(1, "At least one attendee is required"), // Ensures the array has at least one item
+    .array(
+      z.object({
+        id: z.string(),
+      })
+    )
+    .nonempty("You must select at least one parent."), // Validation rule
 });
 
-const ManualAttendEvents = ({ eventId }) => {
-  const [_selectedEvent, setselectedEvent] = useState("");
+const ManualAttendEvents = ({ eventId, eventName, eventDescription }) => {
+  const [selectedEvent, setselectedEvent] = useState("");
 
   const { userData } = useUser();
   const userId = userData?.id;
-
-  const { toast } = useToast();
 
   // Fetch familyId based on the userId
   const {
     data: familyData,
     isLoading: isFamilyLoading,
-    error: familyError,
+    error: _familyError,
   } = useFetchFamilyId(userId);
 
   // Fetch guardian data based on familyId
   const {
     data: parentData,
     isLoading: isParentLoading,
-    error: parentError,
+    error: _parentError,
   } = useFetchGuardian(familyData?.id);
 
   // Fetch child data based on familyId
   const {
     data: _childData,
     isLoading: isChildLoading,
-    error: childError,
+    error: _childError,
   } = useFetchChildren(familyData?.id);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      parents: [], // Default value is an empty array
+      parents: [],
     },
   });
 
+  const { mutate: guardianManualAttend } = useGuardianManualAttendEvent();
+
   const onSubmit = (data) => {
-    // Since Zod validation is already being handled, we don't need to manually check the array length.
-    if (data.parents.length > 0) {
-      console.log(data.parents);
-      toast({
-        title: "Form Submitted!",
-        description: "You have successfully chosen to attend the event.",
-      });
-    } else {
-      toast({
-        title: "Form Error!",
-        description: "You need to select at least one attendee.",
-        variant: "destructive",
-      });
-    }
+    const parentsData = data.parents.map((parent) => ({
+      ...parent,
+      event_id: selectedEvent,
+      attendee_type: "parents",
+      attended: false,
+    }));
+    guardianManualAttend(parentsData);
   };
 
   const handleSelectEvent = () => {
@@ -92,17 +89,6 @@ const ManualAttendEvents = ({ eventId }) => {
     return <div>Loading...</div>;
   }
 
-  if (familyError || parentError || childError) {
-    return (
-      <div>
-        <p>Error loading data.</p>
-        {familyError && <p>{familyError.message}</p>}
-        {parentError && <p>{parentError.message}</p>}
-        {childError && <p>{childError.message}</p>}
-      </div>
-    );
-  }
-
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -110,21 +96,23 @@ const ManualAttendEvents = ({ eventId }) => {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Are you absolutely sure?</DialogTitle>
+          <DialogTitle>{eventName}</DialogTitle>
           <DialogDescription>
-            This action cannot be undone. This will permanently delete your
-            account and remove your data from our servers.
+            {eventDescription}
           </DialogDescription>
         </DialogHeader>
         <div>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="flex flex-col space-y-2"
+            >
               <Label className="text-primary-text">Parent/Guardian</Label>
-              {parentData.map((parent) => (
+              {parentData?.map((parent) => (
                 <FormField
                   key={parent.id}
                   control={form.control}
-                  name="parents" // Use a plural name to allow for multiple selections
+                  name="parents"
                   render={({ field }) => (
                     <FormItem className="space-x-2 space-y-0">
                       <div className="flex items-center gap-x-2">
@@ -132,24 +120,22 @@ const ManualAttendEvents = ({ eventId }) => {
                           <Checkbox
                             checked={
                               Array.isArray(field.value) &&
-                              field.value.includes(parent.id)
-                            } // Check if parent.id is in the array
+                              field.value.some((item) => item.id === parent.id) // Check if the array contains the object with the same id
+                            }
                             onCheckedChange={(checked) => {
                               const updatedValue = checked
                                 ? [
-                                    ...new Set([
-                                      ...(field.value || []),
-                                      parent.id,
-                                    ]),
-                                  ] // Add parent.id if checked
+                                    ...(field.value || []),
+                                    {
+                                      id: parent.id,
+                                    },
+                                  ]
                                 : (field.value || []).filter(
-                                    (id) => id !== parent.id
-                                  ); // Remove parent.id if unchecked
+                                    (item) => item.id !== parent.id
+                                  ); // Remove the object if unchecked
 
-                              // Update the field value asynchronously to avoid immediate re-renders
-                              setTimeout(() => {
-                                field.onChange(updatedValue); // Update the field value after the render cycle
-                              }, 0);
+                              // Update the field value
+                              field.onChange(updatedValue);
                             }}
                           />
                         </FormControl>
@@ -159,7 +145,9 @@ const ManualAttendEvents = ({ eventId }) => {
                   )}
                 />
               ))}
-              <Button type="submit">Submit</Button>
+              <div className="text-end">
+                <Button type="submit">Submit</Button>
+              </div>
             </form>
           </Form>
         </div>
@@ -170,6 +158,8 @@ const ManualAttendEvents = ({ eventId }) => {
 
 ManualAttendEvents.propTypes = {
   eventId: PropTypes.string.isRequired,
+  eventName: PropTypes.string.isRequired, 
+  eventDescription: PropTypes.string,
 };
 
 export default ManualAttendEvents;
