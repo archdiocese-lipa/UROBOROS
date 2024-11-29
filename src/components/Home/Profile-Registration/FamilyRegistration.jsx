@@ -56,31 +56,41 @@ const FamilyRegistration = ({ skipBtn }) => {
   });
 
   const onSubmit = async (data) => {
-    const familyData = {
-      // userId: regData?.id, // Use `regData` for userId
-      parents: data.parents,
-      children: data.children,
-      familyId: regData?.familyId, // Use `regData` for family
-    };
+    try {
+      const familyData = {
+        // userId: regData?.id, // Use `regData` for userId
+        parents: data.parents,
+        children: data.children,
+        familyId: regData?.familyId, // Use `regData` for family
+      };
 
-    mutate(familyData, {
-      onSuccess: () => {
-        toast({
-          title: "Family Members Added Successfully",
-          description:
-            "The parent and child information has been successfully added to the system.",
-        });
-      },
-      onError: (error) => {
-        console.error("Error adding family members:", error);
-        toast({
-          title: "Error",
-          description:
-            "There was an issue adding the family members. Please try again.",
-          variant: "destructive",
-        });
-      },
-    });
+      toast({
+        title: "Family Members Added Successfully",
+        description:
+          "The parent and child information has been successfully added to the system.",
+      });
+
+      mutate(familyData, {
+        onSuccess: () => {
+          toast({
+            title: "Family Members Added Successfully",
+            description:
+              "The parent and child information has been successfully added to the system.",
+          });
+        },
+        onError: (error) => {
+          console.error("Error adding family members:", error);
+          toast({
+            title: "Error",
+            description:
+              "There was an issue adding the family members. Please try again.",
+            variant: "destructive",
+          });
+        },
+      });
+    } catch (error) {
+      throw new error();
+    }
   };
 
   return (
@@ -154,7 +164,7 @@ const FamilyRegistration = ({ skipBtn }) => {
             variant="secondary"
             onClick={() => appendParent({ firstName: "", lastName: "" })}
           >
-            Add Parent/Guardian
+            Add
           </Button>
         </div>
 
@@ -209,7 +219,7 @@ const FamilyRegistration = ({ skipBtn }) => {
             variant="secondary"
             onClick={() => appendChild({ firstName: "", lastName: "" })}
           >
-            Add Child
+            Add
           </Button>
         </div>
 
