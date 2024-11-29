@@ -1,4 +1,6 @@
 import { supabase } from "./supabaseClient"; // Ensure supabase client is imported
+import { paginate } from "@/lib/utils";
+import { ROLES } from "@/constants/roles";
 
 // Function to create a meeting
 export const createMeeting = async (meetingData) => {
@@ -102,27 +104,51 @@ export const updateMeeting = async (meetingId, updatedData) => {
 };
 
 // Function to fetch all meetings (optionally filter by date, creator, etc.)
-export const getMeetings = async ({ creatorId, startDate, endDate }) => {
+export const getMeetings = async ({
+  creatorId,
+  startDate,
+  endDate,
+  page = 1,
+  pageSize,
+  query,
+  user,
+} = {}) => {
   try {
-    let query = supabase.from("meetings").select("*");
+    const filters = {};
 
-    // Filter by creator if provided
+    // Filter by meeting date range (start and end date)
+    if (startDate) {
+      filters.gte = { meeting_date: startDate };
+    }
+
+    if (endDate) {
+      filters.lte = { meeting_date: endDate };
+    }
+
+    // Filter by meeting name (optional query search)
+    if (query) {
+      filters.ilike = { meeting_name: query };
+    }
+
+    // Filter by creator's ID (if provided)
     if (creatorId) {
-      query = query.eq("creator_id", creatorId);
+      filters.eq = { creator_id: creatorId };
     }
 
-    // Filter by date range if provided
-    if (startDate && endDate) {
-      query = query.gte("meeting_date", startDate).lte("meeting_date", endDate);
+    // If the user is not an admin (role check), filter by assigned volunteer (optional)
+    if (user?.role !== ROLES[0]) {
+      filters.eq = { assigned_volunteer: user?.id };
     }
 
-    const { data, error } = await query;
+    // Fetch paginated data from the meetings table with the constructed filters
+    const data = await paginate({
+      key: "meetings",
+      page,
+      pageSize,
+      filters,
+    });
 
-    if (error) {
-      throw new Error(error.message);
-    }
-
-    return { success: true, data };
+    return data;
   } catch (error) {
     console.error("Error fetching meetings:", error);
     return { success: false, error: error.message };
@@ -161,9 +187,39 @@ export const getMeetingById = async (meetingId) => {
       throw new Error(error.message);
     }
 
-    return { success: true, data };
+    return data;
   } catch (error) {
     console.error("Error fetching meeting by ID:", error);
     return { success: false, error: error.message };
+  }
+};
+
+export const fetchMeetingParticipants = async (meetingId) => {
+  try {
+    // Query the meeting_participants table for the given meeting ID
+    const { data, error } = await supabase
+      .from("meeting_participants")
+      .select(
+        `
+        user_id,
+      
+        users (
+          first_name,
+          last_name,
+          email
+        )
+        `
+      )
+      .eq("meeting_id", meetingId); // Filter by meeting ID
+
+    if (error) {
+      throw new Error(error.message); // Handle errors
+    }
+
+    // Return the fetched data (or empty array if no data is found)
+    return { success: true, data: data || [] };
+  } catch (error) {
+    console.error("Error fetching meeting participants:", error);
+    return { success: false, error: error.message, data: [] }; // Return empty array in case of an error
   }
 };
