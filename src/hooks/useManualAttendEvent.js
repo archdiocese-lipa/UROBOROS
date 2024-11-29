@@ -14,9 +14,7 @@ const useMainApplicantAttendEvent = () => {
   // React Query mutation for creating an event
   const mutation = useMutation({
     mutationFn: insertMainApplicant, // Use the createEvent function from eventServices
-    onMutate: () => {
-      console.log("success");
-    },
+    onMutate: () => {},
     onError: (error) => {
       toast({
         title: "Error Registering Event",
