@@ -49,22 +49,36 @@ export default Sidebar;
 
 const SidebarProfile = () => {
   const { userData, logout } = useUser(); // Get userData and logout
-  const navigate = useNavigate(); // Initialize navigate
-  const loc = useLocation(); // Get current location
+  const navigate = useNavigate();
+  const loc = useLocation();
 
   const handleLogout = async () => {
     try {
-      await logout(); // Call logout function from UserContext
-      navigate("/", { replace: true, state: { from: loc.pathname || "/" } }); // Redirect to home
+      await logout();
+      navigate("/", { replace: true, state: { from: loc.pathname || "/" } });
     } catch (error) {
       console.error("Logout failed:", error.message);
     }
   };
 
-  // Generate initials using getInitial utility for both first and last name
-  const initials = `${getInitial(userData?.first_name ?? "U")}${getInitial(userData?.last_name ?? "")}`;
+  if (!userData) {
+    // Fallback while userData is loading
+    return (
+      <div className="ml-9 hidden h-10 max-w-56 items-center justify-between rounded-[20px] bg-white p-1 lg:flex">
+        <div className="flex items-center gap-2">
+          <Avatar className="h-8 w-8">
+            <AvatarFallback>?</AvatarFallback>
+          </Avatar>
+          <p className="text-[16px] font-medium capitalize">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
-  // Generate the full name or fallback to "Guest"
+  // Generate initials and full name
+  const initials = `${getInitial(userData?.first_name ?? "U")}${getInitial(
+    userData?.last_name ?? ""
+  )}`;
   const fullName =
     `${userData?.first_name ?? ""} ${userData?.last_name ?? ""}`.trim() ||
     "Guest";
@@ -72,12 +86,9 @@ const SidebarProfile = () => {
   return (
     <div className="ml-9 hidden h-10 max-w-56 items-center justify-between rounded-[20px] bg-white p-1 lg:flex">
       <div className="flex items-center gap-2">
-        {/* Avatar Component */}
         <Avatar className="h-8 w-8">
-          {/* Fallback with generated initials */}
           <AvatarFallback>{initials}</AvatarFallback>
         </Avatar>
-        {/* Full name */}
         <p className="text-[16px] font-medium capitalize">{fullName}</p>
       </div>
       <DropdownMenu>
