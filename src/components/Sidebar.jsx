@@ -121,12 +121,9 @@ const SidebarProfile = () => {
   return (
     <div className="ml-9 hidden h-10 max-w-56 items-center justify-between rounded-[20px] bg-white p-1 lg:flex">
       <div className="flex items-center gap-2">
-        {/* Avatar Component */}
         <Avatar className="h-8 w-8">
-          {/* Fallback with generated initials */}
           <AvatarFallback>{initials}</AvatarFallback>
         </Avatar>
-        {/* Full name */}
         <p className="text-[16px] font-medium capitalize">{fullName}</p>
       </div>
       <DropdownMenu>

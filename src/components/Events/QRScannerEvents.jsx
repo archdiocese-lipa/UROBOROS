@@ -89,7 +89,7 @@ const QrScannerEvents = ({ eventData }) => {
 
   const handleGetQrResult = (result) => {
     if (result && Array.isArray(result)) {
-      const scannedEventId = result[0]?.rawValue; // Assuming the scanned result is the eventId
+      const scannedEventId = result[0]?.rawValue; // scanned result
       setselectedEvent(scannedEventId);
 
       // Check if the scanned eventId exists in the eventData
@@ -112,50 +112,102 @@ const QrScannerEvents = ({ eventData }) => {
   };
 
   return (
-    <div className="App">
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button>QR Scanner</Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="sr-only">
-              Are you absolutely sure?
-            </DialogTitle>
-            <DialogDescription className="sr-only">
-              This action cannot be undone. This will permanently delete your
-              account and remove your data from our servers.
-            </DialogDescription>
-          </DialogHeader>
-          {isValidQr === null && (
-            <Scanner
-              scanDelay={3000}
-              allowMultiple={true}
-              onScan={handleGetQrResult}
-            />
-          )}
-          {isValidQr === false && (
-            <div className="flex flex-col items-center justify-center">
-              <p>QR Code not found</p>
-              <Button onClick={showScanner}>Scan Again</Button>
-            </div>
-          )}
-          {isQrScanned && (
-            <>
-              <Label>Please choose who you would like to attend with.</Label>
-              <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit(onSubmit)}
-                  className="flex flex-col space-y-2"
-                >
-                  <Label className="text-primary-text">Parent/Guardian</Label>
-                  {!isLoading ? (
-                    parentData?.map((parent) => (
-                      <FormField
-                        key={parent.id}
-                        control={form.control}
-                        name="parents"
-                        render={({ field }) => (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button>QR Scanner</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle className="sr-only">
+            Are you absolutely sure?
+          </DialogTitle>
+          <DialogDescription className="sr-only">
+            This action cannot be undone. This will permanently delete your
+            account and remove your data from our servers.
+          </DialogDescription>
+        </DialogHeader>
+        {isValidQr === null && (
+          <Scanner
+            scanDelay={3000}
+            allowMultiple={true}
+            onScan={handleGetQrResult}
+          />
+        )}
+        {isValidQr === false && (
+          <div className="flex flex-col items-center justify-center">
+            <p>QR Code not found</p>
+            <Button onClick={showScanner}>Scan Again</Button>
+          </div>
+        )}
+        {isQrScanned && (
+          <>
+            <Label>Please choose who you would like to attend with.</Label>
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="flex flex-col space-y-2"
+              >
+                <Label className="text-primary-text">Parent/Guardian</Label>
+                {!isLoading ? (
+                  parentData?.map((parent) => (
+                    <FormField
+                      key={parent.id}
+                      control={form.control}
+                      name="parents"
+                      render={({ field }) => (
+                        <FormItem className="space-x-2 space-y-0">
+                          <div className="flex items-center gap-x-2">
+                            <FormControl>
+                              <Checkbox
+                                checked={
+                                  Array.isArray(field.value) &&
+                                  field.value.some(
+                                    (item) => item.id === parent.id
+                                  ) // Check if the array contains the object with the same id
+                                }
+                                onCheckedChange={(checked) => {
+                                  const updatedValue = checked
+                                    ? [
+                                        ...(field.value || []),
+                                        {
+                                          id: parent.id,
+                                        },
+                                      ]
+                                    : (field.value || []).filter(
+                                        (item) => item.id !== parent.id
+                                      ); // Remove the object if unchecked
+
+                                  // Update the field value
+                                  field.onChange(updatedValue);
+                                }}
+                              />
+                            </FormControl>
+                            <Label>{`${parent.first_name} ${parent.last_name}`}</Label>
+                            <FormMessage />
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                  ))
+                ) : (
+                  <p>Loading...</p>
+                )}
+                {error && <p>Error fetching guardian</p>}
+                {form.formState.errors.children && (
+                  <FormMessage>
+                    {form.formState.errors.children.message}
+                  </FormMessage>
+                )}
+                <Label className="text-primary-text">Children</Label>
+
+                {!isLoading ? (
+                  childData?.map((child) => (
+                    <FormField
+                      key={child.id}
+                      control={form.control}
+                      name="children"
+                      render={({ field }) => (
+                        <>
                           <FormItem className="space-x-2 space-y-0">
                             <div className="flex items-center gap-x-2">
                               <FormControl>
@@ -163,7 +215,7 @@ const QrScannerEvents = ({ eventData }) => {
                                   checked={
                                     Array.isArray(field.value) &&
                                     field.value.some(
-                                      (item) => item.id === parent.id
+                                      (item) => item.id === child.id
                                     ) // Check if the array contains the object with the same id
                                   }
                                   onCheckedChange={(checked) => {
@@ -171,11 +223,11 @@ const QrScannerEvents = ({ eventData }) => {
                                       ? [
                                           ...(field.value || []),
                                           {
-                                            id: parent.id,
+                                            id: child.id,
                                           },
                                         ]
                                       : (field.value || []).filter(
-                                          (item) => item.id !== parent.id
+                                          (item) => item.id !== child.id
                                         ); // Remove the object if unchecked
 
                                     // Update the field value
@@ -183,80 +235,26 @@ const QrScannerEvents = ({ eventData }) => {
                                   }}
                                 />
                               </FormControl>
-                              <Label>{`${parent.first_name} ${parent.last_name}`}</Label>
-                              <FormMessage />
+                              <Label>{`${child.first_name} ${child.last_name}`}</Label>
                             </div>
                           </FormItem>
-                        )}
-                      />
-                    ))
-                  ) : (
-                    <p>Loading...</p>
-                  )}
-                  {error && <p>Error fetching guardian</p>}
-                  {form.formState.errors.children && (
-                    <FormMessage>
-                      {form.formState.errors.children.message}
-                    </FormMessage>
-                  )}
-                  <Label className="text-primary-text">Children</Label>
-
-                  {!isLoading ? (
-                    childData?.map((child) => (
-                      <FormField
-                        key={child.id}
-                        control={form.control}
-                        name="children"
-                        render={({ field }) => (
-                          <>
-                            <FormItem className="space-x-2 space-y-0">
-                              <div className="flex items-center gap-x-2">
-                                <FormControl>
-                                  <Checkbox
-                                    checked={
-                                      Array.isArray(field.value) &&
-                                      field.value.some(
-                                        (item) => item.id === child.id
-                                      ) // Check if the array contains the object with the same id
-                                    }
-                                    onCheckedChange={(checked) => {
-                                      const updatedValue = checked
-                                        ? [
-                                            ...(field.value || []),
-                                            {
-                                              id: child.id,
-                                            },
-                                          ]
-                                        : (field.value || []).filter(
-                                            (item) => item.id !== child.id
-                                          ); // Remove the object if unchecked
-
-                                      // Update the field value
-                                      field.onChange(updatedValue);
-                                    }}
-                                  />
-                                </FormControl>
-                                <Label>{`${child.first_name} ${child.last_name}`}</Label>
-                              </div>
-                            </FormItem>
-                          </>
-                        )}
-                      />
-                    ))
-                  ) : (
-                    <p>Loading...</p>
-                  )}
-                  {error && <p>Error fetching guardian</p>}
-                  <div className="text-end">
-                    <Button type="submit">Attend</Button>
-                  </div>
-                </form>
-              </Form>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
-    </div>
+                        </>
+                      )}
+                    />
+                  ))
+                ) : (
+                  <p>Loading...</p>
+                )}
+                {error && <p>Error fetching guardian</p>}
+                <div className="text-end">
+                  <Button type="submit">Attend</Button>
+                </div>
+              </form>
+            </Form>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 };
 

@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/form";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -566,9 +567,9 @@ const EditRegistration = () => {
                   )}
                 />
                 <DialogFooter className="gap-y-2">
-                  <Button variant="outline" onClick={handleDialogChange}>
-                    Cancel
-                  </Button>
+                  <DialogClose asChild>
+                    <Button variant="outline">Cancel</Button>
+                  </DialogClose>
                   <Button type="submit">Submit</Button>
                 </DialogFooter>
               </form>
