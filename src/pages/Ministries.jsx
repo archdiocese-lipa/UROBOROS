@@ -20,7 +20,7 @@ const Ministries = () => {
       </div>
 
       {/* Render MinistryCard components if data exists */}
-      <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 p-2 h-[35rem] overflow-scroll no-scrollbar">
         {ministryData?.map((ministry) => (
           <MinistryCard
             key={ministry.id} // Use `ministry.id` as the key for each card
