@@ -6,6 +6,11 @@
     --radius: 0.5rem;
   }
 
+    /* Prevent the entire HTML document from being scrollable */
+    html, body {
+      overflow: hidden;
+    }
+
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }

@@ -43,12 +43,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useUser } from "@/context/useUser";
 import Comments from "../Comments";
 import TriggerLikeIcon from "../CommentComponents/TriggerLikeIcon";
-import { useQuery } from "@tanstack/react-query";
-import { getAllMinistries } from "@/services/ministryService";
 import AssignVolunteerComboBox from "../Schedule/AssignVolunteerComboBox";
 
-
 const Announcement = ({
+  ministries,
   announcement,
   editAnnouncementMutation,
   deleteAnnouncementMutation,
@@ -56,12 +54,7 @@ const Announcement = ({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState();
   const [editDialogOpen, setEditDialogOpen] = useState();
   const { userData } = useUser();
-  const [formVisibility, setFormVisibility] = useState("");
-
-  const { data: ministries } = useQuery({
-    queryFn: async () => await getAllMinistries(),
-    queryKey: ["ministries"],
-  });
+  const [formVisibility, setFormVisibility] = useState(announcement.visibility);
 
   const form = useForm({
     resolver: zodResolver(AnnouncementSchema),
@@ -74,27 +67,39 @@ const Announcement = ({
     },
   });
 
+  if (ministries) {
+    form.setValue(
+      "ministry",
+      ministries.find((ministry) => ministry.id === announcement.ministry_id)
+        ?.id
+        ? [
+            ministries.find(
+              (ministry) => ministry.id === announcement.ministry_id
+            )?.id,
+          ]
+        : []
+    );
+  }
+
   const onSubmit = (announcementData) => {
     editAnnouncementMutation.mutate({
       announcementData: {
         ...announcementData,
-        author: `${userData?.first_name} ${userData?.last_name}`,
         user_id: userData?.id,
         announcement_id: announcement.id,
         filePath: announcement.file_path,
       },
-      announcement_id: announcement.id,
-      editreset: form.reset,
-      setEditDialogOpen,
+      first_name: userData?.first_name,
+      last_name: userData?.last_name,
     });
+    form.reset();
+    setEditDialogOpen(false);
   };
 
-  if(!userData){
-    return null
+  if (!userData) {
+    return null;
   }
-
-
-
+  console.log(announcement)
   return (
     <div>
       <div className="mb-3 flex justify-between">
@@ -104,7 +109,7 @@ const Announcement = ({
           </h2>
           <div className="flex gap-2">
             <p className="text-sm font-bold text-accent">
-              {`${announcement.users.first_name} ${announcement.users.last_name}`}
+              {`${announcement?.users?.first_name} ${announcement?.users?.last_name}`}
             </p>
             <p className="text-sm text-accent">
               {new Date(announcement.created_at).toDateTime()}
@@ -113,20 +118,21 @@ const Announcement = ({
             {announcement.visibility === "public" ? (
               <GlobeIcon className="h-4 w-4 text-accent" />
             ) : (
-              <PersonIcon className="h-4 w-4" />
+              <PersonIcon className="h-4 w-4 text-accent" />
             )}
           </div>
         </div>
 
-        {userData?.id === announcement?.id && (
+        {userData?.id === announcement?.user_id && (
           <Popover>
             <PopoverTrigger>
               <KebabIcon className="h-6 w-6 text-accent" />
             </PopoverTrigger>
-            <PopoverContent
-              align="center"
-              className="w-32 overflow-hidden rounded-2xl p-0"
-            >
+            <PopoverContent align="center" className="w-32 overflow-hidden p-0">
+              <div className="p-2">
+                <p className="text-center font-semibold">Actions</p>
+              </div>
+              <Separator />
               <Dialog
                 open={editDialogOpen}
                 onOpenChange={(open) => {
@@ -139,7 +145,7 @@ const Announcement = ({
                   <Button
                     variant="ghost"
                     // onClick={() => deleteClassMutation.mutate(classdata.id)}
-                    className="w-full p-3 text-center text-accent hover:cursor-pointer"
+                    className="w-full rounded-none p-3 hover:cursor-pointer"
                   >
                     Edit
                   </Button>
@@ -233,10 +239,10 @@ const Announcement = ({
                                       field.onChange(value);
                                   }}
                                 >
-                                  <SelectTrigger className="w-full rounded-3xl">
+                                  <SelectTrigger className="w-full">
                                     <SelectValue placeholder="Select visibility" />
                                   </SelectTrigger>
-                                  <SelectContent className="rounded-3xl">
+                                  <SelectContent className="">
                                     <SelectGroup>
                                       <SelectItem value="public">
                                         Public
@@ -261,20 +267,18 @@ const Announcement = ({
                               <FormLabel>Announcement Ministry</FormLabel>
                               <FormControl>
                                 <AssignVolunteerComboBox
-                                  options={ministries?.data?.map(
-                                    (ministry) => ({
-                                      value: ministry.id, // Use 'id' as the value
-                                      label: `${ministry.ministry_name}`, // Combine first name and last name
-                                    })
-                                  )}
+                                  options={ministries?.map((ministry) => ({
+                                    value: ministry.id,
+                                    label: `${ministry.ministry_name}`,
+                                  }))}
                                   value={
                                     Array.isArray(field.value)
                                       ? field.value
                                       : []
                                   } // Ensure it's always an array
-                                  onChange={field.onChange} // Handle change to update the form state
+                                  onChange={field.onChange}
                                   placeholder="Select Ministry"
-                                  disabled={formVisibility !== "private"} // Disable combo box if visibility is not private
+                                  disabled={formVisibility !== "private"}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -307,9 +311,9 @@ const Announcement = ({
               >
                 <DialogTrigger className="w-full">
                   <Button
-                    variant="destructive"
+                    variant="ghost"
                     // onClick={() => deleteClassMutation.mutate(classdata.id)}
-                    className="w-full rounded-t-none text-center hover:cursor-pointer"
+                    className="w-full rounded-none text-start hover:cursor-pointer"
                   >
                     Delete
                   </Button>
@@ -326,8 +330,8 @@ const Announcement = ({
                   <DialogFooter className="mx-2 flex gap-2">
                     <Button
                       onClick={() => setDeleteDialogOpen(false)}
-                      className="rounded-xl"
-                      variant="default"
+                      className="rounded-xl text-accent hover:text-accent"
+                      variant="outline"
                     >
                       Cancel
                     </Button>
@@ -338,8 +342,8 @@ const Announcement = ({
                         deleteAnnouncementMutation.mutate({
                           announcement_id: announcement.id,
                           filePath: announcement.file_path,
-                          setDeleteDialogOpen,
                         });
+                        setDeleteDialogOpen(false);
                       }}
                       disabled={deleteAnnouncementMutation.isPending}
                     >
@@ -356,8 +360,19 @@ const Announcement = ({
       </div>
       <p className="mb-4 text-justify text-accent">{announcement.content}</p>
 
-      {announcement.file_url && (
-        <img className="mb-2" src={announcement.file_url} alt="" />
+      {announcement?.file_type && announcement?.file_type.startsWith("image") && (
+        <img className="mb-2" src={announcement.file_url} alt="file" />
+      )}
+      {announcement?.file_type &&
+        announcement?.file_type.startsWith("application") && (
+          <div>
+            <a href={announcement.file_url} target="_blank" download>
+              <p>{announcement.file_name}</p>
+            </a>
+          </div>
+        )}
+      {announcement?.file_type && announcement?.file_type.startsWith("video") && (
+        <video className="mb-2" controls src={announcement.file_url} alt="file" />
       )}
       <div className="flex items-end justify-between">
         <div className="relative h-5">
@@ -390,15 +405,25 @@ Announcement.propTypes = {
     id: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
     content: PropTypes.string.isRequired,
-    file_path: PropTypes.string,
+    file_path: PropTypes.string, 
     created_at: PropTypes.string.isRequired,
     visibility: PropTypes.string.isRequired,
-    file_url: PropTypes.string,
+    file_url: PropTypes.string, 
+    file_name: PropTypes.string.isRequired,
+    file_type: PropTypes.string, 
+    ministry_id: PropTypes.string.isRequired,
+    user_id: PropTypes.string.isRequired,
     users: PropTypes.shape({
       first_name: PropTypes.string.isRequired,
       last_name: PropTypes.string.isRequired,
     }).isRequired,
   }).isRequired,
+  ministries: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+      ministry_name: PropTypes.string.isRequired,
+    })
+  ).isRequired,
   editAnnouncementMutation: PropTypes.shape({
     mutate: PropTypes.func.isRequired,
     isPending: PropTypes.bool.isRequired,

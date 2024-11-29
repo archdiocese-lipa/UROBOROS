@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useUser } from "@/context/useUser";
 
 import { getUser } from "@/services/userService";
+import { ROLES } from "@/constants/roles";
 
 const BASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -15,7 +16,7 @@ const RequireRole = ({ roles }) => {
 
   const nav = useNavigate();
   const loc = useLocation();
-  const { setUserData } = useUser();
+  const { setUserData, logout } = useUser();
 
   const { data, isSuccess } = useQuery({
     queryKey: ["user"],
@@ -34,11 +35,24 @@ const RequireRole = ({ roles }) => {
       });
     }
     if (isSuccess) {
+      const tempRole = sessionStorage.getItem("temp-role");
+      if (tempRole && data.role === ROLES[0]) {
+        if (!roles.includes(tempRole)) {
+          nav("/announcements", { replace: true });
+        }
+
+        if (tempRole === ROLES[0]) {
+          sessionStorage.removeItem("temp-role");
+          logout();
+        }
+        data.role = tempRole;
+      }
+
       setUserData(data);
     }
     if (isSuccess && !roles.includes(data.role)) {
       // if the user is authenticated but doesn't have the role needed
-      nav("/unauthorized", { replace: true });
+      nav("/announcements", { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, isSuccess]);

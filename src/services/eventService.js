@@ -131,12 +131,32 @@ export const getEvents = async ({
       filters.eq = { creator_id: creatorId };
     }
 
-    if (user?.role !== ROLES[0]) {
-      filters.eq = { assigned_volunteer: user?.id };
+    // if (user && user.role !== ROLES[0]) {
+    //   filters.eq = { assigned_volunteer: user.id };
+    // }
+
+    let nonAdminEventIds = [];
+
+    if (user && user.role !== ROLES[0]) {
+      const { data: volunteerEvents, error: volunteerError } = await supabase
+        .from("event_volunteers")
+        .select("*")
+        .eq("volunteer_id", user.id);
+
+      if (volunteerError) {
+        throw new Error(volunteerError.message);
+      }
+
+      nonAdminEventIds = volunteerEvents.map((event) => event.event_id);
+
+      // Update the filters to include only these event IDs
+      filters.in = { id: nonAdminEventIds };
     }
 
     const data = await paginate({
       key: "events",
+      select: `*, event_volunteers (
+          volunteer_id)`,
       page,
       pageSize,
       filters,
@@ -196,6 +216,7 @@ export const getEventById = async (eventId) => {
       .single(); // Fetch only one record
 
     if (error) {
+      console.error("Error fetching event by ID:", error);
       throw new Error(error.message);
     }
 

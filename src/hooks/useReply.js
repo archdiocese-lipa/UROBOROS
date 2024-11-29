@@ -16,14 +16,14 @@ import { useToast } from "./use-toast";
       });
     },
     onError: (error) => {
-      console.error("Mutation error:", error);
+      // console.error("Mutation error:", error);
       toast({
         title: "Something went wrong",
         description: `${error.message}`,
       });
     },
     onSettled: () => {
-      console.log("revalidaing", announcement_id);
+      // console.log("revalidaing", announcement_id);
       queryClient.invalidateQueries({ queryKey: ["replies",commentId] });
       queryClient.invalidateQueries({ queryKey: ["comments",announcement_id] });
     },
@@ -37,14 +37,14 @@ import { useToast } from "./use-toast";
       });
     },
     onError: (error) => {
-      console.error("Mutation error:", error);
+      // console.error("Mutation error:", error);
       toast({
         title: "Something went wrong",
         description: `${error.message}`,
     });
     },
     onSettled: () => {
-      console.log("revalidaing", announcement_id);
+      // console.log("revalidaing", announcement_id);
       queryClient.invalidateQueries({ queryKey: ["replies",commentId] });
       queryClient.invalidateQueries({ queryKey: ["comments",announcement_id] });
     },
@@ -60,14 +60,14 @@ import { useToast } from "./use-toast";
       //   reset()
     },
     onError: (error) => {
-      console.error("Mutation error:", error);
+      // console.error("Mutation error:", error);
       toast({
         title: "Something went wrong",
         description: `${error.message}`,
       });
     },
     onSettled: () => {
-      console.log("before invalidating", commentId);
+      // console.log("before invalidating", commentId);
       queryClient.invalidateQueries({
         queryKey: ["replies",commentId],
       });
@@ -101,7 +101,7 @@ import { useToast } from "./use-toast";
 
   const handleUpdateReply = (inputs, comment_id, setEditting) => {
 
-    console.log("comment_ID",inputs,comment_id)
+    // console.log("comment_ID",inputs,comment_id)
     updateReplyMutation.mutate(
       { comment:inputs.comment, comment_id, setEditting },
       {

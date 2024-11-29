@@ -20,7 +20,6 @@ import { useAddFamily } from "@/hooks/useFamily";
 const FamilyRegistration = ({ skipBtn }) => {
   const { toast } = useToast();
   const { regData } = useUser(); // Access registration data
-  const { mutate, isLoading } = useAddFamily(); // Destructure the hook
 
   // Use `regData` to prepopulate the first parent
   const form = useForm({
@@ -55,32 +54,44 @@ const FamilyRegistration = ({ skipBtn }) => {
     name: "children",
   });
 
-  const onSubmit = async (data) => {
-    const familyData = {
-      // userId: regData?.id, // Use `regData` for userId
-      parents: data.parents,
-      children: data.children,
-      familyId: regData?.familyId, // Use `regData` for family
-    };
+  const { mutate, isLoading } = useAddFamily(); // Destructure the hook
 
-    mutate(familyData, {
-      onSuccess: () => {
-        toast({
-          title: "Family Members Added Successfully",
-          description:
-            "The parent and child information has been successfully added to the system.",
-        });
-      },
-      onError: (error) => {
-        console.error("Error adding family members:", error);
-        toast({
-          title: "Error",
-          description:
-            "There was an issue adding the family members. Please try again.",
-          variant: "destructive",
-        });
-      },
-    });
+  const onSubmit = async (data) => {
+    try {
+      const familyData = {
+        // userId: regData?.id, // Use `regData` for userId
+        parents: data.parents,
+        children: data.children,
+        familyId: regData?.familyId, // Use `regData` for family
+      };
+
+      toast({
+        title: "Family Members Added Successfully",
+        description:
+          "The parent and child information has been successfully added to the system.",
+      });
+
+      mutate(familyData, {
+        onSuccess: () => {
+          toast({
+            title: "Family Members Added Successfully",
+            description:
+              "The parent and child information has been successfully added to the system.",
+          });
+        },
+        onError: (error) => {
+          console.error("Error adding family members:", error);
+          toast({
+            title: "Error",
+            description:
+              "There was an issue adding the family members. Please try again.",
+            variant: "destructive",
+          });
+        },
+      });
+    } catch (error) {
+      throw new error();
+    }
   };
 
   return (
@@ -154,7 +165,7 @@ const FamilyRegistration = ({ skipBtn }) => {
             variant="secondary"
             onClick={() => appendParent({ firstName: "", lastName: "" })}
           >
-            Add Parent/Guardian
+            Add
           </Button>
         </div>
 
@@ -209,7 +220,7 @@ const FamilyRegistration = ({ skipBtn }) => {
             variant="secondary"
             onClick={() => appendChild({ firstName: "", lastName: "" })}
           >
-            Add Child
+            Add
           </Button>
         </div>
 

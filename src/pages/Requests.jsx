@@ -95,19 +95,6 @@ const Requests = () => {
     setOpen(true);
   };
 
-  // const onRowDelete = async (id) => {
-  //   try {
-  //     // MARK: Error here due to:
-  //     // Error removing user update or delete on table "users"
-  //     // violates foreign key constraint "events_assigned_volunteer_fkey"
-  //     // on table "events"
-  //     await removeUser(id);
-  //     await refetch();
-  //   } catch (error) {
-  //     console.error("Error deleting user", error.message);
-  //   }
-  // };
-
   const handleStatusChange = (checked, id) => {
     // Check if the mutate function is available
     if (activateUser) {
@@ -121,7 +108,7 @@ const Requests = () => {
   if (error) return <div>Error: {error.message}</div>;
 
   return (
-    <div className="flex flex-col gap-7">
+    <div className="no-scrollbar flex h-full flex-col gap-7 overflow-y-auto">
       <div>
         <Title>Requests</Title>
         <Description>Manage your organisation&apos;s community.</Description>
@@ -231,47 +218,13 @@ const Requests = () => {
                   </TableCell>
 
                   <TableCell className="w-[300px] text-center">
-                    <div className="flex items-center justify-center gap-2">
-                      <Button
-                        onClick={() => onRowEdit(row)}
-                        variant="outline"
-                        className="h-auto px-2 text-accent hover:text-orange-500"
-                      >
-                        <Icon icon="mingcute:pencil-3-line" />
-                      </Button>
-                      {/* <Dialog>
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className="h-auto px-2 text-accent hover:text-red-500"
-                          >
-                            <Icon icon="mingcute:delete-2-line" />
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle className="text-accent">
-                              {`Delete ${row.first_name} ${row.last_name}`}
-                            </DialogTitle>
-                            <DialogDescription>
-                              Are you sure you want to delete{" "}
-                              <span className="font-bold text-accent">
-                                {`${row.first_name} ${row.last_name}`}
-                              </span>
-                              ?
-                            </DialogDescription>
-                          </DialogHeader>
-                          <DialogFooter>
-                            <DialogClose asChild>
-                              <Button variant="outline">Cancel</Button>
-                            </DialogClose>
-                            <Button onClick={() => onRowDelete(row.id)}>
-                              Delete
-                            </Button>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog> */}
-                    </div>
+                    <Button
+                      onClick={() => onRowEdit(row)}
+                      variant="outline"
+                      className="h-auto rounded-xl px-2 text-accent hover:text-orange-500"
+                    >
+                      <Icon icon="mingcute:pencil-3-line" />
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))

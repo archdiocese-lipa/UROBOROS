@@ -141,6 +141,9 @@ export const UserProvider = ({ children }) => {
     try {
       await supabase.auth.signOut();
       setUserData(null);
+      if (sessionStorage.getItem("temp-role")) {
+        sessionStorage.removeItem("temp-role");
+      }
     } catch (error) {
       console.error("Logout failed:", error.message);
       throw error;

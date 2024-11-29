@@ -89,7 +89,7 @@ const QrScannerEvents = ({ eventData }) => {
 
   const handleGetQrResult = (result) => {
     if (result && Array.isArray(result)) {
-      const scannedEventId = result[0]?.rawValue; // Assuming the scanned result is the eventId
+      const scannedEventId = result[0]?.rawValue; // scanned result
       setselectedEvent(scannedEventId);
 
       // Check if the scanned eventId exists in the eventData

@@ -16,6 +16,7 @@ const registerUser = async ({
       password,
     });
 
+
     if (signUpError) throw signUpError;
 
     // Insert user details into the 'users' table
@@ -61,7 +62,7 @@ const registerUser = async ({
 
 
 
-    return user; // Return the user object after successful insertions
+    return user; 
   } catch (error) {
     console.error("Error during sign-up:", error);
     throw error; // Re-throw the error to be handled by the calling function

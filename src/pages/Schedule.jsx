@@ -12,20 +12,24 @@ import CreateEvent from "@/components/Schedule/CreateEvent";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import CreateMeeting from "@/components/Schedule/CreateMeeting";
 import { Skeleton } from "@/components/ui/skeleton";
+import ScheduleDetails from "@/components/Schedule/ScheduleDetails";
 
 import { getEvents } from "@/services/eventService";
 import { getMeetings } from "@/services/meetingService"; // Assuming getMeetings exists
 
-import { cn } from "@/lib/utils";
-import { Search, EventIcon } from "@/assets/icons/icons";
-import ScheduleDetails from "@/components/Schedule/ScheduleDetails";
 import { useUser } from "@/context/useUser";
 
+import { cn } from "@/lib/utils";
+import { Search, EventIcon } from "@/assets/icons/icons";
 import { ROLES } from "@/constants/roles";
+
 import MeetingDetails from "@/components/Schedule/MeetingDetails";
+import useInterObserver from "@/hooks/useInterObserver";
 
 const Schedule = () => {
   const [filter, setFilter] = useState("events");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editDialogOpenIndex, setEditDialogOpenIndex] = useState(null);
   const [urlPrms, setUrlPrms] = useSearchParams();
   const { userData } = useUser();
 
@@ -40,7 +44,7 @@ const Schedule = () => {
     },
   });
 
-  const { data, isLoading } = useInfiniteQuery({
+  const { data, isLoading, hasNextPage, fetchNextPage } = useInfiniteQuery({
     queryKey: ["schedules", filter, urlPrms.get("query")?.toString() || ""],
     queryFn: async ({ pageParam }) => {
       let response;
@@ -62,17 +66,14 @@ const Schedule = () => {
       return response;
     },
     initialPageParam: 1,
-    getNextPageParam: (lastPage) => {
-      if (lastPage?.nextPage) {
-        return lastPage.currentPage + 1;
-      }
-      return undefined;
-    },
+    getNextPageParam: (lastPage) => lastPage?.nextPage ? lastPage.currentPage + 1 : undefined,
+    enabled: !!userData,
   });
+
+  const { ref } = useInterObserver(fetchNextPage);
 
   const onQuery = (data) => {
     const newUrlPrms = new URLSearchParams(urlPrms);
-    // If the query is empty, remove the query from the URLSearchParams
     if (!data?.query) {
       newUrlPrms.delete("query");
     } else {
@@ -83,15 +84,15 @@ const Schedule = () => {
 
   const onEventClick = (eventId) => {
     const newUrlPrms = new URLSearchParams(urlPrms);
-    newUrlPrms.set("event", eventId); // Ensure it replaces the 'event' parameter, not appends
-    newUrlPrms.delete("meeting"); // Ensure 'meeting' parameter is removed if present
+    newUrlPrms.set("event", eventId);
+    newUrlPrms.delete("meeting");
     setUrlPrms(newUrlPrms);
   };
 
   const onMeetingClick = (meetingId) => {
     const newUrlPrms = new URLSearchParams(urlPrms);
-    newUrlPrms.set("meeting", meetingId); // Ensure it replaces the 'meeting' parameter, not appends
-    newUrlPrms.delete("event"); // Ensure 'event' parameter is removed if present
+    newUrlPrms.set("meeting", meetingId);
+    newUrlPrms.delete("event");
     setUrlPrms(newUrlPrms);
   };
 
@@ -101,15 +102,43 @@ const Schedule = () => {
 
   return (
     <div className="flex h-full w-full gap-8">
-      <div className="no-scrollbar flex w-fit flex-col gap-8 overflow-y-auto overflow-x-visible lg:min-w-[400px]">
+      <div className="no-scrollbar flex w-fit flex-col gap-8 overflow-y-auto lg:min-w-[400px]">
         <div>
-          <Title>Scheduler</Title>
-          <Description>Manage schedules for your organisation.</Description>
+          <Title>
+            {userData?.role === ROLES[1] ? "Assigned Events" : "Scheduler"}
+          </Title>
+          <Description>
+            {userData?.role === ROLES[1]
+              ? "View events assigned to you."
+              : "Manage schedules for your organisation."}
+          </Description>
         </div>
         <div className="flex flex-col gap-3">
           {userData?.role === ROLES[0] && (
             <div className="flex gap-1">
-              <CreateEvent />
+              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button size="primary" className="px-3.5 py-2">
+                    <EventIcon className="text-primary" />
+                    <p>Create Event</p>
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Create Event</DialogTitle>
+                    <DialogDescription>Schedule an upcoming event.</DialogDescription>
+                  </DialogHeader>
+                  <CreateEvent />
+                  <DialogFooter>
+                    <div className="flex justify-end gap-2">
+                      <DialogClose asChild>
+                        <Button variant="outline">Cancel</Button>
+                      </DialogClose>
+                      <Button form="create-event">Create</Button>
+                    </div>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
               <CreateMeeting />
             </div>
           )}
@@ -135,88 +164,84 @@ const Schedule = () => {
               />
             </form>
           </Form>
-          {/* MARK: Filter Section */}
           <div>
-            <p className="mb-3 font-montserrat font-semibold text-accent">
-              Filters
-            </p>
+            <p className="mb-3 font-montserrat font-semibold text-accent">Filters</p>
             <ToggleGroup
               type="single"
               className="flex flex-wrap justify-start gap-2 font-montserrat"
-              onValueChange={(value) => onFilterChange(value)}
+              onValueChange={onFilterChange}
               value={filter}
             >
-              <ToggleGroupItem value="events" variant="outline">
-                Events
-              </ToggleGroupItem>
-              <ToggleGroupItem value="meetings" variant="outline">
-                Meetings
-              </ToggleGroupItem>
+              <ToggleGroupItem value="events" variant="outline">Events</ToggleGroupItem>
+              <ToggleGroupItem value="meetings" variant="outline">Meetings</ToggleGroupItem>
             </ToggleGroup>
           </div>
-          {/* MARK: Schedules Section */}
           <div>
-            <p className="mb-3 font-montserrat font-semibold text-accent">
-              Schedules
-            </p>
+            <p className="mb-3 font-montserrat font-semibold text-accent">Schedules</p>
             <div className="flex flex-col gap-2 font-montserrat">
               {isLoading ? (
                 <Skeleton className="flex h-[85px] w-full rounded-xl bg-primary" />
               ) : (
-                data?.pages.flatMap((page) =>
-                  page?.items.map((schedule, i) => (
-                    <div
-                      key={i}
-                      className={cn(
-                        "flex cursor-pointer gap-3 rounded-[10px] bg-primary/50 px-5 py-4",
-                        schedule.id === urlPrms.get("event") ||
-                          schedule.id === urlPrms.get("meeting")
-                          ? "border border-primary-outline"
-                          : ""
-                      )}
-                      onClick={
-                        schedule.event_name
-                          ? () => onEventClick(schedule.id) // Handle event click
-                          : () => onMeetingClick(schedule.id) // Handle meeting click
-                      }
-                    >
-                      <EventIcon className="text-2xl text-accent" />
-                      <div>
-                        <p className="mb-[6px] text-base font-bold leading-none text-accent">
-                          {schedule.event_name || schedule.meeting_name}
-                        </p>
-                        <p className="text-sm text-primary-text">
-                          {schedule.description || schedule.details}
-                        </p>
-                        <p className="text-sm leading-tight text-primary-text">
-                          {schedule.event_category || schedule.location}
-                        </p>
-                        {schedule.event_date || schedule.meeting_date ? (
+                data?.pages.flatMap((page, i) =>
+                  page.items.map((event, j) => (
+                    <div key={`${i}-${j}`} className="relative">
+                      <div
+                        className={cn(
+                          "flex cursor-pointer gap-3 rounded-[10px] bg-primary/50 px-5 py-4",
+                          event.id === urlPrms.get("event") && "border border-primary-outline"
+                        )}
+                        onClick={() => onEventClick(event.id)}
+                      >
+                        <EventIcon className="text-2xl text-accent" />
+                        <div>
+                          <p className="mb-[6px] text-base font-bold leading-none text-accent">
+                            {event.event_name}
+                          </p>
+                          <p className="text-sm text-primary-text">{event.description}</p>
+                          <p className="text-sm leading-tight text-primary-text">
+                            {event.event_category} - {event.event_visibility}
+                          </p>
                           <p className="text-sm leading-none text-primary-text">
                             <span className="font-semibold">Date: </span>
-                            {new Date(
-                              `${schedule.event_date || schedule.meeting_date}T${
-                                schedule.event_time || schedule.start_time
-                              }`
-                            ).toDateTime()}
+                            {new Date(`${event.event_date}T${event.event_time}`).toDateTime()}
                           </p>
-                        ) : null}
-                        {schedule.event_time || schedule.start_time ? (
-                          <p className="text-sm leading-none text-primary-text">
-                            <span className="font-semibold">Time: </span>
-                            {schedule.event_time || schedule.start_time}
-                          </p>
-                        ) : null}
+                        </div>
                       </div>
+                      <Dialog
+                        open={editDialogOpenIndex === `${i}-${j}`}
+                        onOpenChange={(isOpen) =>
+                          setEditDialogOpenIndex(isOpen ? `${i}-${j}` : null)
+                        }
+                      >
+                        <DialogTrigger asChild>
+                          <Button variant="ghost" className="absolute right-1 top-1 font-semibold text-accent">Edit</Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Create Event</DialogTitle>
+                            <DialogDescription>Schedule an upcoming event.</DialogDescription>
+                          </DialogHeader>
+                          <CreateEvent
+                            data={event}
+                            onClose={() => setEditDialogOpenIndex(null)}
+                          />
+                        </DialogContent>
+                      </Dialog>
                     </div>
                   ))
                 )
               )}
             </div>
+            <div ref={ref}>
+              {hasNextPage && <Skeleton />}
+            </div>
           </div>
         </div>
       </div>
-      {filter === "events" ? <ScheduleDetails /> : <MeetingDetails />}
+      <div className="flex-1">
+        {urlPrms.get("event") && <ScheduleDetails />}
+        {urlPrms.get("meeting") && <MeetingDetails />}
+      </div>
     </div>
   );
 };

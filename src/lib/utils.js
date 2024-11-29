@@ -29,7 +29,7 @@ const paginate = async ({
     const from = (page - 1) * pageSize;
     const to = from + pageSize - 1;
 
-    // Initialize the query
+    // Initialize the query for paginated items
     let supabaseQuery = supabase
       .from(key)
       .select(select)
@@ -69,10 +69,23 @@ const paginate = async ({
       }
     }
 
-    // Fetch the total count of items
-    const { count, error: countError } = await supabase
-      .from(key)
-      .select("*", { count: "exact", head: true });
+    // Apply eq filters dynamically for both the items and the count
+    if (filters.eq) {
+      // Assuming filters.eq is now an object like { column: 'entity_id', value: dynamicId }
+      const { column, value } = filters.eq;
+      supabaseQuery = supabaseQuery.eq(column, value);
+    }
+
+    // Fetch the total count of items, applying eq filters here as well
+    let countQuery = supabase.from(key).select('*', { count: 'exact', head: true });
+
+    // Apply eq filters to the count query
+    if (filters.eq) {
+      const { column, value } = filters.eq;
+      countQuery = countQuery.eq(column, value);
+    }
+
+    const { count, error: countError } = await countQuery;
 
     if (countError) throw countError;
 
@@ -100,9 +113,10 @@ const paginate = async ({
     throw error;
   }
 };
+
 /**
- * Paginate items from a Supabase table.
- * @returns {string} The paginated items and pagination properties.
+ * Gets first initial of a name.
+ * @returns {string} The initial of a name.
  */
 const getInitial = (name) => {
   return name

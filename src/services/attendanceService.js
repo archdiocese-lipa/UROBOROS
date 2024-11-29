@@ -443,8 +443,62 @@ const fetchAttendeesByTicketCode = async (ticketCode) => {
   }
 };
 
+const updateAttendeeStatus = async (attendeeID, state) => {
+  try {
+    const { data, error } = await supabase
+      .from("attendance")
+      .update({ attended: state })
+      .eq("id", attendeeID)
+      .select()
+      .single();
+
+    if (error) {
+      console.error(error);
+      throw new Error(error);
+    }
+
+    return data;
+  } catch (error) {
+    console.error(error);
+    throw new Error(error);
+  }
+};
+
+const countEventAttendance = async (eventId) => {
+  try {
+    const { count: totalCount, error } = await supabase
+      .from("attendance")
+      .select("*", { count: "exact", head: true })
+      .eq("event_id", eventId);
+
+    if (error) {
+      console.error(error);
+      throw new Error(error.message);
+    }
+
+    // Count rows with attended set to true for the same event_id
+    const { count: attendedCount, error: attendedError } = await supabase
+      .from("attendance")
+      .select("*", { count: "exact", head: true })
+      .eq("event_id", eventId)
+      .eq("attended", true);
+
+    if (attendedError) {
+      console.error(attendedError);
+      throw new Error(attendedError.message);
+    }
+
+    return { total: totalCount, attended: attendedCount };
+  } catch (error) {
+    console.error(error);
+    throw new Error(error);
+  }
+};
+
 export {
   getEventAttendance,
   fetchAttendeesByTicketCode,
   insertEventAttendance,
+  updateAttendeeStatus,
+  countEventAttendance,
 };
