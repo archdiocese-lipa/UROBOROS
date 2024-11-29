@@ -16,6 +16,7 @@ const registerUser = async ({
       password,
     });
 
+
     if (signUpError) throw signUpError;
 
     // Insert user details into the 'users' table

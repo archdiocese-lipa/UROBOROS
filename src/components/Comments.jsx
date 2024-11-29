@@ -5,35 +5,46 @@ import useComment from "@/hooks/useComment";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import CommentDetails from "./CommentComponents/CommentDetails";
 import PropTypes from "prop-types";
-
+import useInterObserver from "@/hooks/useInterObserver";
 
 const Comments = ({ announcement_id }) => {
   const { userData } = useUser();
   const Initial = getInitial(userData?.first_name);
-  const { HandleAddComment, commentData, isLoading } = useComment(
-    announcement_id,
-    null
-  );
+  const {
+    HandleAddComment,
+    commentData,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+  } = useComment(announcement_id, null);
+
+  const { ref } = useInterObserver(fetchNextPage);
 
   return (
     <div className="p-1">
       <h1 className="text-md mb-2 font-bold text-accent">
-        {" "}
-        {commentData?.length} Comments
+        {commentData?.pages[0]?.totalItems} Comments
       </h1>
-      {isLoading ? (
-        <p>loading...</p>
-      ) : (
-        commentData?.map((comment, index) => (
-          // <p>{comment.comment_content}</p>
-          <CommentDetails
-            key={index}
-            comment={comment}
-            announcement_id={announcement_id}
-            columnName="comment_id"
-          />
-        ))
-      )}
+      <div className="no-scrollbar max-h-52 overflow-y-scroll">
+        {!isLoading ? (
+          <div>
+            {commentData?.pages.flatMap((page) =>
+              page.items.map((comment) => (
+                <CommentDetails
+                  key={comment.id}
+                  comment={comment}
+                  announcement_id={announcement_id}
+                  columnName="comment_id"
+                />
+              ))
+            )}
+            {hasNextPage && <div className="h-2" ref={ref}></div>}
+          </div>
+        ) : (
+          <p>loading...</p>
+        )}
+      </div>
+
       <div className="flex w-full items-start justify-center gap-3">
         <Avatar className="h-8 w-8">
           <AvatarImage src={""} alt="@shadcn" />
@@ -49,7 +60,10 @@ const Comments = ({ announcement_id }) => {
     </div>
   );
 };
+
 Comments.propTypes = {
-  announcement_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  announcement_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+    .isRequired,
 };
+
 export default Comments;

@@ -1,4 +1,8 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import {
   addComment,
   deleteComment,
@@ -14,10 +18,10 @@ const useComment = (announcement_id, comment_id) => {
   const addCommentMutation = useMutation({
     mutationFn: addComment,
     onSuccess: (data, { reset, setIsCommenting }) => {
-      toast({
-        title: "Success",
-        description: "Comment Added.",
-      });
+      // toast({
+      //   title: "Success",
+      //   description: "Comment Added.",
+      // });
       reset();
       setIsCommenting(false);
     },
@@ -36,21 +40,33 @@ const useComment = (announcement_id, comment_id) => {
   const {
     data: commentData,
     isError,
+    hasNextPage,
+    fetchNextPage,
     isLoading,
-  } = useQuery({
+  } = useInfiniteQuery({
     queryKey: ["comments", announcement_id],
-    queryFn: async () => await fetchComments(announcement_id),
+    queryFn: async ({ pageParam }) => {
+      const response = await fetchComments(pageParam, 1, announcement_id);
+      return response;
+    },
+    initialPageParam:1,
+    getNextPageParam: (lastPage) => {
+      if(lastPage.nextPage){
+        return lastPage.currentPage + 1
+      }
+    },
+
     enabled: !!announcement_id,
   });
 
   const deleteCommentMutation = useMutation({
     mutationFn: deleteComment,
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Comment Deleted.",
-      });
-    },
+    // onSuccess: () => {
+    //   toast({
+    //     title: "Success",
+    //     description: "Comment Deleted.",
+    //   });
+    // },
     onError: (error) => {
       toast({
         title: "Something went wrong",
@@ -68,14 +84,13 @@ const useComment = (announcement_id, comment_id) => {
   });
   const updateCommentMutation = useMutation({
     mutationFn: updateComment,
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Comment Updated.",
-      });
-    },
+    // onSuccess: () => {
+    //   toast({
+    //     title: "Success",
+    //     description: "Comment Updated.",
+    //   });
+    // },
     onError: (error) => {
-      // console.error("Mutation error:", error);
       toast({
         title: "Something went wrong",
         description: `${error.message}`,
@@ -128,6 +143,8 @@ const useComment = (announcement_id, comment_id) => {
     isError,
     isLoading,
     commentData,
+    hasNextPage,
+    fetchNextPage,
   };
 };
 

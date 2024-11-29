@@ -18,11 +18,25 @@ const TriggerDislikeIcon = ({ className, comment_id, user_id, columnName }) => {
       }
       className={className}
     >
-      <div className={cn("flex items-center justify-center rounded-3xl p-1 bg-primary", {"bg-blue ":data?.isDisliked})}>
-    
-        <DislikeIcon className={cn("h-5 w-5 text-accent opacity-70",{"text-white opacity-100":data?.isDisliked})} />
-    
-        <p className={cn("text-xs text-accent opacity-70",{"text-white opacity-100" :data?.isDisliked})}>{dislikeCount}</p>
+      <div
+        className={cn(
+          "flex items-center justify-center rounded-3xl bg-primary p-1",
+          { "bg-blue": data?.isDisliked }
+        )}
+      >
+        <DislikeIcon
+          className={cn("h-5 w-5 text-accent opacity-70", {
+            "text-white opacity-100": data?.isDisliked,
+          })}
+        />
+
+        <p
+          className={cn("text-xs text-accent opacity-70", {
+            "text-white opacity-100": data?.isDisliked,
+          })}
+        >
+          {dislikeCount}
+        </p>
       </div>
     </button>
   );

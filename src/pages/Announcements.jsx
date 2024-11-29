@@ -50,7 +50,7 @@ const Announcements = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { userData } = useUser();
   const [visibility, setVisibility] = useState("public");
-  const [formVisibility, setFormVisibility] = useState("");
+  const [formVisibility, setFormVisibility] = useState("public");
   const [selectedMinistry, setSelectedMinistry] = useState("");
 
   const { data: ministries } = useQuery({
@@ -70,6 +70,8 @@ const Announcements = () => {
     },
   });
 
+  const { reset } = form;
+
   const {
     addAnnouncementMutation,
     fetchNextPage,
@@ -78,23 +80,27 @@ const Announcements = () => {
     editAnnouncementMutation,
     data,
     isLoading,
-  } = useAnnouncements(selectedMinistry);
-
-  const { reset } = form;
+  } = useAnnouncements({
+    ministry_id: selectedMinistry,
+    reset,
+    setIsOpen,
+    user_id: userData?.id,
+  });
 
   const onSubmit = (announcementData) => {
     addAnnouncementMutation.mutate({
       announcementData,
-      user_id: userData?.id,
-      reset,
-      setIsOpen,
+      first_name: userData?.first_name,
+      last_name: userData?.last_name,
     });
+    reset,
+    setIsOpen(false)
   };
 
-  // Ensure useInterObserver is called unconditionally
+  
   const { ref } = useInterObserver(fetchNextPage);
 
-  if (!userData) return <div>Loading...</div>; 
+  if (!userData) return <div>Loading...</div>;
 
 
   return (
@@ -131,7 +137,7 @@ const Announcements = () => {
                     name="title"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Announcement Title</FormLabel>
+                        <FormLabel>Title</FormLabel>
                         <FormControl>
                           <Input
                             className="text-accent"
@@ -150,7 +156,7 @@ const Announcements = () => {
                     name="content"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Announcement Content</FormLabel>
+                        <FormLabel>Content</FormLabel>
                         <FormControl>
                           <Textarea
                             className="focus:ring-none no-scrollbar rounded-3xl border-none bg-primary text-accent placeholder:text-accent"
@@ -169,7 +175,7 @@ const Announcements = () => {
                     name="file"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Announcement Image</FormLabel>
+                        <FormLabel>Image/File</FormLabel>
                         <FormControl>
                           <Input
                             // {...fieldProps}
@@ -190,26 +196,25 @@ const Announcements = () => {
                     name="visibility"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Announcement Visibility</FormLabel>
+                        <FormLabel>Visibility</FormLabel>
                         <FormControl>
                           <Select
                             {...field}
                             onValueChange={(value) => {
-                              // When visibility changes to 'public', set ministry to "wow"
                               if (value === "public") {
-                                form.setValue("ministry", []); // Set ministry to "wow" when public
-                                setFormVisibility("public"); // Set form visibility to public
+                                form.setValue("ministry", []);
+                                setFormVisibility("public");
                               } else {
-                                setFormVisibility("private"); // Set form visibility to private
+                                setFormVisibility("private");
                               }
 
-                              field.onChange(value); // Update the visibility field value
+                              field.onChange(value);
                             }}
                           >
-                            <SelectTrigger className="w-full rounded-3xl">
+                            <SelectTrigger className="w-full">
                               <SelectValue placeholder="Select visibility" />
                             </SelectTrigger>
-                            <SelectContent className="rounded-3xl">
+                            <SelectContent className="">
                               <SelectGroup>
                                 <SelectItem value="public">Public</SelectItem>
                                 <SelectItem value="private">Private</SelectItem>
@@ -228,19 +233,19 @@ const Announcements = () => {
                     name="ministry"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Announcement Ministry</FormLabel>
+                        <FormLabel>Ministry</FormLabel>
                         <FormControl>
                           <AssignVolunteerComboBox
                             options={ministries?.map((ministry) => ({
-                              value: ministry.id, // Use 'id' as the value
-                              label: `${ministry.ministry_name}`, // Combine first name and last name
+                              value: ministry.id, 
+                              label: `${ministry.ministry_name}`, 
                             }))}
                             value={
                               Array.isArray(field.value) ? field.value : []
-                            } // Ensure it's always an array
-                            onChange={field.onChange} // Handle change to update the form state
+                            } 
+                            onChange={field.onChange} 
                             placeholder="Select Ministry"
-                            disabled={formVisibility !== "private"} // Disable combo box if visibility is not private
+                            disabled={formVisibility !== "private"} 
                           />
                         </FormControl>
                         <FormMessage />
@@ -252,7 +257,7 @@ const Announcements = () => {
                   <DialogFooter>
                     <Button
                       disabled={addAnnouncementMutation.isPending}
-                      className="w-full"
+                      className=""
                       type="submit"
                     >
                       {addAnnouncementMutation.isPending
@@ -270,29 +275,35 @@ const Announcements = () => {
         <div className="no-scrollbar w-full flex-1 overflow-y-scroll rounded-2xl border border-primary-outline bg-primary px-9 py-6">
           {isLoading && <p>Loading...</p>}
 
-          {data?.pages?.flatMap((page) =>
-            page?.items?.map((announcement, index) => (
-              <div
-                key={index}
-                className="mb-3 w-full rounded-[10px] border border-primary-outline bg-white px-8 pb-6 pt-5"
-              >
-                <Announcement
-                  // form={editform}
-                  fetchNextPage={fetchNextPage}
-                  announcement={announcement}
-                  editAnnouncementMutation={editAnnouncementMutation}
-                  deleteAnnouncementMutation={deleteAnnouncementMutation}
-                />
-              </div>
-            ))
+          {data?.pages?.flatMap((page) => page.items).length === 0 ? (
+            <p>No announcements yet.</p>
+          ) : (
+            data?.pages?.flatMap((page) =>
+              page?.items?.map((announcement) => (
+                <div
+                  key={announcement.id}
+                  className="mb-3 w-full rounded-[10px] border border-primary-outline bg-white px-8 pb-6 pt-5"
+                >
+                  <Announcement
+                    // form={editform}
+                    ministries={ministries}
+                    fetchNextPage={fetchNextPage}
+                    announcement={announcement}
+                    editAnnouncementMutation={editAnnouncementMutation}
+                    deleteAnnouncementMutation={deleteAnnouncementMutation}
+                  />
+                </div>
+              ))
+            )
           )}
+
           {hasNextPage && <div ref={ref}></div>}
         </div>
       </div>
 
       {/* Sidebar */}
       <div className="no-scrollbar mt-[64px] w-1/4 overflow-y-scroll rounded-[15px] border border-primary-outline px-8 py-6">
-        <p className="mb-3 font-bold text-accent">Filter by your groups.</p>
+        <p className="mb-3 font-bold text-accent">Filter by your ministry.</p>
         <div
           className={cn("rounded-xl border border-gray bg-white", {
             "bg-accent": visibility === "public",
