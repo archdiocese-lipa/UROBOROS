@@ -1,4 +1,5 @@
 import EventCard from "@/components/Events/EventCard";
+import QrScannerEvents from "@/components/Events/QRScannerEvents";
 import { Description, Title } from "@/components/Title";
 import { Button } from "@/components/ui/button";
 import { getParishionerEvents } from "@/services/eventService";
@@ -26,13 +27,23 @@ const Events = () => {
     },
   });
 
+  const eventData = data?.pages.flatMap((page) =>
+    page.items.map((event) => ({
+      eventId: event.id,
+      eventName: event.event_name,
+      eventDescription: event.description,
+      eventDate: event.event_date,
+      eventTime: event.event_time,
+    }))
+  );
+
   return (
     <>
       <Title>Events</Title>
       <Description>Latest upcoming events at the church</Description>
-      <div className="mt-5 flex gap-x-2">
+      <div className="mt-5 flex justify-center gap-x-2 md:justify-start">
         <Button>Calendar</Button>
-        <Button>QR Scanner</Button>
+        <QrScannerEvents eventData={eventData} />
       </div>
       <div className="mt-5 grid gap-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
         {isLoading ? (
