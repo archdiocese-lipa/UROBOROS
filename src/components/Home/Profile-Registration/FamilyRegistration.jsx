@@ -20,7 +20,6 @@ import { useAddFamily } from "@/hooks/useFamily";
 const FamilyRegistration = ({ skipBtn }) => {
   const { toast } = useToast();
   const { regData } = useUser(); // Access registration data
-  const { mutate, isLoading } = useAddFamily(); // Destructure the hook
 
   // Use `regData` to prepopulate the first parent
   const form = useForm({
@@ -54,6 +53,8 @@ const FamilyRegistration = ({ skipBtn }) => {
     control: form.control,
     name: "children",
   });
+
+  const { mutate, isLoading } = useAddFamily(); // Destructure the hook
 
   const onSubmit = async (data) => {
     try {
