@@ -13,9 +13,20 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import CreateMeeting from "@/components/Schedule/CreateMeeting";
 import { Skeleton } from "@/components/ui/skeleton";
 import ScheduleDetails from "@/components/Schedule/ScheduleDetails";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 import { getEvents } from "@/services/eventService";
-import { getMeetings } from "@/services/meetingService"; // Assuming getMeetings exists
+import { getMeetings } from "@/services/meetingService";
 
 import { useUser } from "@/context/useUser";
 
@@ -29,7 +40,7 @@ import useInterObserver from "@/hooks/useInterObserver";
 const Schedule = () => {
   const [filter, setFilter] = useState("events");
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editDialogOpenIndex, setEditDialogOpenIndex] = useState(null);
+  // const [editDialogOpenIndex, setEditDialogOpenIndex] = useState(null);
   const [urlPrms, setUrlPrms] = useSearchParams();
   const { userData } = useUser();
 
@@ -66,7 +77,8 @@ const Schedule = () => {
       return response;
     },
     initialPageParam: 1,
-    getNextPageParam: (lastPage) => lastPage?.nextPage ? lastPage.currentPage + 1 : undefined,
+    getNextPageParam: (lastPage) =>
+      lastPage?.nextPage ? lastPage.currentPage + 1 : undefined,
     enabled: !!userData,
   });
 
@@ -126,7 +138,9 @@ const Schedule = () => {
                 <DialogContent>
                   <DialogHeader>
                     <DialogTitle>Create Event</DialogTitle>
-                    <DialogDescription>Schedule an upcoming event.</DialogDescription>
+                    <DialogDescription>
+                      Schedule an upcoming event.
+                    </DialogDescription>
                   </DialogHeader>
                   <CreateEvent />
                   <DialogFooter>
@@ -165,76 +179,98 @@ const Schedule = () => {
             </form>
           </Form>
           <div>
-            <p className="mb-3 font-montserrat font-semibold text-accent">Filters</p>
+            <p className="mb-3 font-montserrat font-semibold text-accent">
+              Filters
+            </p>
             <ToggleGroup
               type="single"
               className="flex flex-wrap justify-start gap-2 font-montserrat"
               onValueChange={onFilterChange}
               value={filter}
             >
-              <ToggleGroupItem value="events" variant="outline">Events</ToggleGroupItem>
-              <ToggleGroupItem value="meetings" variant="outline">Meetings</ToggleGroupItem>
+              <ToggleGroupItem value="events" variant="outline">
+                Events
+              </ToggleGroupItem>
+              <ToggleGroupItem value="meetings" variant="outline">
+                Meetings
+              </ToggleGroupItem>
             </ToggleGroup>
           </div>
           <div>
-            <p className="mb-3 font-montserrat font-semibold text-accent">Schedules</p>
+            <p className="mb-3 font-montserrat font-semibold text-accent">
+              Schedules
+            </p>
             <div className="flex flex-col gap-2 font-montserrat">
               {isLoading ? (
                 <Skeleton className="flex h-[85px] w-full rounded-xl bg-primary" />
               ) : (
                 data?.pages.flatMap((page, i) =>
-                  page.items.map((event, j) => (
-                    <div key={`${i}-${j}`} className="relative">
-                      <div
-                        className={cn(
-                          "flex cursor-pointer gap-3 rounded-[10px] bg-primary/50 px-5 py-4",
-                          event.id === urlPrms.get("event") && "border border-primary-outline"
-                        )}
-                        onClick={() => onEventClick(event.id)}
-                      >
-                        <EventIcon className="text-2xl text-accent" />
-                        <div>
-                          <p className="mb-[6px] text-base font-bold leading-none text-accent">
-                            {event.event_name}
-                          </p>
-                          <p className="text-sm text-primary-text">{event.description}</p>
-                          <p className="text-sm leading-tight text-primary-text">
-                            {event.event_category} - {event.event_visibility}
-                          </p>
-                          <p className="text-sm leading-none text-primary-text">
-                            <span className="font-semibold">Date: </span>
-                            {new Date(`${event.event_date}T${event.event_time}`).toDateTime()}
-                          </p>
+                  filter === "events"
+                    ? page.items.map((event, j) => (
+                        <div key={`${i}-${j}`} className="relative">
+                          <div
+                            className={cn(
+                              "flex cursor-pointer gap-3 rounded-[10px] bg-primary/50 px-5 py-4",
+                              event.id === urlPrms.get("event") &&
+                                "border border-primary-outline"
+                            )}
+                            onClick={() => onEventClick(event.id)}
+                          >
+                            <EventIcon className="text-2xl text-accent" />
+                            <div>
+                              <p className="mb-[6px] text-base font-bold leading-none text-accent">
+                                {event.event_name}
+                              </p>
+                              <p className="text-sm text-primary-text">
+                                {event.description}
+                              </p>
+                              <p className="text-sm leading-tight text-primary-text">
+                                {event.event_category} -{" "}
+                                {event.event_visibility}
+                              </p>
+                              <p className="text-sm leading-none text-primary-text">
+                                <span className="font-semibold">Date: </span>
+                                {new Date(
+                                  `${event.event_date}T${event.event_time}`
+                                ).toLocaleString()}
+                              </p>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                      <Dialog
-                        open={editDialogOpenIndex === `${i}-${j}`}
-                        onOpenChange={(isOpen) =>
-                          setEditDialogOpenIndex(isOpen ? `${i}-${j}` : null)
-                        }
-                      >
-                        <DialogTrigger asChild>
-                          <Button variant="ghost" className="absolute right-1 top-1 font-semibold text-accent">Edit</Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>Create Event</DialogTitle>
-                            <DialogDescription>Schedule an upcoming event.</DialogDescription>
-                          </DialogHeader>
-                          <CreateEvent
-                            data={event}
-                            onClose={() => setEditDialogOpenIndex(null)}
-                          />
-                        </DialogContent>
-                      </Dialog>
-                    </div>
-                  ))
+                      ))
+                    : page.items.map((meeting, j) => (
+                        <div key={`${i}-${j}`} className="relative">
+                          <div
+                            className={cn(
+                              "flex cursor-pointer gap-3 rounded-[10px] bg-primary/50 px-5 py-4",
+                              meeting.id === urlPrms.get("meeting") &&
+                                "border border-primary-outline"
+                            )}
+                            onClick={() => onMeetingClick(meeting.id)}
+                          >
+                            <EventIcon className="text-2xl text-accent" />
+                            <div>
+                              <p className="mb-[6px] text-base font-bold leading-none text-accent">
+                                {meeting.meeting_name}
+                              </p>
+                              <p className="text-sm text-primary-text">
+                                {meeting.details}
+                              </p>
+
+                              <p className="text-sm leading-none text-primary-text">
+                                <span className="font-semibold">Date: </span>
+                                {new Date(
+                                  `${meeting.meeting_date}T${meeting.start_time}`
+                                ).toLocaleString()}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))
                 )
               )}
             </div>
-            <div ref={ref}>
-              {hasNextPage && <Skeleton />}
-            </div>
+            <div ref={ref}>{hasNextPage && <Skeleton />}</div>
           </div>
         </div>
       </div>
