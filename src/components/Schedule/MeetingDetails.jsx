@@ -66,19 +66,21 @@ const MeetingDetails = () => {
           <div>
             <p>
               <Label className="text-primary-text">
-                <strong>Meeting Date:</strong> {meeting?.meeting_date}
+                <strong>Meeting Date: </strong>
+                {meeting?.meeting_date &&
+                  new Date(meeting.meeting_date).toLocaleDateString("en-GB", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  })}
               </Label>
             </p>
             <p>
               <Label className="text-primary-text">
-                <strong>Start Time:</strong> {meeting?.start_time}
+                <strong>Time:</strong> {meeting?.start_time}
               </Label>
             </p>
-            <p>
-              <Label className="text-primary-text">
-                <strong>End Time:</strong> {meeting?.end_time}
-              </Label>
-            </p>
+
             <p>
               <Label className="text-primary-text">
                 <strong>Location:</strong>{" "}
