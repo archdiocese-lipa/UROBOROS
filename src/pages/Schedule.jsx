@@ -40,7 +40,7 @@ import useInterObserver from "@/hooks/useInterObserver";
 const Schedule = () => {
   const [filter, setFilter] = useState("events");
   const [dialogOpen, setDialogOpen] = useState(false);
-  // const [editDialogOpenIndex, setEditDialogOpenIndex] = useState(null);
+  const [editDialogOpenIndex, setEditDialogOpenIndex] = useState(null);
   const [urlPrms, setUrlPrms] = useSearchParams();
   const { userData } = useUser();
 
@@ -244,6 +244,50 @@ const Schedule = () => {
                               </p>
                             </div>
                           </div>
+                          <Dialog
+                            open={editDialogOpenIndex === `${i}-${j}`}
+                            onOpenChange={(isOpen) =>
+                              setEditDialogOpenIndex(
+                                isOpen ? `${i}-${j}` : null
+                              )
+                            }
+                          >
+                            <DialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                className="absolute right-1 top-1 font-semibold text-accent hover:underline"
+                              >
+                                Edit
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Create Event</DialogTitle>
+                                <DialogDescription>
+                                  Schedule an upcoming event.
+                                </DialogDescription>
+                              </DialogHeader>
+                              <CreateEvent
+                                id="update-event"
+                                eventData={{ ...event }}
+                                setDialogOpen={(isOpen) => {
+                                  setEditDialogOpenIndex(
+                                    isOpen ? `${i}-${j}` : null
+                                  );
+                                }}
+                              />
+                              {/* Dialog Footer */}
+                              <DialogFooter>
+                                <div className="flex justify-end gap-2">
+                                  <DialogClose asChild>
+                                    <Button variant="outline">Cancel</Button>
+                                  </DialogClose>
+
+                                  <Button form="update-event">Create</Button>
+                                </div>
+                              </DialogFooter>
+                            </DialogContent>
+                          </Dialog>
                         </div>
                       ))
                     : page.items.map((meeting, j) => (
