@@ -232,7 +232,15 @@ const Schedule = () => {
                                 <span className="font-semibold">Date: </span>
                                 {new Date(
                                   `${event.event_date}T${event.event_time}`
-                                ).toLocaleString()}
+                                ).toLocaleDateString("en-GB", {
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric",
+                                })}
+                                ,
+                                {new Date(
+                                  `${event.event_date}T${event.event_time}`
+                                ).toLocaleTimeString()}
                               </p>
                             </div>
                           </div>
@@ -256,12 +264,19 @@ const Schedule = () => {
                               <p className="text-sm text-primary-text">
                                 {meeting.details}
                               </p>
-
                               <p className="text-sm leading-none text-primary-text">
                                 <span className="font-semibold">Date: </span>
                                 {new Date(
                                   `${meeting.meeting_date}T${meeting.start_time}`
-                                ).toLocaleString()}
+                                ).toLocaleDateString("en-GB", {
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric",
+                                })}
+                                ,
+                                {new Date(
+                                  `${meeting.meeting_date}T${meeting.start_time}`
+                                ).toLocaleTimeString()}
                               </p>
                             </div>
                           </div>
