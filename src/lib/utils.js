@@ -69,6 +69,18 @@ const paginate = async ({
       }
     }
 
+    if (filters.eq) {
+      for (const [column, value] of Object.entries(filters.eq)) {
+        supabaseQuery = supabaseQuery.eq(column, value);
+      }
+    }
+
+    if (filters.in) {
+      for (const [column, value] of Object.entries(filters.in)) {
+        supabaseQuery = supabaseQuery.in(column, value);
+      }
+    }
+
     // Fetch the total count of items
     const { count, error: countError } = await supabase
       .from(key)

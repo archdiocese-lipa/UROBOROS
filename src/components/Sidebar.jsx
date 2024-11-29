@@ -18,9 +18,12 @@ import { cn, getInitial } from "@/lib/utils";
 import { SIDEBAR_LINKS } from "@/constants/sidebarLinks";
 
 import { ChevronUp } from "@/assets/icons/icons";
+import { ROLES } from "@/constants/roles";
 
 const Sidebar = () => {
   const url = useLocation();
+  const { userData } = useUser();
+
   return (
     <div className="flex w-full lg:my-9 lg:w-2/12 lg:flex-col">
       <Title className="mb-12 ml-9 hidden max-w-[201px] lg:block">
@@ -28,16 +31,17 @@ const Sidebar = () => {
       </Title>
       <div className="flex flex-1 justify-between lg:flex-col">
         <ul className="flex w-full justify-evenly gap-2 lg:ml-4 lg:mr-8 lg:flex-col lg:items-start">
-          {SIDEBAR_LINKS.map((links, index) => (
-            <SidebarLink
-              key={index}
-              label={links.label}
-              link={links.link}
-              icon={links.icon}
-              selectedIcon={links.selectedIcon}
-              isActive={url.pathname === links.link}
-            />
-          ))}
+          {userData &&
+            SIDEBAR_LINKS[userData?.role].map((links, index) => (
+              <SidebarLink
+                key={index}
+                label={links.label}
+                link={links.link}
+                icon={links.icon}
+                selectedIcon={links.selectedIcon}
+                isActive={url.pathname === links.link}
+              />
+            ))}
         </ul>
         <SidebarProfile />
       </div>
@@ -48,18 +52,49 @@ const Sidebar = () => {
 export default Sidebar;
 
 const SidebarProfile = () => {
-  const { userData, logout } = useUser(); // Get userData and logout
-  const navigate = useNavigate();
-  const loc = useLocation();
+  const { logout, userData } = useUser(); // Destructure logout and userData
+  const navigate = useNavigate(); // Initialize navigate
 
   const handleLogout = async () => {
     try {
-      await logout();
-      navigate("/", { replace: true, state: { from: loc.pathname || "/" } });
+      await logout(); // Call logout from UserContext
+      navigate("/", { replace: true }); // Redirect to the home page
     } catch (error) {
       console.error("Logout failed:", error.message);
     }
   };
+
+  const onSwitchRole = (role) => {
+    if (!userData) return;
+
+    // const tempRole = sessionStorage.getItem("temp-role");
+
+    if (role === ROLES[0]) {
+      sessionStorage.removeItem("temp-role");
+      window.dispatchEvent(new Event("storage"));
+      window.location.reload();
+      return;
+    }
+
+    sessionStorage.setItem("temp-role", role);
+    window.dispatchEvent(new Event("storage"));
+    window.location.reload();
+  };
+
+  const roles = [
+    {
+      label: "Switch to Parishioner",
+      value: "parishioner",
+    },
+    {
+      label: "Switch to Volunteer",
+      value: "volunteer",
+    },
+    {
+      label: "Switch to Admin",
+      value: "admin",
+    },
+  ];
 
   if (!userData) {
     // Fallback while userData is loading
@@ -96,8 +131,16 @@ const SidebarProfile = () => {
           <ChevronUp className="h-5 w-5 text-white" />
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          <DropdownMenuItem>Switch to Parishioner</DropdownMenuItem>
-          <DropdownMenuItem>Switch to Volunteer</DropdownMenuItem>
+          {roles
+            .filter((role) => role.value !== userData?.role)
+            .map((role) => (
+              <DropdownMenuItem
+                key={role}
+                onClick={() => onSwitchRole(role.value)}
+              >
+                {role.label}
+              </DropdownMenuItem>
+            ))}
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
         </DropdownMenuContent>
