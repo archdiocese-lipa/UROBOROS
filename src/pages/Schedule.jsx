@@ -13,18 +13,31 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Button } from "@/components/ui/button";
 import CreateMeeting from "@/components/Schedule/CreateMeeting";
 import { Skeleton } from "@/components/ui/skeleton";
+import ScheduleDetails from "@/components/Schedule/ScheduleDetails";
 
 import { getEvents } from "@/services/eventService";
+import useInterObserver from "@/hooks/useInterObserver";
+
+import { useUser } from "@/context/useUser";
 
 import { cn } from "@/lib/utils";
 import { Search, EventIcon } from "@/assets/icons/icons";
-import ScheduleDetails from "@/components/Schedule/ScheduleDetails";
-import { useUser } from "@/context/useUser";
-
 import { ROLES } from "@/constants/roles";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from "@/components/ui/dialog";
 
 const Schedule = () => {
   const [filter, setFilter] = useState("");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editDialogOpenIndex, setEditDialogOpenIndex] = useState(null);
   const [urlPrms, setUrlPrms] = useSearchParams();
   const { userData } = useUser();
 
@@ -40,7 +53,7 @@ const Schedule = () => {
   });
 
   // Might change this to useInfiniteQuery instead of useQuery for pagination.
-  const { data, isLoading } = useInfiniteQuery({
+  const { data, isLoading, hasNextPage, fetchNextPage } = useInfiniteQuery({
     queryKey: ["schedules", filter, urlPrms.get("query")?.toString() || ""],
     queryFn: async ({ pageParam }) => {
       const response = await getEvents({
@@ -59,7 +72,10 @@ const Schedule = () => {
       }
       return undefined;
     },
+    enabled: !!userData,
   });
+
+  const { ref } = useInterObserver(fetchNextPage);
 
   const onQuery = (data) => {
     const newUrlPrms = new URLSearchParams(urlPrms);
@@ -82,17 +98,59 @@ const Schedule = () => {
     setFilter(value);
   };
 
+  // const onEventEdit = (data) => {
+
+  // }
+
   return (
     <div className="flex h-full w-full gap-8">
-      <div className="no-scrollbar flex w-fit flex-col gap-8 overflow-y-auto overflow-x-visible lg:min-w-[400px]">
+      <div className="no-scrollbar flex w-fit flex-col gap-8 overflow-y-auto lg:min-w-[400px]">
         <div>
-          <Title>Scheduler</Title>
-          <Description>Manage schedules for your organisation.</Description>
+          <Title>
+            {userData?.role === ROLES[1] ? "Assigned Events" : "Scheduler"}
+          </Title>
+          <Description>
+            {userData?.role === ROLES[1]
+              ? "View events assigned to you."
+              : "Manage schedules for your organisation."}
+          </Description>
         </div>
         <div className="flex flex-col gap-3">
           {userData?.role === ROLES[0] && (
             <div className="flex gap-1">
-              <CreateEvent />
+              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button size="primary" className="px-3.5 py-2">
+                    <EventIcon className="text-primary" />
+                    <p>Create Event</p>
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Create Event</DialogTitle>
+                    <DialogDescription>
+                      Schedule an upcoming event.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <CreateEvent />
+                  {/* Dialog Footer */}
+                  <DialogFooter>
+                    <div className="flex justify-end gap-2">
+                      <DialogClose asChild>
+                        <Button
+                          variant="outline"
+                          // onClick={() => eventForm.reset()}
+                        >
+                          Cancel
+                        </Button>
+                      </DialogClose>
+
+                      <Button form="create-event">Create</Button>
+                    </div>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+              {/* Create Meeting Dialog */}
               <CreateMeeting />
             </div>
           )}
@@ -156,38 +214,86 @@ const Schedule = () => {
               {isLoading ? (
                 <Skeleton className="flex h-[85px] w-full rounded-xl bg-primary" />
               ) : (
-                data?.pages.flatMap((page) =>
-                  page.items.map((event, i) => (
-                    <div
-                      key={i}
-                      className={cn(
-                        "flex cursor-pointer gap-3 rounded-[10px] bg-primary/50 px-5 py-4",
-                        event.id === urlPrms.get("event") &&
-                          "border border-primary-outline"
-                      )}
-                      onClick={() => onEventClick(event.id)}
-                    >
-                      <EventIcon className="text-2xl text-accent" />
-                      <div>
-                        <p className="mb-[6px] text-base font-bold leading-none text-accent">
-                          {event.event_name}
-                        </p>
-                        <p className="text-sm text-primary-text">
-                          {event.description}
-                        </p>
-                        <p className="text-sm leading-tight text-primary-text">
-                          {event.event_category} - {event.event_visibility}
-                        </p>
-                        <p className="text-sm leading-none text-primary-text">
-                          <span className="font-semibold">Date: </span>
-                          {new Date(
-                            `${event.event_date}T${event.event_time}`
-                          ).toDateTime()}
-                        </p>
+                data?.pages.flatMap((page, i) =>
+                  page.items.map((event, j) => (
+                    <div key={`${i}-${j}`} className="relative">
+                      <div
+                        className={cn(
+                          "flex cursor-pointer gap-3 rounded-[10px] bg-primary/50 px-5 py-4",
+                          event.id === urlPrms.get("event") &&
+                            "border border-primary-outline"
+                        )}
+                        onClick={() => onEventClick(event.id)}
+                      >
+                        <EventIcon className="text-2xl text-accent" />
+                        <div>
+                          <p className="mb-[6px] text-base font-bold leading-none text-accent">
+                            {event.event_name}
+                          </p>
+                          <p className="text-sm text-primary-text">
+                            {event.description}
+                          </p>
+                          <p className="text-sm leading-tight text-primary-text">
+                            {event.event_category} - {event.event_visibility}
+                          </p>
+                          <p className="text-sm leading-none text-primary-text">
+                            <span className="font-semibold">Date: </span>
+                            {new Date(
+                              `${event.event_date}T${event.event_time}`
+                            ).toDateTime()}
+                          </p>
+                        </div>
                       </div>
+                      <Dialog
+                        open={editDialogOpenIndex === `${i}-${j}`}
+                        onOpenChange={(isOpen) =>
+                          setEditDialogOpenIndex(isOpen ? `${i}-${j}` : null)
+                        }
+                      >
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            className="absolute right-1 top-1 font-semibold text-accent"
+                          >
+                            Edit
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Create Event</DialogTitle>
+                            <DialogDescription>
+                              Schedule an upcoming event.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <CreateEvent
+                            id="update-event"
+                            eventData={{ ...event }}
+                            setDialogOpen={(isOpen) => {
+                              setEditDialogOpenIndex(
+                                isOpen ? `${i}-${j}` : null
+                              );
+                            }}
+                          />
+                          {/* Dialog Footer */}
+                          <DialogFooter>
+                            <div className="flex justify-end gap-2">
+                              <DialogClose asChild>
+                                <Button variant="outline">Cancel</Button>
+                              </DialogClose>
+
+                              <Button form="update-event">Create</Button>
+                            </div>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
                     </div>
                   ))
                 )
+              )}
+              {hasNextPage && (
+                <div ref={ref}>
+                  <Skeleton className="flex h-[85px] w-full rounded-xl bg-primary" />
+                </div>
               )}
             </div>
           </div>

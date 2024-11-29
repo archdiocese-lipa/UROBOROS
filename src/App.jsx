@@ -11,9 +11,7 @@ import Events from "@/pages/Events";
 
 import RequireRole from "@/components/RequireRole";
 
-
 import { ROLES } from "@/constants/roles";
-
 
 const App = () => {
   return (

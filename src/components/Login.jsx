@@ -50,8 +50,7 @@ const Login = () => {
 
   const handleLogin = async (data) => {
     try {
-      const user = await login(data); // Trigger login and get user data
-      console.log("Login successful! user:", user);
+      await login(data); // Trigger login and get user data
 
       setIsDialogOpen(false); // Close dialog
       navigate(loc?.state?.from || "/announcements", { replace: true }); // Navigate to the dashboard

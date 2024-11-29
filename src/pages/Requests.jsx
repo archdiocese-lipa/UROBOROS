@@ -38,7 +38,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 import useInterObserver from "@/hooks/useInterObserver";
 
-import { getUsers } from "@/services/userService";
+import { getUsers, updateUser } from "@/services/userService";
 
 import { cn } from "@/lib/utils";
 // import DownIcon from "@/assets/icons/down-icon.svg";
@@ -95,18 +95,17 @@ const Requests = () => {
     setOpen(true);
   };
 
-  // const onRowDelete = async (id) => {
-  //   try {
-  //     // MARK: Error here due to:
-  //     // Error removing user update or delete on table "users"
-  //     // violates foreign key constraint "events_assigned_volunteer_fkey"
-  //     // on table "events"
-  //     await removeUser(id);
-  //     await refetch();
-  //   } catch (error) {
-  //     console.error("Error deleting user", error.message);
-  //   }
-  // };
+  const onRowAction = async (row, action) => {
+    // Approve user
+    if (action === "approve") {
+      await updateUser(row.id, { is_confirmed: true });
+    }
+    // Disable user
+    if (action === "disable") {
+      await updateUser(row.id, { is_confirmed: false });
+    }
+    await refetch();
+  };
 
   const handleStatusChange = (checked, id) => {
     // Check if the mutate function is available
@@ -235,42 +234,25 @@ const Requests = () => {
                       <Button
                         onClick={() => onRowEdit(row)}
                         variant="outline"
-                        className="h-auto px-2 text-accent hover:text-orange-500"
+                        className="h-auto rounded-xl px-2 text-accent hover:text-orange-500"
                       >
                         <Icon icon="mingcute:pencil-3-line" />
                       </Button>
-                      {/* <Dialog>
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className="h-auto px-2 text-accent hover:text-red-500"
-                          >
-                            <Icon icon="mingcute:delete-2-line" />
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle className="text-accent">
-                              {`Delete ${row.first_name} ${row.last_name}`}
-                            </DialogTitle>
-                            <DialogDescription>
-                              Are you sure you want to delete{" "}
-                              <span className="font-bold text-accent">
-                                {`${row.first_name} ${row.last_name}`}
-                              </span>
-                              ?
-                            </DialogDescription>
-                          </DialogHeader>
-                          <DialogFooter>
-                            <DialogClose asChild>
-                              <Button variant="outline">Cancel</Button>
-                            </DialogClose>
-                            <Button onClick={() => onRowDelete(row.id)}>
-                              Delete
-                            </Button>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog> */}
+                      {!row.is_confirmed ? (
+                        <Button
+                          className="h-auto px-2 font-normal"
+                          onClick={() => onRowAction(row, "approve")}
+                        >
+                          Approve
+                        </Button>
+                      ) : (
+                        <Button
+                          className="h-auto bg-red-500 px-2 font-normal"
+                          onClick={() => onRowAction(row, "disable")}
+                        >
+                          Disable
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
