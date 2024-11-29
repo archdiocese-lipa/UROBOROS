@@ -55,6 +55,14 @@ const MeetingDetails = () => {
       </div>
     );
 
+  const formatTime = (time) => {
+    if (!time) return ""; // Handle null/undefined cases
+    const [hours, minutes] = time.split(":").map(Number);
+    const period = hours >= 12 ? "PM" : "AM";
+    const formattedHours = hours % 12 || 12; // Convert 0 or 12 to 12 for 12-hour format
+    return `${formattedHours}:${minutes.toString().padStart(2, "0")} ${period}`;
+  };
+
   return (
     <div className="no-scrollbar flex grow flex-col gap-8 overflow-y-auto rounded-2xl px-9 py-6 outline outline-2 outline-[#e7dad3]">
       <div className="flex justify-between">
@@ -77,7 +85,7 @@ const MeetingDetails = () => {
             </p>
             <p>
               <Label className="text-primary-text">
-                <strong>Time:</strong> {meeting?.start_time}
+                <strong>Time:</strong> {formatTime(meeting?.start_time)}
               </Label>
             </p>
 
