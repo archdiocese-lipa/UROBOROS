@@ -135,9 +135,26 @@ export const getMeetings = async ({
       filters.eq = { creator_id: creatorId };
     }
 
-    // If the user is not an admin (role check), filter by assigned volunteer (optional)
+    let nonAdminMeetingIds = [];
+
+    // If the user is not an admin, fetch meetings assigned to the user
     if (user?.role !== ROLES[0]) {
-      filters.eq = { assigned_volunteer: user?.id };
+      const { data: participantMeetings, error: participantError } =
+        await supabase
+          .from("meeting_participants")
+          .select("*")
+          .eq("user_id", user.id);
+
+      if (participantError) {
+        throw new Error(participantError.message);
+      }
+
+      nonAdminMeetingIds = participantMeetings.map(
+        (meeting) => meeting.meeting_id
+      );
+
+      // Update the filters to include only these meeting IDs
+      filters.in = { id: nonAdminMeetingIds };
     }
 
     // Fetch paginated data from the meetings table with the constructed filters

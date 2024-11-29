@@ -206,7 +206,7 @@ const Schedule = () => {
               ) : (
                 data?.pages.flatMap((page, i) =>
                   filter === "events"
-                    ? page.items.map((event, j) => (
+                    ? page?.items.map((event, j) => (
                         <div key={`${i}-${j}`} className="relative">
                           <div
                             className={cn(
@@ -246,7 +246,7 @@ const Schedule = () => {
                           </div>
                         </div>
                       ))
-                    : page.items.map((meeting, j) => (
+                    : page?.items.map((meeting, j) => (
                         <div key={`${i}-${j}`} className="relative">
                           <div
                             className={cn(
