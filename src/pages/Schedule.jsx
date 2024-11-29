@@ -10,11 +10,11 @@ import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import CreateEvent from "@/components/Schedule/CreateEvent";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Button } from "@/components/ui/button";
 import CreateMeeting from "@/components/Schedule/CreateMeeting";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { getEvents } from "@/services/eventService";
+import { getMeetings } from "@/services/meetingService"; // Assuming getMeetings exists
 
 import { cn } from "@/lib/utils";
 import { Search, EventIcon } from "@/assets/icons/icons";
@@ -22,9 +22,10 @@ import ScheduleDetails from "@/components/Schedule/ScheduleDetails";
 import { useUser } from "@/context/useUser";
 
 import { ROLES } from "@/constants/roles";
+import MeetingDetails from "@/components/Schedule/MeetingDetails";
 
 const Schedule = () => {
-  const [filter, setFilter] = useState("");
+  const [filter, setFilter] = useState("events");
   const [urlPrms, setUrlPrms] = useSearchParams();
   const { userData } = useUser();
 
@@ -39,22 +40,30 @@ const Schedule = () => {
     },
   });
 
-  // Might change this to useInfiniteQuery instead of useQuery for pagination.
   const { data, isLoading } = useInfiniteQuery({
     queryKey: ["schedules", filter, urlPrms.get("query")?.toString() || ""],
     queryFn: async ({ pageParam }) => {
-      const response = await getEvents({
-        page: pageParam,
-        query: urlPrms.get("query")?.toString() || "",
-        pageSize: 10,
-        user: userData,
-      });
-
+      let response;
+      if (filter === "events") {
+        response = await getEvents({
+          page: pageParam,
+          query: urlPrms.get("query")?.toString() || "",
+          pageSize: 10,
+          user: userData,
+        });
+      } else if (filter === "meetings") {
+        response = await getMeetings({
+          page: pageParam,
+          query: urlPrms.get("query")?.toString() || "",
+          pageSize: 10,
+          user: userData,
+        });
+      }
       return response;
     },
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {
-      if (lastPage.nextPage) {
+      if (lastPage?.nextPage) {
         return lastPage.currentPage + 1;
       }
       return undefined;
@@ -74,7 +83,15 @@ const Schedule = () => {
 
   const onEventClick = (eventId) => {
     const newUrlPrms = new URLSearchParams(urlPrms);
-    newUrlPrms.set("event", eventId);
+    newUrlPrms.set("event", eventId); // Ensure it replaces the 'event' parameter, not appends
+    newUrlPrms.delete("meeting"); // Ensure 'meeting' parameter is removed if present
+    setUrlPrms(newUrlPrms);
+  };
+
+  const onMeetingClick = (meetingId) => {
+    const newUrlPrms = new URLSearchParams(urlPrms);
+    newUrlPrms.set("meeting", meetingId); // Ensure it replaces the 'meeting' parameter, not appends
+    newUrlPrms.delete("event"); // Ensure 'event' parameter is removed if present
     setUrlPrms(newUrlPrms);
   };
 
@@ -135,16 +152,6 @@ const Schedule = () => {
               <ToggleGroupItem value="meetings" variant="outline">
                 Meetings
               </ToggleGroupItem>
-              <Button
-                variant="ghost"
-                className={cn(
-                  "rounded-full font-montserrat font-bold text-secondary-accent hover:text-accent",
-                  filter && "text-accent"
-                )}
-                onClick={() => setFilter("")}
-              >
-                Clear
-              </Button>
             </ToggleGroup>
           </div>
           {/* MARK: Schedules Section */}
@@ -157,33 +164,49 @@ const Schedule = () => {
                 <Skeleton className="flex h-[85px] w-full rounded-xl bg-primary" />
               ) : (
                 data?.pages.flatMap((page) =>
-                  page.items.map((event, i) => (
+                  page?.items.map((schedule, i) => (
                     <div
                       key={i}
                       className={cn(
                         "flex cursor-pointer gap-3 rounded-[10px] bg-primary/50 px-5 py-4",
-                        event.id === urlPrms.get("event") &&
-                          "border border-primary-outline"
+                        schedule.id === urlPrms.get("event") ||
+                          schedule.id === urlPrms.get("meeting")
+                          ? "border border-primary-outline"
+                          : ""
                       )}
-                      onClick={() => onEventClick(event.id)}
+                      onClick={
+                        schedule.event_name
+                          ? () => onEventClick(schedule.id) // Handle event click
+                          : () => onMeetingClick(schedule.id) // Handle meeting click
+                      }
                     >
                       <EventIcon className="text-2xl text-accent" />
                       <div>
                         <p className="mb-[6px] text-base font-bold leading-none text-accent">
-                          {event.event_name}
+                          {schedule.event_name || schedule.meeting_name}
                         </p>
                         <p className="text-sm text-primary-text">
-                          {event.description}
+                          {schedule.description || schedule.details}
                         </p>
                         <p className="text-sm leading-tight text-primary-text">
-                          {event.event_category} - {event.event_visibility}
+                          {schedule.event_category || schedule.location}
                         </p>
-                        <p className="text-sm leading-none text-primary-text">
-                          <span className="font-semibold">Date: </span>
-                          {new Date(
-                            `${event.event_date}T${event.event_time}`
-                          ).toDateTime()}
-                        </p>
+                        {schedule.event_date || schedule.meeting_date ? (
+                          <p className="text-sm leading-none text-primary-text">
+                            <span className="font-semibold">Date: </span>
+                            {new Date(
+                              `${schedule.event_date || schedule.meeting_date}T${
+                                schedule.event_time || schedule.start_time
+                              }`
+                            ).toDateTime()}
+                          </p>
+                        ) : null}
+                        {schedule.event_time || schedule.start_time ? (
+                          <p className="text-sm leading-none text-primary-text">
+                            <span className="font-semibold">Time: </span>
+                            {schedule.event_time || schedule.start_time}
+                          </p>
+                        ) : null}
                       </div>
                     </div>
                   ))
@@ -193,7 +216,7 @@ const Schedule = () => {
           </div>
         </div>
       </div>
-      <ScheduleDetails />
+      {filter === "events" ? <ScheduleDetails /> : <MeetingDetails />}
     </div>
   );
 };
