@@ -38,7 +38,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 import useInterObserver from "@/hooks/useInterObserver";
 
-import { getUsers, removeUser } from "@/services/userService";
+import { getUsers } from "@/services/userService";
 
 import { cn } from "@/lib/utils";
 // import DownIcon from "@/assets/icons/down-icon.svg";
@@ -95,18 +95,18 @@ const Requests = () => {
     setOpen(true);
   };
 
-  const onRowDelete = async (id) => {
-    try {
-      // MARK: Error here due to:
-      // Error removing user update or delete on table "users"
-      // violates foreign key constraint "events_assigned_volunteer_fkey"
-      // on table "events"
-      await removeUser(id);
-      await refetch();
-    } catch (error) {
-      console.error("Error deleting user", error.message);
-    }
-  };
+  // const onRowDelete = async (id) => {
+  //   try {
+  //     // MARK: Error here due to:
+  //     // Error removing user update or delete on table "users"
+  //     // violates foreign key constraint "events_assigned_volunteer_fkey"
+  //     // on table "events"
+  //     await removeUser(id);
+  //     await refetch();
+  //   } catch (error) {
+  //     console.error("Error deleting user", error.message);
+  //   }
+  // };
 
   const handleStatusChange = (checked, id) => {
     // Check if the mutate function is available
@@ -151,7 +151,7 @@ const Requests = () => {
           </div> */}
           <Select onValueChange={(value) => setActiveFilter(value)}>
             <SelectTrigger className="rounded-full">
-              <SelectValue placeholder="Select active status" />
+              <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
@@ -194,8 +194,8 @@ const Requests = () => {
         <Table>
           <TableHeader className="bg-primary">
             <TableRow>
-              <TableHead className="text-center">Active</TableHead>
-              <TableHead className="rounded-l-lg text-center">Email</TableHead>
+              <TableHead className="rounded-l-lg text-center">Active</TableHead>
+              <TableHead className="text-center">Email</TableHead>
               <TableHead className="text-center">Name</TableHead>
               <TableHead className="text-center">Contact</TableHead>
 
@@ -239,7 +239,7 @@ const Requests = () => {
                       >
                         <Icon icon="mingcute:pencil-3-line" />
                       </Button>
-                      <Dialog>
+                      {/* <Dialog>
                         <DialogTrigger asChild>
                           <Button
                             variant="outline"
@@ -270,7 +270,7 @@ const Requests = () => {
                             </Button>
                           </DialogFooter>
                         </DialogContent>
-                      </Dialog>
+                      </Dialog> */}
                     </div>
                   </TableCell>
                 </TableRow>

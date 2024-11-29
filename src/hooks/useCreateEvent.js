@@ -15,10 +15,10 @@ const useCreateEvent = () => {
         description: "Your event is being created.",
       });
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       toast({
         title: "Event Created",
-        description: `The event "${data.event_name}" has been created successfully!`,
+        description: `The event has been created successfully!`,
       });
 
       // Invalidate the 'events' query so the list of events is refetched after creating the event

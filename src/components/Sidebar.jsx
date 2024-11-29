@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 import { useUser } from "@/context/useUser"; // Adjust the path as needed
 
 import { Title } from "@/components/Title";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { cn } from "@/lib/utils";
+import { cn, getInitial } from "@/lib/utils";
 
 import { SIDEBAR_LINKS } from "@/constants/sidebarLinks";
 
@@ -48,28 +48,37 @@ const Sidebar = () => {
 export default Sidebar;
 
 const SidebarProfile = () => {
-  const { logout } = useUser(); // Destructure logout and userData
+  const { userData, logout } = useUser(); // Get userData and logout
   const navigate = useNavigate(); // Initialize navigate
-  const loc = useLocation(); // Initialize loc
+  const loc = useLocation(); // Get current location
 
   const handleLogout = async () => {
     try {
-      await logout(); // Call logout from UserContext
-
-      navigate("/", { replace: true, state: { from: loc.pathname || "/" } }); // Redirect to the home page
+      await logout(); // Call logout function from UserContext
+      navigate("/", { replace: true, state: { from: loc.pathname || "/" } }); // Redirect to home
     } catch (error) {
       console.error("Logout failed:", error.message);
     }
   };
 
+  // Generate initials using getInitial utility for both first and last name
+  const initials = `${getInitial(userData?.first_name ?? "U")}${getInitial(userData?.last_name ?? "")}`;
+
+  // Generate the full name or fallback to "Guest"
+  const fullName =
+    `${userData?.first_name ?? ""} ${userData?.last_name ?? ""}`.trim() ||
+    "Guest";
+
   return (
     <div className="ml-9 hidden h-10 max-w-56 items-center justify-between rounded-[20px] bg-white p-1 lg:flex">
       <div className="flex items-center gap-2">
-        <Avatar className="h-7 w-7">
-          <AvatarImage src="https://github.com/shadcn.png" />
-          <AvatarFallback>CN</AvatarFallback>
+        {/* Avatar Component */}
+        <Avatar className="h-8 w-8">
+          {/* Fallback with generated initials */}
+          <AvatarFallback>{initials}</AvatarFallback>
         </Avatar>
-        <p className="text-[16px] font-medium">A2K Group</p>
+        {/* Full name */}
+        <p className="text-[16px] font-medium capitalize">{fullName}</p>
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger className="flex h-7 w-11 items-center justify-center rounded-[18.5px] bg-accent px-2 text-white hover:cursor-pointer">
@@ -79,7 +88,6 @@ const SidebarProfile = () => {
           <DropdownMenuItem>Switch to Parishioner</DropdownMenuItem>
           <DropdownMenuItem>Switch to Volunteer</DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>Profile Settings</DropdownMenuItem>
           <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
