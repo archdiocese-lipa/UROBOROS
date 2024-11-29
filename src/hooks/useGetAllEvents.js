@@ -1,11 +1,20 @@
 import { useQuery } from "@tanstack/react-query";
-import { getEvents } from "@/services/eventService"; // Ensure the correct path to your service file
+import { getEvents, getAllEvents } from "@/services/eventService"; 
 
 const useGetAllEvents = () => {
   return useQuery({
-    queryKey: ["events"], // Unique key for the query
-    queryFn: getEvents, // Function to fetch the events
+    queryKey: ["events"], 
+    queryFn: getEvents, 
   });
 };
 
-export { useGetAllEvents };
+// For full calendar in dashboard
+const useGetEvents = () => {
+  return useQuery({
+    queryKey: ["events"], 
+    queryFn: getAllEvents,
+  });
+};
+
+
+export { useGetAllEvents, useGetEvents };

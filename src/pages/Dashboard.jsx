@@ -1,5 +1,11 @@
+import Calendar from "@/components/Calendar";
+
 const Dashboard = () => {
-  return <div className="text-heading font-bold text-accent">Dashboard</div>;
+  return (
+    <div>
+      <Calendar />
+    </div>
+  );
 };
 
 export default Dashboard;
