@@ -9,12 +9,7 @@ const useRemoveMinistryVolunteer = () => {
   const { mutate, isLoading, isSuccess, isError, error } = useMutation({
     mutationFn: ({ ministryId, memberId }) =>
       removeMinistryVolunteer(ministryId, memberId), // Function to remove volunteer
-    onMutate: () => {
-      toast({
-        title: "Removing Volunteer...",
-        description: "The volunteer is being removed from the ministry.",
-      });
-    },
+    onMutate: () => {},
     onSuccess: () => {
       toast({
         title: "Volunteer Removed",
