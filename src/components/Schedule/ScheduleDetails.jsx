@@ -162,7 +162,7 @@ const ScheduleDetails = () => {
     );
 
   return (
-    <div className="flex grow flex-col gap-8 overflow-y-hidden rounded-2xl px-9 py-6 outline outline-2 outline-[#e7dad3]">
+    <div className="flex grow flex-col gap-8 overflow-y-hidden h-[40rem] rounded-2xl px-9 py-6 outline outline-2 outline-[#e7dad3]">
       <div className="flex justify-between">
         <div>
           <Title>{event?.event_name}</Title>
