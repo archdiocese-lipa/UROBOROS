@@ -199,23 +199,24 @@ const ScheduleDetails = () => {
                 </div>
               </DialogContent>
             </Dialog>
+            <div className="flex">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button className="rounded-xl px-3 py-3">
+                    <Icon icon={"mingcute:download-2-line"} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" side="bottom">
+                  <DropdownMenuItem onClick={() => onEventDownload()}>
+                    Download as PDF
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         )}
       </div>
-      <div className="self-end">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button className="rounded-xl px-3 py-3">
-              <Icon icon={"mingcute:download-2-line"} />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" side="bottom">
-            <DropdownMenuItem onClick={() => onEventDownload()}>
-              Download as PDF
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+
       <div
         ref={printRef}
         className="no-scrollbar flex max-h-dvh flex-col gap-5 overflow-y-scroll"
