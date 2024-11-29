@@ -253,7 +253,7 @@ const Schedule = () => {
                         <DialogTrigger asChild>
                           <Button
                             variant="ghost"
-                            className="absolute right-1 top-1 font-semibold text-accent"
+                            className="absolute right-1 top-1 font-semibold text-accent hover:underline"
                           >
                             Edit
                           </Button>
