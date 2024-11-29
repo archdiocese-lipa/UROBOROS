@@ -38,7 +38,7 @@ const RequireRole = ({ roles }) => {
       const tempRole = sessionStorage.getItem("temp-role");
       if (tempRole && data.role === ROLES[0]) {
         if (!roles.includes(tempRole)) {
-          nav("/unauthorized", { replace: true });
+          nav("/announcements", { replace: true });
         }
 
         if (tempRole === ROLES[0]) {
@@ -52,7 +52,7 @@ const RequireRole = ({ roles }) => {
     }
     if (isSuccess && !roles.includes(data.role)) {
       // if the user is authenticated but doesn't have the role needed
-      nav("/unauthorized", { replace: true });
+      nav("/announcements", { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, isSuccess]);
