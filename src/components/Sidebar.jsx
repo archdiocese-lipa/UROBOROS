@@ -21,6 +21,9 @@ import { ChevronUp } from "@/assets/icons/icons";
 
 const Sidebar = () => {
   const url = useLocation();
+
+  const {userData}= useUser()
+
   return (
     <div className="flex w-full lg:my-9 lg:w-2/12 lg:flex-col">
       <Title className="mb-12 ml-9 hidden max-w-[201px] lg:block">
@@ -28,16 +31,17 @@ const Sidebar = () => {
       </Title>
       <div className="flex flex-1 justify-between lg:flex-col">
         <ul className="flex w-full justify-evenly gap-2 lg:ml-4 lg:mr-8 lg:flex-col lg:items-start">
-          {SIDEBAR_LINKS.map((links, index) => (
-            <SidebarLink
-              key={index}
-              label={links.label}
-              link={links.link}
-              icon={links.icon}
-              selectedIcon={links.selectedIcon}
-              isActive={url.pathname === links.link}
-            />
-          ))}
+        {userData &&
+            SIDEBAR_LINKS[userData?.role].map((links, index) => (
+              <SidebarLink
+                key={index}
+                label={links.label}
+                link={links.link}
+                icon={links.icon}
+                selectedIcon={links.selectedIcon}
+                isActive={url.pathname === links.link}
+              />
+            ))}
           <SidebarProfile />
         </ul>
       </div>
@@ -48,26 +52,19 @@ const Sidebar = () => {
 export default Sidebar;
 
 const SidebarProfile = () => {
-  const { logout } = useUser(); // Get userData and logout
+  const { logout } = useUser(); // Destructure logout and userData
   const navigate = useNavigate(); // Initialize navigate
-  const loc = useLocation(); // Get current location
+  const loc = useLocation(); // Initialize loc
 
   const handleLogout = async () => {
     try {
-      await logout(); // Call logout function from UserContext
-      navigate("/", { replace: true, state: { from: loc.pathname || "/" } }); // Redirect to home
+      await logout(); // Call logout from UserContext
+
+      navigate("/", { replace: true, state: { from: loc.pathname || "/" } }); // Redirect to the home page
     } catch (error) {
       console.error("Logout failed:", error.message);
     }
   };
-
-  // Generate initials using getInitial utility for both first and last name
-  // const initials = `${getInitial(userData?.first_name ?? "U")}${getInitial(userData?.last_name ?? "")}`;
-
-  // Generate the full name or fallback to "Guest"
-  // const fullName =
-  //   `${userData?.first_name ?? ""} ${userData?.last_name ?? ""}`.trim() ||
-  //   "Guest";
 
   return (
     <div className=" flex flex-col justify-center items-center">
@@ -102,11 +99,12 @@ const SidebarProfile = () => {
           <DropdownMenuItem>Switch to Parishioner</DropdownMenuItem>
           <DropdownMenuItem>Switch to Volunteer</DropdownMenuItem>
           <DropdownMenuSeparator />
+          <DropdownMenuItem>Profile Settings</DropdownMenuItem>
           <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
-    <p className="hidden md:block text-xs font-semibold">Settings</p>
+    <p className="hidden md:block text-xs font-semibold lg:hidden">Settings</p>
     </div>
   );
 };

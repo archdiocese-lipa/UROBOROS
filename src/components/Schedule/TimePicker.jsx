@@ -23,7 +23,7 @@ const TimePicker = ({ value, onChange, className = "" }) => {
 
 // Prop validation
 TimePicker.propTypes = {
-  value: PropTypes.instanceOf(Date), // value should be a Date object
+  value: PropTypes.oneOfType([PropTypes.instanceOf(Date), PropTypes.string]), // value should be a Date object
   onChange: PropTypes.func.isRequired, // onChange should be a function
   className: PropTypes.string, // className is optional and should be a string
 };
