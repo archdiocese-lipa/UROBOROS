@@ -105,25 +105,25 @@ const Replies = ({
             </PopoverTrigger>
             <PopoverContent
               align="center"
-              className="w-32 overflow-hidden rounded-2xl p-0 outline-none"
+              className=" w-fit overflow-hidden p-0 outline-none"
             >
               <Button
                 onClick={() => setEditting(true)}
-                className="w-full p-3 text-center text-accent hover:cursor-pointer"
-                variant={"outline"}
+                className="w-full p-3 text-center  hover:cursor-pointer"
+                variant={"ghost"}
               >
                 Edit
               </Button>
               <Dialog>
                 <DialogTrigger asChild>
                   <Button
-                    className="w-full rounded-t-none text-center hover:cursor-pointer"
-                    variant={"destructive"}
+                    className="w-full rounded-none text-center hover:cursor-pointer"
+                    variant={"ghost"}
                   >
                     Delete
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
+                <DialogContent className="sm:max-w-[425px] sm:rounded-3xl">
                   <DialogHeader>
                     <DialogTitle>Delete Comment</DialogTitle>
                     <DialogDescription>
@@ -132,7 +132,7 @@ const Replies = ({
                   </DialogHeader>
                   <DialogFooter>
                     <DialogClose asChild>
-                      <Button type="button" variant="default">
+                      <Button type="button" variant="outline" className="text-accent hover:text-accent rounded-xl">
                         Cancel
                       </Button>
                     </DialogClose>
@@ -141,6 +141,7 @@ const Replies = ({
                         onClick={() => handleDeleteReply(reply.id)}
                         variant={"destructive"}
                         type="submit"
+                        className=" rounded-xl"
                       >
                         Delete
                       </Button>

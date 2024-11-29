@@ -15,7 +15,7 @@ import {
 import { Check, ChevronsUpDown } from "lucide-react";
 import PropTypes from "prop-types";
 
-const AssignVolunteerComboBox = ({ options, value, onChange, placeholder,disabled }) => {
+const AssignVolunteerComboBox = ({ options=[], value, onChange, placeholder,disabled }) => {
   const [open, setOpen] = useState(false);
 
   // Helper function to toggle selection

@@ -2,6 +2,8 @@ import { paginate } from "@/lib/utils";
 import { supabase } from "./supabaseClient";
 
 export const createAnnouncements = async ({ announcementData, user_id }) => {
+
+ 
   let filepath = "";
   let fileName = "";
   if (announcementData.file) {
@@ -143,6 +145,7 @@ export const editAnnouncement = async (announcementData) => {
     title: announcementData.title,
     content: announcementData.content,
     visibility: announcementData.visibility,
+    ministry_id: null
   };
 
   // Check if the new file is provided and delete the old file if it exists
@@ -176,7 +179,7 @@ export const editAnnouncement = async (announcementData) => {
     update = {
       ...update,
       file_name: fileName,
-      file_type: announcementData.file_type,
+      file_type: announcementData.file.type,
       file_path: filepath,
     };
   }

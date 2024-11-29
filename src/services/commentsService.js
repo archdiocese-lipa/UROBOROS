@@ -1,3 +1,4 @@
+import { paginate } from "@/lib/utils";
 import { supabase } from "./supabaseClient";
 
 export const addComment = async ({ comment, user_id, announcement_id }) => {
@@ -11,7 +12,7 @@ export const addComment = async ({ comment, user_id, announcement_id }) => {
     {
       comment_content: comment,
       user_id,
-      entity_id:announcement_id,
+      entity_id: announcement_id,
     },
   ]);
 
@@ -21,23 +22,43 @@ export const addComment = async ({ comment, user_id, announcement_id }) => {
   }
 };
 
-export const fetchComments = async (announcement_id) => {
-  if (!announcement_id) {
-    throw new Error("announcement_id and columnName is required!");
-  }
+export const fetchComments = async (page, pageSize, announcement_id) => {
 
-  const { data, error } = await supabase
-    .from("comment_data")
-    .select("*, users(*)")
-    .eq(`entity_id`, announcement_id)
-    .order("created_at", { ascending: false });
+    if (!announcement_id) {
+      throw new Error("announcement_id is required!");
+    }
 
-  if (error) {
-    console.error("Supabase error:", error);
-    throw new Error(error.message || "Unknown Error.");
-  }
+    const query = {};
+    const select = " *, users(id,first_name, last_name)";
 
-  return data;
+    const order = [
+      {
+        column: "created_at",
+        ascending: false,
+      },
+    ];
+
+    if (announcement_id) {
+      query.entity_id = announcement_id;
+    }
+    const filters = {
+      eq: {
+        column: 'entity_id',
+        value: announcement_id
+      }
+    };
+
+    const data =  await paginate({
+      key: "comment_data",
+      page,
+      pageSize,
+      query,
+      filters,
+      order,
+      select
+    })
+
+    return data
 };
 
 export const deleteComment = async (comment_id) => {
@@ -83,7 +104,7 @@ export const addReply = async ({ reply, user_id, comment_id }) => {
     {
       comment_content: reply,
       user_id,
-      parent_id:comment_id,
+      parent_id: comment_id,
     },
   ]);
 
@@ -202,8 +223,6 @@ export const deleteReply = async (comment_id) => {
 };
 
 export const likeComment = async ({ comment_id, user_id, columnName }) => {
-
-
   if (!comment_id || !user_id || !columnName) {
     throw new Error("comment_id,columnName and user_id is required!");
   }
@@ -332,7 +351,6 @@ export const getCommentStatus = async ({ comment_id, user_id, columnName }) => {
 };
 
 export const getLikeCount = async ({ comment_id, columnName }) => {
-
   if (!comment_id || !columnName) {
     throw new Error("comment_id and columnName is required!");
   }

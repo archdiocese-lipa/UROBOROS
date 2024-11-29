@@ -147,7 +147,7 @@ import TriggerLikeIcon from "./TriggerLikeIcon";
           <PopoverTrigger>
             <KebabIcon className="h-5 w-5 text-accent" />
           </PopoverTrigger>
-          <PopoverContent className="flex w-28 flex-col overflow-hidden rounded-2xl p-0">
+          <PopoverContent className="flex w-28 flex-col overflow-hidden  p-0">
             <Button
               onClick={() => setEditting(true)}
               className="w-full rounded-none"
@@ -157,11 +157,11 @@ import TriggerLikeIcon from "./TriggerLikeIcon";
             </Button>
             <Dialog>
               <DialogTrigger asChild>
-                <Button className="w-full rounded-none" variant={"destructive"}>
+                <Button className="w-full rounded-none" variant={"ghost"}>
                   Delete
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px] sm:rounded-2xl">
+              <DialogContent className="sm:max-w-[425px] sm:rounded-3xl">
                 <DialogHeader>
                   <DialogTitle className="font-bold text-accent">
                     Delete Comment
@@ -174,9 +174,9 @@ import TriggerLikeIcon from "./TriggerLikeIcon";
                   <DialogClose asChild>
                     <Button
                       // onClick={}
-                      className="rounded-xl"
+                      className="rounded-xl text-accent hover:text-accent"
                       type="button"
-                      variant="default"
+                      variant="outline"
                     >
                       Cancel
                     </Button>

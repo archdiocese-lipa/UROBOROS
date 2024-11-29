@@ -16,6 +16,7 @@ const registerUser = async ({
       password,
     });
 
+
     if (signUpError) throw signUpError;
 
     // Insert user details into the 'users' table
@@ -32,6 +33,8 @@ const registerUser = async ({
     ]);
 
     if (insertError) throw insertError;
+
+    // Ensure returning the user object after successful insert
 
     // Insert the user data into the 'parents' table
     const { error: parentsInsertError } = await supabase
