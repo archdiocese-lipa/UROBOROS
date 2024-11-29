@@ -157,7 +157,7 @@ const ScheduleDetails = () => {
   if (!eventId)
     return (
       <div className="grid grow place-items-center rounded-2xl outline outline-2 outline-[#e7dad3]">
-        <Description>Select a Schedule to view and configure</Description>
+        <Description>View Attendance</Description>
       </div>
     );
 
