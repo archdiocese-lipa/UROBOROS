@@ -38,7 +38,11 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 
 import { getEventById, fetchEventVolunteers } from "@/services/eventService";
-import { getEventAttendance } from "@/services/attendanceService";
+import {
+  getEventAttendance,
+  updateAttendeeStatus,
+  countEventAttendance,
+} from "@/services/attendanceService";
 
 import { useUser } from "@/context/useUser";
 import { cn } from "@/lib/utils";
@@ -84,6 +88,15 @@ const ScheduleDetails = () => {
     enabled: !!eventId,
   });
 
+  const { data: attendanceCount } = useQuery({
+    queryKey: ["attendance-count", eventId],
+    queryFn: async () => {
+      const response = await countEventAttendance(eventId);
+
+      return response;
+    },
+  });
+
   const generateQRCode = async () => {
     try {
       const res = await QRCode.toDataURL(event.id);
@@ -92,6 +105,10 @@ const ScheduleDetails = () => {
     } catch (error) {
       console.error("Error generating QR code:", error.message);
     }
+  };
+
+  const onRowAttend = async (attendeeId, state) => {
+    updateAttendeeStatus(attendeeId, state);
   };
 
   const onEventDownload = async () => {
@@ -203,6 +220,13 @@ const ScheduleDetails = () => {
         ref={printRef}
         className="no-scrollbar flex max-h-dvh flex-col gap-5 overflow-y-scroll"
       >
+        <div className="flex gap-20 font-montserrat font-semibold text-accent">
+          <p>Total Registered: {attendanceCount?.total}</p>
+          <p>Total Attended: {attendanceCount?.attended}</p>
+          <p>
+            Total Pending: {attendanceCount?.total - attendanceCount?.attended}
+          </p>
+        </div>
         {attendance?.map((family, i) => {
           const mainApplicant = family?.parents.filter(
             (parent) => parent?.main_applicant === true
@@ -243,6 +267,9 @@ const ScheduleDetails = () => {
                           <Switch
                             defaultChecked={attendee.attended}
                             disabled={disableSchedule}
+                            onCheckedChange={(state) =>
+                              onRowAttend(attendee?.id, state)
+                            }
                           />
                         </TableCell>
                         <TableCell>{`${attendee.first_name} ${attendee.last_name}`}</TableCell>
@@ -281,6 +308,9 @@ const ScheduleDetails = () => {
                           <Switch
                             defaultChecked={attendee.attended}
                             disabled={disableSchedule}
+                            onCheckedChange={(state) =>
+                              onRowAttend(attendee?.id, state)
+                            }
                           />
                         </TableCell>
                         <TableCell>{`${attendee.first_name} ${attendee.last_name}`}</TableCell>

@@ -38,7 +38,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 import useInterObserver from "@/hooks/useInterObserver";
 
-import { getUsers, updateUser } from "@/services/userService";
+import { getUsers } from "@/services/userService";
 
 import { cn } from "@/lib/utils";
 // import DownIcon from "@/assets/icons/down-icon.svg";
@@ -95,18 +95,6 @@ const Requests = () => {
     setOpen(true);
   };
 
-  const onRowAction = async (row, action) => {
-    // Approve user
-    if (action === "approve") {
-      await updateUser(row.id, { is_confirmed: true });
-    }
-    // Disable user
-    if (action === "disable") {
-      await updateUser(row.id, { is_confirmed: false });
-    }
-    await refetch();
-  };
-
   const handleStatusChange = (checked, id) => {
     // Check if the mutate function is available
     if (activateUser) {
@@ -120,7 +108,7 @@ const Requests = () => {
   if (error) return <div>Error: {error.message}</div>;
 
   return (
-    <div className="flex flex-col gap-7">
+    <div className="no-scrollbar flex h-full flex-col gap-7 overflow-y-auto">
       <div>
         <Title>Requests</Title>
         <Description>Manage your organisation&apos;s community.</Description>
@@ -230,30 +218,13 @@ const Requests = () => {
                   </TableCell>
 
                   <TableCell className="w-[300px] text-center">
-                    <div className="flex items-center justify-center gap-2">
-                      <Button
-                        onClick={() => onRowEdit(row)}
-                        variant="outline"
-                        className="h-auto rounded-xl px-2 text-accent hover:text-orange-500"
-                      >
-                        <Icon icon="mingcute:pencil-3-line" />
-                      </Button>
-                      {!row.is_confirmed ? (
-                        <Button
-                          className="h-auto px-2 font-normal"
-                          onClick={() => onRowAction(row, "approve")}
-                        >
-                          Approve
-                        </Button>
-                      ) : (
-                        <Button
-                          className="h-auto bg-red-500 px-2 font-normal"
-                          onClick={() => onRowAction(row, "disable")}
-                        >
-                          Disable
-                        </Button>
-                      )}
-                    </div>
+                    <Button
+                      onClick={() => onRowEdit(row)}
+                      variant="outline"
+                      className="h-auto rounded-xl px-2 text-accent hover:text-orange-500"
+                    >
+                      <Icon icon="mingcute:pencil-3-line" />
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))
