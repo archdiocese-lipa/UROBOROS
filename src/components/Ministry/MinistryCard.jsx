@@ -17,8 +17,21 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import ViewMembers from "./ViewMembers";
 import useMinistryMembers from "@/hooks/useMinistryMembers"; // Import the custom hook
+import { useDeleteMinistry } from "@/hooks/useDeleteMinistry"; // Import the delete hook
+import { useState } from "react";
+import EditMinistry from "./EditMinistry"; // Import the EditMinistry component
 
 // Utility function to get initials from a name
 const getInitials = (firstName, lastName) => {
@@ -29,20 +42,32 @@ const getInitials = (firstName, lastName) => {
 
 const MinistryCard = ({ ministryId, title, description, createdDate }) => {
   const formatDateToUK = (dateString) => {
-    const date = new Date(dateString); // Convert the date string to a Date object
+    const date = new Date(dateString);
     return new Intl.DateTimeFormat("en-GB", {
       day: "2-digit",
       month: "short",
       year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-      hour12: true, // Optional: for 12-hour format with AM/PM
+      hour12: true,
     }).format(date);
   };
 
   const formattedCreatedDate = formatDateToUK(createdDate);
 
-  const { members, loading, error } = useMinistryMembers(ministryId); // Use the custom hook
+  const { members, loading, error } = useMinistryMembers(ministryId);
+  const { mutate: deleteMinistry, isLoading: isDeleting } = useDeleteMinistry();
+  const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isEditDialogOpen, setEditDialogOpen] = useState(false); // State to open the Edit Ministry card
+
+  const handleDelete = () => {
+    deleteMinistry(ministryId);
+    setDeleteDialogOpen(false);
+  };
+
+  const handleEdit = () => {
+    setEditDialogOpen(true); // Open the Edit Ministry dialog or form
+  };
 
   const maxVisible = 4;
   const visibleAvatars = members.slice(0, maxVisible);
@@ -67,8 +92,42 @@ const MinistryCard = ({ ministryId, title, description, createdDate }) => {
             <DropdownMenuContent>
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Edit</DropdownMenuItem>
-              <DropdownMenuItem>Delete</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleEdit}>
+                Edit
+              </DropdownMenuItem>{" "}
+              {/* Trigger Edit */}
+              <Dialog
+                open={isDeleteDialogOpen}
+                onOpenChange={setDeleteDialogOpen}
+              >
+                <DialogTrigger asChild>
+                  <DropdownMenuItem
+                    onSelect={(event) => {
+                      event.preventDefault(); // Prevent the dropdown from closing
+                      setDeleteDialogOpen(true); // Open the delete confirmation dialog
+                    }}
+                  >
+                    Delete
+                  </DropdownMenuItem>
+                </DialogTrigger>
+                <DialogContent className="rounded-xl p-6 text-primary-text">
+                  <DialogHeader>
+                    <DialogTitle>Confirm Delete</DialogTitle>
+                    <DialogDescription>
+                      Are you sure you want to delete this ministry? This action
+                      cannot be undone.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <DialogClose asChild>
+                      <Button variant="outline">Cancel</Button>
+                    </DialogClose>
+                    <Button onClick={handleDelete} disabled={isDeleting}>
+                      {isDeleting ? "Deleting..." : "Delete"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -77,6 +136,9 @@ const MinistryCard = ({ ministryId, title, description, createdDate }) => {
         <div className="flex flex-col gap-y-3 rounded-2xl bg-primary px-5 py-3">
           {loading && <p>Loading members...</p>}
           {error && <p className="text-red-500">{error}</p>}
+          {!loading && !error && members.length === 0 && (
+            <p className="text-gray-500">No members</p>
+          )}
           <div className="flex items-center gap-x-6">
             <div className="flex flex-wrap items-center justify-center -space-x-4">
               {visibleAvatars.map((member, index) => {
@@ -112,6 +174,17 @@ const MinistryCard = ({ ministryId, title, description, createdDate }) => {
           </div>
         </div>
       </CardContent>
+
+      {/* Edit Ministry Modal or Component */}
+      {isEditDialogOpen && (
+        <EditMinistry
+          ministryId={ministryId}
+          currentName={title}
+          currentDescription={description}
+          isOpen={isEditDialogOpen} // Pass the state here
+          closeDialog={() => setEditDialogOpen(false)} // Pass the function to close the dialog
+        />
+      )}
     </Card>
   );
 };

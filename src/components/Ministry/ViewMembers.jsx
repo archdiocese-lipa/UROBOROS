@@ -15,6 +15,7 @@ import AssignMembers from "./AssignMembers";
 import { NegativeIcon } from "@/assets/icons/icons";
 import useRemoveMinistryVolunteer from "@/hooks/useRemoveMinistryVolunteer";
 import { useState } from "react";
+
 // Utility function to get initials from a name
 const getInitials = (firstName, lastName) => {
   const firstInitial = firstName?.charAt(0)?.toUpperCase() || "";
@@ -30,6 +31,7 @@ const ViewMembers = ({
   members,
 }) => {
   const [openDialog, setOpenDialog] = useState(false);
+
   const formatDateToUK = (dateString) => {
     const date = new Date(dateString); // Convert the date string to a Date object
     return new Intl.DateTimeFormat("en-GB").format(date); // Format it to DD/MM/YYYY
@@ -56,7 +58,7 @@ const ViewMembers = ({
         <DialogHeader className="text-primary-text">
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
-          <span> {formattedCreatedDate}</span>
+          <span>{formattedCreatedDate}</span>
         </DialogHeader>
         <div>
           <div className="flex justify-between text-xl font-medium text-primary-text">
@@ -68,65 +70,68 @@ const ViewMembers = ({
             />
           </div>
           <div className="no-scrollbar mt-2 overflow-scroll">
-            <ul className="flex h-64 flex-col gap-y-2 text-primary-text">
-              {members?.map((member, index) => {
-                // Extract name from the users object
-                const firstName = member.users?.first_name || "";
-                const lastName = member.users?.last_name || "";
-                const memberId = member?.users?.id || null; // Safely access users.id
-                const memberName =
-                  firstName && lastName
-                    ? `${firstName} ${lastName}`
-                    : "Unnamed Member";
+            {members.length === 0 ? (
+              <p className="text-gray-500">No members</p>
+            ) : (
+              <ul className="flex h-64 flex-col gap-y-2 text-primary-text">
+                {members.map((member, index) => {
+                  // Extract name from the users object
+                  const firstName = member.users?.first_name || "";
+                  const lastName = member.users?.last_name || "";
+                  const memberId = member?.users?.id || null; // Safely access users.id
+                  const memberName =
+                    firstName && lastName
+                      ? `${firstName} ${lastName}`
+                      : "Unnamed Member";
 
-                // Generate initials
-                const initials = getInitials(firstName, lastName);
+                  // Generate initials
+                  const initials = getInitials(firstName, lastName);
 
-                return (
-                  <li
-                    key={index}
-                    className="flex items-center justify-between gap-x-2 rounded-lg bg-primary p-4"
-                  >
-                    <div className="flex items-center gap-x-2">
-                      <Avatar className="border-2 border-white">
-                        {/* Use AvatarFallback to display initials */}
-
-                        <AvatarFallback>{initials || "?"}</AvatarFallback>
-                      </Avatar>
-                      <span>{memberName}</span>
-                    </div>
-                    <Dialog open={openDialog} onOpenChange={setOpenDialog}>
-                      <DialogTrigger asChild>
-                        <Button variant="transparent">
-                          <NegativeIcon className="text-red-500" />
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="text-primary-text">
-                        <DialogHeader>
-                          <DialogTitle>
-                            Are you sure you want to remove?
-                          </DialogTitle>
-                          <DialogDescription>
-                            This action will remove the item from the list.
-                          </DialogDescription>
-                        </DialogHeader>
-                        <DialogFooter>
-                          <DialogClose asChild>
-                            <Button variant="outline">Cancel</Button>
-                          </DialogClose>
-                          <Button
-                            onClick={() => handleRemoveMember(memberId)} // Use the safely extracted ID
-                            disabled={isLoading} // Disable the button while loading
-                          >
-                            {isLoading ? "Removing..." : "Yes"}
+                  return (
+                    <li
+                      key={index}
+                      className="flex items-center justify-between gap-x-2 rounded-lg bg-primary p-4"
+                    >
+                      <div className="flex items-center gap-x-2">
+                        <Avatar className="border-2 border-white">
+                          {/* Use AvatarFallback to display initials */}
+                          <AvatarFallback>{initials || "?"}</AvatarFallback>
+                        </Avatar>
+                        <span>{memberName}</span>
+                      </div>
+                      <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+                        <DialogTrigger asChild>
+                          <Button variant="transparent">
+                            <NegativeIcon className="text-red-500" />
                           </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
-                  </li>
-                );
-              })}
-            </ul>
+                        </DialogTrigger>
+                        <DialogContent className="text-primary-text">
+                          <DialogHeader>
+                            <DialogTitle>
+                              Are you sure you want to remove?
+                            </DialogTitle>
+                            <DialogDescription>
+                              This action will remove the item from the list.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <DialogFooter>
+                            <DialogClose asChild>
+                              <Button variant="outline">Cancel</Button>
+                            </DialogClose>
+                            <Button
+                              onClick={() => handleRemoveMember(memberId)} // Use the safely extracted ID
+                              disabled={isLoading} // Disable the button while loading
+                            >
+                              {isLoading ? "Removing..." : "Yes"}
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </div>
         </div>
       </DialogContent>
@@ -135,7 +140,7 @@ const ViewMembers = ({
 };
 
 ViewMembers.propTypes = {
-  ministryId: PropTypes.string.isRequired, // Add this line to validate ministryId
+  ministryId: PropTypes.string.isRequired, // Validate ministryId
   title: PropTypes.string.isRequired,
   description: PropTypes.string.isRequired,
   createdDate: PropTypes.string.isRequired,

@@ -35,8 +35,25 @@ export const createMinistry = async (ministry) => {
  * @param {Object} updates - Object containing the updated fields.
  * @returns {Promise<Object>} Response containing data or error.
  */
-export const updateMinistry = async (id, updates) => {
-  return await supabase.from("ministries").update(updates).eq("id", id);
+export const editMinistry = async (updatedValues) => {
+  // Destructure the updatedValues object to extract necessary fields
+  const { ministryId, ministryName, ministryDescription } = updatedValues;
+
+  // Perform the update query using destructured values
+  const { data, error } = await supabase
+    .from("ministries")
+    .update({
+      ministry_name: ministryName, // Update ministry_name field
+      ministry_description: ministryDescription, // Update ministry_description field
+    })
+    .eq("id", ministryId); // Use ministryId as the primary key for the update
+
+  if (error) {
+    console.error("Error updating ministry:", error.message);
+    throw new Error(error.message); // Handle the error appropriately
+  }
+
+  return data; // Return the updated data
 };
 
 /**
