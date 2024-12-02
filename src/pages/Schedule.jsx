@@ -265,7 +265,7 @@ const Schedule = () => {
                               <DialogHeader>
                                 <DialogTitle>Update Event</DialogTitle>
                                 <DialogDescription>
-                                  Schedule an upcoming event.
+                                  Update an selected event.
                                 </DialogDescription>
                               </DialogHeader>
                               <EditEvent
