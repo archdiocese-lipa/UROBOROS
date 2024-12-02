@@ -24,9 +24,11 @@ const Filter = ({
   if (isLoading) return null;
   // if (isError) return <p>Error: {error.message}</p>;
 
+
+  // console.log("ministry id", ministry.id,"selected id", selectedMinistry)
   return (
     <div
-      className={cn("mb-3 rounded-xl border border-gray bg-white", {
+      className={cn(" lg:mb-3 rounded-xl border border-gray w-full   max-h-20 lg:max-h-none lg:h-fit bg-white ", {
         "bg-accent": ministry.id === selectedMinistry,
       })}
     >
@@ -34,9 +36,9 @@ const Filter = ({
         onClick={() => {
           setSelectedMinistry(ministry.id), setVisibility("private");
         }}
-        className="relative w-full px-[18px] py-3"
+        className="relative px-[18px] py-3"
       >
-        <div className="flex justify-between flex-wrap">
+        <div className="flex gap-3 justify-between lg:flex-wrap">
           <h3
             className={cn("font-bold text-start text-accent", {
               "text-white": ministry.id === selectedMinistry,
@@ -51,7 +53,7 @@ const Filter = ({
         </div>
         <p
           className={cn(
-            "pb-1 text-start text-[13px] font-medium text-accent opacity-60",
+            "pb-1 hidden lg:block text-start text-[13px] font-medium text-accent opacity-60",
             {
               "text-white": ministry.id === selectedMinistry,
             }
@@ -59,7 +61,7 @@ const Filter = ({
         >
           This shows all {ministry.ministry_name} announcements
         </p>
-        <div className="relative flex h-8 w-full justify-start">
+        <div className="relative hidden lg:flex h-8 w-full justify-start">
           {ministryData.firstNames.map((name, i) => (
             <div
               key={i}
@@ -79,7 +81,7 @@ const Filter = ({
           ))}
         </div>
         {selectedMinistry === ministry.id && (
-          <div className="absolute -left-4 top-1/2 h-8 w-2 -translate-x-1/2 -translate-y-1/2 transform rounded-md bg-accent"></div>
+          <div className=" hidden lg:block bg-accent lg:absolute -left-4 top-1/2 h-8 w-2 -translate-x-1/2 -translate-y-1/2 transform rounded-md"></div>
         )}
       </button>
     </div>

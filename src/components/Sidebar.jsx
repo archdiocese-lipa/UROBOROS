@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 import { useUser } from "@/context/useUser"; // Adjust the path as needed
 
 import { Title } from "@/components/Title";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,7 +22,53 @@ import { ROLES } from "@/constants/roles";
 
 const Sidebar = () => {
   const url = useLocation();
-  const { userData } = useUser();
+  const { userData, logout } = useUser();
+  const navigate = useNavigate(); 
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate("/", { replace: true }); // Redirect to the home page
+    } catch (error) {
+      console.error("Logout failed:", error.message);
+    }
+  };
+
+  const initials = `${getInitial(userData?.first_name)}${getInitial(
+    userData?.last_name
+  )}`;
+
+  const onSwitchRole = (role) => {
+    if (!userData) return;
+
+    // const tempRole = sessionStorage.getItem("temp-role");
+
+    if (role === ROLES[0]) {
+      sessionStorage.removeItem("temp-role");
+      window.dispatchEvent(new Event("storage"));
+      window.location.reload();
+      return;
+    }
+
+    sessionStorage.setItem("temp-role", role);
+    window.dispatchEvent(new Event("storage"));
+    window.location.reload();
+  };
+
+  const roles = [
+    {
+      label: "Switch to Parishioner",
+      value: "parishioner",
+    },
+    {
+      label: "Switch to Volunteer",
+      value: "volunteer",
+    },
+    {
+      label: "Switch to Admin",
+      value: "admin",
+    },
+  ];
 
   return (
     <div className="flex w-full lg:my-9 lg:w-2/12 lg:flex-col">
@@ -42,6 +88,36 @@ const Sidebar = () => {
                 isActive={url.pathname === links.link}
               />
             ))}
+
+          <DropdownMenu>
+            <DropdownMenuTrigger className="lg:hidden lg:px-6">
+              <div className="flex items-center gap-2">
+                <Avatar className="bg-green h-8 w-8">
+                  <AvatarImage
+                    src={userData?.user_image ?? ""}
+                    alt="profile picture"
+                  />
+                  <AvatarFallback>{initials}</AvatarFallback>
+                </Avatar>
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              {(userData?.role === ROLES[0] ||
+                sessionStorage.getItem("temp-role")) &&
+                roles
+                  .filter((role) => role.value !== userData?.role)
+                  .map((role) => (
+                    <DropdownMenuItem
+                      key={role}
+                      onClick={() => onSwitchRole(role.value)}
+                    >
+                      {role.label}
+                    </DropdownMenuItem>
+                  ))}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </ul>
         <SidebarProfile />
       </div>
