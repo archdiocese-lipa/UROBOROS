@@ -321,7 +321,7 @@ const EditRegistration = () => {
     <>
       <Dialog open={isDialogOpen} onOpenChange={handleDialogChange}>
         <DialogTrigger asChild>
-          <Button variant="secondary">Edit Registration</Button>
+          <Button variant="landingsecondary">Edit Registration</Button>
         </DialogTrigger>
         <DialogContent
           className={`no-scrollbar max-w-96 overflow-scroll ${isCodeValid ? "sm:max-w-2xl md:max-h-[38rem]" : "max-h-[45rem]"}`}

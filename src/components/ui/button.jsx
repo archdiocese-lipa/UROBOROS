@@ -25,6 +25,10 @@ const buttonVariants = cva(
           "bg-accent text-white font-semibold rounded-[10px] tracking-wide",
         transparent:
           "bg-transparent text-white font-semibold rounded-[10px] tracking-wide border-0",
+        login:
+          "bg-accent text-white font-semibold rounded-full tracking-wide",
+        landingsecondary:
+          "bg-white/75 text-[#663F30] rounded-full hover:bg-white/50 dark:bg-white/75 dark:text-[#663F30] dark:hover:bg-white/50",
       },
 
       size: {
