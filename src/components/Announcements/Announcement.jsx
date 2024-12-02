@@ -26,7 +26,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
 import { Select } from "@radix-ui/react-select";
@@ -67,21 +67,24 @@ const Announcement = ({
     },
   });
 
-  if (ministries) {
-    form.setValue(
-      "ministry",
-      ministries.find((ministry) => ministry.id === announcement.ministry_id)
-        ?.id
-        ? [
-            ministries.find(
-              (ministry) => ministry.id === announcement.ministry_id
-            )?.id,
-          ]
-        : []
-    );
-  }
+  useEffect(() => {
+    if (ministries) {
+      form.setValue(
+        "ministry",
+        ministries.find((ministry) => ministry.id === announcement.ministry_id)
+          ?.id
+          ? [
+              ministries.find(
+                (ministry) => ministry.id === announcement.ministry_id
+              )?.id,
+            ]
+          : []
+      );
+    }
+  }, []);
 
   const onSubmit = (announcementData) => {
+
     editAnnouncementMutation.mutate({
       announcementData: {
         ...announcementData,
@@ -99,7 +102,7 @@ const Announcement = ({
   if (!userData) {
     return null;
   }
-  console.log(announcement)
+  // console.log(announcement)
   return (
     <div>
       <div className="mb-3 flex justify-between">
@@ -170,7 +173,7 @@ const Announcement = ({
                           name="title"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Announcement Title</FormLabel>
+                              <FormLabel>Title</FormLabel>
                               <FormControl>
                                 <Input
                                   className="text-accent"
@@ -189,7 +192,7 @@ const Announcement = ({
                           name="content"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Announcement Content</FormLabel>
+                              <FormLabel>Content</FormLabel>
                               <FormControl>
                                 <Textarea
                                   className="focus:ring-none no-scrollbar rounded-3xl border-none bg-primary text-accent placeholder:text-accent"
@@ -208,7 +211,7 @@ const Announcement = ({
                           name="file"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Announcement Image</FormLabel>
+                              <FormLabel>Image/File</FormLabel>
                               <FormControl>
                                 <Input
                                   // {...fieldProps}
@@ -229,14 +232,17 @@ const Announcement = ({
                           name="visibility"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Announcement Visibility</FormLabel>
+                              <FormLabel>Visibility</FormLabel>
                               <FormControl>
                                 <Select
                                   {...field}
                                   onValueChange={(value) => {
-                                    form.setValue("ministry", []);
-                                    setFormVisibility(`${value}`),
-                                      field.onChange(value);
+                                    // Reset the ministry field to an empty array when the visibility is public
+                                    if (value === "public") {
+                                      form.setValue("ministry", []);
+                                    }
+                                    setFormVisibility(`${value}`);
+                                    field.onChange(value);
                                   }}
                                 >
                                   <SelectTrigger className="w-full">
@@ -264,7 +270,7 @@ const Announcement = ({
                           name="ministry"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Announcement Ministry</FormLabel>
+                              <FormLabel>Ministry</FormLabel>
                               <FormControl>
                                 <AssignVolunteerComboBox
                                   options={ministries?.map((ministry) => ({
@@ -287,15 +293,17 @@ const Announcement = ({
                         />
                         {/* Submit Button */}
                         <DialogFooter>
+                        <div className="flex justify-end">
                           <Button
                             disabled={editAnnouncementMutation.isPending}
                             className="w-full"
                             type="submit"
                           >
                             {editAnnouncementMutation.isPending
-                              ? "Submitting..."
-                              : "Submit"}
+                              ? "Editting..."
+                              : "Edit"}
                           </Button>
+                          </div>
                         </DialogFooter>
                       </form>
                     </Form>
@@ -360,9 +368,10 @@ const Announcement = ({
       </div>
       <p className="mb-4 text-justify text-accent">{announcement.content}</p>
 
-      {announcement?.file_type && announcement?.file_type.startsWith("image") && (
-        <img className="mb-2" src={announcement.file_url} alt="file" />
-      )}
+      {announcement?.file_type &&
+        announcement?.file_type.startsWith("image") && (
+          <img className="mb-2" src={announcement.file_url} alt="file" />
+        )}
       {announcement?.file_type &&
         announcement?.file_type.startsWith("application") && (
           <div>
@@ -371,9 +380,15 @@ const Announcement = ({
             </a>
           </div>
         )}
-      {announcement?.file_type && announcement?.file_type.startsWith("video") && (
-        <video className="mb-2" controls src={announcement.file_url} alt="file" />
-      )}
+      {announcement?.file_type &&
+        announcement?.file_type.startsWith("video") && (
+          <video
+            className="mb-2"
+            controls
+            src={announcement.file_url}
+            alt="file"
+          />
+        )}
       <div className="flex items-end justify-between">
         <div className="relative h-5">
           {/* <img src={LikeIcon} alt={`up icon`} className="h-5 w-5" /> */}
@@ -405,12 +420,12 @@ Announcement.propTypes = {
     id: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
     content: PropTypes.string.isRequired,
-    file_path: PropTypes.string, 
+    file_path: PropTypes.string,
     created_at: PropTypes.string.isRequired,
     visibility: PropTypes.string.isRequired,
-    file_url: PropTypes.string, 
+    file_url: PropTypes.string,
     file_name: PropTypes.string.isRequired,
-    file_type: PropTypes.string, 
+    file_type: PropTypes.string,
     ministry_id: PropTypes.string.isRequired,
     user_id: PropTypes.string.isRequired,
     users: PropTypes.shape({
