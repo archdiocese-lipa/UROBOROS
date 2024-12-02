@@ -36,6 +36,7 @@ import { ROLES } from "@/constants/roles";
 
 import MeetingDetails from "@/components/Schedule/MeetingDetails";
 import useInterObserver from "@/hooks/useInterObserver";
+import EditEvent from "@/components/Schedule/EditEvent";
 
 const Schedule = () => {
   const [filter, setFilter] = useState("events");
@@ -262,12 +263,13 @@ const Schedule = () => {
                             </DialogTrigger>
                             <DialogContent>
                               <DialogHeader>
-                                <DialogTitle>Create Event</DialogTitle>
+                                <DialogTitle>Update Event</DialogTitle>
                                 <DialogDescription>
                                   Schedule an upcoming event.
                                 </DialogDescription>
                               </DialogHeader>
-                              <CreateEvent
+                              <EditEvent
+                                eventId={event.id}
                                 id="update-event"
                                 eventData={{ ...event }}
                                 setDialogOpen={(isOpen) => {
@@ -283,7 +285,7 @@ const Schedule = () => {
                                     <Button variant="outline">Cancel</Button>
                                   </DialogClose>
 
-                                  <Button form="update-event">Create</Button>
+                                  <Button form="update-event">Edit</Button>
                                 </div>
                               </DialogFooter>
                             </DialogContent>
