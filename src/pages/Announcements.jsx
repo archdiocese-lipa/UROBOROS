@@ -110,7 +110,7 @@ const Announcements = () => {
           <Title className="mb-0 lg:mb-3">Announcements</Title>
         </div>
 
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        {(userData?.role == "admin" || userData.role == "volunteer") && <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
             <Button
               className="absolute bottom-16 right-10 z-20 rounded-[15px] lg:static"
@@ -268,7 +268,7 @@ const Announcements = () => {
               </form>
             </Form>
           </DialogContent>
-        </Dialog>
+        </Dialog>}
       </div>
 
       {/* 
