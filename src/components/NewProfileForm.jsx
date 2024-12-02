@@ -26,7 +26,11 @@ import { useToast } from "@/hooks/use-toast";
 import { registerUser } from "@/services/authService";
 import { updateUser } from "@/services/userService";
 
-const NewProfileForm = ({ id = "new-user-form", user }) => {
+const NewProfileForm = ({
+  id = "new-user-form",
+  user,
+  onFormSubmitSuccess,
+}) => {
   const { toast } = useToast();
 
   const newUserSchema = z
@@ -82,6 +86,7 @@ const NewProfileForm = ({ id = "new-user-form", user }) => {
         ? await registerUser(newUserPayload)
         : await updateUser(user?.id, updateUserPayload);
 
+      onFormSubmitSuccess();
       toast({
         title: "Success",
       });
@@ -218,6 +223,7 @@ const NewProfileForm = ({ id = "new-user-form", user }) => {
 NewProfileForm.propTypes = {
   id: PropTypes.string,
   user: PropTypes.object,
+  onFormSubmitSuccess: PropTypes.func,
 };
 
 export default NewProfileForm;

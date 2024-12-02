@@ -36,11 +36,7 @@ import { ROLES } from "@/constants/roles";
 
 import MeetingDetails from "@/components/Schedule/MeetingDetails";
 import useInterObserver from "@/hooks/useInterObserver";
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const Schedule = () => {
   const [filter, setFilter] = useState("events");
@@ -97,8 +93,6 @@ const Schedule = () => {
       newUrlPrms.set("query", data.query);
     }
     setUrlPrms(newUrlPrms);
-    
-
   };
 
   const onEventClick = (eventId) => {
@@ -215,8 +209,6 @@ const Schedule = () => {
                   filter === "events"
                     ? page?.items.map((event, j) => (
                         <div key={`${i}-${j}`} className="relative">
-
-
                           <Sheet className="md:hidden">
                             <SheetTrigger asChild>
                               <div
@@ -258,8 +250,16 @@ const Schedule = () => {
                                 </div>
                               </div>
                             </SheetTrigger>
-                            <SheetContent className="md:hidden w-full md:w-full">
-                              {urlPrms.get("event") && <ScheduleDetails queryKey={["schedules", filter, urlPrms.get("query")?.toString() || ""]} />}
+                            <SheetContent className="w-full md:hidden md:w-full">
+                              {urlPrms.get("event") && (
+                                <ScheduleDetails
+                                  queryKey={[
+                                    "schedules",
+                                    filter,
+                                    urlPrms.get("query")?.toString() || "",
+                                  ]}
+                                />
+                              )}
                             </SheetContent>
                           </Sheet>
                           <Dialog
@@ -293,7 +293,11 @@ const Schedule = () => {
                                     isOpen ? `${i}-${j}` : null
                                   );
                                 }}
-                                queryKey={["schedules", filter, urlPrms.get("query")?.toString() || ""]}
+                                queryKey={[
+                                  "schedules",
+                                  filter,
+                                  urlPrms.get("query")?.toString() || "",
+                                ]}
                               />
                               {/* Dialog Footer */}
                               <DialogFooter>
@@ -348,8 +352,8 @@ const Schedule = () => {
                                 </div>
                               </div>
                             </SheetTrigger>
-                            <SheetContent className=" md:hidden w-full md:w-full sm:max-w-full">
-                            {urlPrms.get("meeting") && <MeetingDetails />}
+                            <SheetContent className="w-full sm:max-w-full md:hidden md:w-full">
+                              {urlPrms.get("meeting") && <MeetingDetails />}
                             </SheetContent>
                           </Sheet>
                         </div>

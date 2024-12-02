@@ -13,22 +13,68 @@ import {
 import { useToast } from "./use-toast";
 
 const useAddFamily = () => {
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
   // Function to add family members
-  const mutate = async (familyData) => {
-    setIsLoading(true);
-    setError(null);
+  const mutate = async (familyData, { onSuccess, onError } = {}) => {
+    try {
+      setIsLoading(true);
+      setError(null);
 
-    const response = await addFamilyMembers(familyData);
+      const response = await addFamilyMembers(familyData);
 
-    if (response.success) {
+      if (response.success) {
+        setIsLoading(false);
+
+        // Trigger onSuccess callback
+        if (onSuccess) {
+          onSuccess(response);
+        }
+
+        // Show success toast
+        toast({
+          title: "Family Members Added Successfully",
+          description:
+            "The parent and child information has been successfully added to the system.",
+        });
+
+        return response;
+      } else {
+        setIsLoading(false);
+        setError(response.error);
+
+        // Show error toast
+        toast({
+          title: "Error",
+          description:
+            "There was an issue adding the family members. Please try again.",
+          variant: "destructive",
+        });
+
+        if (onError) {
+          onError(response.error);
+        }
+
+        throw new Error(response.error);
+      }
+    } catch (err) {
       setIsLoading(false);
-      return response;
-    } else {
-      setIsLoading(false);
-      setError(response.error);
+      setError(err.message);
+
+      // Show unexpected error toast
+      toast({
+        title: "Unexpected Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+
+      if (onError) {
+        onError(err);
+      }
+
+      throw err;
     }
   };
 
