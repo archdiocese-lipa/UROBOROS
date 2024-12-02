@@ -52,8 +52,6 @@ import {
 import { useUser } from "@/context/useUser";
 import { cn } from "@/lib/utils";
 import { Label } from "../ui/label";
-
-import { _DeleteIcon } from "@/assets/icons/icons";
 import { useToast } from "@/hooks/use-toast";
 import PropTypes from "prop-types";
 
