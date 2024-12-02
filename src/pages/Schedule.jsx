@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+Sheet;
 
 import { Title, Description } from "@/components/Title";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
@@ -27,7 +28,6 @@ import { Button } from "@/components/ui/button";
 
 import { getEvents } from "@/services/eventService";
 import { getMeetings } from "@/services/meetingService";
-
 import { useUser } from "@/context/useUser";
 
 import { cn } from "@/lib/utils";
@@ -36,6 +36,11 @@ import { ROLES } from "@/constants/roles";
 
 import MeetingDetails from "@/components/Schedule/MeetingDetails";
 import useInterObserver from "@/hooks/useInterObserver";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 const Schedule = () => {
   const [filter, setFilter] = useState("events");
@@ -92,6 +97,8 @@ const Schedule = () => {
       newUrlPrms.set("query", data.query);
     }
     setUrlPrms(newUrlPrms);
+    
+
   };
 
   const onEventClick = (eventId) => {
@@ -113,8 +120,8 @@ const Schedule = () => {
   };
 
   return (
-    <div className="flex h-full w-full gap-8">
-      <div className="no-scrollbar flex w-fit flex-col gap-8 overflow-y-auto lg:min-w-[400px]">
+    <div className="flex h-full w-full md:gap-8">
+      <div className="no-scrollbar flex w-full flex-col gap-8 overflow-y-auto lg:min-w-[400px]">
         <div>
           <Title>
             {userData?.role === ROLES[1] ? "Assigned Events" : "Scheduler"}
@@ -142,7 +149,7 @@ const Schedule = () => {
                       Schedule an upcoming event.
                     </DialogDescription>
                   </DialogHeader>
-                  <CreateEvent />
+                  <CreateEvent setDialogOpen={setDialogOpen} />
                   <DialogFooter>
                     <div className="flex justify-end gap-2">
                       <DialogClose asChild>
@@ -208,42 +215,53 @@ const Schedule = () => {
                   filter === "events"
                     ? page?.items.map((event, j) => (
                         <div key={`${i}-${j}`} className="relative">
-                          <div
-                            className={cn(
-                              "flex cursor-pointer gap-3 rounded-[10px] bg-primary/50 px-5 py-4",
-                              event.id === urlPrms.get("event") &&
-                                "border border-primary-outline"
-                            )}
-                            onClick={() => onEventClick(event.id)}
-                          >
-                            <EventIcon className="text-2xl text-accent" />
-                            <div>
-                              <p className="mb-[6px] text-base font-bold leading-none text-accent">
-                                {event.event_name}
-                              </p>
-                              <p className="text-sm text-primary-text">
-                                {event.description}
-                              </p>
-                              <p className="text-sm leading-tight text-primary-text">
-                                {event.event_category} -{" "}
-                                {event.event_visibility}
-                              </p>
-                              <p className="text-sm leading-none text-primary-text">
-                                <span className="font-semibold">Date: </span>
-                                {new Date(
-                                  `${event.event_date}T${event.event_time}`
-                                ).toLocaleDateString("en-GB", {
-                                  day: "2-digit",
-                                  month: "short",
-                                  year: "numeric",
-                                })}
-                                ,
-                                {new Date(
-                                  `${event.event_date}T${event.event_time}`
-                                ).toLocaleTimeString()}
-                              </p>
-                            </div>
-                          </div>
+
+
+                          <Sheet className="md:hidden">
+                            <SheetTrigger asChild>
+                              <div
+                                className={cn(
+                                  "flex cursor-pointer gap-3 rounded-[10px] bg-primary/50 px-5 py-4",
+                                  event.id === urlPrms.get("event") &&
+                                    "border border-primary-outline"
+                                )}
+                                onClick={() => onEventClick(event.id)}
+                              >
+                                <EventIcon className="text-2xl text-accent" />
+                                <div>
+                                  <p className="mb-[6px] text-base font-bold leading-none text-accent">
+                                    {event.event_name}
+                                  </p>
+                                  <p className="text-sm text-primary-text">
+                                    {event.description}
+                                  </p>
+                                  <p className="text-sm leading-tight text-primary-text">
+                                    {event.event_category} -{" "}
+                                    {event.event_visibility}
+                                  </p>
+                                  <p className="text-sm leading-none text-primary-text">
+                                    <span className="font-semibold">
+                                      Date:{" "}
+                                    </span>
+                                    {new Date(
+                                      `${event.event_date}T${event.event_time}`
+                                    ).toLocaleDateString("en-GB", {
+                                      day: "2-digit",
+                                      month: "short",
+                                      year: "numeric",
+                                    })}
+                                    ,
+                                    {new Date(
+                                      `${event.event_date}T${event.event_time}`
+                                    ).toLocaleTimeString()}
+                                  </p>
+                                </div>
+                              </div>
+                            </SheetTrigger>
+                            <SheetContent className="md:hidden w-full md:w-full">
+                              {urlPrms.get("event") && <ScheduleDetails queryKey={["schedules", filter, urlPrms.get("query")?.toString() || ""]} />}
+                            </SheetContent>
+                          </Sheet>
                           <Dialog
                             open={editDialogOpenIndex === `${i}-${j}`}
                             onOpenChange={(isOpen) =>
@@ -262,7 +280,7 @@ const Schedule = () => {
                             </DialogTrigger>
                             <DialogContent>
                               <DialogHeader>
-                                <DialogTitle>Create Event</DialogTitle>
+                                <DialogTitle>Edit Event</DialogTitle>
                                 <DialogDescription>
                                   Schedule an upcoming event.
                                 </DialogDescription>
@@ -275,6 +293,7 @@ const Schedule = () => {
                                     isOpen ? `${i}-${j}` : null
                                   );
                                 }}
+                                queryKey={["schedules", filter, urlPrms.get("query")?.toString() || ""]}
                               />
                               {/* Dialog Footer */}
                               <DialogFooter>
@@ -283,7 +302,7 @@ const Schedule = () => {
                                     <Button variant="outline">Cancel</Button>
                                   </DialogClose>
 
-                                  <Button form="update-event">Create</Button>
+                                  <Button form="update-event">Edit</Button>
                                 </div>
                               </DialogFooter>
                             </DialogContent>
@@ -292,38 +311,47 @@ const Schedule = () => {
                       ))
                     : page?.items.map((meeting, j) => (
                         <div key={`${i}-${j}`} className="relative">
-                          <div
-                            className={cn(
-                              "flex cursor-pointer gap-3 rounded-[10px] bg-primary/50 px-5 py-4",
-                              meeting.id === urlPrms.get("meeting") &&
-                                "border border-primary-outline hover:underline"
-                            )}
-                            onClick={() => onMeetingClick(meeting.id)}
-                          >
-                            <EventIcon className="text-2xl text-accent" />
-                            <div>
-                              <p className="mb-[6px] text-base font-bold leading-none text-accent">
-                                {meeting.meeting_name}
-                              </p>
-                              <p className="text-sm text-primary-text">
-                                {meeting.details}
-                              </p>
-                              <p className="text-sm leading-none text-primary-text">
-                                <span className="font-semibold">Date: </span>
-                                {new Date(
-                                  `${meeting.meeting_date}T${meeting.start_time}`
-                                ).toLocaleDateString("en-GB", {
-                                  day: "2-digit",
-                                  month: "short",
-                                  year: "numeric",
-                                })}
-                                ,
-                                {new Date(
-                                  `${meeting.meeting_date}T${meeting.start_time}`
-                                ).toLocaleTimeString()}
-                              </p>
-                            </div>
-                          </div>
+                          <Sheet className="">
+                            <SheetTrigger asChild>
+                              <div
+                                className={cn(
+                                  "flex cursor-pointer gap-3 rounded-[10px] bg-primary/50 px-5 py-4",
+                                  meeting.id === urlPrms.get("meeting") &&
+                                    "border border-primary-outline hover:underline"
+                                )}
+                                onClick={() => onMeetingClick(meeting.id)}
+                              >
+                                <EventIcon className="text-2xl text-accent" />
+                                <div>
+                                  <p className="mb-[6px] text-base font-bold leading-none text-accent">
+                                    {meeting.meeting_name}
+                                  </p>
+                                  <p className="text-sm text-primary-text">
+                                    {meeting.details}
+                                  </p>
+                                  <p className="text-sm leading-none text-primary-text">
+                                    <span className="font-semibold">
+                                      Date:{" "}
+                                    </span>
+                                    {new Date(
+                                      `${meeting.meeting_date}T${meeting.start_time}`
+                                    ).toLocaleDateString("en-GB", {
+                                      day: "2-digit",
+                                      month: "short",
+                                      year: "numeric",
+                                    })}
+                                    ,
+                                    {new Date(
+                                      `${meeting.meeting_date}T${meeting.start_time}`
+                                    ).toLocaleTimeString()}
+                                  </p>
+                                </div>
+                              </div>
+                            </SheetTrigger>
+                            <SheetContent className=" md:hidden w-full md:w-full sm:max-w-full">
+                            {urlPrms.get("meeting") && <MeetingDetails />}
+                            </SheetContent>
+                          </Sheet>
                         </div>
                       ))
                 )
@@ -333,10 +361,11 @@ const Schedule = () => {
           </div>
         </div>
       </div>
-      <div className="flex-1">
+      <div className="no-scrollbar hidden w-full overflow-y-scroll rounded-2xl outline outline-2 outline-[#e7dad3] md:block">
         {urlPrms.get("event") && <ScheduleDetails />}
         {urlPrms.get("meeting") && <MeetingDetails />}
       </div>
+      <div></div>
     </div>
   );
 };

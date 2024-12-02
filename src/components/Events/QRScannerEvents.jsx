@@ -131,6 +131,10 @@ const QrScannerEvents = ({ eventData }) => {
             scanDelay={3000}
             allowMultiple={true}
             onScan={handleGetQrResult}
+            components={{
+              audio: false,
+              torch: false,
+            }}
           />
         )}
         {isValidQr === false && (

@@ -64,7 +64,12 @@ export const createEvent = async (eventData) => {
 };
 
 // Function to update an existing event
-export const updateEvent = async (eventId, updatedData) => {
+export const updateEvent = async ({eventId, updatedData}) => {
+
+  console.log("data",eventId,updatedData)
+  if(!eventId || !updatedData){
+    throw new Error("event id and data is required!")
+  }
   try {
     const {
       eventName,
@@ -95,6 +100,7 @@ export const updateEvent = async (eventId, updatedData) => {
     if (error) {
       throw new Error(error.message);
     }
+    console.log("edited successfuly")
 
     return { success: true, data };
   } catch (error) {
