@@ -41,8 +41,6 @@ import useQuickAccessEvents from "@/hooks/useQuickAccessEvents";
 import useUsersByRole from "@/hooks/useUsersByRole";
 import useGetAllMinistries from "@/hooks/useGetAllMinistries";
 
-import { updateEvent } from "@/services/eventService";
-
 const CreateEvent = ({
   id = "create-event",
   eventData = null,
@@ -148,7 +146,6 @@ const CreateEvent = ({
       return;
     }
 
-    updateEvent(eventData?.id, eventPayload);
     setDialogOpen(false); // Close the dialog if success
   };
 
