@@ -262,7 +262,7 @@ const ParishionerRegister = () => {
             </Form>
           </TabsContent>
           <TabsContent value="family">
-            <FamilyRegistration />
+            <FamilyRegistration closeModal={handleDialogClose} />
           </TabsContent>
         </Tabs>
       </DialogContent>

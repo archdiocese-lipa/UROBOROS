@@ -12,13 +12,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { addFamilySchema } from "@/zodSchema/AddFamilySchema";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
 import { DialogClose } from "../../ui/dialog";
-import { useUser } from "@/context/useUser"; // Custom hook for accessing UserContext
+import { useUser } from "@/context/useUser";
 import { useAddFamily } from "@/hooks/useFamily";
 
-const FamilyRegistration = ({ skipBtn }) => {
-  const { toast } = useToast();
+const FamilyRegistration = ({ skipBtn, closeModal }) => {
   const { regData } = useUser(); // Access registration data
 
   // Use `regData` to prepopulate the first parent
@@ -54,43 +52,21 @@ const FamilyRegistration = ({ skipBtn }) => {
     name: "children",
   });
 
-  const { mutate, isLoading } = useAddFamily(); // Destructure the hook
+  const { mutate, isLoading } = useAddFamily();
 
   const onSubmit = async (data) => {
     try {
       const familyData = {
-        // userId: regData?.id, // Use `regData` for userId
         parents: data.parents,
         children: data.children,
-        familyId: regData?.familyId, // Use `regData` for family
+        familyId: regData?.familyId, // Use `regData` for family ID
       };
 
-      toast({
-        title: "Family Members Added Successfully",
-        description:
-          "The parent and child information has been successfully added to the system.",
-      });
+      await mutate(familyData);
 
-      mutate(familyData, {
-        onSuccess: () => {
-          toast({
-            title: "Family Members Added Successfully",
-            description:
-              "The parent and child information has been successfully added to the system.",
-          });
-        },
-        onError: (error) => {
-          console.error("Error adding family members:", error);
-          toast({
-            title: "Error",
-            description:
-              "There was an issue adding the family members. Please try again.",
-            variant: "destructive",
-          });
-        },
-      });
+      closeModal(false); // Close the modal if it's successful
     } catch (error) {
-      throw new error();
+      console.error("Unexpected error:", error);
     }
   };
 
@@ -250,6 +226,7 @@ const FamilyRegistration = ({ skipBtn }) => {
 // Props validation
 FamilyRegistration.propTypes = {
   skipBtn: PropTypes.func, // Require skipBtn to be a function, made optional here
+  closeModal: PropTypes.func,
 };
 
 export default FamilyRegistration;

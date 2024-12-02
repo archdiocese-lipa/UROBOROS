@@ -10,7 +10,6 @@ export const UserProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
 
   // Login function
-  // Login function
   const login = async (credentials) => {
     setLoading(true);
     try {

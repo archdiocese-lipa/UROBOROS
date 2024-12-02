@@ -166,7 +166,10 @@ const Requests = () => {
                     : "Update existing user profile"}
                 </DialogDescription>
               </DialogHeader>
-              <NewProfileForm user={selectedRow} />
+              <NewProfileForm
+                user={selectedRow}
+                onFormSubmitSuccess={() => onDialogStateChange(false)}
+              />
               <DialogFooter>
                 <DialogClose asChild>
                   <Button variant="outline">Cancel</Button>

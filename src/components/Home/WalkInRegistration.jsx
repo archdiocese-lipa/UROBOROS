@@ -42,7 +42,7 @@ const WalkInRegistration = () => {
 
   const { data: walkInEvents } = useGetWalkInEvents();
 
-  const { mutate: registerAttendance } = useWalkInAttendance(); // Initialize the mutation hook
+  const { mutate: registerAttendance, isLoading } = useWalkInAttendance(); // Initialize the mutation hook
   const { toast } = useToast();
 
   const form = useForm({
@@ -124,7 +124,7 @@ const WalkInRegistration = () => {
 
     // Proceed with submission
     const { event, parents, children } = values;
-    
+
     const submitData = {
       randomSixDigit: generatedNumber, // Use the generated six-digit ticket code
       event,
@@ -320,7 +320,7 @@ const WalkInRegistration = () => {
                 {/* Button to add another parent/guardian */}
                 <div className="flex justify-end gap-2">
                   <Button type="button" size="sm" onClick={addParentField}>
-                    Add Parent/Guardian
+                    Add
                   </Button>
                 </div>
                 <Label className="text-lg">Child Information </Label>
@@ -369,7 +369,7 @@ const WalkInRegistration = () => {
 
                 <div className="flex justify-end gap-2">
                   <Button type="button" size="sm" onClick={addChildField}>
-                    Add Child
+                    Add
                   </Button>
                 </div>
                 <DialogFooter>
@@ -377,7 +377,9 @@ const WalkInRegistration = () => {
                     <DialogClose>
                       <Button variant="outline">Cancel</Button>
                     </DialogClose>
-                    <Button type="submit">Submit</Button>
+                    <Button type="submit" disabled={isLoading}>
+                      {isLoading ? "Submitting" : "Submit"}
+                    </Button>
                   </div>
                 </DialogFooter>
               </form>
