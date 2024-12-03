@@ -59,6 +59,7 @@ const Schedule = () => {
   const { data, isLoading, hasNextPage, fetchNextPage } = useInfiniteQuery({
     queryKey: ["schedules", filter, urlPrms.get("query")?.toString() || ""],
     queryFn: async ({ pageParam }) => {
+      if (!userData) return;
       let response;
       if (filter === "events") {
         response = await getEvents({

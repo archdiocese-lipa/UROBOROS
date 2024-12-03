@@ -252,7 +252,7 @@ const EditEvent = ({
                         {/* Ensure ministries.data is an array before mapping */}
                         {Array.isArray(ministries?.data) &&
                         ministries.data.length > 0 ? (
-                          ministries.data.map((ministry) => (
+                          ministries?.data.map((ministry) => (
                             <SelectItem key={ministry.id} value={ministry.id}>
                               {ministry.ministry_name}
                             </SelectItem>
@@ -279,7 +279,7 @@ const EditEvent = ({
               <FormLabel>Assign Volunteer</FormLabel>
               <FormControl>
                 <AssignVolunteerComboBox
-                  options={volunteers.map((volunteer) => ({
+                  options={volunteers?.map((volunteer) => ({
                     value: volunteer.id, // Use 'id' as the value
                     label: `${volunteer.first_name} ${volunteer.last_name}`, // Combine first name and last name
                   }))}
@@ -375,7 +375,7 @@ const EditEvent = ({
 export default EditEvent;
 
 EditEvent.propTypes = {
-  eventId: PropTypes.uuid,
+  eventId: PropTypes.string.isRequired, // Ensuring eventId is a string
   id: PropTypes.string,
   eventData: PropTypes.object,
   setDialogOpen: PropTypes.func,

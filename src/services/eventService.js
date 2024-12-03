@@ -134,39 +134,31 @@ export const updateEvent = async (eventData) => {
 
 // Function to fetch all events (optionally filter by date, creator, etc.)
 export const getEvents = async ({
-  creatorId,
   startDate,
   endDate,
   page = 1,
   pageSize,
-  query,
+
   user,
 } = {}) => {
   try {
     const filters = {};
+
+    // Apply startDate and endDate filters
     if (startDate) {
-      filters.gte = { event_date: startDate };
+      filters.gte = startDate;
     }
 
     if (endDate) {
-      filters.lte = { event_date: endDate };
+      filters.lte = endDate;
     }
-
-    if (query) {
-      filters.ilike = { event_name: query };
-    }
-
-    if (creatorId) {
-      filters.eq = { creator_id: creatorId };
-    }
-
-    // if (user && user.role !== ROLES[0]) {
-    //   filters.eq = { assigned_volunteer: user.id };
-    // }
 
     let nonAdminEventIds = [];
 
+    // Check if user is a volunteer and apply filters
     if (user && user.role !== ROLES[0]) {
+      // assuming ROLES[0] is admin
+
       const { data: volunteerEvents, error: volunteerError } = await supabase
         .from("event_volunteers")
         .select("*")
@@ -178,14 +170,17 @@ export const getEvents = async ({
 
       nonAdminEventIds = volunteerEvents.map((event) => event.event_id);
 
-      // Update the filters to include only these event IDs
-      filters.in = { id: nonAdminEventIds };
+      if (nonAdminEventIds.length > 0) {
+        filters.id = nonAdminEventIds; // Apply only the volunteer's events
+      }
     }
 
+    // If the user is an admin or has no specific events, apply all events
+
+    // Fetch data using pagination
     const data = await paginate({
       key: "events",
-      select: `*, event_volunteers (
-          volunteer_id)`,
+      select: `*, event_volunteers (volunteer_id)`,
       page,
       pageSize,
       filters,
