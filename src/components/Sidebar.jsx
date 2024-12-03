@@ -18,67 +18,34 @@ import { cn, getInitial } from "@/lib/utils";
 import { SIDEBAR_LINKS } from "@/constants/sidebarLinks";
 
 import { ChevronUp } from "@/assets/icons/icons";
-import { ROLES } from "@/constants/roles";
+import useRoleSwitcher from "@/hooks/useRoleSwitcher";
+
 
 const Sidebar = () => {
   const url = useLocation();
+  const navigate = useNavigate();
+  const { availableRoles, onSwitchRole, temporaryRole } = useRoleSwitcher(); 
+
   const { userData, logout } = useUser();
-  const navigate = useNavigate(); 
 
   const handleLogout = async () => {
     try {
       await logout();
-      navigate("/", { replace: true }); // Redirect to the home page
+      navigate("/", { replace: true });
     } catch (error) {
       console.error("Logout failed:", error.message);
     }
   };
 
-  const initials = `${getInitial(userData?.first_name)}${getInitial(
-    userData?.last_name
-  )}`;
-
-  const onSwitchRole = (role) => {
-    if (!userData) return;
-
-    // const tempRole = sessionStorage.getItem("temp-role");
-
-    if (role === ROLES[0]) {
-      sessionStorage.removeItem("temp-role");
-      window.dispatchEvent(new Event("storage"));
-      window.location.reload();
-      return;
-    }
-
-    sessionStorage.setItem("temp-role", role);
-    window.dispatchEvent(new Event("storage"));
-    window.location.reload();
-  };
-
-  const roles = [
-    {
-      label: "Switch to Parishioner",
-      value: "parishioner",
-    },
-    {
-      label: "Switch to Volunteer",
-      value: "volunteer",
-    },
-    {
-      label: "Switch to Admin",
-      value: "admin",
-    },
-  ];
+  const initials = `${getInitial(userData?.first_name)}${getInitial(userData?.last_name)}`;
 
   return (
-    <div className="flex lg:my-9  lg:w-2/12 lg:flex-col">
-      <Title className="mb-12 ml-9 hidden max-w-[201px] lg:block">
-        Admin Management Centre
-      </Title>
+    <div className="flex lg:my-9 lg:w-2/12 lg:flex-col">
+      <Title className="mb-12 ml-9 hidden max-w-[201px] lg:block">Admin Management Centre</Title>
       <div className="flex flex-1 justify-between lg:flex-col">
         <ul className="flex w-full justify-evenly gap-2 lg:ml-4 lg:mr-8 lg:flex-col lg:items-start">
           {userData &&
-            SIDEBAR_LINKS[userData?.role].map((links, index) => (
+            SIDEBAR_LINKS[temporaryRole]?.map((links, index) => (
               <SidebarLink
                 key={index}
                 label={links.label}
@@ -88,92 +55,50 @@ const Sidebar = () => {
                 isActive={url.pathname === links.link}
               />
             ))}
-
           <DropdownMenu>
             <DropdownMenuTrigger className="lg:hidden lg:px-6">
               <div className="flex items-center gap-2">
                 <Avatar className="bg-green h-8 w-8">
-                  <AvatarImage
-                    src={userData?.user_image ?? ""}
-                    alt="profile picture"
-                  />
+                  <AvatarImage src={userData?.user_image ?? ""} alt="profile picture" />
                   <AvatarFallback>{initials}</AvatarFallback>
                 </Avatar>
               </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              {(userData?.role === ROLES[0] ||
-                sessionStorage.getItem("temp-role")) &&
-                roles
-                  .filter((role) => role.value !== userData?.role)
-                  .map((role) => (
-                    <DropdownMenuItem
-                      key={role}
-                      onClick={() => onSwitchRole(role.value)}
-                    >
-                      {role.label}
-                    </DropdownMenuItem>
-                  ))}
+              {availableRoles.map((role) => (
+                <DropdownMenuItem key={role.value} onClick={() => onSwitchRole(role.value)}>
+                  {role.label}
+                </DropdownMenuItem>
+              ))}
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </ul>
-        <SidebarProfile />
+        <SidebarProfile availableRoles={availableRoles} onSwitchRole={onSwitchRole} />
       </div>
     </div>
   );
 };
 
+
 export default Sidebar;
 
-const SidebarProfile = () => {
-  const { logout, userData } = useUser(); // Destructure logout and userData
-  const navigate = useNavigate(); // Initialize navigate
+const SidebarProfile = ({availableRoles,onSwitchRole}) => {
+  const { userData, logout } = useUser();
+  const navigate = useNavigate();
+
 
   const handleLogout = async () => {
     try {
-      await logout(); // Call logout from UserContext
-      navigate("/", { replace: true }); // Redirect to the home page
+      await logout();
+      navigate("/", { replace: true });
     } catch (error) {
       console.error("Logout failed:", error.message);
     }
   };
 
-  const onSwitchRole = (role) => {
-    if (!userData) return;
-
-    // const tempRole = sessionStorage.getItem("temp-role");
-
-    if (role === ROLES[0]) {
-      sessionStorage.removeItem("temp-role");
-      window.dispatchEvent(new Event("storage"));
-      window.location.reload();
-      return;
-    }
-
-    sessionStorage.setItem("temp-role", role);
-    window.dispatchEvent(new Event("storage"));
-    window.location.reload();
-  };
-
-  const roles = [
-    {
-      label: "Switch to Parishioner",
-      value: "parishioner",
-    },
-    {
-      label: "Switch to Volunteer",
-      value: "volunteer",
-    },
-    {
-      label: "Switch to Admin",
-      value: "admin",
-    },
-  ];
-
   if (!userData) {
-    // Fallback while userData is loading
     return (
       <div className="ml-9 hidden h-10 max-w-56 items-center justify-between rounded-[20px] bg-white p-1 lg:flex">
         <div className="flex items-center gap-2">
@@ -186,40 +111,28 @@ const SidebarProfile = () => {
     );
   }
 
-  // Generate initials and full name
-  const initials = `${getInitial(userData?.first_name ?? "U")}${getInitial(
-    userData?.last_name ?? ""
-  )}`;
-  const fullName =
-    `${userData?.first_name ?? ""} ${userData?.last_name ?? ""}`.trim() ||
-    "Guest";
+  const initials = `${getInitial(userData?.first_name ?? "U")}${getInitial(userData?.last_name ?? "")}`;
+  const fullName = `${userData?.first_name ?? ""} ${userData?.last_name ?? ""}`.trim() || "Guest";
 
   return (
-    <div className="ml-9 hidden h-10 max-w-56 items-center justify-between rounded-[20px] bg-white p-1 lg:flex">
+    <div className="ml-9 hidden h-10 w-fit items-center justify-between rounded-[20px] bg-white p-1 lg:flex">
       <div className="flex items-center gap-2">
         <Avatar className="h-8 w-8">
           <AvatarFallback>{initials}</AvatarFallback>
         </Avatar>
-        <p className="text-[16px] font-medium capitalize">{fullName}</p>
+        <p className="text-[16px] text-nowrap font-medium capitalize">{fullName}</p>
       </div>
       <DropdownMenu>
-        <DropdownMenuTrigger className="flex h-7 w-11 items-center justify-center rounded-[18.5px] bg-accent px-2 text-white hover:cursor-pointer">
+        <DropdownMenuTrigger className="flex ml-2 h-7 w-11 items-center justify-center rounded-[18.5px] bg-accent px-2 text-white hover:cursor-pointer">
           <ChevronUp className="h-5 w-5 text-white" />
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          {(userData?.role === ROLES[0] ||
-            sessionStorage.getItem("temp-role")) &&
-            roles
-              .filter((role) => role.value !== userData?.role)
-              .map((role) => (
-                <DropdownMenuItem
-                  key={role}
-                  onClick={() => onSwitchRole(role.value)}
-                >
-                  {role.label}
-                </DropdownMenuItem>
-              ))}
-          <DropdownMenuSeparator />
+          {availableRoles.map((role) => (
+            <DropdownMenuItem key={role.value} onClick={() => onSwitchRole(role.value)}>
+              {role.label}
+            </DropdownMenuItem>
+          ))}
+          {userData?.role !== "parishioner" &&<DropdownMenuSeparator />}
           <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -257,6 +170,11 @@ SidebarLink.propTypes = {
   icon: PropTypes.string.isRequired,
   selectedIcon: PropTypes.string.isRequired,
   isActive: PropTypes.bool.isRequired,
+};
+
+SidebarProfile.propTypes= {
+  availableRoles: PropTypes.array,
+  onSwitchRole: PropTypes.func
 };
 
 export { SidebarLink, SidebarProfile };
