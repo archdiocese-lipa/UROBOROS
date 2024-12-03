@@ -36,7 +36,6 @@ const ManualAttendEvents = ({ eventId, eventName }) => {
   const userId = userData?.id;
 
   const { parentData, childData, isLoading, error } = useFamilyData(); // Fetch family data
-
   const form = useForm({
     resolver: zodResolver(manualAttendEventsSchema),
     defaultValues: {
@@ -58,6 +57,10 @@ const ManualAttendEvents = ({ eventId, eventName }) => {
         attendee_type: "parents",
         attended: false,
         main_applicant: true,
+        family_id: parentData[0].family_id,
+        first_name: userData.first_name,
+        last_name: userData.last_name,
+        contact_number: userData.contact_number,
       },
     ];
     // Guardian (parent) data, only map if there are parents selected
@@ -68,6 +71,10 @@ const ManualAttendEvents = ({ eventId, eventName }) => {
         attendee_type: "parents",
         attended: false,
         main_applicant: false,
+        family_id: parent.family_id,
+        first_name: parent.first_name,
+        last_name: parent.last_name,
+        contact_number: parent.contact_number,
       })) || [];
 
     const childrenData = data.children?.map((children) => ({
@@ -76,6 +83,9 @@ const ManualAttendEvents = ({ eventId, eventName }) => {
       attendee_type: "children",
       attended: false,
       main_applicant: false,
+      family_id: children.family_id,
+      first_name: children.first_name,
+      last_name: children.last_name,
     }));
 
     mainApplicantAttend(mainApplicant);
@@ -121,7 +131,7 @@ const ManualAttendEvents = ({ eventId, eventName }) => {
                                 Array.isArray(field.value) &&
                                 field.value.some(
                                   (item) => item.id === parent.id
-                                ) // Check if the array contains the object with the same id
+                                )
                               }
                               onCheckedChange={(checked) => {
                                 const updatedValue = checked
@@ -129,13 +139,16 @@ const ManualAttendEvents = ({ eventId, eventName }) => {
                                       ...(field.value || []),
                                       {
                                         id: parent.id,
+                                        first_name: parent.first_name,
+                                        last_name: parent.last_name,
+                                        contact_number: parent.contact_number,
+                                        family_id: parent.family_id,
                                       },
                                     ]
                                   : (field.value || []).filter(
                                       (item) => item.id !== parent.id
-                                    ); // Remove the object if unchecked
+                                    );
 
-                                // Update the field value
                                 field.onChange(updatedValue);
                               }}
                             />
@@ -182,6 +195,9 @@ const ManualAttendEvents = ({ eventId, eventName }) => {
                                         ...(field.value || []),
                                         {
                                           id: child.id,
+                                          first_name: child.first_name,
+                                          last_name: child.last_name,
+                                          family_id: child.family_id,
                                         },
                                       ]
                                     : (field.value || []).filter(

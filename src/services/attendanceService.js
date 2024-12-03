@@ -16,7 +16,7 @@ const insertEventAttendance = async (submittedData) => {
         timestamp: new Date(), // Automatically handled by the database
       },
     ])
-    .select(); // Return the inserted ticket's ticket_code
+    .select();
 
   if (ticketError) {
     console.error("Error inserting ticket record:", ticketError.message);
@@ -59,53 +59,25 @@ const insertEventAttendance = async (submittedData) => {
     last_name: parent.parentLastName,
     contact_number: parent.parentContactNumber,
     family_id: familyId[0].id,
+    main_applicant:
+      mainApplicant &&
+      parent.parentFirstName === mainApplicant.parentFirstName &&
+      parent.parentLastName === mainApplicant.parentLastName,
+    type: "parents",
+    registration_code: randomSixDigit,
   }));
 
   const childrenRecords = children.map((child) => ({
     first_name: child.childFirstName,
     last_name: child.childLastName,
     family_id: familyId[0].id,
-  }));
-
-  const { data: parentsData, error: parentsError } = await supabase
-    .from("parents")
-    .upsert(parentRecords)
-    .select();
-
-  if (parentsError) {
-    console.error("Error inserting parent records:", parentsError.message);
-    return { success: false, error: parentsError };
-  }
-
-  const { data: childrenData, error: childrenError } = await supabase
-    .from("children")
-    .upsert(childrenRecords)
-    .select();
-
-  if (childrenError) {
-    console.error("Error inserting child records:", childrenError.message);
-    return { success: false, error: childrenError };
-  }
-
-  // Add the type property to each item in the parentsData and childrenData arrays
-  const parentsWithType = parentsData.map((parent) => ({
-    ...parent,
-    type: "parents",
-    main_applicant:
-      mainApplicant &&
-      parent.first_name === mainApplicant.parentFirstName &&
-      parent.last_name === mainApplicant.parentLastName, // Check the main applicant in walk in registration
-  }));
-
-  const childrenWithType = childrenData.map((child) => ({
-    ...child,
     type: "children",
-    main_applicant: null,
+    main_applicant: false,
+    registration_code: randomSixDigit,
   }));
 
   // Combine the arrays into a single attendeesData array
-  const attendeesData = [...parentsWithType, ...childrenWithType];
-
+  const attendeesData = [...parentRecords, ...childrenRecords];
   const { data: attendanceData, error: attendanceError } = await supabase
     .from("attendance")
     .insert(
@@ -115,6 +87,11 @@ const insertEventAttendance = async (submittedData) => {
         attendee_type: attendee.type,
         main_applicant:
           attendee.type === "parents" ? attendee.main_applicant : null,
+        first_name: attendee.first_name,
+        last_name: attendee.last_name,
+        contact_number: attendee.contact_number,
+        family_id: attendee.family_id,
+        registration_code: attendee.registration_code,
       }))
     );
 
@@ -125,13 +102,49 @@ const insertEventAttendance = async (submittedData) => {
     );
     return { success: false, error: attendanceError };
   }
-
   return { success: true, attendanceData };
 };
 
+// const { data: parentsData, error: parentsError } = await supabase
+//   .from("parents")
+//   .upsert(parentRecords)
+//   .select();
+
+// if (parentsError) {
+//   console.error("Error inserting parent records:", parentsError.message);
+//   return { success: false, error: parentsError };
+// }
+
+// const { data: childrenData, error: childrenError } = await supabase
+//   .from("children")
+//   .upsert(childrenRecords)
+//   .select();
+
+// if (childrenError) {
+//   console.error("Error inserting child records:", childrenError.message);
+//   return { success: false, error: childrenError };
+// }
+
+// // Add the type property to each item in the parentsData and childrenData arrays
+// const parentsWithType = parentsData.map((parent) => ({
+//   ...parent,
+//   type: "parents",
+//   main_applicant:
+//     mainApplicant &&
+//     parent.first_name === mainApplicant.parentFirstName &&
+//     parent.last_name === mainApplicant.parentLastName,
+//   contact_number: mainApplicant.contact_number, // Check the main applicant in walk in registration
+// }));
+
+// const childrenWithType = childrenData.map((child) => ({
+//   ...child,
+//   type: "children",
+//   main_applicant: null,
+// }));
+
 const getEventAttendance = async (eventId) => {
   try {
-    // Fetch the attendance records
+    // Fetch attendance records for the given event
     const { data: attendanceData, error: attendanceError } = await supabase
       .from("attendance")
       .select("*")
@@ -142,93 +155,37 @@ const getEventAttendance = async (eventId) => {
       return { success: false, error: attendanceError.message };
     }
 
-    // Initialize arrays to hold the IDs for each type
-    const parentIds = [];
-    const childIds = [];
+    if (!attendanceData || attendanceData.length === 0) {
+      return { success: true, data: [] }; // Return empty if no attendance
+    }
 
-    // Populate the arrays based on the attendee_type
-    attendanceData.forEach((record) => {
-      if (record.attendee_type === "parents") {
-        parentIds.push(record.attendee_id);
-      } else if (record.attendee_type === "children") {
-        childIds.push(record.attendee_id);
-      }
-    });
-    // Fetch the related records based on the IDs
-    const [parentsData, childrenData, _usersData, _walkInUsersData] =
-      await Promise.all([
-        supabase
-          .from("parents")
-          .select("*")
-          .or(
-            `id.in.(${parentIds.join(",")}),parishioner_id.in.(${parentIds.join(",")})`
-          ),
-        supabase.from("children").select("*").in("id", childIds),
-      ]);
+    // Group attendance data by family_id
+    const groupedData = attendanceData.reduce((acc, record) => {
+      const { family_id, attendee_type } = record;
 
-    // Combine the results
-    const combinedData = attendanceData.map((record) => {
-      let attendee = null;
-      if (record.attendee_type === "parents") {
-        attendee = parentsData.data.find(
-          (parent) =>
-            parent.id === record.attendee_id ||
-            parent.parishioner_id === record.attendee_id
-        );
-      } else if (record.attendee_type === "children") {
-        attendee = childrenData.data.find(
-          (child) => child.id === record.attendee_id
-        );
+      // Find or create a family group
+      let familyGroup = acc.find((group) => group.family_id === family_id);
+      if (!familyGroup) {
+        familyGroup = {
+          family_id,
+          family_surname: record.last_name || "Unknown",
+          parents: [],
+          children: [],
+        };
+        acc.push(familyGroup);
       }
 
-      // Spread the attendee object properties and remove the attendee.id property
-      const { id: _unused_id, ...attendeeWithoutId } = attendee || {};
+      // Categorize attendees by type
+      if (attendee_type === "parents") {
+        familyGroup.parents.push(record);
+      } else if (attendee_type === "children") {
+        familyGroup.children.push(record);
+      }
 
-      return {
-        ...record,
-        ...attendeeWithoutId,
-      };
-    });
+      return acc;
+    }, []);
 
-    // Group the results by family_id and then by attendee_type
-    const groupedData = await combinedData.reduce(
-      async (accPromise, record) => {
-        const acc = await accPromise;
-        const { family_id, attendee_type } = record;
-
-        // Fetch the family surname based on the family_id
-        const { data: familySurname, error: familyError } = await supabase
-          .from("parents")
-          .select("last_name")
-          .eq("family_id", family_id);
-
-        if (familyError) {
-          console.error("Error fetching family surname:", familyError);
-          return acc;
-        }
-
-        let family = acc.find((f) => f.family_id === family_id);
-        if (!family) {
-          family = {
-            family_id,
-            family_surname: familySurname[0]?.last_name || "Unknown",
-            children: [],
-            parents: [],
-          };
-          acc.push(family);
-        }
-
-        if (attendee_type === "parents") {
-          family.parents.push(record);
-        } else if (attendee_type === "children") {
-          family.children.push(record);
-        }
-
-        return acc;
-      },
-      Promise.resolve([])
-    );
-    return groupedData;
+    return { success: true, data: groupedData };
   } catch (error) {
     console.error("Error fetching event attendance:", error);
     return { success: false, error: error.message };
@@ -266,15 +223,22 @@ export const insertMainApplicant = async (guardiansData) => {
 
     // Only upsert the new guardians if there are any
     if (newGuardiansData.length > 0) {
-      const { data, error } = await supabase.from("attendance").upsert(
-        newGuardiansData.map((guardian) => ({
-          attendee_id: guardian.attendee_id,
-          event_id: guardian.event_id,
-          attendee_type: guardian.attendee_type,
-          attended: guardian.attended,
-          main_applicant: guardian.main_applicant,
-        }))
-      );
+      const { data, error } = await supabase
+        .from("attendance")
+        .upsert(
+          newGuardiansData.map((guardian) => ({
+            event_id: guardian.event_id,
+            attendee_id: guardian.attendee_id,
+            attendee_type: guardian.attendee_type,
+            attended: guardian.attended,
+            main_applicant: guardian.main_applicant,
+            first_name: guardian.first_name,
+            last_name: guardian.last_name,
+            contact_number: guardian.contact_number,
+            family_id: guardian.family_id,
+            registration_code: guardian.registration_code,
+          }))
+        );
 
       if (error) {
         throw new Error(error.message);
@@ -330,6 +294,10 @@ export const insertGuardians = async (guardiansData) => {
         attendee_type: guardian.attendee_type,
         attended: guardian.attended,
         main_applicant: guardian.main_applicant,
+        first_name: guardian.first_name,
+        last_name: guardian.last_name,
+        contact_number: guardian.contact_number,
+        family_id: guardian.family_id,
       }))
     )
     .select();
@@ -377,6 +345,10 @@ export const insertChildren = async (childrenData) => {
         attendee_type: child.attendee_type,
         attended: child.attended,
         main_applicant: child.main_applicant,
+        first_name: child.first_name,
+        last_name: child.last_name,
+        family_id: child.family_id,
+        registration_code: child.registration_code,
       }))
     )
     .select();
