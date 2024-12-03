@@ -194,22 +194,16 @@ const ScheduleDetails = ({ queryKey }) => {
     );
 
   return (
-    <div className="flex h-full grow flex-col gap-8 overflow-y-hidden px-9 py-6">
-      <div className="flex justify-between">
+    <div className="flex h-full grow flex-col gap-2 overflow-y-hidden px-9 py-6">
+      <div className="flex flex-wrap justify-between">
         <div>
           <Title>{event?.event_name}</Title>
 
           <Description>{event.event_description}</Description>
-          <Label className="text-primary-text">Assign Volunteer:</Label>
-          {volunteers?.map((volunteer, i) => (
-            <p
-              key={volunteer?.volunteer_id}
-              className="text-primary-text"
-            >{`${i + 1}. ${volunteer.users.first_name.toFirstUpperCase()} ${volunteer.users.last_name.toFirstUpperCase()}`}</p>
-          ))}
         </div>
+        <div className="flex">
         {!disableSchedule && (
-          <div className="flex gap-1">
+          <div className="flex flex-wrap gap-1">
             <Button>
               <Icon icon={"mingcute:classify-add-2-fill"} />
               <p>Add Record</p>
@@ -258,7 +252,7 @@ const ScheduleDetails = ({ queryKey }) => {
             setDeleteDialogOpen(isOpen);
           }}
         >
-          <DialogTrigger className="w-fit" asChild>
+          <DialogTrigger className="ml-2 w-fit" asChild>
             <Button
               // onClick={() => deleteMutation.mutate()}
               className="rounded-xl px-3 py-3"
@@ -296,6 +290,16 @@ const ScheduleDetails = ({ queryKey }) => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        </div>
+      </div>
+      <div>
+        <Label className="text-primary-text">Assign Volunteer:</Label>
+        {volunteers?.map((volunteer, i) => (
+          <p
+            key={volunteer?.volunteer_id}
+            className="text-primary-text"
+          >{`${i + 1}. ${volunteer.users.first_name.toFirstUpperCase()} ${volunteer.users.last_name.toFirstUpperCase()}`}</p>
+        ))}
       </div>
 
       <div

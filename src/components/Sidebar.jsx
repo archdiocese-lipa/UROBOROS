@@ -71,7 +71,7 @@ const Sidebar = () => {
   ];
 
   return (
-    <div className="flex w-full lg:my-9 lg:w-2/12 lg:flex-col">
+    <div className="flex lg:my-9  lg:w-2/12 lg:flex-col">
       <Title className="mb-12 ml-9 hidden max-w-[201px] lg:block">
         Admin Management Centre
       </Title>
