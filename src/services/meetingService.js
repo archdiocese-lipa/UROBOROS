@@ -105,7 +105,6 @@ export const updateMeeting = async (meetingId, updatedData) => {
 
 // Function to fetch all meetings (optionally filter by date, creator, etc.)
 export const getMeetings = async ({
-  creatorId,
   startDate,
   endDate,
   page = 1,
@@ -116,13 +115,13 @@ export const getMeetings = async ({
   try {
     const filters = {};
 
-    // Filter by meeting date range (start and end date)
+    // Apply startDate and endDate filters
     if (startDate) {
-      filters.gte = { meeting_date: startDate };
+      filters.gte = startDate;
     }
 
     if (endDate) {
-      filters.lte = { meeting_date: endDate };
+      filters.lte = endDate;
     }
 
     // Filter by meeting name (optional query search)
@@ -130,15 +129,9 @@ export const getMeetings = async ({
       filters.ilike = { meeting_name: query };
     }
 
-    // Filter by creator's ID (if provided)
-    if (creatorId) {
-      filters.eq = { creator_id: creatorId };
-    }
-
+    // If the user is not an admin, fetch meetings they are assigned to
     let nonAdminMeetingIds = [];
-
-    // If the user is not an admin, fetch meetings assigned to the user
-    if (user?.role !== ROLES[0]) {
+    if (user && user.role !== ROLES[0]) {
       const { data: participantMeetings, error: participantError } =
         await supabase
           .from("meeting_participants")
@@ -153,11 +146,14 @@ export const getMeetings = async ({
         (meeting) => meeting.meeting_id
       );
 
-      // Update the filters to include only these meeting IDs
-      filters.in = { id: nonAdminMeetingIds };
+      if (nonAdminMeetingIds.length > 0) {
+        filters.id = nonAdminMeetingIds; // Apply only the meetings the user is a participant of
+      }
     }
 
-    // Fetch paginated data from the meetings table with the constructed filters
+    // If the user is an admin or has no specific meetings, apply all meetings
+
+    // Fetch data using pagination
     const data = await paginate({
       key: "meetings",
       page,

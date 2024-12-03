@@ -36,7 +36,11 @@ import { ROLES } from "@/constants/roles";
 
 import MeetingDetails from "@/components/Schedule/MeetingDetails";
 import useInterObserver from "@/hooks/useInterObserver";
+
+import EditEvent from "@/components/Schedule/EditEvent";
+
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+
 
 const Schedule = () => {
   const [filter, setFilter] = useState("events");
@@ -59,6 +63,7 @@ const Schedule = () => {
   const { data, isLoading, hasNextPage, fetchNextPage } = useInfiniteQuery({
     queryKey: ["schedules", filter, urlPrms.get("query")?.toString() || ""],
     queryFn: async ({ pageParam }) => {
+      if (!userData) return;
       let response;
       if (filter === "events") {
         response = await getEvents({
@@ -296,6 +301,56 @@ const Schedule = () => {
                               </DialogContent>
                             </Dialog>
                           </div>
+
+                          <Dialog
+                            open={editDialogOpenIndex === `${i}-${j}`}
+                            onOpenChange={(isOpen) =>
+                              setEditDialogOpenIndex(
+                                isOpen ? `${i}-${j}` : null
+                              )
+                            }
+                          >
+                            <DialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                className="absolute right-1 top-1 font-semibold text-accent hover:underline"
+                              >
+                                Edit
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Update Event</DialogTitle>
+                                <DialogDescription>
+                                  Update an selected event.
+                                </DialogDescription>
+                              </DialogHeader>
+                              <EditEvent
+                                eventId={event.id}
+                                id="update-event"
+                                eventData={{ ...event }}
+                                setDialogOpen={(isOpen) => {
+                                  setEditDialogOpenIndex(
+                                    isOpen ? `${i}-${j}` : null
+                                  );
+                                }}
+                              />
+                              {/* Dialog Footer */}
+                              <DialogFooter>
+                                <div className="flex justify-end gap-2">
+                                  <DialogClose asChild>
+                                    <Button variant="outline">Cancel</Button>
+                                  </DialogClose>
+
+                                  <Button form="update-event">Edit</Button>
+                                </div>
+                              </DialogFooter>
+                            </DialogContent>
+                          </Dialog>
+                        </div>
+                      ))
+                    : page?.items.map((meeting, j) => (
+                        <div key={`${i}-${j}`} className="relative">
 
                           <div
                             className={cn(

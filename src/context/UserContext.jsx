@@ -1,4 +1,5 @@
 import { createContext, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/services/supabaseClient"; // Ensure correct import for supabase
 import PropTypes from "prop-types";
 
@@ -8,6 +9,7 @@ export const UserProvider = ({ children }) => {
   const [userData, setUserData] = useState(null);
   const [regData, setRegData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const queryClient = useQueryClient(); // Access query client
 
   // Login function
   const login = async (credentials) => {
@@ -138,6 +140,7 @@ export const UserProvider = ({ children }) => {
   const logout = async () => {
     setLoading(true);
     try {
+      // Sign out the user
       await supabase.auth.signOut();
       setUserData(null);
       if (sessionStorage.getItem("temp-role")) {
@@ -147,6 +150,17 @@ export const UserProvider = ({ children }) => {
       console.error("Logout failed:", error.message);
       throw error;
     } finally {
+      // Invalidate queries related to schedules, events, and meetings
+      queryClient.invalidateQueries(["schedules"]);
+      queryClient.invalidateQueries(["events"]);
+      queryClient.invalidateQueries(["meetings"]);
+
+      // Optionally reset queries to clear stale data
+      queryClient.resetQueries(["schedules"]);
+      queryClient.resetQueries(["events"]);
+      queryClient.resetQueries(["meetings"]);
+      queryClient.clear(); // Clears all queries from the cache
+
       setLoading(false);
     }
   };

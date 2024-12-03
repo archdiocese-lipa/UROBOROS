@@ -36,21 +36,19 @@ import { Textarea } from "../ui/textarea";
 import AssignVolunteerComboBox from "./AssignVolunteerComboBox";
 
 import { useUser } from "@/context/useUser";
-import useCreateEvent from "@/hooks/useCreateEvent";
+
+import useUpdateEvent from "@/hooks/useUpdateEvent";
 import useQuickAccessEvents from "@/hooks/useQuickAccessEvents";
 import useUsersByRole from "@/hooks/useUsersByRole";
 import useGetAllMinistries from "@/hooks/useGetAllMinistries";
 
+// import { updateEvent } from "@/services/eventService";
 
-import { updateEvent } from "@/services/eventService";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-
-
-const CreateEvent = ({
-  id = "create-event",
-  eventData = null,
+const EditEvent = ({
+  id = "edit-event",
+  eventData,
   setDialogOpen,
-  queryKey,
+  eventId,
 }) => {
   const { userData } = useUser(); // Get userData from the context
 
@@ -60,32 +58,10 @@ const CreateEvent = ({
   const [isPopoverOpen, setPopoverOpen] = useState(false);
 
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const { mutate: createEvent, _isLoading } = useCreateEvent();
+
+  const { mutate: updateEvent, _isLoading } = useUpdateEvent();
   const { events } = useQuickAccessEvents();
   const { data: volunteers } = useUsersByRole("volunteer");
-  const editMutation = useMutation({
-    mutationFn: async ({ eventId, updatedData }) =>
-      await updateEvent({ eventId, updatedData }),
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Event edited!",
-      });
-      setDialogOpen(false);
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: `${error.message}`,
-      });
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({
-        queryKey,
-      });
-    },
-  });
 
   const eventForm = useForm({
     resolver: zodResolver(createEventSchema),
@@ -143,17 +119,15 @@ const CreateEvent = ({
 
   // Mark dito mo connect backend
   const onSubmit = (data) => {
-    console.log("data before submit", data);
     // Ensure userId is available
     if (!userId) {
       toast({
-        description: "User not logged in. Please log in to create an event.",
+        description: "User not logged in. Please log in to update the event.",
         variant: "error",
       });
-      return; // Prevent form submission if no userId
+      return;
     }
 
-    // // Validate and format date and time
     const formattedDate = data?.eventDate
       ? format(new Date(data.eventDate), "yyyy-MM-dd")
       : null;
@@ -161,32 +135,17 @@ const CreateEvent = ({
       ? format(new Date(data.eventTime), "HH:mm:ss")
       : null;
 
-    // Prepare event data with formatted date and time
     const eventPayload = {
       ...data,
-      eventDate: formattedDate, // Ensure event date is formatted correctly
-      eventTime: formattedTime, // Ensure event time is formatted correctly
-      userId, // Include userId in the data
+      eventDate: formattedDate,
+      eventTime: formattedTime,
+      userId,
+      eventId,
     };
 
-    // Call the create event function with the prepared data
-    if (!eventData) {
-      createEvent(eventPayload);
-      setDialogOpen(false); // Close the dialog if success
-      return;
-    } else {
-      console.log("payload", eventPayload);
-      editMutation.mutate({
-        eventId: eventData?.id,
-        updatedData: eventPayload,
-      });
-    }
-
-
+    updateEvent(eventPayload); // Call the updateEvent mutation
     setDialogOpen(false); // Close the dialog if success
-
   };
-
   return (
     <Form {...eventForm}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-2" id={id}>
@@ -293,7 +252,7 @@ const CreateEvent = ({
                         {/* Ensure ministries.data is an array before mapping */}
                         {Array.isArray(ministries?.data) &&
                         ministries.data.length > 0 ? (
-                          ministries.data.map((ministry) => (
+                          ministries?.data.map((ministry) => (
                             <SelectItem key={ministry.id} value={ministry.id}>
                               {ministry.ministry_name}
                             </SelectItem>
@@ -320,7 +279,7 @@ const CreateEvent = ({
               <FormLabel>Assign Volunteer</FormLabel>
               <FormControl>
                 <AssignVolunteerComboBox
-                  options={volunteers.map((volunteer) => ({
+                  options={volunteers?.map((volunteer) => ({
                     value: volunteer.id, // Use 'id' as the value
                     label: `${volunteer.first_name} ${volunteer.last_name}`, // Combine first name and last name
                   }))}
@@ -337,7 +296,7 @@ const CreateEvent = ({
         />
 
         {/* Event Date, Time */}
-        <div className="flex items-center gap-x-2">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <FormField
             control={control}
             name="eventDate"
@@ -413,11 +372,11 @@ const CreateEvent = ({
   );
 };
 
-export default CreateEvent;
+export default EditEvent;
 
-CreateEvent.propTypes = {
+EditEvent.propTypes = {
+  eventId: PropTypes.string.isRequired, // Ensuring eventId is a string
   id: PropTypes.string,
   eventData: PropTypes.object,
   setDialogOpen: PropTypes.func,
-  queryKey: PropTypes.array,
 };

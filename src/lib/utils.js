@@ -42,10 +42,10 @@ const paginate = async ({
         supabaseQuery = supabaseQuery.order(column, { ascending });
       });
     }
+
     // Apply the is_confirmed filter if provided
     if (filters.active && filters.active !== "all") {
-      // Filter by `is_confirmed` column based on activeFilter value
-      const isConfirmed = filters.active === "active"; // Map activeFilter to is_confirmed value
+      const isConfirmed = filters.active === "active";
       supabaseQuery = supabaseQuery.eq("is_confirmed", isConfirmed);
     }
 
@@ -71,13 +71,19 @@ const paginate = async ({
 
     // Apply eq filters dynamically for both the items and the count
     if (filters.eq) {
-      // Assuming filters.eq is now an object like { column: 'entity_id', value: dynamicId }
       const { column, value } = filters.eq;
       supabaseQuery = supabaseQuery.eq(column, value);
     }
 
+    // Apply 'id' filters (this is where your fix is integrated)
+    if (filters.id) {
+      supabaseQuery = supabaseQuery.in("id", filters.id);
+    }
+
     // Fetch the total count of items, applying eq filters here as well
-    let countQuery = supabase.from(key).select('*', { count: 'exact', head: true });
+    let countQuery = supabase
+      .from(key)
+      .select("*", { count: "exact", head: true });
 
     // Apply eq filters to the count query
     if (filters.eq) {
@@ -113,7 +119,6 @@ const paginate = async ({
     throw error;
   }
 };
-
 /**
  * Gets first initial of a name.
  * @returns {string} The initial of a name.
