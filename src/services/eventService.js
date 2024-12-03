@@ -66,7 +66,6 @@ export const createEvent = async (eventData) => {
 // Function to update an existing event
 
 export const updateEvent = async (eventData) => {
-
   try {
     const {
       eventId, // Event ID to be updated
@@ -100,7 +99,7 @@ export const updateEvent = async (eventData) => {
     if (eventError) {
       throw new Error(eventError.message); // Handle any errors
     }
-    console.log("edited successfuly")
+    console.log("edited successfuly");
 
     // Step 2: Remove all existing volunteer assignments for the event
     const { error: removeError } = await supabase
@@ -162,13 +161,18 @@ export const getEvents = async ({
     if (user && user.role !== ROLES[0]) {
       // assuming ROLES[0] is admin
 
-      const { data: volunteerEvents, error: volunteerError } = await supabase
+      const { data: volunteerEvents } = await supabase
         .from("event_volunteers")
         .select("*")
         .eq("volunteer_id", user.id);
 
-      if (volunteerError) {
-        throw new Error(volunteerError.message);
+      if (nonAdminEventIds.length > 0) {
+        filters.id = nonAdminEventIds; // Apply only the volunteer's events
+      } else {
+        // If no volunteer events are found, you can either:
+        // 1. Leave the filters.id as is, or
+        // 2. Set filters.id to an empty array or some default value
+        filters.id = []; // Example of resetting the filter
       }
 
       nonAdminEventIds = volunteerEvents.map((event) => event.event_id);
