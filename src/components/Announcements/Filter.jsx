@@ -36,11 +36,11 @@ const Filter = ({
         onClick={() => {
           setSelectedMinistry(ministry.id), setVisibility("private");
         }}
-        className="relative px-[18px] py-3"
+        className="relative h-full px-[18px] py-3"
       >
         <div className="flex gap-3 justify-between lg:flex-wrap">
           <h3
-            className={cn("font-bold text-start text-accent", {
+            className={cn("font-bold text-start text-nowrap lg:text-wrap text-accent", {
               "text-white": ministry.id === selectedMinistry,
             })}
           >

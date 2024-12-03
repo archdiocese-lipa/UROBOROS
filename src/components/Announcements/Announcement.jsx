@@ -320,7 +320,6 @@ const Announcement = ({
                 <DialogTrigger className="w-full">
                   <Button
                     variant="ghost"
-                    // onClick={() => deleteClassMutation.mutate(classdata.id)}
                     className="w-full rounded-none text-start hover:cursor-pointer"
                   >
                     Delete
@@ -426,7 +425,7 @@ Announcement.propTypes = {
     file_url: PropTypes.string,
     file_name: PropTypes.string.isRequired,
     file_type: PropTypes.string,
-    ministry_id: PropTypes.string.isRequired,
+    ministry_id: PropTypes.string,
     user_id: PropTypes.string.isRequired,
     users: PropTypes.shape({
       first_name: PropTypes.string.isRequired,
@@ -435,10 +434,10 @@ Announcement.propTypes = {
   }).isRequired,
   ministries: PropTypes.arrayOf(
     PropTypes.shape({
-      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-      ministry_name: PropTypes.string.isRequired,
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      ministry_name: PropTypes.string,
     })
-  ).isRequired,
+  ),
   editAnnouncementMutation: PropTypes.shape({
     mutate: PropTypes.func.isRequired,
     isPending: PropTypes.bool.isRequired,
