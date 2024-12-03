@@ -64,7 +64,7 @@ const MeetingDetails = () => {
   };
 
   return (
-    <div className="no-scrollbar flex grow flex-col gap-8 overflow-y-auto rounded-2xl px-9 py-6 outline outline-2 outline-[#e7dad3]">
+    <div className=" no-scrollbar h-full lg:flex grow flex-col gap-8 overflow-y-auto px-9 py-6">
       <div className="flex justify-between">
         <div>
           <Title>{meeting?.meeting_name}</Title>

@@ -12,7 +12,6 @@ export const UserProvider = ({ children }) => {
   const queryClient = useQueryClient(); // Access query client
 
   // Login function
-  // Login function
   const login = async (credentials) => {
     setLoading(true);
     try {

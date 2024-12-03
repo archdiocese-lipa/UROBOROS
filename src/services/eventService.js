@@ -64,7 +64,9 @@ export const createEvent = async (eventData) => {
 };
 
 // Function to update an existing event
+
 export const updateEvent = async (eventData) => {
+
   try {
     const {
       eventId, // Event ID to be updated
@@ -98,6 +100,7 @@ export const updateEvent = async (eventData) => {
     if (eventError) {
       throw new Error(eventError.message); // Handle any errors
     }
+    console.log("edited successfuly")
 
     // Step 2: Remove all existing volunteer assignments for the event
     const { error: removeError } = await supabase

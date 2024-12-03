@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import QRCode from "qrcode";
 import { Icon } from "@iconify/react";
@@ -18,6 +18,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
@@ -37,7 +38,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 
-import { getEventById, fetchEventVolunteers } from "@/services/eventService";
+import {
+  getEventById,
+  fetchEventVolunteers,
+  deleteEvent,
+} from "@/services/eventService";
 import {
   getEventAttendance,
   updateAttendeeStatus,
@@ -47,18 +52,23 @@ import {
 import { useUser } from "@/context/useUser";
 import { cn } from "@/lib/utils";
 import { Label } from "../ui/label";
+import { useToast } from "@/hooks/use-toast";
+import PropTypes from "prop-types";
 
 // import html2canvas from "html2canvas";
 // import jsPDF from "jspdf";
 // import { ROLES } from "@/constants/roles";
 
-const ScheduleDetails = () => {
+const ScheduleDetails = ({ queryKey }) => {
   const [qrCode, setQRCode] = useState(null);
   const [disableSchedule, setDisableSchedule] = useState(false);
   const [urlPrms] = useSearchParams();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState();
   const eventId = urlPrms.get("event") || null;
   const printRef = useRef(null);
   const userData = useUser();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const { data: event, isLoading } = useQuery({
     queryKey: ["event", eventId],
@@ -68,6 +78,28 @@ const ScheduleDetails = () => {
       return response;
     },
     enabled: !!eventId,
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async () => await deleteEvent(eventId),
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Event deleted!",
+      });
+      setDeleteDialogOpen(false);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `${error.message}`,
+      });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey,
+      });
+    },
   });
 
   const { data: volunteers, isLoading: _volunteersLoading } = useQuery({
@@ -156,27 +188,22 @@ const ScheduleDetails = () => {
 
   if (!eventId)
     return (
-      <div className="grid grow place-items-center rounded-2xl outline outline-2 outline-[#e7dad3]">
+      <div className="grid grow place-items-center">
         <Description>View Attendance</Description>
       </div>
     );
 
   return (
-    <div className="flex grow flex-col gap-8 overflow-y-hidden h-[40rem] rounded-2xl px-9 py-6 outline outline-2 outline-[#e7dad3]">
-      <div className="flex justify-between">
+    <div className="flex h-full grow flex-col gap-2 overflow-y-hidden px-9 py-6">
+      <div className="flex flex-wrap justify-between">
         <div>
           <Title>{event?.event_name}</Title>
+
           <Description>{event.event_description}</Description>
-          <Label className="text-primary-text">Assign Volunteer:</Label>
-          {volunteers?.map((volunteer, i) => (
-            <p
-              key={volunteer?.volunteer_id}
-              className="text-primary-text"
-            >{`${i + 1}. ${volunteer.users.first_name.toFirstUpperCase()} ${volunteer.users.last_name.toFirstUpperCase()}`}</p>
-          ))}
         </div>
+        <div className="flex">
         {!disableSchedule && (
-          <div className="flex gap-1">
+          <div className="flex flex-wrap gap-1">
             <Button>
               <Icon icon={"mingcute:classify-add-2-fill"} />
               <p>Add Record</p>
@@ -212,9 +239,67 @@ const ScheduleDetails = () => {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+              <Dialog>
+                <DialogTrigger></DialogTrigger>
+              </Dialog>
             </div>
           </div>
         )}
+
+        <Dialog
+          open={deleteDialogOpen}
+          onOpenChange={(isOpen) => {
+            setDeleteDialogOpen(isOpen);
+          }}
+        >
+          <DialogTrigger className="ml-2 w-fit" asChild>
+            <Button
+              // onClick={() => deleteMutation.mutate()}
+              className="rounded-xl px-3 py-3"
+            >
+              <Icon icon={"mingcute:delete-3-line"} />
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:rounded-3xl">
+            <DialogHeader>
+              <DialogTitle className="text-2xl text-accent">
+                Delete Event?
+              </DialogTitle>
+            </DialogHeader>
+            <DialogDescription className="text-accent opacity-80">
+              Are you sure you want to delete this event?
+            </DialogDescription>
+            <DialogFooter className="mx-2 flex gap-2">
+              <Button
+                onClick={() => setDeleteDialogOpen(false)}
+                className="rounded-xl text-accent hover:text-accent"
+                variant="outline"
+              >
+                Cancel
+              </Button>
+              <Button
+                className="rounded-xl"
+                variant={"destructive"}
+                onClick={() => {
+                  deleteMutation.mutate();
+                }}
+                disabled={deleteMutation.isPending}
+              >
+                {deleteMutation.isPending ? "Deleting..." : "Delete"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        </div>
+      </div>
+      <div>
+        <Label className="text-primary-text">Assign Volunteer:</Label>
+        {volunteers?.map((volunteer, i) => (
+          <p
+            key={volunteer?.volunteer_id}
+            className="text-primary-text"
+          >{`${i + 1}. ${volunteer.users.first_name.toFirstUpperCase()} ${volunteer.users.last_name.toFirstUpperCase()}`}</p>
+        ))}
       </div>
 
       <div
@@ -334,6 +419,9 @@ const ScheduleDetails = () => {
       </div>
     </div>
   );
+};
+ScheduleDetails.propTypes = {
+  queryKey: PropTypes.array,
 };
 
 export default ScheduleDetails;

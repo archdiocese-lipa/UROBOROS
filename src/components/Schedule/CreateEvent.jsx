@@ -41,10 +41,16 @@ import useQuickAccessEvents from "@/hooks/useQuickAccessEvents";
 import useUsersByRole from "@/hooks/useUsersByRole";
 import useGetAllMinistries from "@/hooks/useGetAllMinistries";
 
+
+import { updateEvent } from "@/services/eventService";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
+
 const CreateEvent = ({
   id = "create-event",
   eventData = null,
   setDialogOpen,
+  queryKey,
 }) => {
   const { userData } = useUser(); // Get userData from the context
 
@@ -54,10 +60,32 @@ const CreateEvent = ({
   const [isPopoverOpen, setPopoverOpen] = useState(false);
 
   const { toast } = useToast();
-
+  const queryClient = useQueryClient();
   const { mutate: createEvent, _isLoading } = useCreateEvent();
   const { events } = useQuickAccessEvents();
   const { data: volunteers } = useUsersByRole("volunteer");
+  const editMutation = useMutation({
+    mutationFn: async ({ eventId, updatedData }) =>
+      await updateEvent({ eventId, updatedData }),
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Event edited!",
+      });
+      setDialogOpen(false);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `${error.message}`,
+      });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey,
+      });
+    },
+  });
 
   const eventForm = useForm({
     resolver: zodResolver(createEventSchema),
@@ -115,6 +143,7 @@ const CreateEvent = ({
 
   // Mark dito mo connect backend
   const onSubmit = (data) => {
+    console.log("data before submit", data);
     // Ensure userId is available
     if (!userId) {
       toast({
@@ -143,10 +172,19 @@ const CreateEvent = ({
     // Call the create event function with the prepared data
     if (!eventData) {
       createEvent(eventPayload);
+      setDialogOpen(false); // Close the dialog if success
       return;
+    } else {
+      console.log("payload", eventPayload);
+      editMutation.mutate({
+        eventId: eventData?.id,
+        updatedData: eventPayload,
+      });
     }
 
+
     setDialogOpen(false); // Close the dialog if success
+
   };
 
   return (
@@ -381,4 +419,5 @@ CreateEvent.propTypes = {
   id: PropTypes.string,
   eventData: PropTypes.object,
   setDialogOpen: PropTypes.func,
+  queryKey: PropTypes.array,
 };

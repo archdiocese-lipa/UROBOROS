@@ -1,8 +1,3 @@
-import SaintLaurenceImg from "/SaintLaurence.webp";
-import BigCurlyRectangle from "@/assets/svg/BigCurlyRectangle.svg";
-import StarIcon from "@/assets/svg/Star.svg";
-import UpperCurly from "@/assets/svg/UpperCurly.svg";
-import CurlyRectangle from "@/assets/svg/CurlyRectangle.svg";
 import ParishionerRegister from "@/components/Home/Profile-Registration/ParishionerRegister";
 import Login from "@/components/Login";
 import WalkInRegistration from "@/components/Home/WalkInRegistration";
@@ -10,55 +5,26 @@ import EditRegistration from "@/components/Home/EditRegistration";
 
 const Home = () => {
   return (
-    <div className="relative flex h-screen items-center justify-center overflow-hidden bg-primary">
-      <div className="absolute top-20 z-50">
-        <div className="order-2 mx-auto max-w-xl justify-center rounded-2xl bg-white/60 sm:flex sm:space-x-3 md:order-1 md:col-span-2">
-          <div className="grid grid-cols-2 gap-2 p-2 sm:grid-cols-4">
-            <Login />
-            <ParishionerRegister />
-            <WalkInRegistration />
-            <EditRegistration />
+    <>
+      <div className="relative h-[calc(100dvh_-_10rem)] sm:h-[calc(100dvh_-_1.8rem)] bg-[#FFDECE] bg-[url('@/assets/svg/backdrop.svg')] bg-no-repeat lg:bg-cover md:bg-bottom bg-right-bottom flex items-center justify-center overflow-hidden">
+        <div className="absolute rtop-[calc(10rem_+_40dvw)] top-10 z-50">
+          <div className="order-2 mx-auto max-w-xl justify-center rounded-[1.8rem] backdrop-blur-sm sm:rounded-full bg-white/60 sm:flex sm:space-x-3 md:order-1 md:col-span-2">
+            <div className="grid grid-cols-2 gap-2 p-2 sm:grid-cols-4">
+              <Login />
+              <ParishionerRegister />
+              <WalkInRegistration />
+              <EditRegistration />
+            </div>
           </div>
         </div>
+        <p className="absolute top-[12rem] text-[9.4dvw] leading-[10dvw] max-w-[80dvw] sm:max-w-xl sm:text-[4.4rem] sm:leading-[5.4rem] sm:top-[20dvh] lg:max-w-full lg:top-auto lg:ml-[24dvw] lg:bottom-[50dvh] lg:text-[8dvh] lg:leading-[9dvh] font-black text-accent whitespace-pre w-screen">{"Growing in Faith\nTogether"}</p>
+        <p className="absolute top-[calc(12rem_+_24dvw)] text-[5.8dvw] max-w-[80dvw] sm:max-w-xl sm:text-[2.6rem] sm:top-[calc(20dvh_+_12rem)] lg:max-w-full lg:top-auto lg:ml-[24.2dvw] lg:bottom-[calc(50dvh_-_14dvh)] lg:text-[4.6dvh] font-medium text-accent whitespace-pre w-screen">{"Engaging Children in the Joy \nof Gospel"}</p>
       </div>
-      <div className="xl:left-30 z-10 flex items-center md:absolute md:bottom-5 lg:left-10">
-        <img
-          src={SaintLaurenceImg}
-          alt="Saint Laurence"
-          className="h-auto w-40 object-contain md:w-72 lg:w-96"
-          loading="lazy"
-        />
-        <div className="xs:mt-20 max-w-xl space-y-1 md:mt-36 md:space-y-5">
-          <h2 className="text-3xl font-black text-accent sm:text-4xl md:text-5xl lg:text-6xl">
-            Growing in Faith Together
-          </h2>
-          <p className="text-xl font-medium text-accent sm:text-2xl md:text-3xl lg:text-5xl">
-            Engaging Children in the Joy of Gospel
-          </p>
-        </div>
+      <div className="relative h-[10rem] sm:h-[1.8rem] bg-[#663F30] w-full flex items-end pb-2 pl-4">
+        <p className="text-[0.8rem] text-[#FBCCC0]/40 font-regular">Developed by <a href="http://a2kgroup.org" className="underline">A2K Group Corporation</a></p>
       </div>
-      <div className="absolute -top-10 right-5 md:-top-16 md:right-8">
-        <img
-          src={BigCurlyRectangle}
-          alt="Curly Icon"
-          className="w-36 md:w-72"
-        />
-      </div>
-      <div className="absolute bottom-0 right-0">
-        <img src={StarIcon} alt="Star Icon" className="w-36 lg:w-72" />
-      </div>
-      <div className="absolute -left-16 -top-5 md:left-0 lg:-top-16">
-        <img src={UpperCurly} alt="Curly Rectangle" className="w-36 lg:w-72" />
-      </div>
-      <div className="absolute -left-7 bottom-48 md:bottom-16 lg:-bottom-64 lg:-left-28 xl:-bottom-52 xl:-left-20">
-        <img
-          src={CurlyRectangle}
-          alt="Curly Rectangle"
-          className="w-44 md:w-72 lg:w-auto"
-        />
-      </div>
-    </div>
-  );
+    </>
+  ); 
 };
 
 export default Home;
