@@ -148,6 +148,11 @@ export const getMeetings = async ({
 
       if (nonAdminMeetingIds.length > 0) {
         filters.id = nonAdminMeetingIds; // Apply only the meetings the user is a participant of
+      } else {
+        // If no meetings are found, you can either:
+        // 1. Leave the filters.id as is, or
+        // 2. Set filters.id to an empty array or some default value
+        filters.id = []; // Example of resetting the filter
       }
     }
 
