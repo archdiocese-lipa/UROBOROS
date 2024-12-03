@@ -119,7 +119,6 @@ const ScheduleDetails = ({ queryKey }) => {
     },
     enabled: !!eventId,
   });
-
   const { data: attendanceCount } = useQuery({
     queryKey: ["attendance-count", eventId],
     queryFn: async () => {
@@ -199,7 +198,7 @@ const ScheduleDetails = ({ queryKey }) => {
         <div>
           <Title>{event?.event_name}</Title>
 
-          <Description>{event.event_description}</Description>
+          <Description>{event?.event_description}</Description>
         </div>
         <div className="flex">
         {!disableSchedule && (
@@ -313,7 +312,7 @@ const ScheduleDetails = ({ queryKey }) => {
             Total Pending: {attendanceCount?.total - attendanceCount?.attended}
           </p>
         </div>
-        {attendance?.map((family, i) => {
+        {attendance.data?.map((family, i) => {
           const mainApplicant = family?.parents.filter(
             (parent) => parent?.main_applicant === true
           )[0];
