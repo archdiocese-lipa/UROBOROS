@@ -15,7 +15,7 @@ import {
 import { Check, ChevronsUpDown } from "lucide-react";
 import PropTypes from "prop-types";
 
-const AssignVolunteerComboBox = ({ options=[], value, onChange, placeholder,disabled }) => {
+const AssignVolunteerComboBox = ({ options, value, onChange, placeholder,disabled }) => {
   const [open, setOpen] = useState(false);
 
   // Helper function to toggle selection
@@ -35,7 +35,7 @@ const AssignVolunteerComboBox = ({ options=[], value, onChange, placeholder,disa
           role="combobox"
           aria-expanded={open}
           disabled={disabled}
-          className="w-full justify-between bg-primary hover:bg-primary"
+          className="w-full max-w-full text-wrap text-start overflow-hidden justify-between bg-primary hover:bg-primary"
         >
           {value.length > 0
             ? options

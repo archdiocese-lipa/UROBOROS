@@ -2,15 +2,18 @@ import * as React from "react";
 import * as SheetPrimitive from "@radix-ui/react-dialog";
 import { cva } from "class-variance-authority";
 import { X } from "lucide-react";
+import PropTypes from "prop-types";  // Import PropTypes
+
 import { cn } from "@/lib/utils";
-import PropTypes from "prop-types"; // Import PropTypes
 
 const Sheet = SheetPrimitive.Root;
+
 const SheetTrigger = SheetPrimitive.Trigger;
+
 const SheetClose = SheetPrimitive.Close;
+
 const SheetPortal = SheetPrimitive.Portal;
 
-// SheetOverlay component with PropTypes
 const SheetOverlay = React.forwardRef(({ className, ...props }, ref) => (
   <SheetPrimitive.Overlay
     className={cn(
@@ -24,10 +27,9 @@ const SheetOverlay = React.forwardRef(({ className, ...props }, ref) => (
 SheetOverlay.displayName = SheetPrimitive.Overlay.displayName;
 
 SheetOverlay.propTypes = {
-  className: PropTypes.string,
+  className: PropTypes.string,  // className is optional string
 };
 
-// SheetContent component with PropTypes
 const sheetVariants = cva(
   "fixed z-50 gap-4 bg-white p-6 shadow-lg transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-500 dark:bg-neutral-950",
   {
@@ -53,8 +55,7 @@ const SheetContent = React.forwardRef(({ side = "right", className, children, ..
     <SheetPrimitive.Content ref={ref} className={cn(sheetVariants({ side }), className)} {...props}>
       {children}
       <SheetPrimitive.Close
-        className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-white transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-neutral-950 focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-neutral-100 dark:ring-offset-neutral-950 dark:focus:ring-neutral-300 dark:data-[state=open]:bg-neutral-800"
-      >
+        className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-white transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-neutral-950 focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-neutral-100 dark:ring-offset-neutral-950 dark:focus:ring-neutral-300 dark:data-[state=open]:bg-neutral-800">
         <X className="h-4 w-4" />
         <span className="sr-only">Close</span>
       </SheetPrimitive.Close>
@@ -64,34 +65,35 @@ const SheetContent = React.forwardRef(({ side = "right", className, children, ..
 SheetContent.displayName = SheetPrimitive.Content.displayName;
 
 SheetContent.propTypes = {
-  side: PropTypes.oneOf(['top', 'bottom', 'left', 'right']),
-  className: PropTypes.string,
-  children: PropTypes.node,
+  side: PropTypes.oneOf(["top", "bottom", "left", "right"]),  // side can be one of the four values
+  className: PropTypes.string,  // className is optional string
+  children: PropTypes.node,  // children can be any renderable node
 };
 
-// SheetHeader component with PropTypes
 const SheetHeader = ({ className, ...props }) => (
-  <div className={cn("flex flex-col space-y-2 text-center sm:text-left", className)} {...props} />
+  <div
+    className={cn("flex flex-col space-y-2 text-center sm:text-left", className)}
+    {...props}
+  />
 );
 SheetHeader.displayName = "SheetHeader";
 
 SheetHeader.propTypes = {
-  className: PropTypes.string,
-  children: PropTypes.node,
+  className: PropTypes.string,  // className is optional string
 };
 
-// SheetFooter component with PropTypes
 const SheetFooter = ({ className, ...props }) => (
-  <div className={cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", className)} {...props} />
+  <div
+    className={cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", className)}
+    {...props}
+  />
 );
 SheetFooter.displayName = "SheetFooter";
 
 SheetFooter.propTypes = {
-  className: PropTypes.string,
-  children: PropTypes.node,
+  className: PropTypes.string,  // className is optional string
 };
 
-// SheetTitle component with PropTypes
 const SheetTitle = React.forwardRef(({ className, ...props }, ref) => (
   <SheetPrimitive.Title
     ref={ref}
@@ -102,11 +104,9 @@ const SheetTitle = React.forwardRef(({ className, ...props }, ref) => (
 SheetTitle.displayName = SheetPrimitive.Title.displayName;
 
 SheetTitle.propTypes = {
-  className: PropTypes.string,
-  children: PropTypes.node,
+  className: PropTypes.string,  // className is optional string
 };
 
-// SheetDescription component with PropTypes
 const SheetDescription = React.forwardRef(({ className, ...props }, ref) => (
   <SheetPrimitive.Description
     ref={ref}
@@ -117,8 +117,7 @@ const SheetDescription = React.forwardRef(({ className, ...props }, ref) => (
 SheetDescription.displayName = SheetPrimitive.Description.displayName;
 
 SheetDescription.propTypes = {
-  className: PropTypes.string,
-  children: PropTypes.node,
+  className: PropTypes.string,  // className is optional string
 };
 
 export {

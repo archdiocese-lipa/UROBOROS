@@ -100,12 +100,10 @@ const Announcements = () => {
 
   if (!userData) return <div>Loading...</div>;
 
-  console.log("selected ministry",selectedMinistry)
-
   return (
     <div className="flex h-full w-full flex-col">
       {/* <div className="flex w-3/4 justify-between"> */}
-      <div className="mb-6 flex w-3/4 items-end justify-between">
+      <div className=" mb-2 lg:mb-6 flex w-3/4 items-end justify-between">
         <div className="">
           <Title className="mb-0 lg:mb-3">Announcements</Title>
         </div>
@@ -271,12 +269,11 @@ const Announcements = () => {
         </Dialog>}
       </div>
 
-      {/* 
-      </div> */}
+
 
       <div className="no-scrollbar flex h-full w-full flex-col-reverse gap-4 overflow-y-scroll lg:flex-row">
         {/* Announcements List */}
-        <div className="no-scrollbar w-full flex-1 overflow-y-scroll rounded-2xl border border-primary-outline bg-primary px-9 py-6">
+        <div className="no-scrollbar w-full flex-1 overflow-y-scroll rounded-2xl border border-primary-outline bg-primary px-4 py-3 md:px-9 md:py-6">
           {isLoading && <p>Loading...</p>}
 
           {data?.pages?.flatMap((page) => page.items).length === 0 ? (
