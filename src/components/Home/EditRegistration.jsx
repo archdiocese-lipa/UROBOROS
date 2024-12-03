@@ -39,26 +39,9 @@ import { useToast } from "@/hooks/use-toast";
 import { editRegistrationSchema } from "@/zodSchema/EditRegistrationSchema";
 
 import { fetchAttendeesByTicketCode } from "@/services/attendanceService";
+import { useGetWalkInEvents } from "@/hooks/useGetWalkInEvents";
 import { handleWalkInData } from "@/services/walkInService";
 import { EditSchema } from "@/zodSchema/EditSchema";
-// Sample events and registered users for demonstration
-const events = [
-  {
-    id: "event1",
-    name: "Children's Liturgy",
-    dateTime: "2024-11-20T04:39:00Z",
-  },
-  {
-    id: "event2",
-    name: "Youth Choir Practice",
-    dateTime: "2024-12-21T14:00:00Z",
-  },
-  {
-    id: "event3",
-    name: "Evening Mass",
-    dateTime: "2024-12-20T18:00:00Z",
-  },
-];
 
 // Attendance Coming from the database
 
@@ -69,18 +52,6 @@ const EditRegistration = () => {
   const [removedChildren, setRemovedChildren] = useState([]);
 
   const { toast } = useToast();
-
-  const handleRemoveParent = (index) => {
-    const removedParent = parentFields[index]; // Get the parent data
-    setRemovedParents((prev) => [...prev, removedParent]); // Add to removedParents list
-    removeParent(index); // Call the remove function from useFieldArray
-  };
-
-  const handleRemoveChild = (index) => {
-    const removedChild = childFields[index]; // Get the child data
-    setRemovedChildren((prev) => [...prev, removedChild]); // Add to removedChildren list
-    removeChild(index); // Call the remove function from useFieldArray
-  };
 
   //Registration Code Form
   const registrationForm = useForm({
@@ -95,7 +66,6 @@ const EditRegistration = () => {
     defaultValues: {
       event: "",
       eventId: "",
-      ticketCode: "", // Ensure ticketCode is part of default values
       parents: [
         {
           parentFirstName: "",
@@ -111,7 +81,6 @@ const EditRegistration = () => {
 
   const handleRegistrationCodeSubmit = async (data) => {
     try {
-      // Trim and pass the ticketCode from the form data
       const result = await fetchAttendeesByTicketCode(
         data.registrationCode.trim()
       );
@@ -119,37 +88,40 @@ const EditRegistration = () => {
       if (result.success && result.data) {
         const user = result.data;
 
-        setIsCodeValid(true);
-        registrationForm.reset({ registrationCode: "" }); // Reset the form's registrationCode field
+        // Set event details
+        attendeeInformation.setValue("event", user.event.id);
 
-        // Ensure the IDs are correctly passed
-        attendeeInformation.setValue("eventId", user.eventId);
-        attendeeInformation.setValue("event", user.event);
-
-        // Pass the ticket code into the form data
+        // Set ticket code
         attendeeInformation.setValue("ticketCode", user.registrationCode);
 
-        // Set parent and child values with IDs and the rest of the information
+        // Set parent details
         attendeeInformation.setValue(
           "parents",
           user.parents.map((parent) => ({
-            ...parent,
-            id: parent.id || "default_parent_id", // Ensure parent has an ID if missing
+            id: parent.id || "default_parent_id",
+            parentFirstName: parent.firstName,
+            parentLastName: parent.lastName,
+            parentContactNumber: parent.contactNumber,
+            isMainApplicant: parent.isMainApplicant || false,
           }))
         );
 
+        // Set child details
         attendeeInformation.setValue(
           "children",
           user.children.map((child) => ({
-            id: child.id || "default_child_id", // Ensure child has an ID if missing
-            childFirstName: child.childFirstName,
-            childLastName: child.childLastName,
+            id: child.id || "default_child_id",
+            childFirstName: child.firstName,
+            childLastName: child.lastName,
           }))
         );
+
+        setIsCodeValid(true); // Mark code as valid
+        registrationForm.reset({ registrationCode: "" }); // Reset code input
       } else {
         toast({
           title: "Registration Code Error",
-          description: result.message || "An error occurred. Please try again.",
+          description: result.message || "Invalid registration code.",
           variant: "destructive",
         });
       }
@@ -162,6 +134,18 @@ const EditRegistration = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const handleRemoveParent = (index) => {
+    const removedParent = parentFields[index]; // Get the parent data
+    setRemovedParents((prev) => [...prev, removedParent]); // Add to removedParents list
+    removeParent(index); // Call the remove function from useFieldArray
+  };
+
+  const handleRemoveChild = (index) => {
+    const removedChild = childFields[index]; // Get the child data
+    setRemovedChildren((prev) => [...prev, removedChild]); // Add to removedChildren list
+    removeChild(index); // Call the remove function from useFieldArray
   };
 
   // Function to submit editted user information
@@ -282,7 +266,7 @@ const EditRegistration = () => {
     });
   };
 
-  //Format the date
+  // Format the date
   const formatDateTime = (dateTime) => {
     return new Intl.DateTimeFormat("en-GB", {
       day: "numeric",
@@ -294,20 +278,20 @@ const EditRegistration = () => {
     }).format(new Date(dateTime));
   };
 
-  // Get current time
-  const now = new Date();
-
-  // Removing the past two hours event
-  const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
+  const { data: walkInEvents } = useGetWalkInEvents();
 
   // Filter events
-  const upcomingEvents = events.filter((event) => {
-    const eventTime = new Date(event.dateTime);
-    return eventTime >= twoHoursAgo;
-  });
+  const upcomingEvents = Array.isArray(walkInEvents)
+    ? walkInEvents.filter((event) => {
+        const eventDateTime = new Date(
+          event.dateTime || `${event.event_date}T${event.event_time}`
+        );
+
+        return eventDateTime;
+      })
+    : [];
 
   // Reset the forms when closing the dialog
-
   const handleDialogChange = (open) => {
     setIsDialogOpen(open);
     if (!open) {
@@ -351,7 +335,7 @@ const EditRegistration = () => {
                         <FormControl>
                           <Select
                             onValueChange={field.onChange}
-                            value={field.value} // fallback to empty string
+                            value={field.value}
                           >
                             <SelectTrigger>
                               <SelectValue placeholder="Select Event" />
@@ -359,8 +343,11 @@ const EditRegistration = () => {
                             <SelectContent>
                               {upcomingEvents.map((event) => (
                                 <SelectItem key={event.id} value={event.id}>
-                                  {event.name} -{" "}
-                                  {formatDateTime(event.dateTime)}
+                                  {event.event_name} -{" "}
+                                  {formatDateTime(
+                                    event.dateTime ||
+                                      `${event.event_date}T${event.event_time}`
+                                  )}
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -382,6 +369,40 @@ const EditRegistration = () => {
                       key={field.id}
                       className="flex flex-col gap-2 sm:flex-row sm:items-start"
                     >
+                      <FormField
+                        control={attendeeInformation.control}
+                        name={`parents[${index}].isMainApplicant`}
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row-reverse items-center">
+                            <FormLabel className="sm:hidden">
+                              Check the box choose the main applicant.
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                type="checkbox"
+                                checked={field.value}
+                                onChange={(e) => {
+                                  const isChecked = e.target.checked;
+                                  field.onChange(isChecked);
+                                  if (isChecked) {
+                                    // Uncheck all other checkboxes
+                                    parentFields.forEach((_, i) => {
+                                      if (i !== index) {
+                                        attendeeInformation.setValue(
+                                          `parents[${i}].isMainApplicant`,
+                                          false
+                                        );
+                                      }
+                                    });
+                                  }
+                                }}
+                                className="h-3 w-5"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                       {/* Parent ID (Read-Only Display) */}
                       <FormField
                         control={attendeeInformation.control}

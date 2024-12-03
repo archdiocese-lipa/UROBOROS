@@ -223,22 +223,20 @@ export const insertMainApplicant = async (guardiansData) => {
 
     // Only upsert the new guardians if there are any
     if (newGuardiansData.length > 0) {
-      const { data, error } = await supabase
-        .from("attendance")
-        .upsert(
-          newGuardiansData.map((guardian) => ({
-            event_id: guardian.event_id,
-            attendee_id: guardian.attendee_id,
-            attendee_type: guardian.attendee_type,
-            attended: guardian.attended,
-            main_applicant: guardian.main_applicant,
-            first_name: guardian.first_name,
-            last_name: guardian.last_name,
-            contact_number: guardian.contact_number,
-            family_id: guardian.family_id,
-            registration_code: guardian.registration_code,
-          }))
-        );
+      const { data, error } = await supabase.from("attendance").upsert(
+        newGuardiansData.map((guardian) => ({
+          event_id: guardian.event_id,
+          attendee_id: guardian.attendee_id,
+          attendee_type: guardian.attendee_type,
+          attended: guardian.attended,
+          main_applicant: guardian.main_applicant,
+          first_name: guardian.first_name,
+          last_name: guardian.last_name,
+          contact_number: guardian.contact_number,
+          family_id: guardian.family_id,
+          registration_code: guardian.registration_code,
+        }))
+      );
 
       if (error) {
         throw new Error(error.message);
@@ -359,45 +357,57 @@ export const insertChildren = async (childrenData) => {
   return data;
 };
 
-const fetchAttendeesByTicketCode = async (ticketCode) => {
+const fetchAttendeesByTicketCode = async (registrationCode) => {
   try {
     const { data, error } = await supabase
       .from("attendance")
-      .select("*")
-      .eq("ticket_code", ticketCode); // Filter by ticket code
+      .select(
+        `
+        *,
+        events:events (
+          id,
+          event_name,
+          event_date,
+          event_time
+        )
+      `
+      )
+      .eq("registration_code", registrationCode);
 
     if (error) {
       throw error;
     }
 
     if (data && data.length > 0) {
-      // Ensure that the parents and children both include IDs
+      // Separate parents and children based on `attendee_type`
       const parents = data
-        .filter((item) => item.type === "parent")
+        .filter((item) => item.attendee_type === "parents")
         .map((parent) => ({
-          id: parent.id, // Include parent ID
-          parentFirstName: parent.first_name,
-          parentLastName: parent.last_name,
-          parentContactNumber: parent.contact_number || null,
-          isMainApplicant: parent.is_main_applicant,
+          id: parent.id,
+          firstName: parent.first_name,
+          lastName: parent.last_name,
+          contactNumber: parent.contact_number,
+          isMainApplicant: parent.main_applicant,
         }));
 
       const children = data
-        .filter((item) => item.type === "child")
+        .filter((item) => item.attendee_type === "children")
         .map((child) => ({
-          id: child.id, // Include child ID
-          childFirstName: child.first_name,
-          childLastName: child.last_name,
+          id: child.id,
+          firstName: child.first_name,
+          lastName: child.last_name,
         }));
 
-      const eventInfo = data[0]?.event || {};
-      const registrationCode = data[0]?.ticket_code || "";
+      // Extract event information from the first record (assuming all entries belong to the same event)
+      const event = data[0].events;
+      const registrationCode = data[0].registration_code;
 
       const transformedData = {
         registrationCode,
-        event: eventInfo.event_name || "Unknown Event",
-        eventId: eventInfo.id || "",
-        dateTime: `${eventInfo.event_date}T${eventInfo.event_time}Z`,
+        event: {
+          id: event.id,
+          name: event.event_name,
+        },
         parents,
         children,
       };
@@ -411,7 +421,7 @@ const fetchAttendeesByTicketCode = async (ticketCode) => {
     }
   } catch (error) {
     console.error("Error fetching attendees and event:", error.message);
-    return { success: false, error };
+    return { success: false, error: error.message };
   }
 };
 
