@@ -39,7 +39,7 @@ export const handleWalkInData = async ({
       if (record.id) {
         // Existing record - Update
         const { error: updateError } = await supabase
-          .from("event_attendance")
+          .from("attendance")
           .update({
             first_name: record.first_name,
             last_name: record.last_name,
@@ -54,7 +54,7 @@ export const handleWalkInData = async ({
       } else {
         // New record - Insert
         const { error: insertError } = await supabase
-          .from("event_attendance")
+          .from("attendance")
           .insert({
             event_id: record.event_id,
             ticket_code: record.ticket_code,
@@ -72,7 +72,7 @@ export const handleWalkInData = async ({
     // Handle removed parents
     for (const removedParent of removedParents) {
       const { error: deleteParentError } = await supabase
-        .from("event_attendance")
+        .from("attendance")
         .delete()
         .eq("id", removedParent.id);
 
@@ -89,7 +89,7 @@ export const handleWalkInData = async ({
     // Handle removed children
     for (const removedChild of removedChildren) {
       const { error: deleteChildError } = await supabase
-        .from("event_attendance")
+        .from("attendance")
         .delete()
         .eq("id", removedChild.id);
 
