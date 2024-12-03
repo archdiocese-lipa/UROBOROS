@@ -36,6 +36,7 @@ import { ROLES } from "@/constants/roles";
 
 import MeetingDetails from "@/components/Schedule/MeetingDetails";
 import useInterObserver from "@/hooks/useInterObserver";
+import EditEvent from "@/components/Schedule/EditEvent";
 
 const Schedule = () => {
   const [filter, setFilter] = useState("events");
@@ -244,50 +245,52 @@ const Schedule = () => {
                               </p>
                             </div>
                           </div>
-                          <Dialog
-                            open={editDialogOpenIndex === `${i}-${j}`}
-                            onOpenChange={(isOpen) =>
-                              setEditDialogOpenIndex(
-                                isOpen ? `${i}-${j}` : null
-                              )
-                            }
-                          >
-                            <DialogTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                className="absolute right-1 top-1 font-semibold text-accent hover:underline"
-                              >
-                                Edit
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                              <DialogHeader>
-                                <DialogTitle>Create Event</DialogTitle>
-                                <DialogDescription>
-                                  Schedule an upcoming event.
-                                </DialogDescription>
-                              </DialogHeader>
-                              <CreateEvent
-                                id="update-event"
-                                eventData={{ ...event }}
-                                setDialogOpen={(isOpen) => {
-                                  setEditDialogOpenIndex(
-                                    isOpen ? `${i}-${j}` : null
-                                  );
-                                }}
-                              />
-                              {/* Dialog Footer */}
-                              <DialogFooter>
-                                <div className="flex justify-end gap-2">
-                                  <DialogClose asChild>
-                                    <Button variant="outline">Cancel</Button>
-                                  </DialogClose>
-
-                                  <Button form="update-event">Create</Button>
-                                </div>
-                              </DialogFooter>
-                            </DialogContent>
-                          </Dialog>
+                          {userData.role === "admin" && (
+                            <Dialog
+                              open={editDialogOpenIndex === `${i}-${j}`}
+                              onOpenChange={(isOpen) =>
+                                setEditDialogOpenIndex(
+                                  isOpen ? `${i}-${j}` : null
+                                )
+                              }
+                            >
+                              <DialogTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  className="absolute right-1 top-1 font-semibold text-accent hover:underline"
+                                >
+                                  Edit
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Edit Event</DialogTitle>
+                                  <DialogDescription>
+                                    Update an existing event.
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <EditEvent
+                                  eventId={event.id}
+                                  id="update-event"
+                                  eventData={{ ...event }}
+                                  setDialogOpen={(isOpen) => {
+                                    setEditDialogOpenIndex(
+                                      isOpen ? `${i}-${j}` : null
+                                    );
+                                  }}
+                                />
+                                {/* Dialog Footer */}
+                                <DialogFooter>
+                                  <div className="flex justify-end gap-2">
+                                    <DialogClose asChild>
+                                      <Button variant="outline">Cancel</Button>
+                                    </DialogClose>
+                                    <Button form="update-event">Update</Button>
+                                  </div>
+                                </DialogFooter>
+                              </DialogContent>
+                            </Dialog>
+                          )}
                         </div>
                       ))
                     : page?.items.map((meeting, j) => (

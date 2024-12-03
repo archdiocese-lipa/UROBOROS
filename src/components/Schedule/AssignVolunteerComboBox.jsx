@@ -15,13 +15,19 @@ import {
 import { Check, ChevronsUpDown } from "lucide-react";
 import PropTypes from "prop-types";
 
-const AssignVolunteerComboBox = ({ options, value, onChange, placeholder,disabled }) => {
+const AssignVolunteerComboBox = ({
+  options,
+  value,
+  onChange,
+  placeholder,
+  disabled,
+}) => {
   const [open, setOpen] = useState(false);
 
   // Helper function to toggle selection
   const toggleSelection = (selectedValue) => {
     if (value.includes(selectedValue)) {
-      onChange(value.filter((v) => v !== selectedValue)); // Remove if already selected
+      onChange(value?.filter((v) => v !== selectedValue)); // Remove if already selected
     } else {
       onChange([...value, selectedValue]); // Add if not selected
     }
@@ -35,18 +41,19 @@ const AssignVolunteerComboBox = ({ options, value, onChange, placeholder,disable
           role="combobox"
           aria-expanded={open}
           disabled={disabled}
-          className="w-full max-w-full text-wrap text-start overflow-hidden justify-between bg-primary hover:bg-primary"
+          className="w-full max-w-full justify-between overflow-hidden text-wrap bg-primary text-start hover:bg-primary"
         >
           {value.length > 0
             ? options
                 .filter((opt) => value.includes(opt.value))
                 .map((opt) => opt.label)
                 .join(", ") // Display selected labels
-            : placeholder} {/* Show placeholder if no value is selected */}
+            : placeholder}{" "}
+          {/* Show placeholder if no value is selected */}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="sm:w-[29rem] p-0">
+      <PopoverContent className="p-0 sm:w-[29rem]">
         <Command>
           <CommandInput placeholder={`${placeholder}`} />
           <CommandEmpty>No options found.</CommandEmpty>
@@ -55,7 +62,7 @@ const AssignVolunteerComboBox = ({ options, value, onChange, placeholder,disable
               <CommandItem
                 key={opt.value}
                 onSelect={() => toggleSelection(opt.value)}
-                disabled={disabled} 
+                disabled={disabled}
               >
                 {opt.label}
                 <Check
@@ -72,7 +79,6 @@ const AssignVolunteerComboBox = ({ options, value, onChange, placeholder,disable
   );
 };
 
-
 AssignVolunteerComboBox.propTypes = {
   options: PropTypes.arrayOf(
     PropTypes.shape({
@@ -83,7 +89,7 @@ AssignVolunteerComboBox.propTypes = {
   value: PropTypes.arrayOf(PropTypes.string).isRequired, // Changed to an array for multi-select
   onChange: PropTypes.func.isRequired,
   placeholder: PropTypes.string,
-  disabled: PropTypes.bool
+  disabled: PropTypes.bool,
 };
 
 export default AssignVolunteerComboBox;
