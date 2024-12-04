@@ -191,9 +191,10 @@ const ScheduleDetails = ({ queryKey }) => {
         <Description>View Attendance</Description>
       </div>
     );
-    // if(!attendance){
-    //   <p>no attendance found.</p>
-    // }
+
+    if(!event){
+      return <p>hi</p>
+    }
 
   return (
     <div className="flex h-full grow flex-col gap-2 overflow-y-hidden px-9 py-6">
@@ -308,7 +309,7 @@ const ScheduleDetails = ({ queryKey }) => {
         ref={printRef}
         className="no-scrollbar flex max-h-dvh flex-col gap-5 overflow-y-scroll"
       >
-        <div className="flex justify-evenly font-montserrat font-semibold text-accent">
+        <div className="flex gap-20 font-montserrat font-semibold text-accent">
           <p>Total Registered: {attendanceCount?.total}</p>
           <p>Total Attended: {attendanceCount?.attended}</p>
           <p>

@@ -55,6 +55,7 @@ const Sidebar = () => {
                 isActive={url.pathname === links.link}
               />
             ))}
+            <div className="flex flex-col items-center justify-center">
           <DropdownMenu>
             <DropdownMenuTrigger className="lg:hidden lg:px-6">
               <div className="flex items-center gap-2">
@@ -74,8 +75,11 @@ const Sidebar = () => {
               <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          <p className="hidden text-xs text-accent font-bold md:block lg:hidden">Settings</p>
+          </div>
         </ul>
         <SidebarProfile availableRoles={availableRoles} onSwitchRole={onSwitchRole} />
+       
       </div>
     </div>
   );
