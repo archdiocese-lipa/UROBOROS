@@ -329,7 +329,7 @@ const ScheduleDetails = ({ queryKey }) => {
               <Dialog onOpenChange={generateQRCode}>
                 <DialogTrigger asChild>
                   <Button>
-                    <Icon icon={"mingcute:qrcode-2-line"} />
+                    <Icon  icon={"mingcute:qrcode-2-line"} />
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
@@ -582,7 +582,7 @@ const ScheduleDetails = ({ queryKey }) => {
                                   variant="ghost"
                                   disabled={disableSchedule}
                                 >
-                                  <Icon icon={"eva:edit-2-fill"} />
+                                  <Icon disabled={disableSchedule} icon={"eva:edit-2-fill"} />
                                 </Button>
                               )}
                               {idEditting === attendee.id && (
@@ -691,7 +691,7 @@ const ScheduleDetails = ({ queryKey }) => {
                               variant="ghost"
                               disabled={disableSchedule}
                             >
-                              <Icon icon={"eva:edit-2-fill"} />
+                              <Icon disabled={disableSchedule} icon={"eva:edit-2-fill"} />
                             </Button>
                           )}
                           {idEditting === attendee.id && (
