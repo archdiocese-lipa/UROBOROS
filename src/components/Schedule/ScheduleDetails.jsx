@@ -306,7 +306,7 @@ const ScheduleDetails = ({ queryKey }) => {
         ref={printRef}
         className="no-scrollbar flex max-h-dvh flex-col gap-5 overflow-y-scroll"
       >
-        <div className="flex gap-20 font-montserrat font-semibold text-accent">
+        <div className="flex justify-evenly flex-wrap font-montserrat font-semibold text-accent">
           <p>Total Registered: {attendanceCount?.total}</p>
           <p>Total Attended: {attendanceCount?.attended}</p>
           <p>
