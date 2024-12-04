@@ -20,11 +20,10 @@ import { SIDEBAR_LINKS } from "@/constants/sidebarLinks";
 import { ChevronUp } from "@/assets/icons/icons";
 import useRoleSwitcher from "@/hooks/useRoleSwitcher";
 
-
 const Sidebar = () => {
   const url = useLocation();
   const navigate = useNavigate();
-  const { availableRoles, onSwitchRole, temporaryRole } = useRoleSwitcher(); 
+  const { availableRoles, onSwitchRole, temporaryRole } = useRoleSwitcher();
 
   const { userData, logout } = useUser();
 
@@ -40,8 +39,10 @@ const Sidebar = () => {
   const initials = `${getInitial(userData?.first_name)}${getInitial(userData?.last_name)}`;
 
   return (
-    <div className="flex lg:my-9 lg:w-2/12 lg:flex-col">
-      <Title className="mb-12 ml-9 hidden max-w-[201px] lg:block">Admin Management Centre</Title>
+    <div className="flex lg:my-9 lg:w-64 lg:flex-col">
+      <Title className="mb-12 ml-9 hidden max-w-[201px] lg:block">
+        Admin Management Centre
+      </Title>
       <div className="flex flex-1 justify-between lg:flex-col">
         <ul className="flex w-full justify-evenly gap-2 lg:ml-4 lg:mr-8 lg:flex-col lg:items-start">
           {userData &&
@@ -55,43 +56,53 @@ const Sidebar = () => {
                 isActive={url.pathname === links.link}
               />
             ))}
-            <div className="flex flex-col items-center justify-center">
-          <DropdownMenu>
-            <DropdownMenuTrigger className="lg:hidden lg:px-6">
-              <div className="flex items-center gap-2">
-                <Avatar className="bg-green h-8 w-8">
-                  <AvatarImage src={userData?.user_image ?? ""} alt="profile picture" />
-                  <AvatarFallback>{initials}</AvatarFallback>
-                </Avatar>
-              </div>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              {availableRoles.map((role) => (
-                <DropdownMenuItem key={role.value} onClick={() => onSwitchRole(role.value)}>
-                  {role.label}
+          <div className="flex flex-col items-center justify-center">
+            <DropdownMenu>
+              <DropdownMenuTrigger className="lg:hidden lg:px-6">
+                <div className="flex items-center gap-2">
+                  <Avatar className="bg-green h-8 w-8">
+                    <AvatarImage
+                      src={userData?.user_image ?? ""}
+                      alt="profile picture"
+                    />
+                    <AvatarFallback>{initials}</AvatarFallback>
+                  </Avatar>
+                </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                {availableRoles.map((role) => (
+                  <DropdownMenuItem
+                    key={role.value}
+                    onClick={() => onSwitchRole(role.value)}
+                  >
+                    {role.label}
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout}>
+                  Logout
                 </DropdownMenuItem>
-              ))}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <p className="hidden text-xs text-accent font-bold md:block lg:hidden">Settings</p>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <p className="hidden text-xs font-bold text-accent md:block lg:hidden">
+              Settings
+            </p>
           </div>
         </ul>
-        <SidebarProfile availableRoles={availableRoles} onSwitchRole={onSwitchRole} />
-       
+        <SidebarProfile
+          availableRoles={availableRoles}
+          onSwitchRole={onSwitchRole}
+        />
       </div>
     </div>
   );
 };
 
-
 export default Sidebar;
 
-const SidebarProfile = ({availableRoles,onSwitchRole}) => {
+const SidebarProfile = ({ availableRoles, onSwitchRole }) => {
   const { userData, logout } = useUser();
   const navigate = useNavigate();
-
 
   const handleLogout = async () => {
     try {
@@ -116,27 +127,34 @@ const SidebarProfile = ({availableRoles,onSwitchRole}) => {
   }
 
   const initials = `${getInitial(userData?.first_name ?? "U")}${getInitial(userData?.last_name ?? "")}`;
-  const fullName = `${userData?.first_name ?? ""} ${userData?.last_name ?? ""}`.trim() || "Guest";
+  const fullName =
+    `${userData?.first_name ?? ""} ${userData?.last_name ?? ""}`.trim() ||
+    "Guest";
 
   return (
-    <div className="ml-9 hidden h-10 w-fit items-center justify-between rounded-[20px] bg-white p-1 lg:flex">
+    <div className="ml-9 hidden h-10 w-56 items-center justify-between rounded-[20px] bg-white p-1 lg:flex">
       <div className="flex items-center gap-2">
         <Avatar className="h-8 w-8">
           <AvatarFallback>{initials}</AvatarFallback>
         </Avatar>
-        <p className="text-[16px] text-nowrap font-medium capitalize">{fullName}</p>
+        <p className="overflow-hidden text-ellipsis text-nowrap w-32 text-[16px] font-medium capitalize">
+          {fullName}
+        </p>
       </div>
       <DropdownMenu>
-        <DropdownMenuTrigger className="flex ml-2 h-7 w-11 items-center justify-center rounded-[18.5px] bg-accent px-2 text-white hover:cursor-pointer">
+        <DropdownMenuTrigger className="ml-2 flex h-7 w-11 items-center justify-center rounded-[18.5px] bg-accent px-2 text-white hover:cursor-pointer">
           <ChevronUp className="h-5 w-5 text-white" />
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           {availableRoles.map((role) => (
-            <DropdownMenuItem key={role.value} onClick={() => onSwitchRole(role.value)}>
+            <DropdownMenuItem
+              key={role.value}
+              onClick={() => onSwitchRole(role.value)}
+            >
               {role.label}
             </DropdownMenuItem>
           ))}
-          {userData?.role !== "parishioner" &&<DropdownMenuSeparator />}
+          {userData?.role !== "parishioner" && <DropdownMenuSeparator />}
           <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -176,9 +194,9 @@ SidebarLink.propTypes = {
   isActive: PropTypes.bool.isRequired,
 };
 
-SidebarProfile.propTypes= {
+SidebarProfile.propTypes = {
   availableRoles: PropTypes.array,
-  onSwitchRole: PropTypes.func
+  onSwitchRole: PropTypes.func,
 };
 
 export { SidebarLink, SidebarProfile };

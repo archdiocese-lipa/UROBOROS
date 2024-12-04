@@ -3,6 +3,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import QRCode from "qrcode";
 import { Icon } from "@iconify/react";
+import * as z from "zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form";
 
 import { Description, Title } from "@/components/Title";
 import {
@@ -47,6 +55,7 @@ import {
   getEventAttendance,
   updateAttendeeStatus,
   countEventAttendance,
+  editAttendee,
 } from "@/services/attendanceService";
 
 import { useUser } from "@/context/useUser";
@@ -55,6 +64,9 @@ import { Label } from "../ui/label";
 import { useToast } from "@/hooks/use-toast";
 import PropTypes from "prop-types";
 import AddRecord from "./AddRecord";
+import { Input } from "../ui/input";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 // import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
@@ -66,6 +78,7 @@ const ScheduleDetails = ({ queryKey }) => {
   const [disableSchedule, setDisableSchedule] = useState(false);
   const [urlPrms] = useSearchParams();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState();
+  const [idEditting, setIdEditting] = useState("");
   const eventId = urlPrms.get("event") || null;
   const printRef = useRef(null);
   const userData = useUser();
@@ -233,6 +246,61 @@ const ScheduleDetails = ({ queryKey }) => {
     }
   }, [event, userData, disableSchedule]);
 
+  const parentSchema = z.object({
+    firstName: z.string().min(1, "First name is required"),
+    lastName: z.string().min(1, "Last name is required"),
+    contact: z.string().regex(/^[0-9]{11}$/, {
+      message: "Contact number must be exactly 11 digits.",
+    }),
+  });
+  const childSchema = parentSchema.omit({ contact: true });
+
+
+  const updateMutation = useMutation({
+    mutationFn: async (data) => await editAttendee(data),
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Attendee edited!",
+      });
+      setDeleteDialogOpen(false);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `${error.message}`,
+      });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["attendance", eventId],
+      });
+    },
+  });
+
+  const form = useForm({
+    resolver: zodResolver(parentSchema),
+    defaultValues: {
+      // id: "",
+      firstName: "",
+      lastName: "",
+      contact: "",
+    },
+  });
+  
+  const childrenForm = useForm({
+    resolver: zodResolver(childSchema),
+    firstName:"",
+    lastName:""
+  })
+
+  const onSubmit = (data) => {
+    console.log(data);
+
+    updateMutation.mutate({ ...data, attendeeId: idEditting });
+    setIdEditting("");
+  };
+
   if (isLoading || attendanceLoading) return <div>Loading...</div>;
 
   if (!eventId)
@@ -245,7 +313,7 @@ const ScheduleDetails = ({ queryKey }) => {
   if (!event) {
     return <p>hi</p>;
   }
-
+  console.log(idEditting);
   return (
     <div className="flex h-full grow flex-col gap-2 overflow-y-hidden px-9 py-6">
       <div className="flex flex-wrap justify-between">
@@ -381,48 +449,155 @@ const ScheduleDetails = ({ queryKey }) => {
               </CardHeader>
               <CardContent className="flex flex-col gap-3">
                 <h3 className="text-xl font-semibold text-accent">Parents</h3>
-                <Table>
-                  <TableHeader className="bg-primary">
-                    <TableRow>
-                      <TableHead className="rounded-l-lg" />
-                      <TableHead>Name of Guardian Attendee</TableHead>
-                      <TableHead>Contact</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="rounded-r-lg" />
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {family?.parents?.map((attendee, i) => (
-                      <TableRow
-                        key={i}
-                        className={cn(
-                          i % 2 !== 0 ? "bg-primary bg-opacity-35" : "bg-white"
-                        )}
-                      >
-                        <TableCell>
-                          <Switch
-                            defaultChecked={attendee.attended}
-                            disabled={disableSchedule}
-                            onCheckedChange={(state) =>
-                              onRowAttend(attendee?.id, state)
-                            }
-                          />
-                        </TableCell>
-                        <TableCell>{`${attendee.first_name} ${attendee.last_name}`}</TableCell>
-                        <TableCell>{attendee.contact_number}</TableCell>
-                        <TableCell>
-                          {attendee.attended ? "Attended" : "Pending"}
-                        </TableCell>
-                        <TableCell>
-                          <Button variant="ghost" disabled={disableSchedule}>
-                            <Icon icon={"eva:edit-2-fill"} />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)}>
+                    <Table>
+                      <TableHeader className="bg-primary">
+                        <TableRow>
+                          <TableHead className="rounded-l-lg" />
+                          <TableHead>Name of Guardian Attendee</TableHead>
+                          <TableHead>Contact</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead className="rounded-r-lg" />
+                        </TableRow>
+                      </TableHeader>
+
+                      <TableBody>
+                        {family?.parents?.map((attendee, i) => (
+                          <TableRow
+                            key={i}
+                            className={cn(
+                              i % 2 !== 0
+                                ? "bg-primary bg-opacity-35"
+                                : "bg-white"
+                            )}
+                          >
+                            <TableCell>
+                              <Switch
+                                defaultChecked={attendee.attended}
+                                disabled={disableSchedule}
+                                onCheckedChange={(state) =>
+                                  onRowAttend(attendee?.id, state)
+                                }
+                              />
+                            </TableCell>
+
+                            <TableCell>
+                              {idEditting === attendee.id ? (
+                                <div className="flex gap-2">
+                                  <FormField
+                                    control={form.control}
+                                    name="firstName"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormControl>
+                                          <Input
+                                            placeholder="First name"
+                                            type="text"
+                                            {...field}
+                                          />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                  <FormField
+                                    control={form.control}
+                                    name="lastName"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormControl>
+                                          <Input
+                                            placeholder="Last name"
+                                            type="text"
+                                            {...field}
+                                          />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                </div>
+                              ) : (
+                                <p>{`${attendee.first_name} ${attendee.last_name}`}</p>
+                              )}
+                            </TableCell>
+
+                            <TableCell>
+                              {idEditting === attendee.id ? (
+                                <FormField
+                                  control={form.control}
+                                  name="contact"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormControl>
+                                        <Input
+                                          placeholder="Contact"
+                                          type="text"
+                                          {...field}
+                                        />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                              ) : (
+                                <p>{attendee.contact_number}</p>
+                              )}
+                            </TableCell>
+
+                            <TableCell>
+                              {attendee.attended ? "Attended" : "Pending"}
+                            </TableCell>
+                            <TableCell className="flex gap-2">
+                              {idEditting === attendee.id ? (
+                                <Button
+                                  type="button"
+                                  onClick={() => setIdEditting("")}
+                                >
+                                  Cancel
+                                </Button>
+                              ) : (
+                                <Button
+                                  type="button"
+                                  onClick={() => {
+                                    // form.setValue(
+                                    //   "id",
+                                    //   `${attendee.id}`
+                                    // );
+                                    form.setValue(
+                                      "firstName",
+                                      `${attendee.first_name}`
+                                    );
+                                    form.setValue(
+                                      "lastName",
+                                      `${attendee.last_name}`
+                                    );
+                                    form.setValue(
+                                      "contact",
+                                      `0${attendee.contact_number.toString()}`
+                                    );
+                                    setIdEditting(attendee.id);
+                                  }}
+                                  variant="ghost"
+                                  disabled={disableSchedule}
+                                >
+                                  <Icon icon={"eva:edit-2-fill"} />
+                                </Button>
+                              )}
+                              {idEditting === attendee.id && (
+                                <Button type="submit">Save</Button>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </form>
+                </Form>
                 <h3 className="text-xl font-semibold text-accent">Children</h3>
+                <Form {...childrenForm}>
+                <form onSubmit={childrenForm.handleSubmit(onSubmit)}>
                 <Table>
                   <TableHeader className="bg-primary">
                     <TableRow>
@@ -449,19 +624,86 @@ const ScheduleDetails = ({ queryKey }) => {
                             }
                           />
                         </TableCell>
-                        <TableCell>{`${attendee.first_name} ${attendee.last_name}`}</TableCell>
+                        <TableCell>
+                              {idEditting === attendee.id ? (
+                                <div className="flex gap-2">
+                                  <FormField
+                                    control={childrenForm.control}
+                                    name="firstName"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormControl>
+                                          <Input
+                                            placeholder="First name"
+                                            type="text"
+                                            {...field}
+                                          />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                  <FormField
+                                    control={childrenForm.control}
+                                    name="lastName"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormControl>
+                                          <Input
+                                            placeholder="Last name"
+                                            type="text"
+                                            {...field}
+                                          />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                </div>
+                              ) : (
+                                <p>{`${attendee.first_name} ${attendee.last_name}`}</p>
+                              )}
+                            </TableCell>
                         <TableCell>
                           {attendee.attended ? "Attended" : "Pending"}
                         </TableCell>
-                        <TableCell>
-                          <Button variant="ghost" disabled={disableSchedule}>
-                            <Icon icon={"eva:edit-2-fill"} />
-                          </Button>
+                        <TableCell className="flex gap-2">
+                          {idEditting === attendee.id ? (
+                            <Button
+                              type="button"
+                              onClick={() => setIdEditting("")}
+                            >
+                              Cancel
+                            </Button>
+                          ) : (
+                            <Button
+                              type="button"
+                              onClick={() => {
+                                childrenForm.setValue(
+                                  "firstName",
+                                  `${attendee.first_name}`
+                                )
+                                childrenForm.setValue(
+                                  "lastName",
+                                  `${attendee.last_name}`
+                                )
+                                setIdEditting(attendee.id)}}
+                              variant="ghost"
+                              disabled={disableSchedule}
+                            >
+                              <Icon icon={"eva:edit-2-fill"} />
+                            </Button>
+                          )}
+                          {idEditting === attendee.id && (
+                            <Button type="submit">Save</Button>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
+                </form>
+                </Form>
               </CardContent>
             </Card>
           );

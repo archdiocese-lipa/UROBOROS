@@ -534,7 +534,22 @@ const insertNewRecord = async (submittedData) => {
   return { success: true, attendanceData };
 };
 
+const editAttendee = async({firstName,lastName, contact,attendeeId}) => {
+  
+
+  const {error} =  await supabase.from("attendance").update({
+    first_name:firstName,
+    last_name: lastName,
+    contact_number:contact ?? null
+  }).eq("id",attendeeId)
+
+  if(error){
+    throw new Error(error.message)
+  }
+}
+
 export {
+  editAttendee,
   getEventAttendance,
   fetchAttendeesByTicketCode,
   insertEventAttendance,

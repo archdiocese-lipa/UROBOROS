@@ -297,17 +297,18 @@ const Schedule = () => {
                             </Dialog>
                           </div>
 
-                          <Sheet className="lg:hidden">
-                          <SheetTrigger asChild>
+                          
                              <div
                             className={cn(
-                              "flex cursor-pointer items-start justify-between gap-3 rounded-[10px] bg-primary/50 px-5 py-4 lg:hidden",
+                              "flex cursor-pointer items-start gap-3 rounded-[10px] bg-primary/50 px-5 py-4 lg:hidden",
                               event.id === urlPrms.get("event") &&
                                 "border border-primary-outline"
                             )}
                             onClick={() => onEventClick(event.id)}
                           >
-                            <div className="flex gap-3">
+                            <Sheet className="">
+                            <SheetTrigger asChild>
+                            <div className="flex flex-1 gap-3">
                               <EventIcon className="text-2xl text-accent" />
                               <div>
                                 <p className="mb-[6px] text-base font-bold leading-none text-accent">
@@ -336,6 +337,19 @@ const Schedule = () => {
                                 </p>
                               </div>
                             </div>
+                            </SheetTrigger>
+                              <SheetContent className="w-full md:hidden md:w-full">
+                                {urlPrms.get("event") && (
+                                  <ScheduleDetails
+                                    queryKey={[
+                                      "schedules",
+                                      filter,
+                                      urlPrms.get("query")?.toString() || "",
+                                    ]}
+                                  />
+                                )}
+                              </SheetContent>
+                          </Sheet>
                             <Dialog
                               open={editDialogOpenIndex === `${i}-${j}`}
                               onOpenChange={(isOpen) =>
@@ -386,19 +400,7 @@ const Schedule = () => {
                               </DialogContent>
                             </Dialog>
                           </div>
-                          </SheetTrigger>
-                              <SheetContent className="w-full md:hidden md:w-full">
-                                {urlPrms.get("event") && (
-                                  <ScheduleDetails
-                                    queryKey={[
-                                      "schedules",
-                                      filter,
-                                      urlPrms.get("query")?.toString() || "",
-                                    ]}
-                                  />
-                                )}
-                              </SheetContent>
-                          </Sheet>
+                     
                         </div>
                       ))
                     : page?.items.map((meeting, j) => (
