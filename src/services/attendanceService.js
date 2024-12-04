@@ -1,5 +1,5 @@
 import { supabase } from "@/services/supabaseClient"; // Adjust the import to match the final location of supabaseClient
-
+import { v4 as uuidv4 } from "uuid";
 const insertEventAttendance = async (submittedData) => {
   const { randomSixDigit, event, parents, children } = submittedData;
 
@@ -476,6 +476,63 @@ const countEventAttendance = async (eventId) => {
     throw new Error(error);
   }
 };
+// Function to submit add new record in schedule
+const insertNewRecord = async (submittedData) => {
+  const { event, parents, children } = submittedData;
+
+  const familyId = uuidv4();
+  // get main applicant parent.
+  const mainApplicant = parents.find((parent) => parent.isMainApplicant);
+
+  // Prepare parent records with ticket_code
+  const parentRecords = parents.map((parent) => ({
+    first_name: parent.parentFirstName,
+    last_name: parent.parentLastName,
+    contact_number: parent.parentContactNumber,
+    main_applicant:
+      mainApplicant &&
+      parent.parentFirstName === mainApplicant.parentFirstName &&
+      parent.parentLastName === mainApplicant.parentLastName,
+    type: "parents",
+    family_id: familyId,
+  }));
+
+  const childrenRecords = children.map((child) => ({
+    first_name: child.childFirstName,
+    last_name: child.childLastName,
+    type: "children",
+    main_applicant: false,
+    family_id: familyId,
+  }));
+
+  // Combine the arrays into a single attendeesData array
+  const attendeesData = [...parentRecords, ...childrenRecords];
+  const { data: attendanceData, error: attendanceError } = await supabase
+    .from("attendance")
+    .insert(
+      attendeesData.map((attendee) => ({
+        event_id: event,
+        attendee_id: attendee.id,
+        attendee_type: attendee.type,
+        main_applicant:
+          attendee.type === "parents" ? attendee.main_applicant : false,
+        first_name: attendee.first_name,
+        last_name: attendee.last_name,
+        contact_number: attendee.contact_number,
+        family_id: attendee.family_id,
+        registration_code: attendee.registration_code,
+      }))
+    );
+
+  if (attendanceError) {
+    console.error(
+      "Error inserting attendance records:",
+      attendanceError.message
+    );
+    return { success: false, error: attendanceError };
+  }
+  return { success: true, attendanceData };
+};
 
 export {
   getEventAttendance,
@@ -483,4 +540,5 @@ export {
   insertEventAttendance,
   updateAttendeeStatus,
   countEventAttendance,
+  insertNewRecord,
 };

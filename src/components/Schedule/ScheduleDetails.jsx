@@ -54,6 +54,7 @@ import { cn } from "@/lib/utils";
 import { Label } from "../ui/label";
 import { useToast } from "@/hooks/use-toast";
 import PropTypes from "prop-types";
+import AddRecord from "./AddRecord";
 
 // import html2canvas from "html2canvas";
 // import jsPDF from "jspdf";
@@ -74,7 +75,6 @@ const ScheduleDetails = ({ queryKey }) => {
     queryKey: ["event", eventId],
     queryFn: async () => {
       const response = await getEventById(eventId);
-
       return response;
     },
     enabled: !!eventId,
@@ -192,9 +192,9 @@ const ScheduleDetails = ({ queryKey }) => {
       </div>
     );
 
-    if(!event){
-      return <p>hi</p>
-    }
+  if (!event) {
+    return <p>hi</p>;
+  }
 
   return (
     <div className="flex h-full grow flex-col gap-2 overflow-y-hidden px-9 py-6">
@@ -205,94 +205,91 @@ const ScheduleDetails = ({ queryKey }) => {
           <Description>{event?.event_description}</Description>
         </div>
         <div className="flex">
-        {!disableSchedule && (
-          <div className="flex flex-wrap gap-1">
-            <Button>
-              <Icon icon={"mingcute:classify-add-2-fill"} />
-              <p>Add Record</p>
-            </Button>
-            <Dialog onOpenChange={generateQRCode}>
-              <DialogTrigger asChild>
-                <Button>
-                  <Icon icon={"mingcute:qrcode-2-line"} />
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>QR Code</DialogTitle>
-                  <DialogDescription>
-                    Scan this QR code to check the event.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="flex justify-center">
-                  <img src={qrCode} alt="QR Code" className="h-64 w-64" />
-                </div>
-              </DialogContent>
-            </Dialog>
-            <div className="flex">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button className="rounded-xl px-3 py-3">
-                    <Icon icon={"mingcute:download-2-line"} />
+          {!disableSchedule && (
+            <div className="flex flex-wrap gap-1">
+              <AddRecord eventId={eventId} />
+              <Dialog onOpenChange={generateQRCode}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Icon icon={"mingcute:qrcode-2-line"} />
                   </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" side="bottom">
-                  <DropdownMenuItem onClick={() => onEventDownload()}>
-                    Download as PDF
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <Dialog>
-                <DialogTrigger></DialogTrigger>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>QR Code</DialogTitle>
+                    <DialogDescription>
+                      Scan this QR code to check the event.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="flex justify-center">
+                    <img src={qrCode} alt="QR Code" className="h-64 w-64" />
+                  </div>
+                </DialogContent>
               </Dialog>
+              <div className="flex">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button className="rounded-xl px-3 py-3">
+                      <Icon icon={"mingcute:download-2-line"} />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" side="bottom">
+                    <DropdownMenuItem onClick={() => onEventDownload()}>
+                      Download as PDF
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <Dialog>
+                  <DialogTrigger></DialogTrigger>
+                </Dialog>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        <Dialog
-          open={deleteDialogOpen}
-          onOpenChange={(isOpen) => {
-            setDeleteDialogOpen(isOpen);
-          }}
-        >
-          <DialogTrigger className="ml-2 w-fit" asChild>
-            <Button
-              // onClick={() => deleteMutation.mutate()}
-              className="rounded-xl px-3 py-3"
-            >
-              <Icon icon={"mingcute:delete-3-line"} />
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:rounded-3xl">
-            <DialogHeader>
-              <DialogTitle className="text-2xl text-accent">
-                Delete Event?
-              </DialogTitle>
-            </DialogHeader>
-            <DialogDescription className="text-accent opacity-80">
-              Are you sure you want to delete this event?
-            </DialogDescription>
-            <DialogFooter className="mx-2 flex gap-2">
+          <Dialog
+            open={deleteDialogOpen}
+            onOpenChange={(isOpen) => {
+              setDeleteDialogOpen(isOpen);
+            }}
+          >
+            <DialogTrigger className="ml-2 w-fit" asChild>
               <Button
-                onClick={() => setDeleteDialogOpen(false)}
-                className="rounded-xl text-accent hover:text-accent"
-                variant="outline"
+                // onClick={() => deleteMutation.mutate()}
+                className="rounded-xl px-3 py-3"
               >
-                Cancel
+                <Icon icon={"mingcute:delete-3-line"} />
               </Button>
-              <Button
-                className="rounded-xl"
-                variant={"destructive"}
-                onClick={() => {
-                  deleteMutation.mutate();
-                }}
-                disabled={deleteMutation.isPending}
-              >
-                {deleteMutation.isPending ? "Deleting..." : "Delete"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+            </DialogTrigger>
+            <DialogContent className="sm:rounded-3xl">
+              <DialogHeader>
+                <DialogTitle className="text-2xl text-accent">
+                  Delete Event?
+                </DialogTitle>
+              </DialogHeader>
+              <DialogDescription className="text-accent opacity-80">
+                Are you sure you want to delete this event?
+              </DialogDescription>
+              <DialogFooter className="mx-2 flex gap-2">
+                <Button
+                  onClick={() => setDeleteDialogOpen(false)}
+                  className="rounded-xl text-accent hover:text-accent"
+                  variant="outline"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className="rounded-xl"
+                  variant={"destructive"}
+                  onClick={() => {
+                    deleteMutation.mutate();
+                  }}
+                  disabled={deleteMutation.isPending}
+                >
+                  {deleteMutation.isPending ? "Deleting..." : "Delete"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
       <div>
