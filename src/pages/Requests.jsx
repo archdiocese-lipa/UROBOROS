@@ -187,7 +187,7 @@ const Requests = () => {
               <TableHead className="rounded-l-lg text-center">Active</TableHead>
               <TableHead className="text-center">Email</TableHead>
               <TableHead className="text-center">Name</TableHead>
-              <TableHead className="text-center">Contact</TableHead>
+              <TableHead className="text-center">Contact Tel No.</TableHead>
 
               <TableHead className="rounded-r-lg text-center">Action</TableHead>
             </TableRow>

@@ -165,7 +165,7 @@ const NewProfileForm = ({
             <FormItem>
               <FormLabel>Contact Tel No.</FormLabel>
               <FormControl>
-                <Input placeholder="09123456789" {...field} />
+                <Input placeholder="+441172345678" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
