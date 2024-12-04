@@ -411,7 +411,7 @@ const ScheduleDetails = ({ queryKey }) => {
         </div>
       </div>
       <div>
-        <Label className="text-primary-text">Assign Volunteer:</Label>
+        <Label className="text-primary-text">List of Assigned Volunteer</Label>
         {volunteers?.map((volunteer, i) => (
           <p
             key={volunteer?.volunteer_id}
@@ -448,15 +448,15 @@ const ScheduleDetails = ({ queryKey }) => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-3">
-                <h3 className="text-xl font-semibold text-accent">Parents</h3>
+                <h3 className="text-xl font-semibold text-accent">Parents/Guardians</h3>
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)}>
                     <Table>
                       <TableHeader className="bg-primary">
                         <TableRow>
                           <TableHead className="rounded-l-lg" />
-                          <TableHead>Name of Guardian Attendee</TableHead>
-                          <TableHead>Contact</TableHead>
+                          <TableHead>Name</TableHead>
+                          <TableHead>Contact Tel No.</TableHead>
                           <TableHead>Status</TableHead>
                           <TableHead className="rounded-r-lg" />
                         </TableRow>

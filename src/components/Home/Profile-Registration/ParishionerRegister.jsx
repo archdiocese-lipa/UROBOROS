@@ -183,7 +183,7 @@ const ParishionerRegister = () => {
                       <FormControl>
                         <Input
                           type="tel"
-                          placeholder="09123456789"
+                          placeholder="+441172345678"
                           {...field}
                         />
                       </FormControl>
