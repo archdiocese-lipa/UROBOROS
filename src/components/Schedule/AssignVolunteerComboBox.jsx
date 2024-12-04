@@ -45,7 +45,7 @@ const AssignVolunteerComboBox = ({
         >
           {value.length > 0
             ? options
-                .filter((opt) => value.includes(opt.value))
+                ?.filter((opt) => value.includes(opt.value))
                 .map((opt) => opt.label)
                 .join(", ") // Display selected labels
             : placeholder}{" "}
@@ -58,7 +58,7 @@ const AssignVolunteerComboBox = ({
           <CommandInput placeholder={`${placeholder}`} />
           <CommandEmpty>No options found.</CommandEmpty>
           <CommandGroup>
-            {options.map((opt) => (
+            {options?.map((opt) => (
               <CommandItem
                 key={opt.value}
                 onSelect={() => toggleSelection(opt.value)}

@@ -320,7 +320,7 @@ const CreateEvent = ({
               <FormLabel>Assign Volunteer</FormLabel>
               <FormControl>
                 <AssignVolunteerComboBox
-                  options={volunteers.map((volunteer) => ({
+                  options={volunteers?.map((volunteer) => ({
                     value: volunteer.id, // Use 'id' as the value
                     label: `${volunteer.first_name} ${volunteer.last_name}`, // Combine first name and last name
                   }))}
