@@ -57,7 +57,8 @@ import PropTypes from "prop-types";
 import AddRecord from "./AddRecord";
 
 // import html2canvas from "html2canvas";
-// import jsPDF from "jspdf";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 // import { ROLES } from "@/constants/roles";
 
 const ScheduleDetails = ({ queryKey }) => {
@@ -142,27 +143,76 @@ const ScheduleDetails = ({ queryKey }) => {
     updateAttendeeStatus(attendeeId, state);
   };
 
-  const onEventDownload = async () => {
-    window.print();
-    // const input = printRef.current;
-    // if (input) {
-    //   // Temporarily remove overflow restrictions
-    //   const originalOverflow = input.style.overflow;
-    //   input.style.overflow = "visible";
+  const exportAttendanceList = () => {
+    const doc = new jsPDF();
 
-    //   // Capture the entire content
-    //   const canvas = await html2canvas(input);
-    //   const imgData = canvas.toDataURL("image/png");
-    //   const pdf = new jsPDF();
-    //   const imgProps = pdf.getImageProperties(imgData);
-    //   const pdfWidth = pdf.internal.pageSize.getWidth();
-    //   const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-    //   pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-    //   pdf.save("schedule-details.pdf");
+    // Add Title
+    doc.setFontSize(18);
+    doc.text(`Event Name: ${event.event_name}`, 10, 10);
+    doc.text(`Total Attended: ${attendanceCount.attended}`, 150, 10);
 
-    //   // Restore the original overflow settings
-    //   input.style.overflow = originalOverflow;
-    // }
+    let currentY = 20; // Start Y position for the first element
+
+    // Loop through the family data
+    attendance.data.forEach((family) => {
+      // Filter out the parents who attended
+      const attendedParents = family.parents.filter(
+        (parent) => parent.attended
+      );
+
+      // Filter out the children who attended
+      const attendedChildren = family.children.filter(
+        (child) => child.attended
+      );
+
+      // Skip families with no attendees
+      if (attendedParents.length === 0 && attendedChildren.length === 0) {
+        return;
+      }
+
+      // Add Family Surname Header
+      doc.setFontSize(14);
+      doc.text(` ${family.family_surname} Family`, 10, currentY);
+
+      // Update currentY for the next element
+      currentY += 10;
+
+      // Add Parents Table for those who attended
+      if (attendedParents.length > 0) {
+        autoTable(doc, {
+          startY: currentY,
+          head: [["Parents/Guardians", "Contact", "Status"]],
+          body: attendedParents.map((parent) => [
+            `${parent.first_name} ${parent.last_name}`,
+            parent.contact_number || "N/A",
+            "Attended",
+          ]),
+          theme: "striped",
+        });
+
+        // Update currentY after parents table
+        currentY = doc.lastAutoTable.finalY + 5;
+      }
+
+      // Add Children Table for those who attended
+      if (attendedChildren.length > 0) {
+        autoTable(doc, {
+          startY: currentY,
+          head: [["Child's Name", "Status"]],
+          body: attendedChildren.map((child) => [
+            `${child.first_name} ${child.last_name}`,
+            "Attended",
+          ]),
+          theme: "grid",
+        });
+
+        // Update currentY after children table
+        currentY = doc.lastAutoTable.finalY + 5;
+      }
+    });
+
+    // Save the PDF
+    doc.save(`${event.event_name}-${event.event_date}.pdf`);
   };
 
   useEffect(() => {
@@ -234,7 +284,7 @@ const ScheduleDetails = ({ queryKey }) => {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" side="bottom">
-                    <DropdownMenuItem onClick={() => onEventDownload()}>
+                    <DropdownMenuItem onClick={() => exportAttendanceList()}>
                       Download as PDF
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -306,7 +356,7 @@ const ScheduleDetails = ({ queryKey }) => {
         ref={printRef}
         className="no-scrollbar flex max-h-dvh flex-col gap-5 overflow-y-scroll"
       >
-        <div className="flex justify-evenly flex-wrap font-montserrat font-semibold text-accent">
+        <div className="flex flex-wrap justify-evenly font-montserrat font-semibold text-accent">
           <p>Total Registered: {attendanceCount?.total}</p>
           <p>Total Attended: {attendanceCount?.attended}</p>
           <p>
