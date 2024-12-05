@@ -9,6 +9,7 @@ import {
   FormControl,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 
@@ -78,6 +79,8 @@ const ScheduleDetails = ({ queryKey }) => {
   const [disableSchedule, setDisableSchedule] = useState(false);
   const [urlPrms] = useSearchParams();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState();
+  const [attendeeEdit, setAttendeeEdit] = useState();
+  const [childAttendeeEdit,setChildAttendeeEdit] = useState();
   const [idEditting, setIdEditting] = useState("");
   const eventId = urlPrms.get("event") || null;
   const printRef = useRef(null);
@@ -259,8 +262,7 @@ const ScheduleDetails = ({ queryKey }) => {
     mutationFn: async (data) => await editAttendee(data),
     onSuccess: () => {
       toast({
-        title: "Success",
-        description: "Attendee edited!",
+        title: "Edit Successful",
       });
       setDeleteDialogOpen(false);
     },
@@ -296,6 +298,8 @@ const ScheduleDetails = ({ queryKey }) => {
   const onSubmit = (data) => {
     updateMutation.mutate({ ...data, attendeeId: idEditting });
     setIdEditting("");
+    setAttendeeEdit(false)
+    setChildAttendeeEdit(false)
   };
 
   if (isLoading || attendanceLoading) return <div>Loading...</div>;
@@ -312,7 +316,7 @@ const ScheduleDetails = ({ queryKey }) => {
   }
 
   return (
-    <div className="flex h-full grow flex-col gap-2 overflow-y-hidden px-9 py-6">
+    <div className="flex h-full grow flex-col gap-2 overflow-y-hidden px-3 py-2 md:px-9 md:py-6">
       <div className="flex flex-wrap justify-between">
         <div>
           <Title>{event?.event_name}</Title>
@@ -448,41 +452,38 @@ const ScheduleDetails = ({ queryKey }) => {
                 <h3 className="text-xl font-semibold text-accent">
                   Parents/Guardians
                 </h3>
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)}>
-                    <Table>
-                      <TableHeader className="bg-primary">
-                        <TableRow>
-                          <TableHead className="rounded-l-lg" />
-                          <TableHead>Name</TableHead>
-                          <TableHead>Contact Tel No.</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead className="rounded-r-lg" />
-                        </TableRow>
-                      </TableHeader>
 
-                      <TableBody>
-                        {family?.parents?.map((attendee, i) => (
-                          <TableRow
-                            key={i}
-                            className={cn(
-                              i % 2 !== 0
-                                ? "bg-primary bg-opacity-35"
-                                : "bg-white"
-                            )}
-                          >
-                            <TableCell>
-                              <Switch
-                                defaultChecked={attendee.attended}
-                                disabled={disableSchedule}
-                                onCheckedChange={(state) =>
-                                  onRowAttend(attendee?.id, state)
-                                }
-                              />
-                            </TableCell>
+                <Table>
+                  <TableHeader className="bg-primary">
+                    <TableRow>
+                      <TableHead className="rounded-l-lg" />
+                      <TableHead>Name</TableHead>
+                      <TableHead>Contact Tel No.</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="rounded-r-lg" />
+                    </TableRow>
+                  </TableHeader>
 
-                            <TableCell>
-                              {idEditting === attendee.id ? (
+                  <TableBody>
+                    {family?.parents?.map((attendee, i) => (
+                      <TableRow
+                        key={i}
+                        className={cn(
+                          i % 2 !== 0 ? "bg-primary bg-opacity-35" : "bg-white"
+                        )}
+                      >
+                        <TableCell>
+                          <Switch
+                            defaultChecked={attendee.attended}
+                            disabled={disableSchedule}
+                            onCheckedChange={(state) =>
+                              onRowAttend(attendee?.id, state)
+                            }
+                          />
+                        </TableCell>
+
+                        <TableCell>
+                          {/* {idEditting === attendee.id ? (
                                 <div className="flex gap-2">
                                   <FormField
                                     control={form.control}
@@ -519,11 +520,12 @@ const ScheduleDetails = ({ queryKey }) => {
                                 </div>
                               ) : (
                                 <p>{`${attendee.first_name} ${attendee.last_name}`}</p>
-                              )}
-                            </TableCell>
+                              )} */}
+                          <p>{`${attendee.first_name} ${attendee.last_name}`}</p>
+                        </TableCell>
 
-                            <TableCell>
-                              {idEditting === attendee.id ? (
+                        <TableCell>
+                          {/* {idEditting === attendee.id ? (
                                 <FormField
                                   control={form.control}
                                   name="contact"
@@ -542,19 +544,21 @@ const ScheduleDetails = ({ queryKey }) => {
                                 />
                               ) : (
                                 <p>{attendee.contact_number}</p>
-                              )}
-                            </TableCell>
+                              )} */}
 
-                            <TableCell>
-                              {attendee.attended ? "Attended" : "Pending"}
-                            </TableCell>
-                            <TableCell className="flex gap-2">
-                              {idEditting === attendee.id ? (
+                          <p>{attendee.contact_number}</p>
+                        </TableCell>
+
+                        <TableCell>
+                          {attendee.attended ? "Attended" : "Pending"}
+                        </TableCell>
+                        <TableCell className="flex gap-2">
+                          {/* {idEditting === attendee.id ? (
                                 <Button
                                   type="button"
                                   onClick={() => setIdEditting("")}
                                 >
-                                  Cancel
+                                   <Icon icon={"mingcute:close-fill"}/>
                                 </Button>
                               ) : (
                                 <Button
@@ -586,50 +590,150 @@ const ScheduleDetails = ({ queryKey }) => {
                                     icon={"eva:edit-2-fill"}
                                   />
                                 </Button>
-                              )}
-                              {idEditting === attendee.id && (
-                                <Button type="submit">Save</Button>
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </form>
-                </Form>
-                <h3 className="text-xl font-semibold text-accent">Children</h3>
-                <Form {...childrenForm}>
-                  <form onSubmit={childrenForm.handleSubmit(onSubmit)}>
-                    <Table>
-                      <TableHeader className="bg-primary">
-                        <TableRow>
-                          <TableHead className="rounded-l-lg" />
-                          <TableHead>Name of Child Attendee</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead className="rounded-r-lg" />
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {family?.children?.map((attendee, i) => (
-                          <TableRow
-                            key={i}
-                            className={cn(
-                              i % 2 !== 0
-                                ? "bg-primary bg-opacity-35"
-                                : "bg-white"
-                            )}
-                          >
-                            <TableCell>
-                              <Switch
-                                defaultChecked={attendee.attended}
+                              )} */}
+                          {/* {idEditting === attendee.id && (
+                                <Button type="submit">
+                                   <Icon icon={"mingcute:check-fill"}/></Button>
+                              )} */}
+
+                          <Dialog open={attendeeEdit} onOpenChange={setAttendeeEdit}>
+                            <DialogTrigger>
+                              <Button
+                                type="button"
+                                onClick={() => {
+                                  // form.setValue(
+                                  //   "id",
+                                  //   `${attendee.id}`
+                                  // );
+                                  form.setValue(
+                                    "firstName",
+                                    `${attendee.first_name}`
+                                  );
+                                  form.setValue(
+                                    "lastName",
+                                    `${attendee.last_name}`
+                                  );
+                                  form.setValue(
+                                    "contact",
+                                    `0${attendee.contact_number.toString()}`
+                                  );
+                                  setIdEditting(attendee.id);
+                                }}
+                                variant="ghost"
                                 disabled={disableSchedule}
-                                onCheckedChange={(state) =>
-                                  onRowAttend(attendee?.id, state)
-                                }
-                              />
-                            </TableCell>
-                            <TableCell>
-                              {idEditting === attendee.id ? (
+                              >
+                                <Icon
+                                  disabled={disableSchedule}
+                                  icon={"eva:edit-2-fill"}
+                                />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Edit Parent Attendee</DialogTitle>
+                                <DialogDescription>
+                                  Edit attendee information
+                                </DialogDescription>
+                              </DialogHeader>
+                              <Form {...form}>
+                                <form onSubmit={form.handleSubmit(onSubmit)}>
+                                  <FormField
+                                    control={form.control}
+                                    name="firstName"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>First Name</FormLabel>
+                                        <FormControl>
+                                          <Input
+                                            className="text-accent"
+                                            placeholder="First name"
+                                            type="text"
+                                            {...field}
+                                          />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                  <FormField
+                                    control={form.control}
+                                    name="lastName"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>Last Name</FormLabel>
+                                        <FormControl>
+                                          <Input
+                                            className="text-accent"
+                                            placeholder="Last name"
+                                            type="text"
+                                            {...field}
+                                          />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                  <FormField
+                                    control={form.control}
+                                    name="contact"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>Contact</FormLabel>
+
+                                        <FormControl>
+                                          <Input
+                                            className="text-accent"
+                                            placeholder="Contact"
+                                            type="text"
+                                            {...field}
+                                          />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                  <div className="flex justify-end mt-2">
+                                    <Button>Submit</Button>
+                                  </div>
+                                </form>
+                              </Form>
+                            </DialogContent>
+                          </Dialog>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+
+                <h3 className="text-xl font-semibold text-accent">Children</h3>
+                <Table>
+                  <TableHeader className="bg-primary">
+                    <TableRow>
+                      <TableHead className="rounded-l-lg" />
+                      <TableHead>Name of Child Attendee</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="rounded-r-lg" />
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {family?.children?.map((attendee, i) => (
+                      <TableRow
+                        key={i}
+                        className={cn(
+                          i % 2 !== 0 ? "bg-primary bg-opacity-35" : "bg-white"
+                        )}
+                      >
+                        <TableCell>
+                          <Switch
+                            defaultChecked={attendee.attended}
+                            disabled={disableSchedule}
+                            onCheckedChange={(state) =>
+                              onRowAttend(attendee?.id, state)
+                            }
+                          />
+                        </TableCell>
+                        <TableCell>
+                          {/* {idEditting === attendee.id ? (
                                 <div className="flex gap-2">
                                   <FormField
                                     control={childrenForm.control}
@@ -666,13 +770,14 @@ const ScheduleDetails = ({ queryKey }) => {
                                 </div>
                               ) : (
                                 <p>{`${attendee.first_name} ${attendee.last_name}`}</p>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              {attendee.attended ? "Attended" : "Pending"}
-                            </TableCell>
-                            <TableCell className="flex gap-2">
-                              {idEditting === attendee.id ? (
+                              )} */}
+                          <p>{`${attendee.first_name} ${attendee.last_name}`}</p>
+                        </TableCell>
+                        <TableCell>
+                          {attendee.attended ? "Attended" : "Pending"}
+                        </TableCell>
+                        <TableCell className="flex gap-2">
+                          {/* {idEditting === attendee.id ? (
                                 <Button
                                   type="button"
                                   onClick={() => setIdEditting("")}
@@ -704,14 +809,90 @@ const ScheduleDetails = ({ queryKey }) => {
                               )}
                               {idEditting === attendee.id && (
                                 <Button type="submit">Save</Button>
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </form>
-                </Form>
+                              )} */}
+
+                          <Dialog open={childAttendeeEdit} onOpenChange={setChildAttendeeEdit}>
+                            <DialogTrigger>
+                              <Button
+                                type="button"
+                                onClick={() => {
+                                  childrenForm.setValue(
+                                    "firstName",
+                                    `${attendee.first_name}`
+                                  );
+                                  childrenForm.setValue(
+                                    "lastName",
+                                    `${attendee.last_name}`
+                                  );
+                                  setIdEditting(attendee.id);
+                                }}
+                                variant="ghost"
+                                disabled={disableSchedule}
+                              >
+                                <Icon
+                                  disabled={disableSchedule}
+                                  icon={"eva:edit-2-fill"}
+                                />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Edit Child Attendee</DialogTitle>
+                                <DialogDescription>
+                                  Edit child attendee details
+                                </DialogDescription>
+                              </DialogHeader>
+                              <Form {...childrenForm}>
+                                <form
+                                  onSubmit={childrenForm.handleSubmit(onSubmit)}
+                                >
+                                  <FormField
+                                    control={childrenForm.control}
+                                    name="firstName"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>First Name</FormLabel>
+                                        <FormControl>
+                                          <Input
+                                            placeholder="First name"
+                                            type="text"
+                                            {...field}
+                                          />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                  <FormField
+                                    control={childrenForm.control}
+                                    name="lastName"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>Last Name</FormLabel>
+                                        <FormControl>
+                                          <Input
+                                            placeholder="Last name"
+                                            type="text"
+                                            {...field}
+                                          />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                  <div className=" flex justify-end mt-2">
+                                  <Button  type="submit" >Submit</Button>
+                                  </div>
+                                  
+                                </form>
+                              </Form>
+                            </DialogContent>
+                          </Dialog>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
           );

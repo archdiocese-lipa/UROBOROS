@@ -125,11 +125,11 @@ const Schedule = () => {
   };
 
   return (
-    <div className="flex h-full w-full md:gap-8">
-      <div className="no-scrollbar flex w-full flex-col gap-8 overflow-y-auto lg:w-2/4 lg:min-w-[400px]">
+    <div className="flex h-full w-full xl:gap-8">
+      <div className="no-scrollbar flex w-full xl:flex-1 flex-col gap-8 overflow-y-auto lg:min-w-[400px]">
         <div className="flex items-center justify-between">
           <div>
-            <Title>
+            <Title> 
               {userData?.role === ROLES[1] ? "Assigned Events" : "Scheduler"}
             </Title>
             <Description>
@@ -220,7 +220,7 @@ const Schedule = () => {
               <select
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(Number(e.target.value))}
-                className="border-gray-300 max-h-48 overflow-y-auto rounded-full border px-6 py-2 font-montserrat text-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                className="border-gray-300 max-h-48 overflow-y-auto rounded-md ml-1 border px-6 py-2 font-montserrat text-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-accent"
               >
                 {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
                   <option key={month} value={month}>
@@ -235,7 +235,7 @@ const Schedule = () => {
               <select
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(Number(e.target.value))}
-                className="border-gray-300 max-h-48 overflow-y-auto rounded-full border px-6 py-2 font-montserrat text-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                className="border-gray-300 max-h-48 overflow-y-auto rounded-md border px-6 py-2 font-montserrat text-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-accent"
               >
                 {[...Array(5).keys()].map((offset) => {
                   const year = new Date().getFullYear() - 2 + offset;
@@ -263,7 +263,7 @@ const Schedule = () => {
                         <div key={`${i}-${j}`} className="relative">
                           <div
                             className={cn(
-                              "hidden cursor-pointer items-start justify-between gap-3 rounded-[10px] bg-primary/50 px-5 py-4 lg:flex",
+                              "hidden cursor-pointer items-start justify-between gap-3 rounded-[10px] bg-primary/50 px-5 py-4 xl:flex",
                               event.id === urlPrms.get("event") &&
                                 "border border-primary-outline"
                             )}
@@ -351,47 +351,45 @@ const Schedule = () => {
 
                           <div
                             className={cn(
-                              "flex cursor-pointer items-start gap-3 rounded-[10px] bg-primary/50 px-5 py-4 lg:hidden",
+                              "flex w-full cursor-pointer items-start gap-3 rounded-[10px] bg-primary/50 px-5 py-4 lg xl:hidden",
                               event.id === urlPrms.get("event") &&
                                 "border border-primary-outline"
                             )}
                             onClick={() => onEventClick(event.id)}
                           >
-                            <Sheet className="">
-                              <SheetTrigger asChild>
-                                <div className="flex flex-1 gap-3">
-                                  <EventIcon className="text-2xl text-accent" />
-                                  <div>
-                                    <p className="mb-[6px] text-base font-bold leading-none text-accent">
-                                      {event.event_name}
-                                    </p>
-                                    <p className="text-sm text-primary-text">
-                                      {event.description}
-                                    </p>
-                                    <p className="text-sm leading-tight text-primary-text">
-                                      {event.event_category} -{" "}
-                                      {event.event_visibility}
-                                    </p>
-                                    <p className="text-sm leading-none text-primary-text">
-                                      <span className="font-semibold">
-                                        Date:{" "}
-                                      </span>
-                                      {new Date(
-                                        `${event.event_date}T${event.event_time}`
-                                      ).toLocaleDateString("en-GB", {
-                                        day: "2-digit",
-                                        month: "short",
-                                        year: "numeric",
-                                      })}
-                                      ,
-                                      {new Date(
-                                        `${event.event_date}T${event.event_time}`
-                                      ).toLocaleTimeString()}
-                                    </p>
-                                  </div>
-                                </div>
-                              </SheetTrigger>
-                              <SheetContent className="w-full md:hidden md:w-full">
+                            <Sheet>
+                            <SheetTrigger asChild>
+                            <div className="flex flex-1 gap-3">
+                              <EventIcon className="text-2xl text-accent" />
+                              <div>
+                                <p className="mb-[6px] text-base font-bold leading-none text-accent">
+                                  {event.event_name}
+                                </p>
+                                <p className="text-sm text-primary-text">
+                                  {event.description}
+                                </p>
+                                <p className="text-sm leading-tight text-primary-text">
+                                  {event.event_category} -{" "}
+                                  {event.event_visibility}
+                                </p>
+                                <p className="text-sm leading-none text-primary-text">
+                                  <span className="font-semibold">Date: </span>
+                                  {new Date(
+                                    `${event.event_date}T${event.event_time}`
+                                  ).toLocaleDateString("en-GB", {
+                                    day: "2-digit",
+                                    month: "short",
+                                    year: "numeric",
+                                  })}
+                                  ,
+                                  {new Date(
+                                    `${event.event_date}T${event.event_time}`
+                                  ).toLocaleTimeString()}
+                                </p>
+                              </div>
+                            </div>
+                            </SheetTrigger>
+                              <SheetContent className="w-full xl:hidden md:w-full">
                                 {urlPrms.get("event") && (
                                   <ScheduleDetails
                                     queryKey={[
@@ -494,7 +492,7 @@ const Schedule = () => {
                                 </div>
                               </div>
                             </SheetTrigger>
-                            <SheetContent className="w-full sm:max-w-full md:hidden md:w-full">
+                            <SheetContent className="w-full sm:max-w-full lg:hidden md:w-full">
                               {urlPrms.get("meeting") && <MeetingDetails />}
                             </SheetContent>
                           </Sheet>
@@ -507,7 +505,7 @@ const Schedule = () => {
           </div>
         </div>
       </div>
-      <div className="no-scrollbar hidden w-full overflow-y-scroll rounded-2xl outline outline-2 outline-[#e7dad3] md:block">
+      <div className="no-scrollbar hidden w-full overflow-y-scroll rounded-2xl outline outline-2 outline-[#e7dad3] xl:block">
         {urlPrms.get("event") && (
           <ScheduleDetails
             queryKey={[
@@ -525,7 +523,6 @@ const Schedule = () => {
         )}
         {urlPrms.get("meeting") && <MeetingDetails />}
       </div>
-      <div></div>
     </div>
   );
 };

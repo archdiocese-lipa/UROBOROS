@@ -41,7 +41,9 @@ const Sidebar = () => {
   return (
     <div className="flex lg:my-9 lg:w-64 lg:flex-col">
       <Title className="mb-12 ml-9 hidden max-w-[201px] lg:block">
-        Admin Management Centre
+        {userData?.role === "admin" && "Admin Management Centre"}
+        {userData?.role === "volunteer" && "Volunteer Management Centre"}
+        {userData?.role ==="parishioner" && `Welcome, ${userData.first_name} ${userData.last_name}`}
       </Title>
       <div className="flex flex-1 justify-between lg:flex-col">
         <ul className="flex w-full justify-evenly gap-2 lg:ml-4 lg:mr-8 lg:flex-col lg:items-start">
