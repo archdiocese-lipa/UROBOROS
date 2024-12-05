@@ -25,7 +25,7 @@ import EditChild from "@/components/Family/EditChild";
 import EditParent from "@/components/Family/EditParent";
 
 const Family = () => {
-  const { parentData, childData, isLoading, error } = useFamilyData();
+  const { parentData, childData, error } = useFamilyData();
 
   const { mutateAsync: deleteParent } = useDeleteParent();
   const { mutateAsync: deleteChild } = useDeleteChild();
@@ -40,9 +40,9 @@ const Family = () => {
     await deleteChild(childId);
   };
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
+  // if (isLoading) {
+  //   return <div>Loading...</div>;
+  // }
 
   if (error) {
     return <div>Error: {error.message}</div>;
@@ -57,7 +57,7 @@ const Family = () => {
       {/* Family Members */}
       <div className="flex flex-col justify-center gap-2 lg:flex-row">
         <div className="no-scrollbar h-96 flex-1 overflow-scroll rounded-xl border border-primary p-5 lg:h-auto">
-          <Label className="text-primary-text">Parent/Guardian</Label>
+          <Label className="text-primary-text">Parents/Guardians</Label>
           <Table>
             <TableHeader className="rounded-xl bg-primary">
               <TableRow>
