@@ -37,7 +37,7 @@ import { ROLES } from "@/constants/roles";
 import MeetingDetails from "@/components/Schedule/MeetingDetails";
 import useInterObserver from "@/hooks/useInterObserver";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import ParishionerDialogCalendar from "@/components/Events/ParishionerDialogCalendar";
+import VolunteerDialogCalendar from "@/components/Schedule/VolunteerDialogCalendar";
 
 const Schedule = () => {
   const [filter, setFilter] = useState("events");
@@ -138,7 +138,7 @@ const Schedule = () => {
                 : "Manage schedules for your organisation."}
             </Description>
           </div>
-          {userData?.role === ROLES[1] && <ParishionerDialogCalendar />}
+          {userData?.role === ROLES[1] && <VolunteerDialogCalendar />}
         </div>
         <div className="flex flex-col gap-3">
           {userData?.role === ROLES[0] && (
@@ -298,55 +298,59 @@ const Schedule = () => {
                                 </p>
                               </div>
                             </div>
-                            <Dialog
-                              open={editDialogOpenIndex === `${i}-${j}`}
-                              onOpenChange={(isOpen) =>
-                                setEditDialogOpenIndex(
-                                  isOpen ? `${i}-${j}` : null
-                                )
-                              }
-                            >
-                              <DialogTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  className="-mt-3 p-0 font-semibold text-accent hover:underline"
-                                >
-                                  Edit
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent>
-                                <DialogHeader>
-                                  <DialogTitle>Edit Event</DialogTitle>
-                                  <DialogDescription>
-                                    Schedule an upcoming event.
-                                  </DialogDescription>
-                                </DialogHeader>
-                                <CreateEvent
-                                  id="update-event"
-                                  eventData={{ ...event }}
-                                  setDialogOpen={(isOpen) => {
-                                    setEditDialogOpenIndex(
-                                      isOpen ? `${i}-${j}` : null
-                                    );
-                                  }}
-                                  queryKey={[
-                                    "schedules",
-                                    filter,
-                                    urlPrms.get("query")?.toString() || "",
-                                  ]}
-                                />
-                                {/* Dialog Footer */}
-                                <DialogFooter>
-                                  <div className="flex justify-end gap-2">
-                                    <DialogClose asChild>
-                                      <Button variant="outline">Cancel</Button>
-                                    </DialogClose>
+                            {userData.role === ROLES[0] && (
+                              <Dialog
+                                open={editDialogOpenIndex === `${i}-${j}`}
+                                onOpenChange={(isOpen) =>
+                                  setEditDialogOpenIndex(
+                                    isOpen ? `${i}-${j}` : null
+                                  )
+                                }
+                              >
+                                <DialogTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    className="-mt-3 p-0 font-semibold text-accent hover:underline"
+                                  >
+                                    Edit
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                  <DialogHeader>
+                                    <DialogTitle>Edit Event</DialogTitle>
+                                    <DialogDescription>
+                                      Schedule an upcoming event.
+                                    </DialogDescription>
+                                  </DialogHeader>
+                                  <CreateEvent
+                                    id="update-event"
+                                    eventData={{ ...event }}
+                                    setDialogOpen={(isOpen) => {
+                                      setEditDialogOpenIndex(
+                                        isOpen ? `${i}-${j}` : null
+                                      );
+                                    }}
+                                    queryKey={[
+                                      "schedules",
+                                      filter,
+                                      urlPrms.get("query")?.toString() || "",
+                                    ]}
+                                  />
+                                  {/* Dialog Footer */}
+                                  <DialogFooter>
+                                    <div className="flex justify-end gap-2">
+                                      <DialogClose asChild>
+                                        <Button variant="outline">
+                                          Cancel
+                                        </Button>
+                                      </DialogClose>
 
-                                    <Button form="update-event">Edit</Button>
-                                  </div>
-                                </DialogFooter>
-                              </DialogContent>
-                            </Dialog>
+                                      <Button form="update-event">Edit</Button>
+                                    </div>
+                                  </DialogFooter>
+                                </DialogContent>
+                              </Dialog>
+                            )}
                           </div>
 
                           <div
