@@ -40,11 +40,10 @@ import useCreateEvent from "@/hooks/useCreateEvent";
 import useQuickAccessEvents from "@/hooks/useQuickAccessEvents";
 import useUsersByRole from "@/hooks/useUsersByRole";
 import useGetAllMinistries from "@/hooks/useGetAllMinistries";
-
+import useMinistryMembers from "@/hooks/useMinistryMembers"; // Import the custom hook
 
 import { updateEvent } from "@/services/eventService";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-
 
 const CreateEvent = ({
   id = "create-event",
@@ -52,18 +51,22 @@ const CreateEvent = ({
   setDialogOpen,
   queryKey,
 }) => {
+  const [isPopoverOpen, setPopoverOpen] = useState(false);
+  const [selectedMinistry, setSelectedMinistry] = useState(null);
+
+  const { members } = useMinistryMembers(selectedMinistry);
+
   const { userData } = useUser(); // Get userData from the context
 
   const userId = userData?.id; // Extract the userId, safely checking if userData exists
   const { data: ministries } = useGetAllMinistries();
-
-  const [isPopoverOpen, setPopoverOpen] = useState(false);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { mutate: createEvent, _isLoading } = useCreateEvent();
   const { events } = useQuickAccessEvents();
   const { data: volunteers } = useUsersByRole("volunteer");
+
   const editMutation = useMutation({
     mutationFn: async ({ eventId, updatedData }) =>
       await updateEvent({ eventId, updatedData }),
@@ -118,6 +121,16 @@ const CreateEvent = ({
     }
   }, [watchVisibility, resetField]);
 
+  useEffect(() => {
+    if (selectedMinistry && members?.length > 0) {
+      // Automatically set all members as selected
+      setValue(
+        "assignVolunteer",
+        members.map((member) => member.user_id) // Map to user IDs
+      );
+    }
+  }, [members, selectedMinistry, setValue]);
+
   const handleEventSelect = (eventItem) => {
     // Convert the event time string to a Date object
     const eventDate = eventItem.event_time
@@ -143,7 +156,6 @@ const CreateEvent = ({
 
   // Mark dito mo connect backend
   const onSubmit = (data) => {
-    console.log("data before submit", data);
     // Ensure userId is available
     if (!userId) {
       toast({
@@ -175,16 +187,13 @@ const CreateEvent = ({
       setDialogOpen(false); // Close the dialog if success
       return;
     } else {
-      console.log("payload", eventPayload);
       editMutation.mutate({
         eventId: eventData?.id,
         updatedData: eventPayload,
       });
     }
 
-
     setDialogOpen(false); // Close the dialog if success
-
   };
 
   return (
@@ -285,15 +294,21 @@ const CreateEvent = ({
                 <FormItem className="flex-1">
                   <FormLabel>Select Ministry</FormLabel>
                   <FormControl>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select
+                      onValueChange={(value) => {
+                        field.onChange(value); // Update the form field value
+                        setSelectedMinistry(value); // Call setSelectedMinistry with the selected value
+                      }}
+                      value={field.value}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Select Ministry" />
                       </SelectTrigger>
                       <SelectContent>
                         {/* Ensure ministries.data is an array before mapping */}
                         {Array.isArray(ministries?.data) &&
-                        ministries.data.length > 0 ? (
-                          ministries.data.map((ministry) => (
+                        ministries?.data.length > 0 ? (
+                          ministries?.data.map((ministry) => (
                             <SelectItem key={ministry.id} value={ministry.id}>
                               {ministry.ministry_name}
                             </SelectItem>
@@ -320,14 +335,21 @@ const CreateEvent = ({
               <FormLabel>Assign Volunteer</FormLabel>
               <FormControl>
                 <AssignVolunteerComboBox
-                  options={volunteers?.map((volunteer) => ({
-                    value: volunteer.id, // Use 'id' as the value
-                    label: `${volunteer.first_name} ${volunteer.last_name}`, // Combine first name and last name
-                  }))}
+                  options={
+                    selectedMinistry && members?.length > 0
+                      ? members.map((member) => ({
+                          value: member.user_id, // Use the user_id for the value
+                          label: `${member.users?.first_name || "Unknown"} ${member.users?.last_name || "Unknown"}`, // Safely access nested properties
+                        }))
+                      : volunteers?.map((volunteer) => ({
+                          value: volunteer.id,
+                          label: `${volunteer.first_name} ${volunteer.last_name}`,
+                        }))
+                  }
                   value={
                     Array.isArray(field.value) ? field.value : [field.value]
                   } // Ensure it's always an array
-                  onChange={field.onChange} // Handle change to update the form state
+                  onChange={field.onChange} // Update the form state
                   placeholder="Select Volunteer"
                 />
               </FormControl>
