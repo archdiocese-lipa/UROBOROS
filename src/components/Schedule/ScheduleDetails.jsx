@@ -255,7 +255,6 @@ const ScheduleDetails = ({ queryKey }) => {
   });
   const childSchema = parentSchema.omit({ contact: true });
 
-
   const updateMutation = useMutation({
     mutationFn: async (data) => await editAttendee(data),
     onSuccess: () => {
@@ -287,16 +286,14 @@ const ScheduleDetails = ({ queryKey }) => {
       contact: "",
     },
   });
-  
+
   const childrenForm = useForm({
     resolver: zodResolver(childSchema),
-    firstName:"",
-    lastName:""
-  })
+    firstName: "",
+    lastName: "",
+  });
 
   const onSubmit = (data) => {
-    console.log(data);
-
     updateMutation.mutate({ ...data, attendeeId: idEditting });
     setIdEditting("");
   };
@@ -313,7 +310,7 @@ const ScheduleDetails = ({ queryKey }) => {
   if (!event) {
     return <p>hi</p>;
   }
-  console.log(idEditting);
+
   return (
     <div className="flex h-full grow flex-col gap-2 overflow-y-hidden px-9 py-6">
       <div className="flex flex-wrap justify-between">
@@ -329,7 +326,7 @@ const ScheduleDetails = ({ queryKey }) => {
               <Dialog onOpenChange={generateQRCode}>
                 <DialogTrigger asChild>
                   <Button>
-                    <Icon  icon={"mingcute:qrcode-2-line"} />
+                    <Icon icon={"mingcute:qrcode-2-line"} />
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
@@ -448,7 +445,9 @@ const ScheduleDetails = ({ queryKey }) => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-3">
-                <h3 className="text-xl font-semibold text-accent">Parents/Guardians</h3>
+                <h3 className="text-xl font-semibold text-accent">
+                  Parents/Guardians
+                </h3>
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)}>
                     <Table>
@@ -582,7 +581,10 @@ const ScheduleDetails = ({ queryKey }) => {
                                   variant="ghost"
                                   disabled={disableSchedule}
                                 >
-                                  <Icon disabled={disableSchedule} icon={"eva:edit-2-fill"} />
+                                  <Icon
+                                    disabled={disableSchedule}
+                                    icon={"eva:edit-2-fill"}
+                                  />
                                 </Button>
                               )}
                               {idEditting === attendee.id && (
@@ -597,34 +599,36 @@ const ScheduleDetails = ({ queryKey }) => {
                 </Form>
                 <h3 className="text-xl font-semibold text-accent">Children</h3>
                 <Form {...childrenForm}>
-                <form onSubmit={childrenForm.handleSubmit(onSubmit)}>
-                <Table>
-                  <TableHeader className="bg-primary">
-                    <TableRow>
-                      <TableHead className="rounded-l-lg" />
-                      <TableHead>Name of Child Attendee</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="rounded-r-lg" />
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {family?.children?.map((attendee, i) => (
-                      <TableRow
-                        key={i}
-                        className={cn(
-                          i % 2 !== 0 ? "bg-primary bg-opacity-35" : "bg-white"
-                        )}
-                      >
-                        <TableCell>
-                          <Switch
-                            defaultChecked={attendee.attended}
-                            disabled={disableSchedule}
-                            onCheckedChange={(state) =>
-                              onRowAttend(attendee?.id, state)
-                            }
-                          />
-                        </TableCell>
-                        <TableCell>
+                  <form onSubmit={childrenForm.handleSubmit(onSubmit)}>
+                    <Table>
+                      <TableHeader className="bg-primary">
+                        <TableRow>
+                          <TableHead className="rounded-l-lg" />
+                          <TableHead>Name of Child Attendee</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead className="rounded-r-lg" />
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {family?.children?.map((attendee, i) => (
+                          <TableRow
+                            key={i}
+                            className={cn(
+                              i % 2 !== 0
+                                ? "bg-primary bg-opacity-35"
+                                : "bg-white"
+                            )}
+                          >
+                            <TableCell>
+                              <Switch
+                                defaultChecked={attendee.attended}
+                                disabled={disableSchedule}
+                                onCheckedChange={(state) =>
+                                  onRowAttend(attendee?.id, state)
+                                }
+                              />
+                            </TableCell>
+                            <TableCell>
                               {idEditting === attendee.id ? (
                                 <div className="flex gap-2">
                                   <FormField
@@ -664,45 +668,49 @@ const ScheduleDetails = ({ queryKey }) => {
                                 <p>{`${attendee.first_name} ${attendee.last_name}`}</p>
                               )}
                             </TableCell>
-                        <TableCell>
-                          {attendee.attended ? "Attended" : "Pending"}
-                        </TableCell>
-                        <TableCell className="flex gap-2">
-                          {idEditting === attendee.id ? (
-                            <Button
-                              type="button"
-                              onClick={() => setIdEditting("")}
-                            >
-                              Cancel
-                            </Button>
-                          ) : (
-                            <Button
-                              type="button"
-                              onClick={() => {
-                                childrenForm.setValue(
-                                  "firstName",
-                                  `${attendee.first_name}`
-                                )
-                                childrenForm.setValue(
-                                  "lastName",
-                                  `${attendee.last_name}`
-                                )
-                                setIdEditting(attendee.id)}}
-                              variant="ghost"
-                              disabled={disableSchedule}
-                            >
-                              <Icon disabled={disableSchedule} icon={"eva:edit-2-fill"} />
-                            </Button>
-                          )}
-                          {idEditting === attendee.id && (
-                            <Button type="submit">Save</Button>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-                </form>
+                            <TableCell>
+                              {attendee.attended ? "Attended" : "Pending"}
+                            </TableCell>
+                            <TableCell className="flex gap-2">
+                              {idEditting === attendee.id ? (
+                                <Button
+                                  type="button"
+                                  onClick={() => setIdEditting("")}
+                                >
+                                  Cancel
+                                </Button>
+                              ) : (
+                                <Button
+                                  type="button"
+                                  onClick={() => {
+                                    childrenForm.setValue(
+                                      "firstName",
+                                      `${attendee.first_name}`
+                                    );
+                                    childrenForm.setValue(
+                                      "lastName",
+                                      `${attendee.last_name}`
+                                    );
+                                    setIdEditting(attendee.id);
+                                  }}
+                                  variant="ghost"
+                                  disabled={disableSchedule}
+                                >
+                                  <Icon
+                                    disabled={disableSchedule}
+                                    icon={"eva:edit-2-fill"}
+                                  />
+                                </Button>
+                              )}
+                              {idEditting === attendee.id && (
+                                <Button type="submit">Save</Button>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </form>
                 </Form>
               </CardContent>
             </Card>

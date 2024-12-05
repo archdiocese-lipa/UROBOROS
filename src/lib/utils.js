@@ -49,6 +49,24 @@ const paginate = async ({
       supabaseQuery = supabaseQuery.eq("is_confirmed", isConfirmed);
     }
 
+    // Apply date filters (this is where the date filter is handled)
+    if (filters.date) {
+      // Assuming filters.date is in the 'YYYY-MM' format
+      const [year, month] = filters.date.split("-");
+
+      // Get the first day of the month
+      const startOfMonth = `${year}-${month}-01`;
+
+      // Get the last day of the month
+      const lastDayOfMonth = new Date(year, month, 0).getDate(); // `month` is 0-indexed
+      const endOfMonth = `${year}-${month}-${lastDayOfMonth}`;
+
+      // Apply filtering based on the year and month
+      supabaseQuery = supabaseQuery
+        .gte("event_date", startOfMonth) // Filter events from the start of the month
+        .lte("event_date", endOfMonth); // Filter events until the last day of the month
+    }
+
     // Apply gte and lte filters if provided
     if (filters.gte) {
       for (const [column, value] of Object.entries(filters.gte)) {
@@ -119,6 +137,7 @@ const paginate = async ({
     throw error;
   }
 };
+
 /**
  * Gets first initial of a name.
  * @returns {string} The initial of a name.

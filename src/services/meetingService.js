@@ -111,6 +111,8 @@ export const getMeetings = async ({
   pageSize,
   query,
   user,
+  selectedYear,
+  selectedMonth,
 } = {}) => {
   try {
     const filters = {};
@@ -122,6 +124,13 @@ export const getMeetings = async ({
 
     if (endDate) {
       filters.lte = endDate;
+    }
+
+    // Apply filters for the selected year and month
+    if (selectedYear && selectedMonth) {
+      const formattedMonth = String(selectedMonth).padStart(2, "0");
+      const selectedDate = `${selectedYear}-${formattedMonth}`; // Example: "2024-12"
+      filters.date = selectedDate; // Assume `date` is a field in your meetings table
     }
 
     // Filter by meeting name (optional query search)
