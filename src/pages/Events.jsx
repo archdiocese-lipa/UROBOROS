@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { getParishionerEvents } from "@/services/eventService";
 
 import { useInfiniteQuery } from "@tanstack/react-query";
+import ParishionerDialogCalendar from "@/components/Events/ParishionerDialogCalendar";
 
 const Events = () => {
   const { data, isLoading, fetchNextPage, hasNextPage } = useInfiniteQuery({
@@ -42,7 +43,7 @@ const Events = () => {
       <Title>Events</Title>
       <Description>Latest upcoming events at the church</Description>
       <div className="mt-5 flex justify-center gap-x-2 md:justify-start">
-        <Button>Calendar</Button>
+        <ParishionerDialogCalendar />
         <QrScannerEvents eventData={eventData} />
       </div>
       <div className="mt-5 grid gap-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">

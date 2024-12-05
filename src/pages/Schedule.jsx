@@ -37,6 +37,7 @@ import { ROLES } from "@/constants/roles";
 import MeetingDetails from "@/components/Schedule/MeetingDetails";
 import useInterObserver from "@/hooks/useInterObserver";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import ParishionerDialogCalendar from "@/components/Events/ParishionerDialogCalendar";
 
 const Schedule = () => {
   const [filter, setFilter] = useState("events");
@@ -126,15 +127,18 @@ const Schedule = () => {
   return (
     <div className="flex h-full w-full md:gap-8">
       <div className="no-scrollbar flex w-full flex-col gap-8 overflow-y-auto lg:w-2/4 lg:min-w-[400px]">
-        <div>
-          <Title>
-            {userData?.role === ROLES[1] ? "Assigned Events" : "Scheduler"}
-          </Title>
-          <Description>
-            {userData?.role === ROLES[1]
-              ? "View events assigned to you."
-              : "Manage schedules for your organisation."}
-          </Description>
+        <div className="flex items-center justify-between">
+          <div>
+            <Title>
+              {userData?.role === ROLES[1] ? "Assigned Events" : "Scheduler"}
+            </Title>
+            <Description>
+              {userData?.role === ROLES[1]
+                ? "View events assigned to you."
+                : "Manage schedules for your organisation."}
+            </Description>
+          </div>
+          {userData?.role === ROLES[1] && <ParishionerDialogCalendar />}
         </div>
         <div className="flex flex-col gap-3">
           {userData?.role === ROLES[0] && (
