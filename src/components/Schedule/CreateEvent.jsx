@@ -121,16 +121,6 @@ const CreateEvent = ({
     }
   }, [watchVisibility, resetField]);
 
-  useEffect(() => {
-    if (selectedMinistry && members?.length > 0) {
-      // Automatically set all members as selected
-      setValue(
-        "assignVolunteer",
-        members.map((member) => member.user_id) // Map to user IDs
-      );
-    }
-  }, [members, selectedMinistry, setValue]);
-
   const handleEventSelect = (eventItem) => {
     // Convert the event time string to a Date object
     const eventDate = eventItem.event_time
