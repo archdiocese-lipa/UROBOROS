@@ -273,7 +273,7 @@ const Announcements = () => {
 
       <div className="no-scrollbar flex h-full w-full flex-col-reverse gap-4 overflow-y-scroll lg:flex-row">
         {/* Announcements List */}
-        <div className="no-scrollbar w-full flex-1 overflow-y-scroll rounded-2xl border border-primary-outline bg-primary px-4 py-3 md:px-9 md:py-6">
+        <div className="no-scrollbar w-full flex-1 overflow-y-scroll rounded-xl p-1 md:border border-primary-outline md:bg-primary md:px-9 md:py-6">
           {isLoading && <p>Loading...</p>}
 
           {data?.pages?.flatMap((page) => page.items).length === 0 ? (
@@ -283,7 +283,7 @@ const Announcements = () => {
               page?.items?.map((announcement) => (
                 <div
                   key={announcement.id}
-                  className="mb-3 w-full rounded-[10px] border border-primary-outline bg-white px-8 pb-6 pt-5"
+                  className="mb-3 w-full  rounded-lg p-1 border border-primary-outline bg-white md:px-8 md:pb-6 md:pt-5"
                 >
                   <Announcement
                     // form={editform}
