@@ -360,7 +360,6 @@ const ScheduleDetails = ({ queryKey }) => {
               </div>
             </div>
           )}
-
           <Dialog
             open={deleteDialogOpen}
             onOpenChange={(isOpen) => {
@@ -604,7 +603,7 @@ const ScheduleDetails = ({ queryKey }) => {
                       <TableHeader className="bg-primary">
                         <TableRow>
                           <TableHead className="rounded-l-lg" />
-                          <TableHead>Name of Child Attendee</TableHead>
+                          <TableHead>Name</TableHead>
                           <TableHead>Status</TableHead>
                           <TableHead className="rounded-r-lg" />
                         </TableRow>
