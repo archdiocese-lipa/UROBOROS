@@ -99,7 +99,6 @@ export const updateEvent = async (eventData) => {
     if (eventError) {
       throw new Error(eventError.message); // Handle any errors
     }
-    console.log("edited successfuly");
 
     // Step 2: Remove all existing volunteer assignments for the event
     const { error: removeError } = await supabase
@@ -136,53 +135,43 @@ export const updateEvent = async (eventData) => {
 
 // Function to fetch all events (optionally filter by date, creator, etc.)
 export const getEvents = async ({
-  startDate,
-  endDate,
   page = 1,
   pageSize,
-
   user,
+  selectedYear,
+  selectedMonth,
 } = {}) => {
   try {
     const filters = {};
 
-    // Apply startDate and endDate filters
-    if (startDate) {
-      filters.gte = startDate;
-    }
+    // Apply filters for the selected year and month
+    if (selectedYear && selectedMonth) {
+      // Create a filter for events that fall within the selected month of the selected year
+      const formattedMonth = String(selectedMonth).padStart(2, "0");
+      const selectedDate = `${selectedYear}-${formattedMonth}`; // Example: "2024-12"
 
-    if (endDate) {
-      filters.lte = endDate;
+      filters.date = selectedDate; // Assume `date` is a field in your events table
     }
 
     let nonAdminEventIds = [];
 
     // Check if user is a volunteer and apply filters
     if (user && user.role !== ROLES[0]) {
-      // assuming ROLES[0] is admin
+      // Assuming ROLES[0] is admin
 
       const { data: volunteerEvents } = await supabase
         .from("event_volunteers")
         .select("*")
         .eq("volunteer_id", user.id);
 
-      if (nonAdminEventIds.length > 0) {
-        filters.id = nonAdminEventIds; // Apply only the volunteer's events
-      } else {
-        // If no volunteer events are found, you can either:
-        // 1. Leave the filters.id as is, or
-        // 2. Set filters.id to an empty array or some default value
-        filters.id = []; // Example of resetting the filter
-      }
-
       nonAdminEventIds = volunteerEvents.map((event) => event.event_id);
 
       if (nonAdminEventIds.length > 0) {
         filters.id = nonAdminEventIds; // Apply only the volunteer's events
+      } else {
+        filters.id = []; // Reset filter if no volunteer events are found
       }
     }
-
-    // If the user is an admin or has no specific events, apply all events
 
     // Fetch data using pagination
     const data = await paginate({

@@ -40,6 +40,8 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const Schedule = () => {
   const [filter, setFilter] = useState("events");
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editDialogOpenIndex, setEditDialogOpenIndex] = useState(null);
   const [urlPrms, setUrlPrms] = useSearchParams();
@@ -57,7 +59,13 @@ const Schedule = () => {
   });
 
   const { data, isLoading, hasNextPage, fetchNextPage } = useInfiniteQuery({
-    queryKey: ["schedules", filter, urlPrms.get("query")?.toString() || ""],
+    queryKey: [
+      "schedules",
+      filter,
+      urlPrms.get("query")?.toString() || "",
+      selectedYear, // Added selectedYear
+      selectedMonth, // Added selectedMonth
+    ],
     queryFn: async ({ pageParam }) => {
       let response;
       if (filter === "events") {
@@ -66,6 +74,8 @@ const Schedule = () => {
           query: urlPrms.get("query")?.toString() || "",
           pageSize: 10,
           user: userData,
+          selectedYear,
+          selectedMonth,
         });
       } else if (filter === "meetings") {
         response = await getMeetings({
@@ -199,6 +209,44 @@ const Schedule = () => {
           </div>
           <div>
             <p className="mb-3 font-montserrat font-semibold text-accent">
+              Year and Month
+            </p>
+            <div className="flex gap-2">
+              {/* Month Selector */}
+              <select
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(Number(e.target.value))}
+                className="border-gray-300 max-h-48 overflow-y-auto rounded-full border px-6 py-2 font-montserrat text-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-accent"
+              >
+                {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
+                  <option key={month} value={month}>
+                    {new Date(0, month - 1).toLocaleString("default", {
+                      month: "long",
+                    })}
+                  </option>
+                ))}
+              </select>
+
+              {/* Year Selector */}
+              <select
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(Number(e.target.value))}
+                className="border-gray-300 max-h-48 overflow-y-auto rounded-full border px-6 py-2 font-montserrat text-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-accent"
+              >
+                {[...Array(5).keys()].map((offset) => {
+                  const year = new Date().getFullYear() - 2 + offset;
+                  return (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <p className="mb-3 font-montserrat font-semibold text-accent">
               Schedules
             </p>
             <div className="flex flex-col gap-2 font-montserrat">
@@ -297,8 +345,7 @@ const Schedule = () => {
                             </Dialog>
                           </div>
 
-                          
-                             <div
+                          <div
                             className={cn(
                               "flex cursor-pointer items-start gap-3 rounded-[10px] bg-primary/50 px-5 py-4 lg:hidden",
                               event.id === urlPrms.get("event") &&
@@ -307,37 +354,39 @@ const Schedule = () => {
                             onClick={() => onEventClick(event.id)}
                           >
                             <Sheet className="">
-                            <SheetTrigger asChild>
-                            <div className="flex flex-1 gap-3">
-                              <EventIcon className="text-2xl text-accent" />
-                              <div>
-                                <p className="mb-[6px] text-base font-bold leading-none text-accent">
-                                  {event.event_name}
-                                </p>
-                                <p className="text-sm text-primary-text">
-                                  {event.description}
-                                </p>
-                                <p className="text-sm leading-tight text-primary-text">
-                                  {event.event_category} -{" "}
-                                  {event.event_visibility}
-                                </p>
-                                <p className="text-sm leading-none text-primary-text">
-                                  <span className="font-semibold">Date: </span>
-                                  {new Date(
-                                    `${event.event_date}T${event.event_time}`
-                                  ).toLocaleDateString("en-GB", {
-                                    day: "2-digit",
-                                    month: "short",
-                                    year: "numeric",
-                                  })}
-                                  ,
-                                  {new Date(
-                                    `${event.event_date}T${event.event_time}`
-                                  ).toLocaleTimeString()}
-                                </p>
-                              </div>
-                            </div>
-                            </SheetTrigger>
+                              <SheetTrigger asChild>
+                                <div className="flex flex-1 gap-3">
+                                  <EventIcon className="text-2xl text-accent" />
+                                  <div>
+                                    <p className="mb-[6px] text-base font-bold leading-none text-accent">
+                                      {event.event_name}
+                                    </p>
+                                    <p className="text-sm text-primary-text">
+                                      {event.description}
+                                    </p>
+                                    <p className="text-sm leading-tight text-primary-text">
+                                      {event.event_category} -{" "}
+                                      {event.event_visibility}
+                                    </p>
+                                    <p className="text-sm leading-none text-primary-text">
+                                      <span className="font-semibold">
+                                        Date:{" "}
+                                      </span>
+                                      {new Date(
+                                        `${event.event_date}T${event.event_time}`
+                                      ).toLocaleDateString("en-GB", {
+                                        day: "2-digit",
+                                        month: "short",
+                                        year: "numeric",
+                                      })}
+                                      ,
+                                      {new Date(
+                                        `${event.event_date}T${event.event_time}`
+                                      ).toLocaleTimeString()}
+                                    </p>
+                                  </div>
+                                </div>
+                              </SheetTrigger>
                               <SheetContent className="w-full md:hidden md:w-full">
                                 {urlPrms.get("event") && (
                                   <ScheduleDetails
@@ -349,7 +398,7 @@ const Schedule = () => {
                                   />
                                 )}
                               </SheetContent>
-                          </Sheet>
+                            </Sheet>
                             <Dialog
                               open={editDialogOpenIndex === `${i}-${j}`}
                               onOpenChange={(isOpen) =>
@@ -400,7 +449,6 @@ const Schedule = () => {
                               </DialogContent>
                             </Dialog>
                           </div>
-                     
                         </div>
                       ))
                     : page?.items.map((meeting, j) => (
@@ -465,10 +513,10 @@ const Schedule = () => {
             ]}
           />
         )}
-        
+
         {!urlPrms.get("event") && !urlPrms.get("meeting") && (
-          <div className=" h-full flex items-center justify-center">
-          <p>No event selected.</p>
+          <div className="flex h-full items-center justify-center">
+            <p>No event selected.</p>
           </div>
         )}
         {urlPrms.get("meeting") && <MeetingDetails />}
