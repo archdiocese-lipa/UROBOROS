@@ -70,7 +70,11 @@ const Family = () => {
             </TableHeader>
             <TableBody>
               {!parentData?.length ? (
-                <p>No parent/guardian data available.</p>
+                <TableRow>
+                  <TableCell colSpan={3} className="text-center">
+                    No parent/guardian data available.
+                  </TableCell>
+                </TableRow>
               ) : (
                 parentData?.flatMap((parent) => (
                   <TableRow key={parent.id}>
@@ -119,7 +123,11 @@ const Family = () => {
             </TableHeader>
             <TableBody>
               {!childData?.length ? (
-                <p>No children data available.</p>
+                <TableRow>
+                  <TableCell colSpan={2} className="text-center">
+                    No children data available.
+                  </TableCell>
+                </TableRow>
               ) : (
                 childData?.flatMap((child) => (
                   <TableRow key={child.id}>

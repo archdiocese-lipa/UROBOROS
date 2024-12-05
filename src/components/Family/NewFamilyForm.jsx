@@ -33,12 +33,12 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { newFamilySchema } from "@/zodSchema/Family/NewFamilyFormSchema";
 import {
-  addChild,
-  addParent,
   checkDuplicatedFamilyMember,
   getFamilyId,
 } from "@/services/familyService";
 import { useUser } from "@/context/useUser";
+import useAddParent from "@/hooks/Family/useAddParent";
+import useAddChild from "@/hooks/Family/useAddChild";
 
 const NewFamilyForm = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -75,6 +75,11 @@ const NewFamilyForm = () => {
     form.setValue("contact_number", "");
   };
 
+  // Mutation for adding parent
+  const { mutate: addParent } = useAddParent();
+  // Mutation for adding child
+  const { mutate: addChild } = useAddChild();
+
   const onSubmit = async (data) => {
     try {
       // Fetch family ID
@@ -104,37 +109,14 @@ const NewFamilyForm = () => {
 
       // Handle adding guardian or child based on type
       if (data.type === "guardian") {
-        // Add guardian
-        await addParent(
-          [
-            {
-              firstName: newMember.firstName,
-              lastName: newMember.lastName,
-              contactNumber: newMember.contactNumber,
-            },
-          ],
-          familyId.id
-        );
-
-        toast({
-          title: "Success",
-          description: `Guardian ${newMember.firstName} ${newMember.lastName} added successfully.`,
+        addParent({
+          members: [newMember],
+          familyId: familyId.id,
         });
       } else if (data.type === "child") {
-        // Add child
-        await addChild(
-          [
-            {
-              firstName: newMember.firstName,
-              lastName: newMember.lastName,
-            },
-          ],
-          familyId.id
-        );
-
-        toast({
-          title: "Success",
-          description: `${newMember.firstName} ${newMember.lastName} added successfully.`,
+        addChild({
+          members: [newMember],
+          familyId: familyId.id,
         });
       } else {
         // Invalid type handling
