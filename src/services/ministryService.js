@@ -87,6 +87,8 @@ export const fetchMinistryAssignedUsers = async (ministryId) => {
 
 export const fetchUserMinistries = async (user_id) => {
   // Accept userData as argument
+
+
   try {
     const { data, error } = await supabase
       .from("ministry_assignments")
@@ -104,6 +106,8 @@ export const fetchUserMinistries = async (user_id) => {
 
     // Dynamically extract all ministries from the data array
     const ministries = data.map((item) => item.ministries);
+
+  
 
     return ministries; // Return the array of ministries
   } catch (err) {
