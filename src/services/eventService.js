@@ -262,6 +262,55 @@ export const getAllEvents = async () => {
   }
 };
 
+// Updated getEventsCalendar to accept year and month as arguments
+export const getEventsCalendar = async (ministryIds = []) => {
+  try {
+    // Fetch all public events (no filtering by ministry)
+    const publicEventsQuery = supabase
+      .from("events")
+      .select("*")
+      .eq("event_visibility", "public");
+
+    // Fetch private events filtered by ministry IDs (only if provided)
+    const privateEventsQuery =
+      ministryIds.length > 0
+        ? supabase
+            .from("events")
+            .select("*")
+            .eq("event_visibility", "private")
+            .in("ministry", ministryIds) // Apply ministry filter
+        : null;
+
+    // Execute both queries
+    const publicEventsPromise = publicEventsQuery;
+    const privateEventsPromise = privateEventsQuery
+      ? privateEventsQuery
+      : Promise.resolve({ data: [] });
+
+    // Wait for both queries to resolve
+    const [publicEventsResult, privateEventsResult] = await Promise.all([
+      publicEventsPromise,
+      privateEventsPromise,
+    ]);
+
+    // Check for errors in the queries
+    if (publicEventsResult.error) {
+      throw new Error(publicEventsResult.error.message);
+    }
+    if (privateEventsResult.error) {
+      throw new Error(privateEventsResult.error.message);
+    }
+
+    // Combine public and private events
+    const allEvents = [...publicEventsResult.data, ...privateEventsResult.data];
+
+    return { success: true, data: allEvents };
+  } catch (error) {
+    console.error("Error fetching events:", error);
+    return { success: false, error: error.message }; // Return error structure
+  }
+};
+
 export const fetchEventVolunteers = async (eventId) => {
   try {
     // Query the event_volunteers table for the given event ID

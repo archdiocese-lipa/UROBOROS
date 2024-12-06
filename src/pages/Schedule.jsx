@@ -64,6 +64,7 @@ const Schedule = () => {
       "schedules",
       filter,
       urlPrms.get("query")?.toString() || "",
+      userData,
       selectedYear, // Added selectedYear
       selectedMonth, // Added selectedMonth
     ],
@@ -126,10 +127,10 @@ const Schedule = () => {
 
   return (
     <div className="flex h-full w-full xl:gap-8">
-      <div className="no-scrollbar flex w-full xl:flex-1 flex-col gap-8 overflow-y-auto lg:min-w-[400px]">
+      <div className="no-scrollbar flex w-full flex-col gap-8 overflow-y-auto lg:min-w-[400px] xl:flex-1">
         <div className="flex items-center justify-between">
           <div>
-            <Title> 
+            <Title>
               {userData?.role === ROLES[1] ? "Assigned Events" : "Scheduler"}
             </Title>
             <Description>
@@ -220,7 +221,7 @@ const Schedule = () => {
               <select
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(Number(e.target.value))}
-                className="border-gray-300 max-h-48 overflow-y-auto rounded-md ml-1 border px-6 py-2 font-montserrat text-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                className="border-gray-300 ml-1 max-h-48 overflow-y-auto rounded-md border px-6 py-2 font-montserrat text-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-accent"
               >
                 {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
                   <option key={month} value={month}>
@@ -355,45 +356,47 @@ const Schedule = () => {
 
                           <div
                             className={cn(
-                              "flex w-full cursor-pointer items-start gap-3 rounded-[10px] bg-primary/50 px-5 py-4 lg xl:hidden",
+                              "lg flex w-full cursor-pointer items-start gap-3 rounded-[10px] bg-primary/50 px-5 py-4 xl:hidden",
                               event.id === urlPrms.get("event") &&
                                 "border border-primary-outline"
                             )}
                             onClick={() => onEventClick(event.id)}
                           >
                             <Sheet>
-                            <SheetTrigger asChild>
-                            <div className="flex flex-1 gap-3">
-                              <EventIcon className="text-2xl text-accent" />
-                              <div>
-                                <p className="mb-[6px] text-base font-bold leading-none text-accent">
-                                  {event.event_name}
-                                </p>
-                                <p className="text-sm text-primary-text">
-                                  {event.description}
-                                </p>
-                                <p className="text-sm leading-tight text-primary-text">
-                                  {event.event_category} -{" "}
-                                  {event.event_visibility}
-                                </p>
-                                <p className="text-sm leading-none text-primary-text">
-                                  <span className="font-semibold">Date: </span>
-                                  {new Date(
-                                    `${event.event_date}T${event.event_time}`
-                                  ).toLocaleDateString("en-GB", {
-                                    day: "2-digit",
-                                    month: "short",
-                                    year: "numeric",
-                                  })}
-                                  ,
-                                  {new Date(
-                                    `${event.event_date}T${event.event_time}`
-                                  ).toLocaleTimeString()}
-                                </p>
-                              </div>
-                            </div>
-                            </SheetTrigger>
-                              <SheetContent className="w-full xl:hidden md:w-full">
+                              <SheetTrigger asChild>
+                                <div className="flex flex-1 gap-3">
+                                  <EventIcon className="text-2xl text-accent" />
+                                  <div>
+                                    <p className="mb-[6px] text-base font-bold leading-none text-accent">
+                                      {event.event_name}
+                                    </p>
+                                    <p className="text-sm text-primary-text">
+                                      {event.description}
+                                    </p>
+                                    <p className="text-sm leading-tight text-primary-text">
+                                      {event.event_category} -{" "}
+                                      {event.event_visibility}
+                                    </p>
+                                    <p className="text-sm leading-none text-primary-text">
+                                      <span className="font-semibold">
+                                        Date:{" "}
+                                      </span>
+                                      {new Date(
+                                        `${event.event_date}T${event.event_time}`
+                                      ).toLocaleDateString("en-GB", {
+                                        day: "2-digit",
+                                        month: "short",
+                                        year: "numeric",
+                                      })}
+                                      ,
+                                      {new Date(
+                                        `${event.event_date}T${event.event_time}`
+                                      ).toLocaleTimeString()}
+                                    </p>
+                                  </div>
+                                </div>
+                              </SheetTrigger>
+                              <SheetContent className="w-full md:w-full xl:hidden">
                                 {urlPrms.get("event") && (
                                   <ScheduleDetails
                                     queryKey={[
@@ -496,7 +499,7 @@ const Schedule = () => {
                                 </div>
                               </div>
                             </SheetTrigger>
-                            <SheetContent className="w-full sm:max-w-full lg:hidden md:w-full">
+                            <SheetContent className="w-full sm:max-w-full md:w-full lg:hidden">
                               {urlPrms.get("meeting") && <MeetingDetails />}
                             </SheetContent>
                           </Sheet>

@@ -103,6 +103,29 @@ export const updateMeeting = async (meetingId, updatedData) => {
   }
 };
 
+export const fetchCalendarMeetings = async (userId) => {
+  try {
+    // Fetch meetings the user is participating in using a join on meeting_participants and meetings tables
+    const { data, error } = await supabase
+      .from("meeting_participants")
+      .select("meetings(*)") // Get all columns from the meetings table
+      .eq("user_id", userId);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    // Return only the meetings part of the result
+    return {
+      success: true,
+      data: data.map((participant) => participant.meetings),
+    };
+  } catch (error) {
+    console.error("Error fetching meetings:", error);
+    return { success: false, error: error.message }; // Return error structure
+  }
+};
+
 // Function to fetch all meetings (optionally filter by date, creator, etc.)
 export const getMeetings = async ({
   startDate,
