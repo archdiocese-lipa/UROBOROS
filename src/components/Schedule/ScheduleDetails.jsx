@@ -173,12 +173,42 @@ const ScheduleDetails = ({ queryKey }) => {
     // Add Title
     doc.setFontSize(18);
     doc.text(`Event Name: ${event.event_name}`, 10, 10);
+
+    // Format Event Date
+    const eventDate = new Date(event.event_date);
+    const formattedDate = eventDate.toLocaleDateString("en-US", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    });
+    doc.text(`Event Date: ${formattedDate}`, 10, 20);
+
+    // Add Total Attended
     doc.text(`Total Attended: ${attendanceCount.attended}`, 150, 10);
 
-    let currentY = 20; // Start Y position for the first element
+    let currentY = 30; // Start Y position for the next section
+
+    // Add List of Assigned Volunteers
+    if (volunteers && volunteers?.length > 0) {
+      doc.setFontSize(14);
+      doc.text("List of Assigned Volunteer(s):", 10, currentY);
+      currentY += 10;
+
+      volunteers?.forEach((volunteer, index) => {
+        doc.setFontSize(12);
+        doc.text(
+          `${index + 1}. ${volunteer.users.first_name.charAt(0).toUpperCase() + volunteer.users.first_name.slice(1)} ${volunteer.users.last_name.charAt(0).toUpperCase() + volunteer.users.last_name.slice(1)}`,
+          10,
+          currentY
+        );
+        currentY += 7; // Spacing for each volunteer
+      });
+
+      currentY += 5; // Additional spacing after the volunteer list
+    }
 
     // Loop through the family data
-    attendance.data.forEach((family) => {
+    attendance?.data.forEach((family) => {
       // Filter out the parents who attended
       const attendedParents = family.parents.filter(
         (parent) => parent.attended
@@ -190,23 +220,23 @@ const ScheduleDetails = ({ queryKey }) => {
       );
 
       // Skip families with no attendees
-      if (attendedParents.length === 0 && attendedChildren.length === 0) {
+      if (attendedParents.length === 0 && attendedChildren?.length === 0) {
         return;
       }
 
       // Add Family Surname Header
       doc.setFontSize(14);
-      doc.text(` ${family.family_surname} Family`, 10, currentY);
+      doc.text(`${family.family_surname} Family`, 10, currentY);
 
       // Update currentY for the next element
       currentY += 10;
 
       // Add Parents Table for those who attended
-      if (attendedParents.length > 0) {
+      if (attendedParents?.length > 0) {
         autoTable(doc, {
           startY: currentY,
           head: [["Parents/Guardians", "Contact", "Status"]],
-          body: attendedParents.map((parent) => [
+          body: attendedParents?.map((parent) => [
             `${parent.first_name} ${parent.last_name}`,
             parent.contact_number || "N/A",
             "Attended",
@@ -219,11 +249,11 @@ const ScheduleDetails = ({ queryKey }) => {
       }
 
       // Add Children Table for those who attended
-      if (attendedChildren.length > 0) {
+      if (attendedChildren?.length > 0) {
         autoTable(doc, {
           startY: currentY,
           head: [["Child's Name", "Status"]],
-          body: attendedChildren.map((child) => [
+          body: attendedChildren?.map((child) => [
             `${child.first_name} ${child.last_name}`,
             "Attended",
           ]),
@@ -236,7 +266,7 @@ const ScheduleDetails = ({ queryKey }) => {
     });
 
     // Save the PDF
-    doc.save(`${event.event_name}-${event.event_date}.pdf`);
+    doc.save(`${event.event_name}-${formattedDate}.pdf`);
   };
 
   useEffect(() => {
@@ -419,7 +449,9 @@ const ScheduleDetails = ({ queryKey }) => {
         </div>
       </div>
       <div>
-        <Label className="text-primary-text">List of Assigned Volunteer(s)</Label>
+        <Label className="text-primary-text">
+          List of Assigned Volunteer(s)
+        </Label>
         {volunteers?.map((volunteer, i) => (
           <p
             key={volunteer?.volunteer_id}

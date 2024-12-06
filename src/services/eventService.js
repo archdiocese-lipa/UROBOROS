@@ -5,7 +5,6 @@ import { ROLES } from "@/constants/roles";
 
 // Function to create an event
 export const createEvent = async (eventData) => {
-  console.log("eventDAta", eventData);
   try {
     const {
       eventName,
@@ -67,8 +66,6 @@ export const createEvent = async (eventData) => {
 // Function to update an existing event
 
 export const updateEvent = async (eventData) => {
-
- 
   try {
     const {
       eventName,
@@ -81,7 +78,7 @@ export const updateEvent = async (eventData) => {
       // userId, // Creator's ID
       assignVolunteer, // Array of volunteer IDs
     } = eventData.updatedData;
-  
+
     // Step 1: Update the event data in the 'events' table
     const { data: updatedEvent, error: eventError } = await supabase
       .from("events")
@@ -175,7 +172,7 @@ export const getEvents = async ({
       }
     }
     const order = [
-      { column: "event_date", ascending: true },  // Descending order by created_at
+      { column: "event_date", ascending: true }, // Descending order by created_at
     ];
 
     // Fetch data using pagination
@@ -185,7 +182,7 @@ export const getEvents = async ({
       page,
       pageSize,
       filters,
-      order
+      order,
     });
 
     return data;
@@ -270,8 +267,6 @@ export const getAllEvents = async () => {
 
 // Updated getEventsCalendar to accept year and month as arguments
 export const getEventsCalendar = async (ministry = []) => {
-
-  
   try {
     // Fetch all public events (no filtering by ministry)
     const publicEventsQuery = supabase
@@ -281,7 +276,7 @@ export const getEventsCalendar = async (ministry = []) => {
 
     // Fetch private events filtered by ministry IDs (only if provided)
     const privateEventsQuery =
-    ministry.length > 0
+      ministry.length > 0
         ? supabase
             .from("events")
             .select("*")
@@ -394,8 +389,6 @@ export const getWalkInEvents = async () => {
 };
 
 export const getEventsByMinistryId = async (ministryIds) => {
-
-
   const promises = ministryIds.map(async (ministry) => {
     const { data, error } = await supabase
       .from("events")
@@ -409,26 +402,19 @@ export const getEventsByMinistryId = async (ministryIds) => {
     return data;
   });
 
- 
-
   const events = await Promise.all(promises);
-
-
 
   return events;
 };
 export const getEventsByCreatorId = async (creatorId) => {
+  const { data, error } = await supabase
+    .from("events")
+    .select("*")
+    .eq("creator_id", creatorId);
 
-  console.log("id",creatorId)
-
-    const { data, error } = await supabase
-      .from("events")
-      .select("*")
-      .eq("creator_id", creatorId);
-
-    if (error) {
-      throw new Error(error.message);
-    }
+  if (error) {
+    throw new Error(error.message);
+  }
 
   return data;
 };
