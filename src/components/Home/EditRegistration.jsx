@@ -190,7 +190,7 @@ const EditRegistration = () => {
         children,
       });
 
-      // handleDialogChange(false);
+      handleDialogChange(false);
       toast({
         title: "Registration Updated Successfully",
         description: "The registration details have been updated successfully.",
