@@ -10,8 +10,6 @@ export const handleWalkInData = async ({
     // Ensure all parents and children have family_id, if not already included
     const familyId = parents[0]?.family_id || children[0]?.family_id;
 
-    console.log("Extracted Family ID:", familyId);
-
     if (!familyId) {
       console.error(
         "Family ID is missing in both parents and children records."
@@ -43,7 +41,6 @@ export const handleWalkInData = async ({
     }));
 
     // Log the prepared parent records
-    console.log("Prepared Parent Records:", parentRecords);
 
     // Prepare child records with registration_code and family_id
     const childRecords = children.map((child) => ({
@@ -56,14 +53,8 @@ export const handleWalkInData = async ({
       family_id: child.family_id || familyId, // Use family_id from the child data if it exists, otherwise fallback to extracted familyId
     }));
 
-    // Log the prepared child records
-    console.log("Prepared Child Records:", childRecords);
-
     // Combine all records to insert
     const allRecords = [...parentRecords, ...childRecords];
-
-    // Log combined records
-    console.log("All Records to Insert:", allRecords);
 
     // Insert all new records
     const { error: insertError } = await supabase
@@ -74,8 +65,6 @@ export const handleWalkInData = async ({
       console.error("Error inserting new records:", insertError);
       throw insertError;
     }
-
-    console.log("Records inserted successfully");
   } catch (error) {
     console.error("Error handling walk-in data:", error);
     throw error;

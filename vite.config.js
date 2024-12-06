@@ -12,7 +12,8 @@ export default defineConfig({
   plugins: [react(), basicSsl()],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "src"), // Maps '@' to the 'src' directory
+      "@": path.resolve(__dirname, "src"), 
     },
   },
+  base: "/portal/",
 });

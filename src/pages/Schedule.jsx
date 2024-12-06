@@ -260,9 +260,9 @@ const Schedule = () => {
               {isLoading ? (
                 <Skeleton className="flex h-[85px] w-full rounded-xl bg-primary" />
               ) : (
-                data?.pages.flatMap((page, i) =>
+                data?.pages?.flatMap((page, i) =>
                   filter === "events"
-                    ? page?.items.map((event, j) => (
+                    ? page?.items?.map((event, j) => (
                         <div key={`${i}-${j}`} className="relative">
                           <div
                             className={cn(

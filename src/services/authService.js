@@ -16,7 +16,6 @@ const registerUser = async ({
       password,
     });
 
-
     if (signUpError) throw signUpError;
 
     // Insert user details into the 'users' table
@@ -35,34 +34,32 @@ const registerUser = async ({
     if (insertError) throw insertError;
 
     const { data: newUserFamily, error: familyError } = await supabase
-    .from("family_group")
-    .upsert([
-      {
-        user_id: user.user.id,
-      },
-    ])
-    .select();
+      .from("family_group")
+      .upsert([
+        {
+          user_id: user.user.id,
+        },
+      ])
+      .select();
 
-  if (familyError) throw familyError;
+    if (familyError) throw familyError;
 
     // Insert the user data into the 'parents' table
     const { error: parentsInsertError } = await supabase
       .from("parents")
       .insert([
         {
-          parishioner_id: user.user.id, 
+          parishioner_id: user.user.id,
           first_name: firstName,
           last_name: lastName,
           contact_number: contactNumber,
-          family_id: newUserFamily[0].id
+          family_id: newUserFamily[0].id,
         },
       ]);
 
     if (parentsInsertError) throw parentsInsertError;
 
-
-
-    return user; 
+    return user;
   } catch (error) {
     console.error("Error during sign-up:", error);
     throw error; // Re-throw the error to be handled by the calling function

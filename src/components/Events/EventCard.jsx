@@ -26,7 +26,6 @@ const EventCard = ({
         <Description>
           {new Date(`${eventDate}T${eventTime}`).toDateTime()}
         </Description>
-        <Description>Organiser</Description>
       </CardContent>
       <CardFooter>
         <ManualAttendEvents eventId={eventId} eventName={eventName} />

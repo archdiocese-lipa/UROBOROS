@@ -46,10 +46,9 @@ const Calendar = ({ events }) => {
     description: meeting.meeting_description,
     id: meeting.id,
   }));
-  console.log(selectedShowCalendar, meetingData);
   return (
     <div className="h-full w-full">
-      {userData.role === "admin" && (
+      {userData?.role === "admin" && (
         <div className="flex gap-2">
           <Button
             onClick={() => setSelectedShowCalendar("Events")}
