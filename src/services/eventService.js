@@ -408,3 +408,18 @@ export const getEventsByMinistryId = async (ministryIds) => {
 
   return events;
 };
+export const getEventsByCreatorId = async (creatorId) => {
+
+  console.log("id",creatorId)
+
+    const { data, error } = await supabase
+      .from("events")
+      .select("*")
+      .eq("creator_id", creatorId);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+  return data;
+};
