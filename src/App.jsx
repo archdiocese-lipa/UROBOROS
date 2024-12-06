@@ -15,7 +15,8 @@ import { ROLES } from "@/constants/roles";
 
 const App = () => {
   return (
-    <Router basename="/portal">
+    // <Router basename="/portal">
+    <Router>
       <Routes>
         {/* Auth Routes */}
         <Route path="/" element={<Home />} />
