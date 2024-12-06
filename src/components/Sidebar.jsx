@@ -62,7 +62,7 @@ const Sidebar = () => {
             <DropdownMenu>
               <DropdownMenuTrigger className="lg:hidden lg:px-6">
                 <div className="flex items-center gap-2">
-                  <Avatar className="bg-green h-8 w-8">
+                  <Avatar className=" border-accent border-[3px] bg-green h-8 w-8">
                     <AvatarImage
                       src={userData?.user_image ?? ""}
                       alt="profile picture"
