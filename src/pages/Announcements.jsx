@@ -89,7 +89,7 @@ const Announcements = () => {
     data,
     isLoading,
   } = useAnnouncements({
-    ministry_id: searchParams.get("ministryId"),
+    ministry_id: searchParams.get("ministryId")|| "",
     reset,
     setIsOpen,
     user_id: userData?.id,
