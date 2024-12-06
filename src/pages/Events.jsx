@@ -13,19 +13,18 @@ import { fetchUserMinistries } from "@/services/ministryService";
 import { useUser } from "@/context/useUser";
 
 const Events = () => {
-  // fetch all ministry id using user id
-  // fetch all events based on ministry id
+
   const { userData } = useUser();
 
   const { data: ministries } = useQuery({
-    queryKey: ["ministries", userData?.id], // Cache key includes the userId
-    queryFn: () => fetchUserMinistries(userData?.id), // Use an arrow function to call the function
-    enabled: !!userData?.id, // Only run query if userData.id exists
+    queryKey: ["ministries", userData?.id], 
+    queryFn: () => fetchUserMinistries(userData?.id), 
+    enabled: !!userData?.id, 
   });
   const { data: eventsOwned } = useQuery({
-    queryKey: ["events", userData?.id], // Cache key includes the userId
-    queryFn: () => getEventsByCreatorId(userData?.id), // Use an arrow function to call the function
-    enabled: !!userData?.id, // Only run query if userData.id exists
+    queryKey: ["events", userData?.id], 
+    queryFn: () => getEventsByCreatorId(userData?.id), 
+    enabled: !!userData?.id, 
   });
 
 
@@ -67,7 +66,7 @@ const Events = () => {
   //     eventTime: event.event_time,
   //   }))
   // );
-  console.log("events", eventsOwned);
+
 
   const eventsToDisplay = userData?.role ==="admin" ? eventsOwned : Parishionerevents?.data
   return (
