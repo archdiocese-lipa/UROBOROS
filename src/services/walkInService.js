@@ -16,7 +16,7 @@ export const handleWalkInData = async ({
       last_name: parent.parentLastName,
       contact_number: parent.parentContactNumber,
       type: "parent",
-      is_main_applicant: parent.isMainApplicant,
+      main_applicant: parent.isMainApplicant,
       id: parent.id, // Ensure ID is passed here for update
     }));
 
@@ -27,7 +27,7 @@ export const handleWalkInData = async ({
       first_name: child.childFirstName,
       last_name: child.childLastName,
       type: "child",
-      is_main_applicant: false, // Children are not main applicants
+      main_applicant: false, // Children are not main applicants
       id: child.id, // Ensure ID is passed here for update
     }));
 
@@ -44,7 +44,7 @@ export const handleWalkInData = async ({
             first_name: record.first_name,
             last_name: record.last_name,
             contact_number: record.contact_number,
-            is_main_applicant: record.is_main_applicant,
+            main_applicant: record.main_applicant,
             event_id: record.event_id,
             ticket_code: record.ticket_code,
           })
@@ -56,13 +56,14 @@ export const handleWalkInData = async ({
         const { error: insertError } = await supabase
           .from("attendance")
           .insert({
+            id: record.id, // Should be a valid uuid here
             event_id: record.event_id,
             ticket_code: record.ticket_code,
             first_name: record.first_name,
             last_name: record.last_name,
             contact_number: record.contact_number,
-            is_main_applicant: record.is_main_applicant,
-            type: record.type,
+            main_applicant: record.main_applicant,
+            attendee_type: record.type,
           });
 
         if (insertError) throw insertError;

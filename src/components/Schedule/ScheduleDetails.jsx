@@ -80,7 +80,7 @@ const ScheduleDetails = ({ queryKey }) => {
   const [urlPrms] = useSearchParams();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState();
   const [attendeeEdit, setAttendeeEdit] = useState();
-  const [childAttendeeEdit,setChildAttendeeEdit] = useState();
+  const [childAttendeeEdit, setChildAttendeeEdit] = useState();
   const [idEditting, setIdEditting] = useState("");
   const eventId = urlPrms.get("event") || null;
   const printRef = useRef(null);
@@ -298,8 +298,8 @@ const ScheduleDetails = ({ queryKey }) => {
   const onSubmit = (data) => {
     updateMutation.mutate({ ...data, attendeeId: idEditting });
     setIdEditting("");
-    setAttendeeEdit(false)
-    setChildAttendeeEdit(false)
+    setAttendeeEdit(false);
+    setChildAttendeeEdit(false);
   };
 
   if (isLoading || attendanceLoading) return <div>Loading...</div>;
@@ -595,7 +595,10 @@ const ScheduleDetails = ({ queryKey }) => {
                                    <Icon icon={"mingcute:check-fill"}/></Button>
                               )} */}
 
-                          <Dialog open={attendeeEdit} onOpenChange={setAttendeeEdit}>
+                          <Dialog
+                            open={attendeeEdit}
+                            onOpenChange={setAttendeeEdit}
+                          >
                             <DialogTrigger>
                               <Button
                                 type="button"
@@ -691,7 +694,7 @@ const ScheduleDetails = ({ queryKey }) => {
                                       </FormItem>
                                     )}
                                   />
-                                  <div className="flex justify-end mt-2">
+                                  <div className="mt-2 flex justify-end">
                                     <Button>Submit</Button>
                                   </div>
                                 </form>
@@ -810,7 +813,10 @@ const ScheduleDetails = ({ queryKey }) => {
                                 <Button type="submit">Save</Button>
                               )} */}
 
-                          <Dialog open={childAttendeeEdit} onOpenChange={setChildAttendeeEdit}>
+                          <Dialog
+                            open={childAttendeeEdit}
+                            onOpenChange={setChildAttendeeEdit}
+                          >
                             <DialogTrigger>
                               <Button
                                 type="button"
@@ -879,10 +885,9 @@ const ScheduleDetails = ({ queryKey }) => {
                                       </FormItem>
                                     )}
                                   />
-                                  <div className=" flex justify-end mt-2">
-                                  <Button  type="submit" >Submit</Button>
+                                  <div className="mt-2 flex justify-end">
+                                    <Button type="submit">Submit</Button>
                                   </div>
-                                  
                                 </form>
                               </Form>
                             </DialogContent>

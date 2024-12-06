@@ -2,8 +2,6 @@ import { z } from "zod";
 
 export const EditSchema = z.object({
   event: z.string().min(1, "Event is required"), // Event selection is required
-  eventId: z.string().uuid("Event ID must be a valid UUID"), // Event ID must be a valid UUID
-  ticketCode: z.string().min(1, "Ticket code is required"), // Ticket code is required
   parents: z
     .array(
       z.object({
