@@ -37,7 +37,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useAnnouncements from "@/hooks/useAnnouncements";
 import { useUser } from "@/context/useUser";
 import { cn } from "@/lib/utils";
@@ -45,13 +45,26 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchUserMinistries } from "@/services/ministryService";
 import AssignVolunteerComboBox from "@/components/Schedule/AssignVolunteerComboBox";
 import useInterObserver from "@/hooks/useInterObserver";
+import { useSearchParams } from "react-router-dom";
 
 const Announcements = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { userData } = useUser();
-  const [visibility, setVisibility] = useState("public");
-  const [formVisibility, setFormVisibility] = useState("public");
-  const [selectedMinistry, setSelectedMinistry] = useState("");
+  // const [visibility, setVisibility] = useState("public");
+  const [formVisibility, setFormVisibility] = useState("public")
+  const [searchParams, setSearchParams] = useSearchParams();
+  const ministryId = searchParams.get("ministryId") || "";
+
+  useEffect(() => {
+
+    if(!ministryId){
+      setSearchParams({ ministryId: "" });
+    }
+   
+  }, [ministryId]);
+
+ 
+
 
   const { data: ministries } = useQuery({
     queryFn: async () => await fetchUserMinistries(userData?.id),
@@ -81,11 +94,20 @@ const Announcements = () => {
     data,
     isLoading,
   } = useAnnouncements({
-    ministry_id: selectedMinistry,
+    ministry_id: searchParams.get("ministryId"),
     reset,
     setIsOpen,
     user_id: userData?.id,
   });
+
+  // useEffect(() => {
+  //   // Update query parameter if ministryId changes (for example, when selecting a different ministry)
+  //   if (ministryId) {
+  //     setSearchParams({ ministryId });
+  //   } else {
+  //     setSearchParams({ ministryId: "" });
+  //   }
+  // }, [ministryId, searchParams]);
 
   const onSubmit = (announcementData) => {
     addAnnouncementMutation.mutate({
@@ -307,19 +329,19 @@ const Announcements = () => {
           </p>
           <div
             className={cn("h-fit rounded-xl border border-gray bg-white", {
-              "bg-accent": visibility === "public",
+              "bg-accent": ministryId === "",
             })}
           >
             <button
               onClick={() => {
-                setVisibility("public"), setSelectedMinistry("");
+                setSearchParams({ministryId:""});
               }}
               className="relative h-20 w-full px-[18px] py-3 lg:h-fit"
             >
               <div className="flex justify-between gap-3">
                 <h3
                   className={cn("font-bold text-accent", {
-                    "text-white": visibility === "public",
+                    "text-white": ministryId === "",
                   })}
                 >
                   All
@@ -332,12 +354,12 @@ const Announcements = () => {
               <p
                 className={cn(
                   "hidden pb-1 text-start text-[13px] font-medium text-accent opacity-60 lg:block",
-                  { "text-white opacity-60": visibility === "public" }
+                  { "text-white opacity-60": ministryId === "" }
                 )}
               >
                 This shows all group announcements
               </p>
-              {selectedMinistry === "" && (
+              {ministryId === "" && (
                 <div className=" -left-4 top-1/2 hidden lg:block h-8 w-2 -translate-x-1/2 -translate-y-1/2 transform rounded-md bg-accent lg:absolute"></div>
               )}
             </button>
@@ -349,9 +371,9 @@ const Announcements = () => {
               <Filter
                 key={i}
                 ministry={ministry}
-                selectedMinistry={selectedMinistry}
-                setSelectedMinistry={setSelectedMinistry}
-                setVisibility={setVisibility}
+                selectedMinistry={ministryId}
+                setSelectedMinistry={setSearchParams}
+             
               />
             ))}
           </div>

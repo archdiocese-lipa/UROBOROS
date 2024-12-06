@@ -20,7 +20,7 @@ import PropTypes from "prop-types";
 import { useUser } from "@/context/useUser";
 import { useState } from "react";
 import TriggerLikeIcon from "./TriggerLikeIcon";
-import TriggerDislikeIcon from "./TriggerDislikeIcon";
+
 
 const Replies = ({
   reply,
@@ -81,14 +81,14 @@ const Replies = ({
             <div>
               <p className="text-sm text-accent">{reply.comment_content}</p>
               <div className="flex items-center">
-                <TriggerDislikeIcon
+                {/* <TriggerDislikeIcon
                   className="absolute -bottom-4 right-2 w-14 rounded-3xl bg-white p-1"
                   comment_id={reply.id}
                   user_id={userData?.id}
                   columnName="comment_id"
-                />
+                /> */}
                 <TriggerLikeIcon
-                  className="absolute -bottom-4 right-16 w-14 rounded-3xl bg-white p-1"
+                  className="absolute -bottom-4 right-8 w-14 rounded-3xl bg-white p-1"
                   comment_id={reply.id}
                   user_id={userData?.id}
                   columnName="comment_id"
