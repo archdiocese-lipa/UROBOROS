@@ -28,12 +28,12 @@ const Events = () => {
   });
 
 
-  // const id = ministries[0]?.id
+  const ids= ministries?.map((ministry) => ministry.id)
 
   // Fetch events based on the first ministry's ID
   const { data: Parishionerevents, isLoading } = useQuery({
     queryKey: ["events", ministries], // Access the first ministry's id if available
-    queryFn: async () => await getEventsCalendar(ministries),
+    queryFn: async () => await getEventsCalendar(ids),
     enabled: !!ministries, // Only fetch events if the first ministry id is available
   });
 

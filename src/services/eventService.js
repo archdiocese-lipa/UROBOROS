@@ -266,7 +266,6 @@ export const getAllEvents = async () => {
 // Updated getEventsCalendar to accept year and month as arguments
 export const getEventsCalendar = async (ministry = []) => {
 
-  const ids= ministry.map((ministry) => ministry.id)
   try {
     // Fetch all public events (no filtering by ministry)
     const publicEventsQuery = supabase
@@ -276,12 +275,12 @@ export const getEventsCalendar = async (ministry = []) => {
 
     // Fetch private events filtered by ministry IDs (only if provided)
     const privateEventsQuery =
-    ids.length > 0
+    ministry.length > 0
         ? supabase
             .from("events")
             .select("*")
             .eq("event_visibility", "private")
-            .in("ministry_id", ids) // Apply ministry filter
+            .in("ministry_id", ministry) // Apply ministry filter
         : null;
 
     // Execute both queries
