@@ -65,6 +65,7 @@ const EditRegistration = () => {
       event: "",
       eventId: "",
       ticketCode: "", // This will allow the ticketCode to be part of the form
+      familyId: "", // Add family_id here as a UUID
       parents: [
         {
           parentFirstName: "",
@@ -95,6 +96,9 @@ const EditRegistration = () => {
 
         // Set event details
         attendeeInformation.setValue("event", user.event.id);
+
+        // Set family ID (newly included)
+        attendeeInformation.setValue("familyId", user.familyId);
 
         // Set ticket code
         attendeeInformation.setValue("ticketCode", user.registrationCode);
@@ -151,26 +155,30 @@ const EditRegistration = () => {
 
   // Function to submit editted user information
   const onSubmit = async (values) => {
-    const { event: eventId, ticketCode } = values; // Extract event ID and ticket code
+    const { event: eventId, ticketCode, familyId } = values; // Extract event ID, ticket code, and family ID
+    console.log(values);
 
-    // Prepare parent and child records for submission
+    // Prepare parent records for submission, including familyId
     const parents = values.parents.map((parent) => ({
       event_id: eventId,
       registration_code: ticketCode,
       first_name: parent.parentFirstName,
       last_name: parent.parentLastName,
       contact_number: parent.parentContactNumber,
-      attendee_type: "parent",
+      attendee_type: "parents",
       main_applicant: parent.isMainApplicant || false, // Handle optional field
+      family_id: familyId, // Add family_id to each parent
     }));
 
+    // Prepare child records for submission, including familyId
     const children = values.children.map((child) => ({
       event_id: eventId,
       registration_code: ticketCode,
       first_name: child.childFirstName,
       last_name: child.childLastName,
-      attendee_type: "child",
+      attendee_type: "children",
       main_applicant: false, // Children are not main applicants
+      family_id: familyId, // Add family_id to each child
     }));
 
     try {
@@ -182,7 +190,7 @@ const EditRegistration = () => {
         children,
       });
 
-      handleDialogChange(false);
+      // handleDialogChange(false);
       toast({
         title: "Registration Updated Successfully",
         description: "The registration details have been updated successfully.",

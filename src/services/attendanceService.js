@@ -405,8 +405,12 @@ const fetchAttendeesByTicketCode = async (registrationCode) => {
       const event = data[0].events;
       const registrationCode = data[0].registration_code;
 
+      // Assuming all attendees have the same family_id for the given registration code
+      const familyId = data[0].family_id;
+
       const transformedData = {
         registrationCode,
+        familyId, // Add familyId to the top level of the response
         event: {
           id: event.id,
           name: event.event_name,

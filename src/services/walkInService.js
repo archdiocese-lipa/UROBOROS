@@ -7,6 +7,18 @@ export const handleWalkInData = async ({
   children,
 }) => {
   try {
+    // Ensure all parents and children have family_id, if not already included
+    const familyId = parents[0]?.family_id || children[0]?.family_id;
+
+    console.log("Extracted Family ID:", familyId);
+
+    if (!familyId) {
+      console.error(
+        "Family ID is missing in both parents and children records."
+      );
+      throw new Error("Family ID is required.");
+    }
+
     // Delete all records for the given ticket code
     const { error: deleteError } = await supabase
       .from("attendance")
@@ -18,35 +30,40 @@ export const handleWalkInData = async ({
       throw deleteError;
     }
 
-    // Prepare parent records with registration_code
+    // Prepare parent records with registration_code and family_id
     const parentRecords = parents.map((parent) => ({
       event_id: eventId,
       registration_code: ticketCode,
-      first_name: parent.first_name, // Using correct field from the logged data
-      last_name: parent.last_name, // Using correct field from the logged data
-      contact_number: parent.contact_number, // Correct field name from the logged data
-      attendee_type: "parents", // Correct attendee_type
-      main_applicant: parent.main_applicant, // Correct field name for main applicant
+      first_name: parent.first_name,
+      last_name: parent.last_name,
+      contact_number: parent.contact_number,
+      attendee_type: "parents",
+      main_applicant: parent.main_applicant,
+      family_id: parent.family_id || familyId, // Use family_id from the parent data if it exists, otherwise fallback to extracted familyId
     }));
 
-    // Log prepared parent records
+    // Log the prepared parent records
+    console.log("Prepared Parent Records:", parentRecords);
 
-    // Prepare child records with registration_code
+    // Prepare child records with registration_code and family_id
     const childRecords = children.map((child) => ({
       event_id: eventId,
       registration_code: ticketCode,
-      first_name: child.first_name, // Correct field from the logged data
-      last_name: child.last_name, // Correct field from the logged data
-      attendee_type: "children", // Correct attendee_type
-      main_applicant: child.main_applicant, // Correct field for main applicant (false for children)
+      first_name: child.first_name,
+      last_name: child.last_name,
+      attendee_type: "children",
+      main_applicant: child.main_applicant,
+      family_id: child.family_id || familyId, // Use family_id from the child data if it exists, otherwise fallback to extracted familyId
     }));
 
-    // Log prepared child records
+    // Log the prepared child records
+    console.log("Prepared Child Records:", childRecords);
 
     // Combine all records to insert
     const allRecords = [...parentRecords, ...childRecords];
 
     // Log combined records
+    console.log("All Records to Insert:", allRecords);
 
     // Insert all new records
     const { error: insertError } = await supabase
@@ -57,6 +74,8 @@ export const handleWalkInData = async ({
       console.error("Error inserting new records:", insertError);
       throw insertError;
     }
+
+    console.log("Records inserted successfully");
   } catch (error) {
     console.error("Error handling walk-in data:", error);
     throw error;

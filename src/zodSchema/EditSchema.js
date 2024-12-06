@@ -6,6 +6,10 @@ export const EditSchema = z.object({
     .string() // Validate as a string
     .min(1, "Ticket code is required") // Ensure it's not empty
     .max(255, "Ticket code is too long"), // Optional: limit the length if needed (adjust length as per your needs)
+  familyId: z
+    .string()
+    .uuid("Family ID must be a valid UUID") // Validate that it’s a UUID
+    .optional(), // You can make it optional depending on your use case
   parents: z.array(
     z.object({
       parentFirstName: z.string().min(1, "Parent's first name is required"),
