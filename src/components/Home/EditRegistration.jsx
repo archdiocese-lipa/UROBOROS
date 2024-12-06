@@ -43,15 +43,11 @@ import { useGetWalkInEvents } from "@/hooks/useGetWalkInEvents";
 import { handleWalkInData } from "@/services/walkInService";
 import { EditSchema } from "@/zodSchema/EditSchema";
 
-import { v4 as uuidv4 } from "uuid";
-
 // Attendance Coming from the database
 
 const EditRegistration = () => {
   const [isCodeValid, setIsCodeValid] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [removedParents, setRemovedParents] = useState([]);
-  const [removedChildren, setRemovedChildren] = useState([]);
 
   const { toast } = useToast();
 
@@ -68,6 +64,7 @@ const EditRegistration = () => {
     defaultValues: {
       event: "",
       eventId: "",
+      ticketCode: "", // This will allow the ticketCode to be part of the form
       parents: [
         {
           parentFirstName: "",
@@ -77,7 +74,13 @@ const EditRegistration = () => {
           id: "",
         },
       ],
-      children: [{ childFirstName: "", childLastName: "", id: "" }],
+      children: [
+        {
+          childFirstName: "",
+          childLastName: "",
+          id: "",
+        },
+      ],
     },
   });
 
@@ -139,90 +142,55 @@ const EditRegistration = () => {
   };
 
   const handleRemoveParent = (index) => {
-    const removedParent = parentFields[index]; // Get the parent data
-    setRemovedParents((prev) => [...prev, removedParent]); // Add to removedParents list
-    removeParent(index); // Call the remove function from useFieldArray
+    removeParent(index); // Just remove from the field array
   };
 
   const handleRemoveChild = (index) => {
-    const removedChild = childFields[index]; // Get the child data
-    setRemovedChildren((prev) => [...prev, removedChild]); // Add to removedChildren list
-    removeChild(index); // Call the remove function from useFieldArray
+    removeChild(index); // Just remove from the field array
   };
 
   // Function to submit editted user information
   const onSubmit = async (values) => {
-    const { eventId, ticketCode } = values;
-    // Data to create or update
-    const parentsToCreate = [];
-    const parentsToUpdate = [];
-    const childrenToCreate = [];
-    const childrenToUpdate = [];
+    const { event: eventId, ticketCode } = values; // Extract event ID and ticket code
 
-    // Separate parents into create or update
-    values.parents.forEach((parent) => {
-      if (parent.id) {
-        parentsToUpdate.push({ ...parent, eventId, ticketCode });
-      } else {
-        parentsToCreate.push({
-          ...parent,
-          id: uuidv4(),
-          event_id: eventId,
-          attendee_type: "parent",
-        });
-      }
-    });
-    console.log(parentsToCreate)
+    // Prepare parent and child records for submission
+    const parents = values.parents.map((parent) => ({
+      event_id: eventId,
+      registration_code: ticketCode,
+      first_name: parent.parentFirstName,
+      last_name: parent.parentLastName,
+      contact_number: parent.parentContactNumber,
+      attendee_type: "parent",
+      main_applicant: parent.isMainApplicant || false, // Handle optional field
+    }));
 
-    // Separate children into create or update
-    values.children.forEach((child) => {
-      if (child.id) {
-        childrenToUpdate.push({ ...child, eventId, ticketCode });
-      } else {
-        childrenToCreate.push({
-          ...child,
-          id: uuidv4(),
-          eventId,
-          ticketCode,
-          attendee_type: "child",
-        });
-      }
-    });
+    const children = values.children.map((child) => ({
+      event_id: eventId,
+      registration_code: ticketCode,
+      first_name: child.childFirstName,
+      last_name: child.childLastName,
+      attendee_type: "child",
+      main_applicant: false, // Children are not main applicants
+    }));
 
-    // Include the removed parents and children in the request
     try {
+      // Call handleWalkInData to process the records
       await handleWalkInData({
         eventId,
         ticketCode,
-        parents: [
-          ...parentsToCreate,
-          ...parentsToUpdate,
-          ...removedParents.map((removed) => ({
-            ...removed,
-            eventId,
-            ticketCode,
-            _deleted: true,
-          })),
-        ],
-        children: [
-          ...childrenToCreate,
-          ...childrenToUpdate,
-          ...removedChildren.map((removed) => ({
-            ...removed,
-            eventId,
-            ticketCode,
-            _deleted: true,
-          })),
-        ],
+        parents,
+        children,
       });
 
-      // Success toast
+      handleDialogChange(false);
       toast({
         title: "Registration Updated Successfully",
         description: "The registration details have been updated successfully.",
       });
     } catch (error) {
       console.error("Error processing data:", error);
+
+      // Error notification
       toast({
         title: "Error Processing Data",
         description:
