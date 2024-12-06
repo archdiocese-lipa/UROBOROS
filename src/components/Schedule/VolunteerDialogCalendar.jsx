@@ -114,7 +114,7 @@ const VolunteerDialogCalendar = () => {
         <DialogTrigger asChild>
           <Button onClick={() => setIsOpen(true)}>Calendar</Button>
         </DialogTrigger>
-        <DialogContent className="max-w-7xl pt-16">
+        <DialogContent className="max-w-7xl">
           <DialogHeader className="sr-only">
             <DialogTitle>Volunteer Calendar</DialogTitle>
             <DialogDescription>
@@ -123,7 +123,7 @@ const VolunteerDialogCalendar = () => {
           </DialogHeader>
 
           {/* Event Type Filter (Above Public/Private) */}
-          <div className="mb-4 flex space-x-2">
+          <div className="flex space-x-2">
             {/* Event Type Filter */}
             <Button
               variant={eventType === "event" ? "primary" : "secondary"}
@@ -141,7 +141,7 @@ const VolunteerDialogCalendar = () => {
 
           {/* Event Visibility Filters */}
 
-          <div className="mb-4 flex space-x-2">
+          <div className="flex space-x-2 flex-wrap">
             {/* All Events Button */}
             <Button
               variant={eventVisibility === "all" ? "primary" : "secondary"}

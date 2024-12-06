@@ -96,7 +96,11 @@ const CreateMinistry = () => {
                   <FormItem>
                     <FormLabel>Description</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="Optional" {...field} />
+                      <Textarea
+                        placeholder="Optional"
+                        {...field}
+                        className="resize-none"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
