@@ -43,6 +43,8 @@ import { useGetWalkInEvents } from "@/hooks/useGetWalkInEvents";
 import { handleWalkInData } from "@/services/walkInService";
 import { EditSchema } from "@/zodSchema/EditSchema";
 
+import { v4 as uuidv4 } from "uuid";
+
 // Attendance Coming from the database
 
 const EditRegistration = () => {
@@ -151,7 +153,6 @@ const EditRegistration = () => {
   // Function to submit editted user information
   const onSubmit = async (values) => {
     const { eventId, ticketCode } = values;
-
     // Data to create or update
     const parentsToCreate = [];
     const parentsToUpdate = [];
@@ -165,12 +166,13 @@ const EditRegistration = () => {
       } else {
         parentsToCreate.push({
           ...parent,
-          id: undefined,
-          eventId,
-          ticketCode,
+          id: uuidv4(),
+          event_id: eventId,
+          attendee_type: "parent",
         });
       }
     });
+    console.log(parentsToCreate)
 
     // Separate children into create or update
     values.children.forEach((child) => {
@@ -179,9 +181,10 @@ const EditRegistration = () => {
       } else {
         childrenToCreate.push({
           ...child,
-          id: undefined,
+          id: uuidv4(),
           eventId,
           ticketCode,
+          attendee_type: "child",
         });
       }
     });
