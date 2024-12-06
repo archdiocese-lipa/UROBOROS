@@ -27,7 +27,7 @@ const CommentInput = ({ announcement_id, HandleAddComment, columnName }) => {
         className="flex-1"
       >
         <Textarea
-          className="rounded-2xl bg-primary"
+          className="rounded-2xl bg-primary resize-none"
           {...register(`comment${announcement_id}`,{ required: true })}
           onFocus={() => setIsCommenting(true)}
           name={`comment${announcement_id}`}

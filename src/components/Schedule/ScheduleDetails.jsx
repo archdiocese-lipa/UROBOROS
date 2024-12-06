@@ -155,8 +155,16 @@ const ScheduleDetails = ({ queryKey }) => {
     }
   };
 
-  const onRowAttend = async (attendeeId, state) => {
-    updateAttendeeStatus(attendeeId, state);
+  const onRowAttend = async (attendeeId, state, queryClient) => {
+    try {
+      // Update attendee status in your database
+      await updateAttendeeStatus(attendeeId, state);
+
+      // Invalidate the related query to refetch fresh data
+      queryClient.invalidateQueries(["attendance"]);
+    } catch (error) {
+      console.error("Error updating attendee status:", error);
+    }
   };
 
   const exportAttendanceList = () => {
@@ -411,7 +419,7 @@ const ScheduleDetails = ({ queryKey }) => {
         </div>
       </div>
       <div>
-        <Label className="text-primary-text">List of Assigned Volunteer</Label>
+        <Label className="text-primary-text">List of Assigned Volunteer(s)</Label>
         {volunteers?.map((volunteer, i) => (
           <p
             key={volunteer?.volunteer_id}
@@ -449,7 +457,7 @@ const ScheduleDetails = ({ queryKey }) => {
               </CardHeader>
               <CardContent className="flex flex-col gap-3">
                 <h3 className="text-xl font-semibold text-accent">
-                  Parents/Guardians
+                  Parent(s)/Guardian(s)
                 </h3>
 
                 <Table>
@@ -476,7 +484,7 @@ const ScheduleDetails = ({ queryKey }) => {
                             defaultChecked={attendee.attended}
                             disabled={disableSchedule}
                             onCheckedChange={(state) =>
-                              onRowAttend(attendee?.id, state)
+                              onRowAttend(attendee?.id, state, queryClient)
                             }
                           />
                         </TableCell>
@@ -712,7 +720,7 @@ const ScheduleDetails = ({ queryKey }) => {
                   <TableHeader className="bg-primary">
                     <TableRow>
                       <TableHead className="rounded-l-lg" />
-                      <TableHead>Name of Child Attendee</TableHead>
+                      <TableHead>Name</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="rounded-r-lg" />
                     </TableRow>
@@ -730,7 +738,7 @@ const ScheduleDetails = ({ queryKey }) => {
                             defaultChecked={attendee.attended}
                             disabled={disableSchedule}
                             onCheckedChange={(state) =>
-                              onRowAttend(attendee?.id, state)
+                              onRowAttend(attendee?.id, state, queryClient)
                             }
                           />
                         </TableCell>

@@ -148,7 +148,10 @@ const getEventAttendance = async (eventId) => {
     const { data: attendanceData, error: attendanceError } = await supabase
       .from("attendance")
       .select("*")
-      .eq("event_id", eventId);
+      .eq("event_id", eventId)
+      .order("created_at", { ascending: true })
+      .order("first_name", { ascending: true })
+      .order("id", { ascending: true });
 
     if (attendanceError) {
       console.error("Error fetching attendance data:", attendanceError);
@@ -534,19 +537,20 @@ const insertNewRecord = async (submittedData) => {
   return { success: true, attendanceData };
 };
 
-const editAttendee = async({firstName,lastName, contact,attendeeId}) => {
-  
+const editAttendee = async ({ firstName, lastName, contact, attendeeId }) => {
+  const { error } = await supabase
+    .from("attendance")
+    .update({
+      first_name: firstName,
+      last_name: lastName,
+      contact_number: contact ?? null,
+    })
+    .eq("id", attendeeId);
 
-  const {error} =  await supabase.from("attendance").update({
-    first_name:firstName,
-    last_name: lastName,
-    contact_number:contact ?? null
-  }).eq("id",attendeeId)
-
-  if(error){
-    throw new Error(error.message)
+  if (error) {
+    throw new Error(error.message);
   }
-}
+};
 
 export {
   editAttendee,
