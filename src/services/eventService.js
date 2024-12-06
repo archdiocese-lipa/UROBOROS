@@ -67,9 +67,10 @@ export const createEvent = async (eventData) => {
 // Function to update an existing event
 
 export const updateEvent = async (eventData) => {
+
+ 
   try {
     const {
-      eventId, // Event ID to be updated
       eventName,
       eventCategory,
       eventVisibility,
@@ -79,8 +80,8 @@ export const updateEvent = async (eventData) => {
       eventDescription,
       // userId, // Creator's ID
       assignVolunteer, // Array of volunteer IDs
-    } = eventData;
-
+    } = eventData.updatedData;
+  
     // Step 1: Update the event data in the 'events' table
     const { data: updatedEvent, error: eventError } = await supabase
       .from("events")
@@ -93,7 +94,7 @@ export const updateEvent = async (eventData) => {
         event_time: eventTime, // formatted time (HH:mm:ss)
         event_description: eventDescription || null, // Optional field
       })
-      .eq("id", eventId) // Update the event with the matching ID
+      .eq("id", eventData.eventId) // Update the event with the matching ID
       .select("id") // Return the updated event ID
       .single(); // Return single object
 
@@ -105,7 +106,7 @@ export const updateEvent = async (eventData) => {
     const { error: removeError } = await supabase
       .from("event_volunteers")
       .delete()
-      .eq("event_id", eventId); // Remove all existing volunteer assignments for the event
+      .eq("event_id", eventData.eventId); // Remove all existing volunteer assignments for the event
 
     if (removeError) {
       throw new Error(removeError.message); // Handle any errors
@@ -114,7 +115,7 @@ export const updateEvent = async (eventData) => {
     // Step 3: Insert new volunteer assignments (if any volunteers are selected)
     if (assignVolunteer?.length > 0) {
       const volunteerData = assignVolunteer.map((volunteerId) => ({
-        event_id: eventId, // Use the event ID to assign volunteers
+        event_id: eventData.eventId, // Use the event ID to assign volunteers
         volunteer_id: volunteerId,
       }));
 
@@ -173,6 +174,9 @@ export const getEvents = async ({
         filters.id = []; // Reset filter if no volunteer events are found
       }
     }
+    const order = [
+      { column: "event_date", ascending: true },  // Descending order by created_at
+    ];
 
     // Fetch data using pagination
     const data = await paginate({
@@ -181,6 +185,7 @@ export const getEvents = async ({
       page,
       pageSize,
       filters,
+      order
     });
 
     return data;
@@ -266,6 +271,7 @@ export const getAllEvents = async () => {
 // Updated getEventsCalendar to accept year and month as arguments
 export const getEventsCalendar = async (ministry = []) => {
 
+  
   try {
     // Fetch all public events (no filtering by ministry)
     const publicEventsQuery = supabase
@@ -306,7 +312,11 @@ export const getEventsCalendar = async (ministry = []) => {
     // Combine public and private events
     const allEvents = [...publicEventsResult.data, ...privateEventsResult.data];
 
- 
+    allEvents.sort((a, b) => {
+      const dateA = new Date(`${a.event_date}T${a.event_time}`);
+      const dateB = new Date(`${b.event_date}T${b.event_time}`);
+      return dateA - dateB; // Sort in ascending order (earliest date first)
+    });
 
     return { success: true, data: allEvents };
   } catch (error) {

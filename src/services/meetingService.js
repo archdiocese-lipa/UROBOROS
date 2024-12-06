@@ -273,3 +273,18 @@ export const fetchMeetingParticipants = async (meetingId) => {
     return { success: false, error: error.message, data: [] }; // Return empty array in case of an error
   }
 };
+
+export const fetchMeetingByCreatorId = async(creatorId) => {
+
+  if(!creatorId){
+    throw new Error("id is required!")
+  }
+
+  const {data,error} =  await supabase.from("meetings").select("*").eq("creator_id", creatorId)
+
+  if(error){
+    throw new Error(error.message)
+  }
+
+  return data
+}

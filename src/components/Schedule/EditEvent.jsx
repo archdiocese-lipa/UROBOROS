@@ -119,6 +119,7 @@ const EditEvent = ({
 
   // Mark dito mo connect backend
   const onSubmit = (data) => {
+    console.log(data,"data")
     // Ensure userId is available
     if (!userId) {
       toast({
@@ -146,6 +147,8 @@ const EditEvent = ({
     updateEvent(eventPayload); // Call the updateEvent mutation
     setDialogOpen(false); // Close the dialog if success
   };
+
+  // console.log(eventData)
   return (
     <Form {...eventForm}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-2" id={id}>
@@ -155,7 +158,7 @@ const EditEvent = ({
           name="eventName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Event Name</FormLabel>
+              <FormLabel>Event Names</FormLabel>
               <FormControl>
                 <div className="relative flex-1">
                   <Input
