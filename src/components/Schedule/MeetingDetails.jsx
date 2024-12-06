@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
+import { useState } from "react";
 
 import { Description, Title } from "@/components/Title";
 import {
@@ -23,6 +24,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button"; // Assuming you have a Button component
+import { Icon } from "@iconify/react"; // Assuming you have an Icon component
+import useDeleteMeeting from "@/hooks/useDeleteMeeting"; // Import the delete hook
 
 const MeetingDetails = () => {
   const [urlPrms] = useSearchParams();
@@ -46,6 +50,11 @@ const MeetingDetails = () => {
     enabled: !!meetingId, // Only fetch when meetingId is available
   });
 
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  // Use the delete meeting hook
+  const { mutate: deleteMeeting, isLoading: isDeleting } = useDeleteMeeting();
+
   if (isLoading) return <div>Loading meeting details...</div>;
 
   if (!meetingId)
@@ -64,8 +73,8 @@ const MeetingDetails = () => {
   };
 
   return (
-    <div className=" no-scrollbar h-full lg:flex grow flex-col gap-8 overflow-y-auto px-9 py-6">
-      <div className="flex justify-between">
+    <div className="no-scrollbar h-full grow flex-col gap-8 overflow-y-auto px-9 py-6 lg:flex">
+      <div className="relative flex justify-between">
         <div>
           <Title>{meeting?.meeting_name}</Title>
           <Description>
@@ -98,8 +107,45 @@ const MeetingDetails = () => {
           </div>
         </div>
 
-        <div className="flex gap-1"></div>
+        {/* Delete Button positioned at the top-right */}
+        <Button
+          className="rounded-xl px-3 py-3"
+          onClick={() => setIsDialogOpen(true)} // Open the confirmation dialog
+        >
+          <Icon icon={"mingcute:delete-3-line"} />
+        </Button>
       </div>
+
+      {/* Dialog Modal for Delete Confirmation */}
+      {isDialogOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="z-60 rounded-lg bg-white p-6">
+            <h3 className="text-lg font-bold">Are you sure?</h3>
+            <p>
+              Do you really want to delete this meeting? This action cannot be
+              undone.
+            </p>
+            <div className="mt-4 flex justify-end gap-4">
+              <Button
+                className="bg-gray-400 rounded-lg px-4 py-2 text-white"
+                onClick={() => setIsDialogOpen(false)} // Close the dialog
+              >
+                Cancel
+              </Button>
+              <Button
+                className="rounded-lg bg-red-500 px-4 py-2 text-white"
+                onClick={() => {
+                  deleteMeeting(meetingId); // Call deleteMeeting mutation
+                  setIsDialogOpen(false); // Close the dialog
+                }}
+                disabled={isDeleting} // Disable the button while the request is in progress
+              >
+                {isDeleting ? "Deleting..." : "Delete"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Display Participants */}
       {participantsLoading ? (

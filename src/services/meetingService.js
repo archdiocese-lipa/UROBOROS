@@ -274,17 +274,19 @@ export const fetchMeetingParticipants = async (meetingId) => {
   }
 };
 
-export const fetchMeetingByCreatorId = async(creatorId) => {
-
-  if(!creatorId){
-    throw new Error("id is required!")
+export const fetchMeetingByCreatorId = async (creatorId) => {
+  if (!creatorId) {
+    throw new Error("id is required!");
   }
 
-  const {data,error} =  await supabase.from("meetings").select("*").eq("creator_id", creatorId)
+  const { data, error } = await supabase
+    .from("meetings")
+    .select("*")
+    .eq("creator_id", creatorId);
 
-  if(error){
-    throw new Error(error.message)
+  if (error) {
+    throw new Error(error.message);
   }
 
-  return data
-}
+  return data;
+};
