@@ -5,6 +5,7 @@ import { ROLES } from "@/constants/roles";
 
 // Function to create an event
 export const createEvent = async (eventData) => {
+  console.log("eventDAta", eventData);
   try {
     const {
       eventName,
@@ -26,7 +27,7 @@ export const createEvent = async (eventData) => {
           event_name: eventName,
           event_category: eventCategory,
           event_visibility: eventVisibility,
-          ministry: ministry || null, // Ministry is optional
+          ministry_id: ministry || null, // Ministry is optional
           event_date: eventDate, // formatted date (yyyy-MM-dd)
           event_time: eventTime, // formatted time (HH:mm:ss)
           event_description: eventDescription || null, // Optional field
@@ -87,7 +88,7 @@ export const updateEvent = async (eventData) => {
         event_name: eventName,
         event_category: eventCategory,
         event_visibility: eventVisibility,
-        ministry: ministry || null, // Ministry is optional
+        ministry_id: ministry || null, // Ministry is optional
         event_date: eventDate, // formatted date (yyyy-MM-dd)
         event_time: eventTime, // formatted time (HH:mm:ss)
         event_description: eventDescription || null, // Optional field
@@ -263,7 +264,9 @@ export const getAllEvents = async () => {
 };
 
 // Updated getEventsCalendar to accept year and month as arguments
-export const getEventsCalendar = async (ministryIds = []) => {
+export const getEventsCalendar = async (ministry = []) => {
+
+  const ids= ministry.map((ministry) => ministry.id)
   try {
     // Fetch all public events (no filtering by ministry)
     const publicEventsQuery = supabase
@@ -273,12 +276,12 @@ export const getEventsCalendar = async (ministryIds = []) => {
 
     // Fetch private events filtered by ministry IDs (only if provided)
     const privateEventsQuery =
-      ministryIds.length > 0
+    ids.length > 0
         ? supabase
             .from("events")
             .select("*")
             .eq("event_visibility", "private")
-            .in("ministry", ministryIds) // Apply ministry filter
+            .in("ministry_id", ids) // Apply ministry filter
         : null;
 
     // Execute both queries
@@ -303,6 +306,8 @@ export const getEventsCalendar = async (ministryIds = []) => {
 
     // Combine public and private events
     const allEvents = [...publicEventsResult.data, ...privateEventsResult.data];
+
+ 
 
     return { success: true, data: allEvents };
   } catch (error) {
@@ -377,4 +382,29 @@ export const getWalkInEvents = async () => {
   if (error) throw error; // React Query will handle this as a query failure
 
   return data; // Return the data directly
+};
+
+export const getEventsByMinistryId = async (ministryIds) => {
+
+
+  const promises = ministryIds.map(async (ministry) => {
+    const { data, error } = await supabase
+      .from("events")
+      .select("*")
+      .eq("ministry_id", ministry.id);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return data;
+  });
+
+ 
+
+  const events = await Promise.all(promises);
+
+
+
+  return events;
 };

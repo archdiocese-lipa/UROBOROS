@@ -147,6 +147,7 @@ const CreateEvent = ({
   // Mark dito mo connect backend
   const onSubmit = (data) => {
     // Ensure userId is available
+    console.log("event payload", data)
     if (!userId) {
       toast({
         description: "User not logged in. Please log in to create an event.",
@@ -173,10 +174,12 @@ const CreateEvent = ({
 
     // Call the create event function with the prepared data
     if (!eventData) {
+  
       createEvent(eventPayload);
       setDialogOpen(false); // Close the dialog if success
       return;
     } else {
+      console.log("event before updating", eventPayload)
       editMutation.mutate({
         eventId: eventData?.id,
         updatedData: eventPayload,
@@ -185,6 +188,8 @@ const CreateEvent = ({
 
     setDialogOpen(false); // Close the dialog if success
   };
+
+  // console.log("form values",eventForm.getValues())
 
   return (
     <Form {...eventForm}>
