@@ -15,35 +15,40 @@ import { ROLES } from "@/constants/roles";
 
 const App = () => {
   return (
+    // <Router basename="/portal">
     <Router>
       <Routes>
-        {/* Public Route */}
+        {/* Auth Routes */}
         <Route path="/" element={<Home />} />
-
         {/* Protected Routes */}
         <Route element={<MainLayout />}>
+          {/* ========================================================= */}
           {/* Only Admin can access the routes below */}
           <Route element={<RequireRole roles={[ROLES[0]]} />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/ministries" element={<Ministries />} />
             <Route path="/requests" element={<Requests />} />
           </Route>
-
+          {/* ========================================================= */}
           {/* Roles of Admin and Volunteer can access the routes below */}
           <Route element={<RequireRole roles={[ROLES[0], ROLES[1]]} />}>
+            {/* Add Route for OrganizedEvents */}
             <Route path="/schedule" element={<Schedule />} />
           </Route>
-
+          {/* ========================================================= */}
           {/* Roles of Admin and Parishioner can access the routes below */}
           <Route element={<RequireRole roles={[ROLES[0], ROLES[2]]} />}>
+            {/* Add Route for Events */}
             <Route path="/events" element={<Events />} />
             <Route path="/family" element={<Family />} />
+            {/* Add Route for Family */}
           </Route>
-
+          {/* ========================================================= */}
           {/* All Roles Can Access Routes Below */}
           <Route element={<RequireRole roles={[...ROLES]} />}>
             <Route path="/announcements" element={<Announcements />} />
           </Route>
+          {/* ========================================================= */}
         </Route>
       </Routes>
     </Router>
