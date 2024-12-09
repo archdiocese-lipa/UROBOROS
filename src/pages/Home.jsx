@@ -1,14 +1,38 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import ParishionerRegister from "@/components/Home/Profile-Registration/ParishionerRegister";
 import Login from "@/components/Login";
 import WalkInRegistration from "@/components/Home/WalkInRegistration";
 import EditRegistration from "@/components/Home/EditRegistration";
+import { supabase } from "@/services/supabaseClient";
 
 const Home = () => {
+  const [session, setSession] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const getSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      setSession(session);
+
+      // Navigate to /announcements if there is an active session
+      if (session) {
+        navigate("/announcements");
+      }
+    };
+
+    getSession();
+  }, [navigate]);
+
+  console.log(session);
+
   return (
     <>
-      <div className="relative h-[calc(100dvh_-_10rem)] sm:h-[calc(100dvh_-_1.8rem)] bg-[#FFDECE] bg-[url('@/assets/svg/backdrop.svg')] bg-no-repeat lg:bg-cover md:bg-bottom bg-right-bottom flex items-center justify-center overflow-hidden">
-        <div className="absolute rtop-[calc(10rem_+_40dvw)] top-10 z-50">
-          <div className="order-2 mx-auto max-w-xl justify-center rounded-[1.8rem] backdrop-blur-sm sm:rounded-full bg-white/60 sm:flex sm:space-x-3 md:order-1 md:col-span-2">
+      <div className="relative flex h-[calc(100dvh_-_10rem)] items-center justify-center overflow-hidden bg-[#FFDECE] bg-[url('@/assets/svg/backdrop.svg')] bg-right-bottom bg-no-repeat sm:h-[calc(100dvh_-_1.8rem)] md:bg-bottom lg:bg-cover">
+        <div className="rtop-[calc(10rem_+_40dvw)] absolute top-10 z-50">
+          <div className="order-2 mx-auto max-w-xl justify-center rounded-[1.8rem] bg-white/60 backdrop-blur-sm sm:flex sm:space-x-3 sm:rounded-full md:order-1 md:col-span-2">
             <div className="grid grid-cols-2 gap-2 p-2 sm:grid-cols-4">
               <Login />
               <ParishionerRegister />
@@ -17,14 +41,23 @@ const Home = () => {
             </div>
           </div>
         </div>
-        <p className="absolute top-[12rem] text-[9.4dvw] leading-[10dvw] max-w-[80dvw] sm:max-w-xl sm:text-[4.4rem] sm:leading-[5.4rem] sm:top-[20dvh] lg:max-w-full lg:top-auto lg:ml-[24dvw] lg:bottom-[50dvh] lg:text-[8dvh] lg:leading-[9dvh] font-black text-accent whitespace-pre w-screen">{"Growing in Faith\nTogether"}</p>
-        <p className="absolute top-[calc(12rem_+_24dvw)] text-[5.8dvw] max-w-[80dvw] sm:max-w-xl sm:text-[2.6rem] sm:top-[calc(20dvh_+_12rem)] lg:max-w-full lg:top-auto lg:ml-[24.2dvw] lg:bottom-[calc(50dvh_-_14dvh)] lg:text-[4.6dvh] font-medium text-accent whitespace-pre w-screen">{"Engaging Children in the Joy \nof Gospel"}</p>
+        <p className="absolute top-[12rem] w-screen max-w-[80dvw] whitespace-pre text-[9.4dvw] font-black leading-[10dvw] text-accent sm:top-[20dvh] sm:max-w-xl sm:text-[4.4rem] sm:leading-[5.4rem] lg:bottom-[50dvh] lg:top-auto lg:ml-[24dvw] lg:max-w-full lg:text-[8dvh] lg:leading-[9dvh]">
+          {"Growing in Faith\nTogether"}
+        </p>
+        <p className="absolute top-[calc(12rem_+_24dvw)] w-screen max-w-[80dvw] whitespace-pre text-[5.8dvw] font-medium text-accent sm:top-[calc(20dvh_+_12rem)] sm:max-w-xl sm:text-[2.6rem] lg:bottom-[calc(50dvh_-_14dvh)] lg:top-auto lg:ml-[24.2dvw] lg:max-w-full lg:text-[4.6dvh]">
+          {"Engaging Children in the Joy \nof Gospel"}
+        </p>
       </div>
-      <div className="relative h-[10rem] sm:h-[1.8rem] bg-[#663F30] w-full flex items-end pb-2 pl-4">
-        <p className="text-[0.8rem] text-[#FBCCC0]/40 font-regular">Developed by <a href="http://a2kgroup.org" className="underline">A2K Group Corporation</a></p>
+      <div className="relative flex h-[10rem] w-full items-end bg-[#663F30] pb-2 pl-4 sm:h-[1.8rem]">
+        <p className="font-regular text-[0.8rem] text-[#FBCCC0]/40">
+          Developed by{" "}
+          <a href="http://a2kgroup.org" className="underline">
+            A2K Group Corporation
+          </a>
+        </p>
       </div>
     </>
-  ); 
+  );
 };
 
 export default Home;
