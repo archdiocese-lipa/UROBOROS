@@ -39,13 +39,13 @@ import useInterObserver from "@/hooks/useInterObserver";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import VolunteerDialogCalendar from "@/components/Schedule/VolunteerDialogCalendar";
 
-
 const Schedule = () => {
   const [filter, setFilter] = useState("events");
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [sheetEditDialogOpenIndex,setSheetEditDialogOpenIndex] =  useState(false)
+  const [sheetEditDialogOpenIndex, setSheetEditDialogOpenIndex] =
+    useState(false);
   const [editDialogOpenIndex, setEditDialogOpenIndex] = useState(null);
   const [urlPrms, setUrlPrms] = useSearchParams();
   const { userData } = useUser();
@@ -348,7 +348,9 @@ const Schedule = () => {
                                         </Button>
                                       </DialogClose>
 
-                                      <Button type="submit" form="update-event">Edit</Button>
+                                      <Button type="submit" form="update-event">
+                                        Edit
+                                      </Button>
                                     </div>
                                   </DialogFooter>
                                 </DialogContent>
@@ -447,19 +449,21 @@ const Schedule = () => {
                                     urlPrms.get("query")?.toString() || "",
                                   ]}
                                 />
-             
-                                 <DialogFooter>
+
+                                <DialogFooter>
                                   <div className="flex justify-end gap-2">
                                     <DialogClose asChild>
                                       <Button variant="outline">Cancel</Button>
                                     </DialogClose>
 
-                                    <Button type="submit" form="update-event">Edit</Button>
+                                    <Button type="submit" form="update-event">
+                                      Edit
+                                    </Button>
                                   </div>
                                 </DialogFooter>
                               </DialogContent>
                             </Dialog>
-                          </div>  
+                          </div>
                         </div>
                       ))
                     : page?.items.map((meeting, j) => (
