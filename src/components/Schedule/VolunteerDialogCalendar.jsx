@@ -1,9 +1,9 @@
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -15,13 +15,14 @@ import { useState } from "react";
 import { useUser } from "@/context/useUser";
 import { fetchUserMinistries } from "@/services/ministryService";
 import { fetchCalendarMeetings } from "@/services/meetingService";
+import EventInfoDialog from "./EventInfoDialog";
 
 const VolunteerDialogCalendar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [eventVisibility, setEventVisibility] = useState("public");
   const [eventType, setEventType] = useState("event"); // Default to "event"
   const [selectedEvent, setSelectedEvent] = useState(null); // Track selected event
-  const [isEventModalOpen, setIsEventModalOpen] = useState(false); // Separate state for event modal
+  const [dialogOpen, setDialogOpen] = useState(false); // State for the EventInfoDialog
 
   const { userData } = useUser();
 
@@ -104,8 +105,14 @@ const VolunteerDialogCalendar = () => {
 
   // Handle event click
   const handleEventClick = (info) => {
-    setSelectedEvent(info.event); // Set selected event data
-    setIsEventModalOpen(true); // Open the event details modal
+    const { title, startStr: start, extendedProps } = info.event;
+
+    setSelectedEvent({
+      title,
+      start,
+      description: extendedProps.event_description,
+    });
+    setDialogOpen(true); // Open the EventInfoDialog
   };
 
   return (
@@ -124,7 +131,6 @@ const VolunteerDialogCalendar = () => {
 
           {/* Event Type Filter (Above Public/Private) */}
           <div className="flex space-x-2">
-            {/* Event Type Filter */}
             <Button
               variant={eventType === "event" ? "primary" : "secondary"}
               onClick={() => setEventType("event")}
@@ -140,24 +146,19 @@ const VolunteerDialogCalendar = () => {
           </div>
 
           {/* Event Visibility Filters */}
-
-          <div className="flex space-x-2 flex-wrap">
-            {/* All Events Button */}
+          <div className="flex flex-wrap space-x-2">
             <Button
               variant={eventVisibility === "all" ? "primary" : "secondary"}
               onClick={() => setEventVisibility("all")}
             >
               All Events
             </Button>
-
-            {/* Public Events Button */}
             <Button
               variant={eventVisibility === "public" ? "primary" : "secondary"}
               onClick={() => setEventVisibility("public")}
             >
               Public Events
             </Button>
-            {/* Private Events Button */}
             <Button
               variant={eventVisibility === "private" ? "primary" : "secondary"}
               onClick={() => setEventVisibility("private")}
@@ -174,32 +175,21 @@ const VolunteerDialogCalendar = () => {
             events={formattedEvents || []}
             height="100%"
             contentHeight="auto"
-            eventClick={handleEventClick} // Handle event click
+            eventClick={handleEventClick}
+            eventContent={(arg) => {
+              return <div className="truncate text-sm">{arg.event.title}</div>;
+            }}
+            displayEventTime={false} // Hides the time from event display
           />
         </DialogContent>
       </Dialog>
 
-      {/* Event Details Modal */}
-      {selectedEvent && (
-        <Dialog
-          open={isEventModalOpen}
-          onOpenChange={(open) => setIsEventModalOpen(open)}
-        >
-          <DialogContent className="max-w-xl pt-16">
-            <DialogHeader>
-              <DialogTitle>{selectedEvent.title}</DialogTitle>
-              <DialogDescription>
-                <p>Date: {selectedEvent.start.toLocaleDateString()}</p>
-                <p>Time: {selectedEvent.start.toLocaleTimeString()}</p>
-                <p>
-                  Description: {selectedEvent.extendedProps.event_description}
-                </p>
-              </DialogDescription>
-            </DialogHeader>
-            <Button onClick={() => setIsEventModalOpen(false)}>Close</Button>
-          </DialogContent>
-        </Dialog>
-      )}
+      {/* Reusable EventInfoDialog */}
+      <EventInfoDialog
+        open={dialogOpen}
+        event={selectedEvent}
+        onClose={() => setDialogOpen(false)}
+      />
     </>
   );
 };
