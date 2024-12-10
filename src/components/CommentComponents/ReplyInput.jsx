@@ -36,7 +36,8 @@ import PropTypes from "prop-types";
               userData.id,
               comment_id,
               setEditting,
-              reset
+              reset,
+              setIsReplying
             ),
           )}
           className="flex"
@@ -49,7 +50,7 @@ import PropTypes from "prop-types";
                   src={userData?.user_image ?? ""}
                   alt="@shadcn"
                 />
-                <AvatarFallback className="bg-green-600">
+                <AvatarFallback className="bg-primary">
                   {getInitial(userData?.first_name)}
                 </AvatarFallback>
               </Avatar>

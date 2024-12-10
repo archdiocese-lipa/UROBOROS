@@ -142,7 +142,7 @@ export const getEvents = async ({
 } = {}) => {
   try {
     const filters = {};
-
+    console.log("user",user)
     // Apply filters for the selected year and month
     if (selectedYear && selectedMonth) {
       // Create a filter for events that fall within the selected month of the selected year
@@ -162,7 +162,7 @@ export const getEvents = async ({
         .from("event_volunteers")
         .select("*")
         .eq("volunteer_id", user.id);
-
+      console.log("volunteer,events",volunteerEvents  )
       nonAdminEventIds = volunteerEvents.map((event) => event.event_id);
 
       if (nonAdminEventIds.length > 0) {
@@ -174,7 +174,7 @@ export const getEvents = async ({
     const order = [
       { column: "event_date", ascending: true }, // Descending order by created_at
     ];
-
+console.log("filters", filters)
     // Fetch data using pagination
     const data = await paginate({
       key: "events",
@@ -184,6 +184,7 @@ export const getEvents = async ({
       filters,
       order,
     });
+    console.log("data",data)
 
     return data;
   } catch (error) {

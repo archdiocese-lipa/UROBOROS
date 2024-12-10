@@ -20,12 +20,11 @@ const useAnnouncements = ({
   const { data, hasNextPage, fetchNextPage, isLoading } = useInfiniteQuery({
     queryKey: ["announcements", ministry_id],
     queryFn: async ({ pageParam }) => {
-      const response = await fetchAnnouncements(pageParam, 5, ministry_id);
-
-    
-
+      const response = await fetchAnnouncements(pageParam, 10, ministry_id);
       return response;
     },
+    enabled: !!ministry_id,
+
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {
       if (lastPage.nextPage) {

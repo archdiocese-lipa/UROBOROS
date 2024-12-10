@@ -91,10 +91,11 @@ const Schedule = () => {
       }
       return response;
     },
+    enabled: !!userData,
     initialPageParam: 1,
     getNextPageParam: (lastPage) =>
       lastPage?.nextPage ? lastPage.currentPage + 1 : undefined,
-    enabled: !!userData,
+
   });
 
   const { ref } = useInterObserver(fetchNextPage);
@@ -126,7 +127,7 @@ const Schedule = () => {
   const onFilterChange = (value) => {
     setFilter(value);
   };
-
+console.log(data,"data")
   return (
     <div className="flex h-full w-full xl:gap-8">
       <div className="no-scrollbar flex w-full flex-col gap-8 overflow-y-auto lg:min-w-[400px] xl:flex-1">
