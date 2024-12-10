@@ -6,10 +6,11 @@
     --radius: 0.5rem;
   }
 
-    /* Prevent the entire HTML document from being scrollable */
-    html, body {
-      overflow: hidden;
-    }
+  /* Prevent the entire HTML document from being scrollable */
+  html,
+  body {
+    overflow: hidden;
+  }
 
   .no-scrollbar::-webkit-scrollbar {
     display: none;
@@ -22,32 +23,32 @@
 }
 
 :root {
-  --main-color: #663E2F;
+  --main-color: #663e2f;
 }
 
 /* Full Calendar */
-.fc .fc-toolbar{
+.fc .fc-toolbar {
   flex-direction: row;
   align-items: start;
   justify-content: space-between;
 }
 
 @media only screen and (max-width: 600px) {
-  .fc .fc-toolbar{
+  .fc .fc-toolbar {
     flex-direction: column;
     align-items: start;
   }
 }
 
-.fc-toolbar-title{
+.fc-toolbar-title {
   color: var(--main-color);
   font-weight: 500;
 }
-.fc .fc-button-primary{
+.fc .fc-button-primary {
   background-color: var(--main-color);
   border-color: var(--main-color);
 }
-.fc .fc-button-primary:disabled{
+.fc .fc-button-primary:disabled {
   background-color: var(--main-color);
-  border-color: var(--main-color)
+  border-color: var(--main-color);
 }

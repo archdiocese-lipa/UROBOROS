@@ -12,7 +12,10 @@ export const EditRegisterSchema = z.object({
         parentContactNumber: z
           .string()
           .min(1, "Parent's contact number is required")
-          .regex(/^[0-9]{11}$/, "Contact number must be exactly 11 digits."),
+          .regex(/^(\+44|44|0)\d{10}$/, {
+            message:
+              "Contact number must be a valid UK phone number with exactly 11 digits.",
+          }),
         isMainApplicant: z.boolean(),
         id: z.string().uuid("Parent ID must be a valid UUID").optional(), // ID is optional for updates
       })

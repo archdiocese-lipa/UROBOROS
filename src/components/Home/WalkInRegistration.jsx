@@ -173,9 +173,17 @@ const WalkInRegistration = () => {
       })
     : [];
 
+  const handleDialogChange = (open) => {
+    setOpenDialog(open);
+    if (open) {
+      // Reset form values and errors when opening the dialog
+      form.reset();
+    }
+  };
+
   return (
     <>
-      <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+      <Dialog open={openDialog} onOpenChange={handleDialogChange}>
         <DialogTrigger asChild>
           <Button variant="landingsecondary">Walk - In Register</Button>
         </DialogTrigger>

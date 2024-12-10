@@ -8,8 +8,9 @@ export const parishionerRegisterSchema = z
     lastName: z.string().min(2, {
       message: "Last name must be at least 2 characters.",
     }),
-    contactNumber: z.string().regex(/^[0-9]{11}$/, {
-      message: "Contact number must be exactly 11 digits.",
+    contactNumber: z.string().regex(/^(\+44|44|0)\d{10}$/, {
+      message:
+        "Contact number must be a valid phone number with exactly 11 digits.",
     }),
     email: z.string().email({
       message: "Please enter a valid email address.",

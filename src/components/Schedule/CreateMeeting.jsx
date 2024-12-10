@@ -204,7 +204,7 @@ const CreateMeeting = () => {
                   name="time"
                   render={({ field }) => (
                     <FormItem className="flex-1 space-y-0">
-                      <FormLabel>Event Time</FormLabel>
+                      <FormLabel>Time</FormLabel>
                       <FormControl>
                         <TimePicker
                           value={field.value} // Bind value from form control
