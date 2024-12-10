@@ -10,7 +10,10 @@ export const walkInRegisterSchema = z.object({
         parentContactNumber: z
           .string()
           .min(1, "Parent's contact number is required")
-          .regex(/^[0-9]{11}$/, "Contact number must be exactly 11 digits."),
+          .regex(/^(\+44|44|0)\d{10}$/, {
+            message:
+              "Contact number must be a valid phone number with exactly 11 digits.",
+          }),
         isMainApplicant: z.boolean(),
       })
     )

@@ -8,8 +8,13 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import PropTypes from "prop-types";
+import { useUser } from "@/context/useUser";
+import ManualAttendEvents from "../Events/ManualAttendEvents";
 
 const EventInfoDialog = ({ open, event, onClose }) => {
+  const userData = useUser();
+  const role = userData.userData.role;
+
   const formatUKDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-GB", {
@@ -30,7 +35,7 @@ const EventInfoDialog = ({ open, event, onClose }) => {
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent>
-        <DialogHeader>
+        <DialogHeader className="text-start">
           <DialogTitle>{event?.title}</DialogTitle>
           <DialogDescription>
             <p>Date: {formatUKDate(event?.start)}</p>
@@ -40,8 +45,11 @@ const EventInfoDialog = ({ open, event, onClose }) => {
             </p>
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter>
-          <Button onClick={onClose}>Close</Button>
+        <DialogFooter className="flex flex-row justify-end gap-x-1">
+          <Button variant="outline" onClick={onClose}>
+            Close
+          </Button>
+          {role === "parishioner" && <ManualAttendEvents eventId={event?.id} />}
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -54,6 +62,7 @@ EventInfoDialog.propTypes = {
     title: PropTypes.string,
     start: PropTypes.string,
     description: PropTypes.string,
+    id: PropTypes.string,
   }),
   onClose: PropTypes.func.isRequired,
 };

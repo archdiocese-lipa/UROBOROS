@@ -156,7 +156,6 @@ const EditRegistration = () => {
   // Function to submit editted user information
   const onSubmit = async (values) => {
     const { event: eventId, ticketCode, familyId } = values; // Extract event ID, ticket code, and family ID
-    console.log(values);
 
     // Prepare parent records for submission, including familyId
     const parents = values.parents.map((parent) => ({
@@ -523,9 +522,9 @@ const EditRegistration = () => {
                   </div>
                   <DialogFooter>
                     <div className="flex justify-end gap-2">
-                      <Button variant="outline" onClick={handleDialogChange}>
-                        Cancel
-                      </Button>
+                      <DialogClose>
+                        <Button variant="outline">Cancel</Button>
+                      </DialogClose>
                       <Button type="submit">Submit</Button>
                     </div>
                   </DialogFooter>

@@ -14,7 +14,6 @@ const Calendar = ({ events }) => {
   const [selectedShowCalendar, setSelectedShowCalendar] = useState("Events");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
-
   const { userData } = useUser();
 
   const { data: meetings } = useQuery({
@@ -26,7 +25,6 @@ const Calendar = ({ events }) => {
   // Make sure getEvents is available and is an array
   const eventArray = Array.isArray(getEvents?.data) ? getEvents.data : [];
 
-  // Map the event data to the format FullCalendar expects
   const eventData = events
     ? events.map((item) => ({
         title: item.event_name,
@@ -50,11 +48,12 @@ const Calendar = ({ events }) => {
 
   // Event click handler
   const handleEventClick = (info) => {
-    const { title, startStr: start, extendedProps } = info.event;
+    const { title, startStr: start, id, extendedProps } = info.event;
     setSelectedEvent({
       title,
       start,
       description: extendedProps.description,
+      id,
     });
     setDialogOpen(true);
   };
