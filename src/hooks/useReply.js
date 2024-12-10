@@ -14,6 +14,7 @@ import { useToast } from "./use-toast";
         title: "Success",
         description: "Reply Added.",
       });
+
     },
     onError: (error) => {
       // console.error("Mutation error:", error);
@@ -80,17 +81,21 @@ import { useToast } from "./use-toast";
     },
   });
 
-  const handleAddReply = (inputs, user_id, comment_id, setEditting, reset) => {
+  const handleAddReply = (inputs, user_id, comment_id, setEditting, reset,setIsReplying) => {
     addReplyMutation.mutate(
       {
         reply: inputs.reply,
         user_id,
         comment_id,
+        setIsReplying,
+        reset,
+        setEditting,
       },
       {
         onSuccess: () => {
           reset();
           setEditting(false);
+          setIsReplying(false)
         },
       },
     );

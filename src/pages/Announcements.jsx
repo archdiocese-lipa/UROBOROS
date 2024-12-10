@@ -67,6 +67,10 @@ const Announcements = () => {
     enabled: !!userData?.id,
   });
 
+
+
+  const ministriesid = ministries?.map((ministry) => ministry.id);
+
   const form = useForm({
     resolver: zodResolver(AnnouncementSchema),
     defaultValues: {
@@ -79,6 +83,11 @@ const Announcements = () => {
   });
 
   const { reset } = form;
+  // const { data: allministries } = useQuery({
+  //   queryFn: async () => await trygettingallinone(ministriesid),
+  //   queryKey: ["ministries", ministriesid],
+  //   enabled: !!ministriesid
+  // });
 
   const {
     addAnnouncementMutation,
@@ -89,20 +98,16 @@ const Announcements = () => {
     data,
     isLoading,
   } = useAnnouncements({
-    ministry_id: searchParams.get("ministryId")|| "",
+    ministry_id:
+      searchParams.get("ministryId") === ""
+        ? ministriesid
+        : searchParams.get("ministryId"),
     reset,
     setIsOpen,
     user_id: userData?.id,
   });
 
-  // useEffect(() => {
-  //   // Update query parameter if ministryId changes (for example, when selecting a different ministry)
-  //   if (ministryId) {
-  //     setSearchParams({ ministryId });
-  //   } else {
-  //     setSearchParams({ ministryId: "" });
-  //   }
-  // }, [ministryId, searchParams]);
+
 
   const onSubmit = (announcementData) => {
     addAnnouncementMutation.mutate({
@@ -110,12 +115,17 @@ const Announcements = () => {
       first_name: userData?.first_name,
       last_name: userData?.last_name,
     });
-    reset, setIsOpen(false);
+    reset();
+    setIsOpen(false); 
   };
+  
 
   const { ref } = useInterObserver(fetchNextPage);
 
   if (!userData) return <div>Loading...</div>;
+
+  console.log("has next page",hasNextPage)
+  console.log("all ministries", data)
 
   return (
     <div className="flex h-full w-full flex-col">
@@ -304,7 +314,7 @@ const Announcements = () => {
               page?.items?.map((announcement) => (
                 <div
                   key={announcement.id}
-                  className="mb-3 w-full rounded-lg border border-primary-outline bg-white p-1 md:px-8 md:pb-6 md:pt-5"
+                  className="mb-3 w-full rounded-lg border border-primary-outline bg-white px-8 pb-6 pt-5"
                 >
                   <Announcement
                     // form={editform}
@@ -319,7 +329,7 @@ const Announcements = () => {
             )
           )}
 
-          {hasNextPage && <div ref={ref}></div>}
+          {hasNextPage && <div className=" mt-20" ref={ref}></div>}
         </div>
         {/* Sidebar */}
         <div className="no-scrollbar flex w-full flex-row gap-3 overflow-y-hidden overflow-x-scroll rounded-[15px] border border-primary-outline p-2 lg:w-1/4 lg:flex-col lg:gap-0 lg:overflow-y-scroll lg:px-8 lg:py-6">
@@ -366,9 +376,9 @@ const Announcements = () => {
 
           <Separator className="my-3 hidden bg-gray lg:block" />
           <div className="flex gap-3 lg:mb-3 lg:block">
-            {ministries?.map((ministry, i) => (
+            {ministries?.map((ministry) => (
               <Filter
-                key={i}
+                key={ministry.id}
                 ministry={ministry}
                 selectedMinistry={ministryId}
                 setSelectedMinistry={setSearchParams}

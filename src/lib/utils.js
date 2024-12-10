@@ -22,6 +22,7 @@ const paginate = async ({
   query = {},
   filters = {},
   order = [],
+  inquery = {},
   select = "*",
 }) => {
   try {
@@ -34,13 +35,28 @@ const paginate = async ({
       .from(key)
       .select(select)
       .range(from, to)
-      .match(query);
+      .match(query)
 
     // Apply ordering dynamically
     if (order.length > 0) {
       order.forEach(({ column, ascending }) => {
         supabaseQuery = supabaseQuery.order(column, { ascending });
       });
+    }
+    if (inquery) {
+      if (Object.keys(inquery).length > 0) {
+        for (const [column, values] of Object.entries(inquery)) {
+          if (Array.isArray(values)) {
+            // Ensure values is an array before applying .in()
+            supabaseQuery = supabaseQuery.in(column, values);
+          } else {
+            console.error(
+              `Expected an array for column ${column}, but got:`,
+              values
+            );
+          }
+        }
+      }
     }
 
     // Apply the is_confirmed filter if provided
@@ -78,8 +94,9 @@ const paginate = async ({
       for (const [column, value] of Object.entries(filters.lte)) {
         supabaseQuery = supabaseQuery.lte(column, value);
       }
-    }
-
+  }
+    // Apply distinct filters if provided
+  
     // Apply ilike filters if provided
     if (filters.ilike) {
       for (const [column, value] of Object.entries(filters.ilike)) {

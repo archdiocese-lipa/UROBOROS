@@ -51,7 +51,7 @@ const Replies = ({
             src={reply?.users?.user_image ?? ""}
             alt="profile picture"
           />
-          <AvatarFallback className="bg-green-600">
+          <AvatarFallback className="bg-primary">
             {getInitial(reply?.users?.first_name)}
           </AvatarFallback>
         </Avatar>

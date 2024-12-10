@@ -44,6 +44,8 @@ import { useUser } from "@/context/useUser";
 import Comments from "../Comments";
 import TriggerLikeIcon from "../CommentComponents/TriggerLikeIcon";
 import AssignVolunteerComboBox from "../Schedule/AssignVolunteerComboBox";
+import { useQuery } from "@tanstack/react-query";
+import { getAnnouncementMinistryId } from "@/services/AnnouncementsService";
 
 const Announcement = ({
   ministries,
@@ -67,24 +69,25 @@ const Announcement = ({
     },
   });
 
+  const { data: MinistryIds } = useQuery({
+    queryFn: async () => await getAnnouncementMinistryId(announcement?.id),
+    queryKey: ["ministryIds", announcement?.id],
+    enabled: !!announcement?.id,
+  });
+
+
   useEffect(() => {
-    if (ministries) {
-      form.setValue(
-        "ministry",
-        ministries.find((ministry) => ministry.id === announcement.ministry_id)
-          ?.id
-          ? [
-              ministries.find(
-                (ministry) => ministry.id === announcement.ministry_id
-              )?.id,
-            ]
-          : []
-      );
-    }
-  }, []);
+    // Ensure the form is reset with the latest announcement data
+    form.reset({
+      title: announcement.title,
+      content: announcement.content,
+      file: null,
+      ministry: MinistryIds ? MinistryIds : [],
+      visibility: announcement.visibility,
+    });
+  }, [announcement, MinistryIds, form]);
 
   const onSubmit = (announcementData) => {
-
     editAnnouncementMutation.mutate({
       announcementData: {
         ...announcementData,
@@ -102,7 +105,9 @@ const Announcement = ({
   if (!userData) {
     return null;
   }
-  // console.log(announcement)
+  // console.log("single announcement", announcement);
+
+  // console.log("ministryIDs", MinistryIds);
   return (
     <div>
       <div className="mb-3 flex justify-between">
@@ -153,7 +158,7 @@ const Announcement = ({
                     Edit
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="rounded-md">
+                <DialogContent className="rounded-md max-h-[75%] overflow-y-scroll no-scrollbar">
                   <DialogHeader>
                     <DialogTitle className="text-2xl font-bold text-accent">
                       Edit Announcement
@@ -226,6 +231,10 @@ const Announcement = ({
                           )}
                         />
 
+                        <div className="flex items-center justify-center">
+                        <img src={announcement.file_url} alt="" />
+                        </div>
+
                         {/* Visibility Select */}
                         <FormField
                           control={form.control}
@@ -293,16 +302,16 @@ const Announcement = ({
                         />
                         {/* Submit Button */}
                         <DialogFooter>
-                        <div className="flex justify-end">
-                          <Button
-                            disabled={editAnnouncementMutation.isPending}
-                            className="w-full"
-                            type="submit"
-                          >
-                            {editAnnouncementMutation.isPending
-                              ? "Editting..."
-                              : "Edit"}
-                          </Button>
+                          <div className="flex justify-end">
+                            <Button
+                              disabled={editAnnouncementMutation.isPending}
+                              className="w-full"
+                              type="submit"
+                            >
+                              {editAnnouncementMutation.isPending
+                                ? "Editting..."
+                                : "Edit"}
+                            </Button>
                           </div>
                         </DialogFooter>
                       </form>

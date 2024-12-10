@@ -48,7 +48,7 @@ const Comments = ({ announcement_id }) => {
       <div className="flex w-full items-start justify-center gap-3">
         <Avatar className="h-8 w-8">
           <AvatarImage src={""} alt="@shadcn" />
-          <AvatarFallback className="bg-green-600">{Initial}</AvatarFallback>
+          <AvatarFallback className="bg-primary">{Initial}</AvatarFallback>
         </Avatar>
         <CommentInput
           HandleAddComment={HandleAddComment}
