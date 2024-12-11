@@ -148,10 +148,7 @@ const Requests = () => {
               </SelectGroup>
             </SelectContent>
           </Select>
-          <Dialog
-            open={open}
-            onOpenChange={(state) => onDialogStateChange(state)}
-          >
+          <Dialog open={open} onOpenChange={onDialogStateChange}>
             <DialogTrigger asChild>
               <Button>Create User</Button>
             </DialogTrigger>
@@ -168,7 +165,7 @@ const Requests = () => {
               </DialogHeader>
               <NewProfileForm
                 user={selectedRow}
-                onFormSubmitSuccess={() => onDialogStateChange(false)}
+                onClose={() => setOpen(false)}
               />
               <DialogFooter>
                 <DialogClose asChild>
@@ -196,7 +193,7 @@ const Requests = () => {
             {data?.pages.flatMap((page) =>
               page.items.map((row, j) => (
                 <TableRow
-                  key={j}
+                  key={row.id}
                   className={cn(
                     j % 2 !== 0 ? "bg-primary bg-opacity-35" : "bg-white"
                   )}

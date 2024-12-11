@@ -59,6 +59,7 @@ const getUsers = async ({ activeFilter, page, pageSize, role }) => {
       pageSize,
       query,
       filters, // Apply filters to the pagination function
+      order: [{ column: "created_at", ascending: false }],
     });
 
     return data;
