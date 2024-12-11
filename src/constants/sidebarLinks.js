@@ -61,7 +61,7 @@ export const SIDEBAR_LINKS = Object.freeze({
     {
       label: "Family",
       link: "/family",
-      icon: "mingcute:inventory-line",
+      icon: "mingcute:group-3-line",
       selectedIcon: "mingcute:group-3-fill",
     },
   ],
