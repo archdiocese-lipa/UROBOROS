@@ -231,7 +231,7 @@ const WalkInRegistration = () => {
                   )}
                 />
                 {/* Parent Guardian Field */}
-                <Label className="text-lg">Parent/Guardian Information</Label>
+                <Label className="text-lg">Parent/Guardian</Label>
                 <span className="hidden text-sm italic text-zinc-400 md:block">
                   (Check the box on the left to choose the main applicant).
                 </span>
@@ -331,7 +331,7 @@ const WalkInRegistration = () => {
                     Add
                   </Button>
                 </div>
-                <Label className="text-lg">Child Information </Label>
+                <Label className="text-lg">Children</Label>
                 {childFields.map((field, index) => (
                   <div
                     key={field.id}
