@@ -1,5 +1,5 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import PropTypes from "prop-types";
 
@@ -12,6 +12,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "./ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -21,40 +22,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
+import useCreateUser from "@/hooks/Request/useCreateUser";
+import useUpdateUser from "@/hooks/Request/useUpdateUser";
+import {
+  editingUserSchema,
+  newUserSchema,
+} from "@/zodSchema/Request/NewUserSchema";
+import { Label } from "./ui/label";
 
-import { registerUser } from "@/services/authService";
-import { updateUser } from "@/services/userService";
-
-const NewProfileForm = ({
-  id = "new-user-form",
-  user,
-  onFormSubmitSuccess,
-}) => {
-  const { toast } = useToast();
-
-  const newUserSchema = z
-    .object({
-      first_name: z.string().min(1, "First Name is Required"),
-      last_name: z.string().min(1, "Last Name is Required"),
-      contact_number: z.string().min(1, "Contact Number is Required"),
-      email: z.string().email().min(1, "Email is Required"),
-      role: z.string().min(1, "Role is Required"),
-      password: z.string().min(6),
-      confirm_password: z.string().min(6),
-    })
-    .refine((data) => data.password === data.confirm_password, {
-      message: "Passwords do not match",
-      path: ["confirm_password"],
-    });
-
-  const editingUserSchema = z.object({
-    first_name: z.string().min(1, "First Name is Required"),
-    last_name: z.string().min(1, "Last Name is Required"),
-    contact_number: z.string().min(1, "Contact Number is Required"),
-    email: z.string().email().min(1, "Email is Required"),
-    role: z.string().min(1, "Role is Required"),
-  });
+const NewProfileForm = ({ id = "new-user-form", user, onClose }) => {
+  const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(user ? editingUserSchema : newUserSchema),
@@ -68,6 +45,9 @@ const NewProfileForm = ({
       confirm_password: "",
     },
   });
+
+  const { mutate: createUser } = useCreateUser(onClose);
+  const { mutate: updateUser } = useUpdateUser(onClose);
 
   const onSubmit = async (data) => {
     try {
@@ -83,18 +63,10 @@ const NewProfileForm = ({
       const { password: _, confirm_password: __, ...updateUserPayload } = data;
 
       !user
-        ? await registerUser(newUserPayload)
-        : await updateUser(user?.id, updateUserPayload);
-
-      onFormSubmitSuccess();
-      toast({
-        title: "Success",
-      });
+        ? createUser(newUserPayload)
+        : updateUser({ id: user?.id, payload: updateUserPayload });
     } catch (error) {
       console.error(error);
-      toast({
-        title: "Error",
-      });
     }
   };
 
@@ -194,7 +166,11 @@ const NewProfileForm = ({
                 <FormItem className="grow">
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter Password" {...field} />
+                    <Input
+                      placeholder="Enter Password"
+                      type={showPassword ? "text" : "password"}
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -207,12 +183,25 @@ const NewProfileForm = ({
                 <FormItem className="grow">
                   <FormLabel>Confirm Password</FormLabel>
                   <FormControl>
-                    <Input placeholder="Confirm Password" {...field} />
+                    <Input
+                      placeholder="Confirm Password"
+                      type={showPassword ? "text" : "password"}
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+          </div>
+        )}
+        {!user && (
+          <div className="flex items-center justify-end gap-x-2">
+            <Checkbox
+              checked={showPassword}
+              onCheckedChange={setShowPassword}
+            />
+            <Label>Show Password</Label>
           </div>
         )}
       </form>
@@ -223,7 +212,7 @@ const NewProfileForm = ({
 NewProfileForm.propTypes = {
   id: PropTypes.string,
   user: PropTypes.object,
-  onFormSubmitSuccess: PropTypes.func,
+  onClose: PropTypes.func,
 };
 
 export default NewProfileForm;
