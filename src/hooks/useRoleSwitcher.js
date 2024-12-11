@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { useUser } from "@/context/useUser";
+import { useNavigate } from "react-router-dom";
 
 const useRoleSwitcher = () => {
   const { userData } = useUser();
+  const navigate = useNavigate();
 
   const [temporaryRole, setTemporaryRole] = useState("");
 
@@ -15,6 +17,9 @@ const useRoleSwitcher = () => {
   const onSwitchRole = (role) => {
     if (!userData) return;
     setTemporaryRole(role);
+    navigate(
+      '/announcements?ministryId='
+    )
   };
 
 
