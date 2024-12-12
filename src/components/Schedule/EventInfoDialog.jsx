@@ -11,7 +11,7 @@ import PropTypes from "prop-types";
 import { useUser } from "@/context/useUser";
 import ManualAttendEvents from "../Events/ManualAttendEvents";
 
-const EventInfoDialog = ({ open, event, onClose }) => {
+const EventInfoDialog = ({ open, event, onClose, temporaryRole }) => {
   const userData = useUser();
   const role = userData.userData.role;
 
@@ -49,7 +49,11 @@ const EventInfoDialog = ({ open, event, onClose }) => {
           <Button variant="outline" onClick={onClose}>
             Close
           </Button>
-          {role === "parishioner" && <ManualAttendEvents eventId={event?.id} />}
+          {(role === "parishioner" ||
+            temporaryRole === "volunteer" ||
+            temporaryRole === "admin") && (
+            <ManualAttendEvents eventId={event?.id} />
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -65,6 +69,7 @@ EventInfoDialog.propTypes = {
     id: PropTypes.string,
   }),
   onClose: PropTypes.func.isRequired,
+  temporaryRole: PropTypes.string,
 };
 
 export default EventInfoDialog;
