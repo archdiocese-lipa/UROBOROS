@@ -24,6 +24,7 @@ const Calendar = ({ events }) => {
 
   // Make sure getEvents is available and is an array
   const eventArray = Array.isArray(getEvents?.data) ? getEvents.data : [];
+  const safeMeetings = Array.isArray(meetings) ? meetings : [];
 
   const eventData = events
     ? events.map((item) => ({
@@ -39,7 +40,7 @@ const Calendar = ({ events }) => {
         id: item.id,
       }));
 
-  const meetingData = meetings?.map((meeting) => ({
+  const meetingData = safeMeetings.map((meeting) => ({
     title: meeting.meeting_name,
     start: `${meeting.meeting_date}T${meeting.start_time}`,
     description: meeting.meeting_description,
