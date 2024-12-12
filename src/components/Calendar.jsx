@@ -8,6 +8,7 @@ import { fetchMeetingByCreatorId } from "@/services/meetingService";
 import EventInfoDialog from "./Schedule/EventInfoDialog";
 import { Button } from "./ui/button";
 import { useState } from "react";
+import useRoleSwitcher from "@/hooks/useRoleSwitcher";
 
 const Calendar = ({ events }) => {
   const { data: getEvents } = useGetEvents();
@@ -16,6 +17,7 @@ const Calendar = ({ events }) => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const { userData } = useUser();
 
+  const temporaryRole = useRoleSwitcher();
   const { data: meetings } = useQuery({
     queryKey: ["meetings", userData?.id],
     queryFn: () => fetchMeetingByCreatorId(userData?.id),
@@ -94,6 +96,7 @@ const Calendar = ({ events }) => {
         open={dialogOpen}
         event={selectedEvent}
         onClose={() => setDialogOpen(false)}
+        temporaryRole={temporaryRole?.temporaryRole}
       />
     </div>
   );
