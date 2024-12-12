@@ -101,8 +101,7 @@ export const createAnnouncements = async ({ announcementData, user_id }) => {
  */
 export const fetchAnnouncements = async (page, pageSize, ministry_id) => {
   try {
-    console.log("i am fetching this", ministry_id);
-    console.log("i am at this page", page);
+  
     const inquery = {};
     const query = {};
     const select = "*,announcement(*, users(first_name,last_name))";

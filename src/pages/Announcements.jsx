@@ -37,7 +37,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import useAnnouncements from "@/hooks/useAnnouncements";
 import { useUser } from "@/context/useUser";
 import { cn } from "@/lib/utils";
@@ -45,29 +45,21 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchUserMinistries } from "@/services/ministryService";
 import AssignVolunteerComboBox from "@/components/Schedule/AssignVolunteerComboBox";
 import useInterObserver from "@/hooks/useInterObserver";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 
 const Announcements = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { userData } = useUser();
-  // const [visibility, setVisibility] = useState("public");
+  const navigate = useNavigate();
   const [formVisibility, setFormVisibility] = useState("public");
   const [searchParams, setSearchParams] = useSearchParams();
   const ministryId = searchParams.get("ministryId") || "";
-
-  useEffect(() => {
-    if (!ministryId) {
-      setSearchParams({ ministryId: "" });
-    }
-  }, [ministryId]);
 
   const { data: ministries } = useQuery({
     queryFn: async () => await fetchUserMinistries(userData?.id),
     queryKey: ["ministries", userData?.id],
     enabled: !!userData?.id,
   });
-
-
 
   const ministriesid = ministries?.map((ministry) => ministry.id);
 
@@ -83,11 +75,6 @@ const Announcements = () => {
   });
 
   const { reset } = form;
-  // const { data: allministries } = useQuery({
-  //   queryFn: async () => await trygettingallinone(ministriesid),
-  //   queryKey: ["ministries", ministriesid],
-  //   enabled: !!ministriesid
-  // });
 
   const {
     addAnnouncementMutation,
@@ -99,15 +86,13 @@ const Announcements = () => {
     isLoading,
   } = useAnnouncements({
     ministry_id:
-      searchParams.get("ministryId") === ""
+      !searchParams.get("ministryId")
         ? ministriesid
         : searchParams.get("ministryId"),
     reset,
     setIsOpen,
     user_id: userData?.id,
   });
-
-
 
   const onSubmit = (announcementData) => {
     addAnnouncementMutation.mutate({
@@ -123,9 +108,6 @@ const Announcements = () => {
   const { ref } = useInterObserver(fetchNextPage);
 
   if (!userData) return <div>Loading...</div>;
-
-  console.log("has next page",hasNextPage)
-  console.log("all ministries", data)
 
   return (
     <div className="flex h-full w-full flex-col">
@@ -338,19 +320,19 @@ const Announcements = () => {
           </p>
           <div
             className={cn("h-fit rounded-xl border border-gray bg-white", {
-              "bg-accent": ministryId === "",
+              "bg-accent": !searchParams.get("ministryId"),
             })}
           >
             <button
               onClick={() => {
-                setSearchParams({ ministryId: "" });
+                navigate("/announcements")
               }}
               className="relative h-20 w-full px-[18px] py-3 lg:h-fit"
             >
               <div className="flex justify-between gap-3">
                 <h3
                   className={cn("font-bold text-accent", {
-                    "text-white": ministryId === "",
+                    "text-white": !searchParams.get("ministryId"),
                   })}
                 >
                   All
@@ -363,12 +345,12 @@ const Announcements = () => {
               <p
                 className={cn(
                   "hidden pb-1 text-start text-[13px] font-medium text-accent opacity-60 lg:block",
-                  { "text-white opacity-60": ministryId === "" }
+                  { "text-white opacity-60": !searchParams.get("ministryId") }
                 )}
               >
                 This shows all group announcements
               </p>
-              {ministryId === "" && (
+              {!searchParams.get("ministryId") && (
                 <div className="-left-4 top-1/2 hidden h-8 w-2 -translate-x-1/2 -translate-y-1/2 transform rounded-md bg-accent lg:absolute lg:block"></div>
               )}
             </button>

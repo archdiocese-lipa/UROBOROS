@@ -18,7 +18,7 @@ const useRoleSwitcher = () => {
     if (!userData) return;
     setTemporaryRole(role);
     navigate(
-      '/announcements?ministryId='
+      '/announcements'
     )
   };
 

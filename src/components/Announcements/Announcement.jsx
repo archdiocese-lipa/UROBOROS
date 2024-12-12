@@ -326,7 +326,7 @@ const Announcement = ({
                   setDeleteDialogOpen(isOpen);
                 }}
               >
-                <DialogTrigger className="w-full">
+                <DialogTrigger className="w-full" asChild>
                   <Button
                     variant="ghost"
                     className="w-full rounded-none text-start hover:cursor-pointer"
