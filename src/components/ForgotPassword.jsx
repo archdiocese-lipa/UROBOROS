@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -23,25 +22,42 @@ import { z } from "zod";
 import { forgotPassword } from "@/services/userService";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 const emailSchema = z.object({
-  forgotemail: z.string().email(" You must input a valid email."),
+  forgotemail: z.string().email("You must input a valid email."),
 });
 
-
 const ForgotPassword = () => {
-    const { toast } = useToast();
+  const { toast } = useToast();
+  const [countdown, setCountdown] = useState(0);
+  const [isButtonDisabled, setButtonDisabled] = useState(false);
 
-    const sendVerificationMutation = useMutation({
-        mutationFn: async (data) => forgotPassword(data),
-        onSuccess: () => {
-          toast({
-            title: "Success",
-            description: "Email Sent.",
-          });
-        },
+  const sendVerificationMutation = useMutation({
+    mutationFn: async (data) => forgotPassword(data),
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Email Sent.",
       });
-      
+
+      // Disable the button and start the countdown
+      setButtonDisabled(true);
+      setCountdown(30); 
+
+      const timer = setInterval(() => {
+        setCountdown((prevCountdown) => {
+          if (prevCountdown <= 1) {
+            // Stop the timer when it reaches 0
+            clearInterval(timer); 
+            setButtonDisabled(false); 
+            return 0;
+          }
+          return prevCountdown - 1; 
+        });
+      }, 1000); 
+    },
+  });
 
   const forgotPasswordForm = useForm({
     resolver: zodResolver(emailSchema),
@@ -49,8 +65,9 @@ const ForgotPassword = () => {
       forgotemail: "",
     },
   });
-  const onSubmit = (data) => {    
-    sendVerificationMutation.mutate(data.forgotemail)
+
+  const onSubmit = (data) => {
+    sendVerificationMutation.mutate(data.forgotemail);
   };
 
   return (
@@ -64,10 +81,7 @@ const ForgotPassword = () => {
           </DialogDescription>
         </DialogHeader>
         <Form {...forgotPasswordForm}>
-          <form
-            // id="verificationform"
-            onSubmit={forgotPasswordForm.handleSubmit(onSubmit)}
-          >
+          <form onSubmit={forgotPasswordForm.handleSubmit(onSubmit)}>
             <FormField
               control={forgotPasswordForm.control}
               name="forgotemail"
@@ -83,10 +97,14 @@ const ForgotPassword = () => {
             />
             <Button
               type="submit"
-              //   form="verificationform"
+              disabled={isButtonDisabled || sendVerificationMutation.isPending}
               className="mt-2 w-full"
             >
-              Send Email Verification
+              {isButtonDisabled
+                ? `Resend in ${countdown}s`
+                : sendVerificationMutation.isPending
+                ? "Sending Email Verification..."
+                : "Send Email Verification"}
             </Button>
           </form>
         </Form>

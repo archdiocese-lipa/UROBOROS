@@ -22,6 +22,7 @@ const App = () => {
         {/* Auth Routes */}
         <Route path="/" element={<Home />} />
 
+
         {/* Protected Routes */}
         <Route element={<MainLayout />}>
           {/* ========================================================= */}
@@ -50,6 +51,7 @@ const App = () => {
           <Route element={<RequireRole roles={[...ROLES]} />}>
             <Route path="/announcements" element={<Announcements />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+
           </Route>
           {/* ========================================================= */}
         </Route>

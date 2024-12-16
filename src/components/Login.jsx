@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useUser } from "@/context/useUser";
 import { useToast } from "@/hooks/use-toast";
-import { loginSchema } from "@/zodSchema/LoginSchema"; // Your Zod validation schema
+import { loginSchema } from "@/zodSchema/LoginSchema"; 
 
 import {
   Dialog,
@@ -30,6 +30,7 @@ import { Input } from "@/components/ui/input";
 import ForgotPassword from "./ForgotPassword";
 
 const Login = () => {
+
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -75,6 +76,7 @@ const Login = () => {
       // navigate("/dashboard"); // Navigate to the dashboard
     }
   }, [userData, navigate]);
+
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
