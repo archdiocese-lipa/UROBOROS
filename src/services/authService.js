@@ -18,6 +18,8 @@ const registerUser = async ({
 
     if (signUpError) throw signUpError;
 
+    console.log("i am user", user)
+
     // Insert user details into the 'users' table
     const { error: insertError } = await supabase.from("users").insert([
       {
