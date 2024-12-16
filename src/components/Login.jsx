@@ -27,13 +27,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
+import ForgotPassword from "./ForgotPassword";
+
 const Login = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const loc = useLocation();
   const navigate = useNavigate();
-  const { login, userData, loading } = useUser(); // Access context functions
+  const { login, userData, loading } = useUser(); 
   const { toast } = useToast();
 
   const form = useForm({
@@ -88,6 +90,7 @@ const Login = () => {
         </DialogHeader>
         <Form {...form}>
           <form
+          id="login"
             onSubmit={form.handleSubmit(handleLogin)}
             className="space-y-6 py-4"
           >
@@ -127,9 +130,12 @@ const Login = () => {
                 </FormItem>
               )}
             />
-            <div className="my-2 flex items-center justify-end gap-2">
-              <input type="checkbox" onClick={togglePasswordVisibility} />
-              <p>Show Password</p>
+
+            <div className="my-2 flex items-center justify-between gap-2">
+              <div className="flex gap-2">
+                <input type="checkbox" onClick={togglePasswordVisibility} />
+                <p>Show Password</p>
+              </div>
             </div>
             <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
               <DialogClose asChild>
@@ -141,12 +147,13 @@ const Login = () => {
                   Cancel
                 </Button>
               </DialogClose>
-              <Button type="submit" disabled={loading}>
+              <Button form={"login"} type="submit" disabled={loading}>
                 {loading ? "Logging in..." : "Login"}
               </Button>
             </DialogFooter>
           </form>
         </Form>
+        <ForgotPassword />
       </DialogContent>
     </Dialog>
   );

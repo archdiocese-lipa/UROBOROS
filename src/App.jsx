@@ -12,6 +12,7 @@ import Events from "@/pages/Events";
 import RequireRole from "@/components/RequireRole";
 
 import { ROLES } from "@/constants/roles";
+import ResetPassword from "./pages/ResetPassword";
 
 const App = () => {
   return (
@@ -20,6 +21,7 @@ const App = () => {
       <Routes>
         {/* Auth Routes */}
         <Route path="/" element={<Home />} />
+
         {/* Protected Routes */}
         <Route element={<MainLayout />}>
           {/* ========================================================= */}
@@ -47,6 +49,7 @@ const App = () => {
           {/* All Roles Can Access Routes Below */}
           <Route element={<RequireRole roles={[...ROLES]} />}>
             <Route path="/announcements" element={<Announcements />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
           </Route>
           {/* ========================================================= */}
         </Route>

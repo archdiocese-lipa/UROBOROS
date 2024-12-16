@@ -1,5 +1,4 @@
 import { supabase } from "./supabaseClient"; // Supabase client import
-
 import { paginate } from "@/lib/utils";
 
 /**
@@ -125,7 +124,31 @@ const activateUser = async ({ id, payload }) => {
     console.error("Error updating user", error.message);
     throw error;
   }
-};
+}; 
+
+const forgotPassword = async(email) => {
+  console.log(email)
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: "https://togatherinv1.vercel.app/reset-password",
+  })
+  if (error) {
+    console.error('Error sending reset password email:', error.message)
+  }
+  console.log("success")
+  return {message:"Success"}
+}
+
+const updatePassword = async(password) => {
+
+  const { data, error } = await supabase.auth.updateUser({
+    password
+  })
+  if(error){
+    throw error
+  }
+
+  console.log(data)
+}
 
 export {
   getUser,
@@ -133,5 +156,7 @@ export {
   getUsers,
   updateUser,
   removeUser,
+  updatePassword,
   activateUser,
+  forgotPassword
 };
