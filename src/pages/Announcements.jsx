@@ -51,6 +51,7 @@ const Announcements = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { userData } = useUser();
   const navigate = useNavigate();
+  const [imagePreview, setImagePreview] = useState();
   const [formVisibility, setFormVisibility] = useState("public");
   const [searchParams, setSearchParams] = useSearchParams();
   const ministryId = searchParams.get("ministryId") || "";
@@ -85,10 +86,9 @@ const Announcements = () => {
     data,
     isLoading,
   } = useAnnouncements({
-    ministry_id:
-      !searchParams.get("ministryId")
-        ? ministriesid
-        : searchParams.get("ministryId"),
+    ministry_id: !searchParams.get("ministryId")
+      ? ministriesid
+      : searchParams.get("ministryId"),
     reset,
     setIsOpen,
     user_id: userData?.id,
@@ -101,9 +101,8 @@ const Announcements = () => {
       last_name: userData?.last_name,
     });
     reset();
-    setIsOpen(false); 
+    setIsOpen(false);
   };
-  
 
   const { ref } = useInterObserver(fetchNextPage);
 
@@ -118,7 +117,16 @@ const Announcements = () => {
         </div>
 
         {(userData?.role == "admin" || userData.role == "volunteer") && (
-          <Dialog open={isOpen} onOpenChange={setIsOpen}>
+          <Dialog
+            open={isOpen}
+            onOpenChange={(open) => {
+              setIsOpen(open);
+              if (!open) {
+                setImagePreview(null);
+                form.reset()
+              }
+            }}
+          >
             <DialogTrigger asChild>
               <Button
                 className="absolute bottom-16 right-10 z-20 rounded-[15px] lg:static"
@@ -190,15 +198,22 @@ const Announcements = () => {
                           <Input
                             // {...fieldProps}
                             type="file"
-                            onChange={(e) =>
-                              field.onChange(e.target.files?.[0])
-                            }
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              field.onChange(file),
+                                setImagePreview(URL.createObjectURL(file));
+                            }}
                           />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+                  {imagePreview && (
+                    <div className="flex items-center justify-center">
+                      <img src={imagePreview} alt="image preview" />
+                    </div>
+                  )}
 
                   {/* Visibility Select */}
                   <FormField
@@ -311,7 +326,7 @@ const Announcements = () => {
             )
           )}
 
-          {hasNextPage && <div className=" mt-20" ref={ref}></div>}
+          {hasNextPage && <div className="mt-20" ref={ref}></div>}
         </div>
         {/* Sidebar */}
         <div className="no-scrollbar flex w-full flex-row gap-3 overflow-y-hidden overflow-x-scroll rounded-[15px] border border-primary-outline p-2 lg:w-1/4 lg:flex-col lg:gap-0 lg:overflow-y-scroll lg:px-8 lg:py-6">
@@ -325,7 +340,7 @@ const Announcements = () => {
           >
             <button
               onClick={() => {
-                navigate("/announcements")
+                navigate("/announcements");
               }}
               className="relative h-20 w-full px-[18px] py-3 lg:h-fit"
             >

@@ -63,7 +63,7 @@ export const UserProvider = ({ children }) => {
         .maybeSingle(); // Use maybeSingle instead of single
 
       if (emailCheckError) throw emailCheckError;
-
+   
       // If email already exists, throw an error
       if (existingUser) {
         throw new Error(
@@ -76,6 +76,7 @@ export const UserProvider = ({ children }) => {
         email,
         password,
       });
+      console.log("user",user)
 
       if (signUpError) throw signUpError;
 

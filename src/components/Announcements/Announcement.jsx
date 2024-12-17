@@ -56,6 +56,7 @@ const Announcement = ({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState();
   const [editDialogOpen, setEditDialogOpen] = useState();
   const { userData } = useUser();
+  const [imagePreview, setImagePreview] = useState();
   const [formVisibility, setFormVisibility] = useState(announcement.visibility);
 
   const form = useForm({
@@ -74,7 +75,6 @@ const Announcement = ({
     queryKey: ["ministryIds", announcement?.id],
     enabled: !!announcement?.id,
   });
-
 
   useEffect(() => {
     // Ensure the form is reset with the latest announcement data
@@ -158,7 +158,7 @@ const Announcement = ({
                     Edit
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="rounded-md max-h-[75%] overflow-y-scroll no-scrollbar">
+                <DialogContent className="no-scrollbar max-h-[75%] overflow-y-scroll rounded-md">
                   <DialogHeader>
                     <DialogTitle className="text-2xl font-bold text-accent">
                       Edit Announcement
@@ -221,9 +221,11 @@ const Announcement = ({
                                 <Input
                                   // {...fieldProps}
                                   type="file"
-                                  onChange={(e) =>
-                                    field.onChange(e.target.files?.[0])
-                                  }
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0]
+                                    field.onChange(file),
+                                      setImagePreview(URL.createObjectURL(file));
+                                  }}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -232,7 +234,7 @@ const Announcement = ({
                         />
 
                         <div className="flex items-center justify-center">
-                        <img src={announcement.file_url} alt="" />
+                          <img src={imagePreview ?? announcement.file_url} alt="" />
                         </div>
 
                         {/* Visibility Select */}
