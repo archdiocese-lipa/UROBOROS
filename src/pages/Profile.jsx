@@ -1,52 +1,72 @@
+import { useEffect, useState } from "react";
 import { useUser } from "@/context/useUser";
-import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { getInitial } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { fetchUserById } from "@/services/authService";
+import { useToast } from "@/hooks/use-toast";
 
 const Profile = () => {
   const { userData } = useUser();
+  const { toast } = useToast();
 
-  if (!userData) {
+  const { data } = useQuery({
+    queryKey: ["fetchUser", userData?.id],
+    queryFn: () => fetchUserById(userData?.id),
+    enabled: !!userData?.id, // Only run query when userData.id is available
+    onError: (error) => {
+      console.error("Error fetching user data:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load user profile. Please try again later.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const [isLoading, setIsLoading] = useState(true);
+  const initials = `${getInitial(data?.first_name)}${getInitial(data?.last_name)}`;
+
+  useEffect(() => {
+    if (data) {
+      setIsLoading(false);
+    }
+  }, [data]);
+
+  if (isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <p>Loading profile...</p>
+      <div className="bg-gray-50 flex h-screen items-center justify-center">
+        <p className="text-gray-700 text-lg font-medium">Loading profile...</p>
       </div>
     );
   }
 
-  const handleUpdateInfo = () => {
-    // Add logic for updating user information
-  };
-
-  const handleResetPassword = () => {
-    // Add logic for resetting the password
-  };
-
   return (
-    <div className="flex h-screen items-center justify-center">
-      <div className="flex w-full max-w-md flex-col gap-4 rounded-lg border bg-white p-6 shadow">
-        <h1 className="text-lg font-semibold">Profile</h1>
-        <div className="flex flex-col gap-2">
-          <div>
-            <p className="text-gray-500 text-sm">Name</p>
-            <p>{`${userData.first_name} ${userData.last_name}`}</p>
-          </div>
-          <div>
-            <p className="text-gray-500 text-sm">Email</p>
-            <p>{userData.email}</p>
-          </div>
-          <div>
-            <p className="text-gray-500 text-sm">Contact Number</p>
-            <p>{userData.contact_number}</p>
-          </div>
-          <div>
-            <p className="text-gray-500 text-sm">Role</p>
-            <p className="capitalize">{userData.role}</p>
-          </div>
+    <div className="bg-gray-50 flex h-screen items-center justify-center">
+      <div className="w-full max-w-md space-y-6 rounded-lg bg-white p-6 shadow-md">
+        {/* Avatar Section */}
+        <div className="flex flex-col items-center space-y-2">
+          <Avatar className="h-16 w-16">
+            <AvatarFallback>{initials}</AvatarFallback>
+          </Avatar>
+          <h1 className="text-xl font-semibold">{`${data.first_name} ${data.last_name}`}</h1>
         </div>
-        <div className="mt-4 flex flex-col gap-2">
-          <Button onClick={handleUpdateInfo}>Update Info</Button>
-          <Button onClick={handleResetPassword} variant="destructive">
-            Reset Password
-          </Button>
+
+        {/* Display Fields */}
+        <div className="space-y-4">
+          <div>
+            <label className="text-gray-700 block text-sm font-medium">
+              Email
+            </label>
+            <p className="text-gray-700">{data.email}</p>
+          </div>
+
+          <div>
+            <label className="text-gray-700 block text-sm font-medium">
+              Contact Number
+            </label>
+            <p className="text-gray-700">{data.contact_number}</p>
+          </div>
         </div>
       </div>
     </div>
