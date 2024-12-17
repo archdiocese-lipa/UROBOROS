@@ -8,6 +8,7 @@ import MainLayout from "@/layouts/main-layout";
 import Announcements from "@/pages/Announcements";
 import Family from "@/pages/Family";
 import Events from "@/pages/Events";
+import Profile from "@/pages/Profile";
 
 import RequireRole from "@/components/RequireRole";
 
@@ -49,7 +50,11 @@ const App = () => {
           {/* All Roles Can Access Routes Below */}
           <Route element={<RequireRole roles={[...ROLES]} />}>
             <Route path="/announcements" element={<Announcements />} />
+
+            <Route path="/profile" element={<Profile />} />
+
             <Route path="/reset-password" element={<ResetPassword />} />
+
           </Route>
           {/* ========================================================= */}
         </Route>

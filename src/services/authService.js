@@ -68,4 +68,21 @@ const registerUser = async ({
   }
 };
 
-export { registerUser };
+// Update user's contact number
+const updateContact = async (userId, newContactNumber) => {
+  try {
+    const { data, error } = await supabase
+      .from("users")
+      .update({ contact_number: newContactNumber })
+      .eq("id", userId);
+
+    if (error) throw error;
+
+    return data;
+  } catch (error) {
+    console.error("Error updating contact:", error);
+    throw error; // Re-throw the error to be handled by the calling function
+  }
+};
+
+export { registerUser, updateContact };
