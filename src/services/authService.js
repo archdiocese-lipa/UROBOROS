@@ -18,8 +18,6 @@ const registerUser = async ({
 
     if (signUpError) throw signUpError;
 
-    console.log("i am user", user)
-
     // Insert user details into the 'users' table
     const { error: insertError } = await supabase.from("users").insert([
       {
@@ -85,4 +83,23 @@ const updateContact = async (userId, newContactNumber) => {
   }
 };
 
-export { registerUser, updateContact };
+const fetchUserById = async (userId) => {
+  try {
+    if (!userId) throw new Error("User ID is required");
+
+    const { data, error } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", userId)
+      .single();
+
+    if (error) throw error;
+
+    return data;
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+    throw error;
+  }
+};
+
+export { registerUser, updateContact, fetchUserById };
