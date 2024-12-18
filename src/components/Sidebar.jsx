@@ -19,6 +19,7 @@ import { SIDEBAR_LINKS } from "@/constants/sidebarLinks";
 
 import { ChevronUp } from "@/assets/icons/icons";
 import useRoleSwitcher from "@/hooks/useRoleSwitcher";
+import { ROLES } from "@/constants/roles";
 
 const Sidebar = () => {
   const url = useLocation();
@@ -41,9 +42,9 @@ const Sidebar = () => {
   return (
     <div className="flex lg:my-9 lg:w-64 lg:flex-col">
       <Title className="mb-12 ml-9 hidden max-w-[201px] lg:block">
-        {temporaryRole === "admin" && "Admin Management Centre"}
-        {temporaryRole === "volunteer" && "Volunteer Management Centre"}
-        {temporaryRole === "parishioner" &&
+        {temporaryRole === ROLES[0] && "Admin Management Centre"}
+        {temporaryRole === ROLES[1] && "Volunteer Management Centre"}
+        {temporaryRole === ROLES[2] &&
           `Welcome, ${userData.first_name} ${userData.last_name}`}
       </Title>
       <div className="flex flex-1 justify-between lg:flex-col">
@@ -162,7 +163,7 @@ const SidebarProfile = ({ availableRoles, onSwitchRole }) => {
               {role.label}
             </DropdownMenuItem>
           ))}
-          {userData?.role !== "parishioner" && <DropdownMenuSeparator />}
+          {userData?.role !== ROLES[2] && <DropdownMenuSeparator />}
           <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

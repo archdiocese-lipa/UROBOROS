@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -36,7 +36,7 @@ const Login = () => {
 
   const loc = useLocation();
   const navigate = useNavigate();
-  const { login, userData, loading } = useUser(); 
+  const { login, loading } = useUser(); 
   const { toast } = useToast();
 
   const form = useForm({
@@ -70,12 +70,12 @@ const Login = () => {
   };
 
   // Effect to watch for userData and trigger navigation when it's updated
-  useEffect(() => {
-    if (userData) {
-      setIsDialogOpen(false); // Close dialog on success
-      // navigate("/dashboard"); // Navigate to the dashboard
-    }
-  }, [userData, navigate]);
+  // useEffect(() => {
+  //   if (userData) {
+  //     setIsDialogOpen(false); // Close dialog on success
+  //     // navigate("/dashboard"); // Navigate to the dashboard
+  //   }
+  // }, [userData, navigate]);
 
 
   return (
