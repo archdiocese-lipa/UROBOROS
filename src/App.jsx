@@ -23,7 +23,6 @@ const App = () => {
         {/* Auth Routes */}
         <Route path="/" element={<Home />} />
 
-
         {/* Protected Routes */}
         <Route element={<MainLayout />}>
           {/* ========================================================= */}
@@ -41,7 +40,7 @@ const App = () => {
           </Route>
           {/* ========================================================= */}
           {/* Roles of Admin and Parishioner can access the routes below */}
-          <Route element={<RequireRole roles={[ROLES[0], ROLES[2], ROLES[3]]} />}>
+          <Route element={<RequireRole roles={[...ROLES]} />}>
             {/* Add Route for Events */}
             <Route path="/events" element={<Events />} />
             <Route path="/family" element={<Family />} />
@@ -55,7 +54,6 @@ const App = () => {
             <Route path="/profile" element={<Profile />} />
 
             <Route path="/reset-password" element={<ResetPassword />} />
-
           </Route>
           {/* ========================================================= */}
         </Route>
