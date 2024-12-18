@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ParishionerRegister from "@/components/Home/Profile-Registration/ParishionerRegister";
 import Login from "@/components/Login";
@@ -7,7 +7,6 @@ import EditRegistration from "@/components/Home/EditRegistration";
 import { supabase } from "@/services/supabaseClient";
 
 const Home = () => {
-  const [session, setSession] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -15,7 +14,15 @@ const Home = () => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
-      setSession(session);
+      
+      supabase.auth.onAuthStateChange((event) => {
+        if (event === 'PASSWORD_RECOVERY') {
+          // show screen to update user's password
+          navigate("/reset-password")
+          return
+        }
+      })
+
 
       // Navigate to /announcements if there is an active session
       if (session) {
@@ -26,7 +33,6 @@ const Home = () => {
     getSession();
   }, [navigate]);
 
-  console.log(session);
 
   return (
     <>
