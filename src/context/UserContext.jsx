@@ -29,11 +29,11 @@ export const UserProvider = ({ children }) => {
       if (fetchError) throw fetchError;
 
       // Allow login if the user's role is "admin" or if their account is confirmed
-      // if (!fullUser.is_confirmed && fullUser.role !== "admin") {
-      //   throw new Error(
-      //     "Your account has not been confirmed yet. Please contact an admin"
-      //   );
-      // }
+      if (!fullUser.is_confirmed && fullUser.role !== "admin") {
+        throw new Error(
+          "Your account has not been confirmed yet. Please contact an admin"
+        );
+      }
 
       setUserData(fullUser); // Set the user data in your state
       return fullUser; // Return the full user data
@@ -63,7 +63,7 @@ export const UserProvider = ({ children }) => {
         .maybeSingle(); // Use maybeSingle instead of single
 
       if (emailCheckError) throw emailCheckError;
-   
+
       // If email already exists, throw an error
       if (existingUser) {
         throw new Error(
@@ -76,7 +76,6 @@ export const UserProvider = ({ children }) => {
         email,
         password,
       });
-      console.log("user",user)
 
       if (signUpError) throw signUpError;
 
