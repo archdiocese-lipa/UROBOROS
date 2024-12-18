@@ -112,17 +112,13 @@ export const addFamilyMembers = async (familyData) => {
 export const getFamilyId = async (userId) => {
   try {
     // Fetch family group where the user is the primary user
-    const { data: primaryFamily, error: primaryError } = await supabase
+    const { error: primaryError } = await supabase
       .from("family_group")
       .select("id")
       .eq("user_id", userId);
 
     if (primaryError) {
       throw new Error(primaryError.message);
-    }
-
-    if (primaryFamily.length === 1) {
-      return primaryFamily[0];
     }
 
     // If no primary family group found, check if the user is a co-parent
@@ -231,20 +227,65 @@ export const updateParent = async (parentId, data) => {
   return updatedParent; // Return the updated child data
 };
 
+const deleteAuthUser = async (userId) => {
+  await fetch(
+    `${import.meta.env.VITE_SUPABASE_URL}/auth/v1/admin/users/${userId}`,
+    {
+      method: "DELETE",
+      headers: {
+        apikey: import.meta.env.VITE_SERVICE_ROLE_KEY,
+        Authorization: `Bearer ${import.meta.env.VITE_SERVICE_ROLE_KEY}`,
+      },
+    }
+  );
+};
+
 // Delete parent
 export const deleteParent = async (parentId) => {
-  const { data, error } = await supabase
-    .from("parents")
-    .delete()
-    .eq("id", parentId)
-    .select()
-    .single(); // Specify the child ID to delete
+  try {
+    // Fetch the parishioner_id from the parents table
+    const { data: parentData, error: fetchError } = await supabase
+      .from("parents")
+      .select("parishioner_id")
+      .eq("id", parentId)
+      .single();
 
-  if (error) {
-    throw new Error(error.message); // Handle error from Supabase
+    if (fetchError) {
+      throw new Error(fetchError.message); // Handle error from Supabase
+    }
+
+    const parishionerId = parentData.parishioner_id;
+
+    // Delete the parent from the parents table
+    const { data: deletedParent, error: deleteParentError } = await supabase
+      .from("parents")
+      .delete()
+      .eq("id", parentId)
+      .select()
+      .single();
+
+    if (deleteParentError) {
+      throw new Error(deleteParentError.message); // Handle error from Supabase
+    }
+
+    // If parishioner_id is not null, delete the user from the users table and Supabase authentication
+    if (parishionerId) {
+      const { error: deleteUserError } = await supabase
+        .from("users")
+        .delete()
+        .eq("id", parishionerId);
+
+      if (deleteUserError) {
+        throw new Error(deleteUserError.message);
+      }
+
+      deleteAuthUser(parishionerId);
+    }
+
+    return deletedParent; // Return the deleted parent data if successful
+  } catch (error) {
+    throw new Error(`Error deleting parent: ${error.message}`);
   }
-
-  return data; // Return the deleted data if successful
 };
 
 // Edit Children

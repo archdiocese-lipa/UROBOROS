@@ -21,38 +21,42 @@ import {
 import { ThreeDotsIcon } from "@/assets/icons/icons";
 
 import { useFamilyData } from "@/hooks/useFamilyData";
-import { useDeleteChild, useDeleteParent } from "@/hooks/useFamily";
+import { useDeleteChild } from "@/hooks/useFamily";
 import EditChild from "@/components/Family/EditChild";
 import EditParent from "@/components/Family/EditParent";
 import NewCoParent from "@/components/Family/NewCoParent";
+import { useUser } from "@/context/useUser";
+import DeleteParent from "@/components/Family/DeleteParent";
 
 const Family = () => {
-  const [dialogParentId, setDialogParentId] = useState(null);
+  const [editParentForm, setEditParentForm] = useState(null);
+  const [deleteParentForm, setDeleteParentForm] = useState(null);
+
+  const userData = useUser();
+  const userRole = userData?.userData?.role;
 
   const { parentData, childData, isLoading, error } = useFamilyData();
-  const { mutateAsync: deleteParent } = useDeleteParent();
   const { mutateAsync: deleteChild } = useDeleteChild();
-
-  // Handle parent deletion
-  const handleDeleteParent = async (parentId) => {
-    await deleteParent(parentId); // Error automatically handled by useMutation's onError
-  };
 
   // Handle child deletion
   const handleDeleteChild = async (childId) => {
     await deleteChild(childId);
   };
 
-  // if (isLoading) {
-  //   return <div>Loading...</div>;
-  // }
-
+  // Show Edit Form
   const handleOpenDialog = (parentId) => {
-    setDialogParentId(parentId);
+    setEditParentForm(parentId);
   };
 
+  // Show Delete form
+  const showDeleteParentForm = (parentId) => {
+    setDeleteParentForm(parentId);
+  };
+
+  // Close the form
   const handleCloseDialog = () => {
-    setDialogParentId(null);
+    setEditParentForm(null);
+    setDeleteParentForm(null);
   };
 
   if (error) {
@@ -62,21 +66,27 @@ const Family = () => {
   return (
     <div className="flex flex-col gap-2">
       <Title>Family information</Title>
-      <div className="mt-5">
-        <NewFamilyForm />
-      </div>
+      {/* Hide the New family form if the user is coparent */}
+      {userRole !== "coparent" && (
+        <div className="mt-5">
+          <NewFamilyForm />
+        </div>
+      )}
+
       {/* Family Members */}
       <div className="flex flex-col justify-center gap-2 lg:flex-row">
-        <div className="no-scrollbar h-96 flex-1 overflow-scroll rounded-xl border border-primary p-5 lg:h-auto">
+        <div className="no-scrollbar h-96 grow-[3] overflow-scroll rounded-xl border border-primary p-5 lg:h-auto">
           <Label className="text-primary-text">Parents/Guardians</Label>
           <Table>
             <TableHeader className="rounded-xl bg-primary">
               <TableRow>
                 <TableHead className="rounded-l-lg text-center">Name</TableHead>
                 <TableHead className="text-center">Contact</TableHead>
-                <TableHead className="rounded-r-lg text-center">
-                  Action
-                </TableHead>
+                {userRole !== "coparent" && (
+                  <TableHead className="rounded-r-lg text-center">
+                    Action
+                  </TableHead>
+                )}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -99,59 +109,71 @@ const Family = () => {
                     <TableCell className="text-center">
                       {parent.contact_number}
                     </TableCell>
-                    <TableCell className="text-center">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger>
-                          <ThreeDotsIcon />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                          <DropdownMenuItem
-                            onSelect={() => handleOpenDialog(parent.id)}
-                            disabled={parent.parishioner_id !== null}
-                          >
-                            Set up Co-Parent Account
-                          </DropdownMenuItem>
-                          <DropdownMenuItem asChild>
-                            <EditParent
-                              parentId={parent.id}
-                              parentFirstName={parent.first_name}
-                              parentLastName={parent.last_name}
-                              parentContactNumber={parent.contact_number}
-                            />
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => handleDeleteParent(parent.id)}
-                          >
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                      {dialogParentId === parent.id && (
-                        <NewCoParent
-                          parentId={parent.id}
-                          parentFirstName={parent.first_name}
-                          parentLastName={parent.last_name}
-                          parentContactNumber={parent.contact_number}
-                          openModal={true}
-                          onClose={handleCloseDialog}
-                        />
-                      )}
-                    </TableCell>
+                    {userRole !== "coparent" && (
+                      <TableCell className="text-center">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger>
+                            <ThreeDotsIcon />
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            <DropdownMenuItem
+                              onSelect={() => handleOpenDialog(parent.id)}
+                              disabled={parent.parishioner_id !== null}
+                            >
+                              Set up Co-Parent Account
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                              <EditParent
+                                parentId={parent.id}
+                                parentFirstName={parent.first_name}
+                                parentLastName={parent.last_name}
+                                parentContactNumber={parent.contact_number}
+                              />
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onSelect={() => showDeleteParentForm(parent.id)}
+                            >
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                        {editParentForm === parent.id && (
+                          <NewCoParent
+                            parentId={parent.id}
+                            parentFirstName={parent.first_name}
+                            parentLastName={parent.last_name}
+                            parentContactNumber={parent.contact_number}
+                            openModal={true}
+                            onClose={handleCloseDialog}
+                          />
+                        )}
+                        {deleteParentForm === parent.id && (
+                          <DeleteParent
+                            parentId={parent.id}
+                            userId={parent.parishioner_id}
+                            openModal={true}
+                            onClose={handleCloseDialog}
+                          />
+                        )}
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))
               )}
             </TableBody>
           </Table>
         </div>
-        <div className="no-scrollbar h-96 overflow-scroll rounded-xl border-2 border-primary p-5 lg:h-auto">
+        <div className="no-scrollbar h-96 grow-[2] overflow-scroll rounded-xl border-2 border-primary p-5 lg:h-auto">
           <Label className="text-primary-text">Children</Label>
           <Table>
             <TableHeader className="bg-primary">
               <TableRow className="text-center">
                 <TableHead className="rounded-l-lg text-center">Name</TableHead>
-                <TableHead className="rounded-r-lg text-center">
-                  Action
-                </TableHead>
+                {userRole !== "coparent" && (
+                  <TableHead className="rounded-r-lg text-center">
+                    Action
+                  </TableHead>
+                )}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -170,28 +192,32 @@ const Family = () => {
               ) : (
                 childData?.flatMap((child) => (
                   <TableRow key={child.id}>
-                    <TableCell className="text-center">{`${child.first_name} ${child.last_name}`}</TableCell>
                     <TableCell className="text-center">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger>
-                          <ThreeDotsIcon />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                          <DropdownMenuItem asChild>
-                            <EditChild
-                              childId={child.id}
-                              childFirstName={child.first_name}
-                              childLastName={child.last_name}
-                            />
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => handleDeleteChild(child.id)}
-                          >
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      {`${child.first_name} ${child.last_name}`}
                     </TableCell>
+                    {userRole !== "coparent" && (
+                      <TableCell className="text-center">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger>
+                            <ThreeDotsIcon />
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            <DropdownMenuItem asChild>
+                              <EditChild
+                                childId={child.id}
+                                childFirstName={child.first_name}
+                                childLastName={child.last_name}
+                              />
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleDeleteChild(child.id)}
+                            >
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))
               )}
