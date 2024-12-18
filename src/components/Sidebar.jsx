@@ -46,6 +46,8 @@ const Sidebar = () => {
         {temporaryRole === ROLES[1] && "Volunteer Management Centre"}
         {temporaryRole === ROLES[2] &&
           `Welcome, ${userData.first_name} ${userData.last_name}`}
+        {temporaryRole === "coparent" &&
+          `Welcome, ${userData.first_name} ${userData.last_name}`}
       </Title>
       <div className="flex flex-1 justify-between lg:flex-col">
         <ul className="flex w-full justify-evenly gap-2 lg:ml-4 lg:mr-8 lg:flex-col lg:items-start">

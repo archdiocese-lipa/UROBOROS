@@ -41,7 +41,7 @@ const App = () => {
           </Route>
           {/* ========================================================= */}
           {/* Roles of Admin and Parishioner can access the routes below */}
-          <Route element={<RequireRole roles={[ROLES[0], ROLES[2]]} />}>
+          <Route element={<RequireRole roles={[ROLES[0], ROLES[2], ROLES[3]]} />}>
             {/* Add Route for Events */}
             <Route path="/events" element={<Events />} />
             <Route path="/family" element={<Family />} />
