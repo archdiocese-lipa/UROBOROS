@@ -7,31 +7,30 @@ import {
   getEventsCalendar,
 } from "@/services/eventService";
 
-import {  useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import ParishionerDialogCalendar from "@/components/Events/ParishionerDialogCalendar";
 import { fetchUserMinistries } from "@/services/ministryService";
 import { useUser } from "@/context/useUser";
 
 const Events = () => {
-
+  const currentDateTime = new Date();
   const { userData } = useUser();
 
   const { data: ministries } = useQuery({
-    queryKey: ["ministries", userData?.id], 
-    queryFn: () => fetchUserMinistries(userData?.id), 
-    enabled: !!userData?.id, 
+    queryKey: ["ministries", userData?.id],
+    queryFn: () => fetchUserMinistries(userData?.id),
+    enabled: !!userData?.id,
   });
   const { data: eventsOwned } = useQuery({
-    queryKey: ["events", userData?.id], 
-    queryFn: () => getEventsByCreatorId(userData?.id), 
-    enabled: !!userData?.id, 
+    queryKey: ["events", userData?.id],
+    queryFn: () => getEventsByCreatorId(userData?.id),
+    enabled: !!userData?.id,
   });
 
-
-  const ids= ministries?.map((ministry) => ministry.id)
+  const ids = ministries?.map((ministry) => ministry.id);
 
   // Fetch events based on the first ministry's ID
-  const { data: Parishionerevents, isLoading } = useQuery({
+  const { data: parishionerEvents, isLoading } = useQuery({
     queryKey: ["events", ministries], // Access the first ministry's id if available
     queryFn: async () => await getEventsCalendar(ids),
     enabled: !!ministries, // Only fetch events if the first ministry id is available
@@ -67,19 +66,29 @@ const Events = () => {
   //   }))
   // );
 
-
-  const eventsToDisplay = userData?.role ==="admin" ? eventsOwned : Parishionerevents?.data
+  // Filter out events that have already ended
+  const filterEvents = (events) => {
+    return events.filter((event) => {
+      const eventDateTime = new Date(`${event.event_date}T${event.event_time}`);
+      return eventDateTime >= currentDateTime;
+    });
+  };
+  const filteredParishionerEvents = filterEvents(parishionerEvents?.data || []);
+  const eventsToDisplay =
+    userData?.role === "admin" ? eventsOwned : filteredParishionerEvents;
   return (
     <>
       <Title>Events</Title>
       <Description>Latest upcoming events at the church</Description>
       <div className="mt-5 flex justify-center gap-x-2 md:justify-start">
-        <ParishionerDialogCalendar events={eventsToDisplay}/>
+        <ParishionerDialogCalendar events={eventsToDisplay} />
         <QrScannerEvents eventData={eventsToDisplay} />
       </div>
       <div className="mt-5 grid gap-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
         {isLoading ? (
-          <p>Loading events...</p>  
+          <p>Loading events...</p>
+        ) : eventsToDisplay?.length === 0 ? (
+          <p>No Upcoming Events</p>
         ) : (
           eventsToDisplay?.map((event, i) => (
             <EventCard

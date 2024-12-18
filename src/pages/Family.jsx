@@ -1,3 +1,4 @@
+import { useState } from "react";
 import NewFamilyForm from "@/components/Family/NewFamilyForm";
 import { Title } from "@/components/Title";
 import { Label } from "@/components/ui/label";
@@ -23,10 +24,12 @@ import { useFamilyData } from "@/hooks/useFamilyData";
 import { useDeleteChild, useDeleteParent } from "@/hooks/useFamily";
 import EditChild from "@/components/Family/EditChild";
 import EditParent from "@/components/Family/EditParent";
+import NewCoParent from "@/components/Family/NewCoParent";
 
 const Family = () => {
-  const { parentData, childData, error } = useFamilyData();
+  const [dialogParentId, setDialogParentId] = useState(null);
 
+  const { parentData, childData, isLoading, error } = useFamilyData();
   const { mutateAsync: deleteParent } = useDeleteParent();
   const { mutateAsync: deleteChild } = useDeleteChild();
 
@@ -43,6 +46,14 @@ const Family = () => {
   // if (isLoading) {
   //   return <div>Loading...</div>;
   // }
+
+  const handleOpenDialog = (parentId) => {
+    setDialogParentId(parentId);
+  };
+
+  const handleCloseDialog = () => {
+    setDialogParentId(null);
+  };
 
   if (error) {
     return <div>Error: {error.message}</div>;
@@ -69,7 +80,13 @@ const Family = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {!parentData?.length ? (
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={3} className="text-center">
+                    Loading...
+                  </TableCell>
+                </TableRow>
+              ) : parentData?.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={3} className="text-center">
                     No parent/guardian data available.
@@ -88,6 +105,12 @@ const Family = () => {
                           <ThreeDotsIcon />
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
+                          <DropdownMenuItem
+                            onSelect={() => handleOpenDialog(parent.id)}
+                            disabled={parent.parishioner_id !== null}
+                          >
+                            Set up Co-Parent Account
+                          </DropdownMenuItem>
                           <DropdownMenuItem asChild>
                             <EditParent
                               parentId={parent.id}
@@ -103,6 +126,16 @@ const Family = () => {
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
+                      {dialogParentId === parent.id && (
+                        <NewCoParent
+                          parentId={parent.id}
+                          parentFirstName={parent.first_name}
+                          parentLastName={parent.last_name}
+                          parentContactNumber={parent.contact_number}
+                          openModal={true}
+                          onClose={handleCloseDialog}
+                        />
+                      )}
                     </TableCell>
                   </TableRow>
                 ))
@@ -122,7 +155,13 @@ const Family = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {!childData?.length ? (
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={2} className="text-center">
+                    Loading.
+                  </TableCell>
+                </TableRow>
+              ) : childData?.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={2} className="text-center">
                     No children data available.

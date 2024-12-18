@@ -79,6 +79,57 @@ const updateContact = async (userId, newContactNumber) => {
     return data;
   } catch (error) {
     console.error("Error updating contact:", error);
+  }
+};
+
+const registerCoParent = async ({
+  parentId,
+  firstName,
+  lastName,
+  email,
+  password,
+  contactNumber,
+  role = "coparent",
+}) => {
+  try {
+    // Sign up the user via Supabase Auth
+    const { data: user, error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+
+    if (signUpError) throw signUpError;
+
+    // Insert user details into the 'users' table
+    const { error: insertError } = await supabase.from("users").insert([
+      {
+        id: user.user.id,
+        email: user.user.email,
+        first_name: firstName,
+        last_name: lastName,
+        contact_number: contactNumber,
+        role,
+        is_confirmed: false,
+      },
+    ]);
+
+    if (insertError) throw insertError;
+
+    // Insert the user data into the 'parents' table
+    const { error: parentsInsertError } = await supabase
+      .from("parents")
+      .update({
+        parishioner_id: user.user.id,
+      })
+      .eq("id", parentId);
+
+    if (parentsInsertError) throw parentsInsertError;
+
+    if (parentsInsertError) throw parentsInsertError;
+
+    return user;
+  } catch (error) {
+    console.error("Error during sign-up:", error);
     throw error; // Re-throw the error to be handled by the calling function
   }
 };
@@ -102,4 +153,4 @@ const fetchUserById = async (userId) => {
   }
 };
 
-export { registerUser, updateContact, fetchUserById };
+export { registerUser, updateContact, fetchUserById, registerCoParent };

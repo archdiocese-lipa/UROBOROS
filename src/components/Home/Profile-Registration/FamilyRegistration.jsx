@@ -76,7 +76,7 @@ const FamilyRegistration = ({ skipBtn, closeModal }) => {
         onSubmit={form.handleSubmit(onSubmit)}
         className="flex flex-col gap-4"
       >
-        <Label>Parent/Guardian Information</Label>
+        <Label>Co-Parent/Guardian Information</Label>
         {parentFields.map((parent, index) => (
           <div
             key={parent.id}

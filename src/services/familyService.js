@@ -111,19 +111,41 @@ export const addFamilyMembers = async (familyData) => {
 // Get family id
 export const getFamilyId = async (userId) => {
   try {
-    const { data, error } = await supabase
+    // Fetch family group where the user is the primary user
+    const { data: primaryFamily, error: primaryError } = await supabase
       .from("family_group")
       .select("id")
-      .eq("user_id", userId)
-      .single();
+      .eq("user_id", userId);
 
-    if (error) {
-      throw new Error(error.message);
+    if (primaryError) {
+      throw new Error(primaryError.message);
     }
 
-    return data;
+    if (primaryFamily.length === 1) {
+      return primaryFamily[0];
+    }
+
+    // If no primary family group found, check if the user is a co-parent
+    const { data: coParentFamily, error: coParentError } = await supabase
+      .from("parents")
+      .select("family_id")
+      .eq("parishioner_id", userId);
+
+    if (coParentError) {
+      throw new Error(coParentError.message);
+    }
+
+    if (!coParentFamily || coParentFamily.length === 0) {
+      throw new Error("No family group found for the given user ID");
+    }
+
+    if (coParentFamily.length > 1) {
+      throw new Error("Multiple family groups found for the given user ID");
+    }
+
+    return { id: coParentFamily[0].family_id };
   } catch (error) {
-    console.error("Error fetching user id", error);
+    console.error("Error fetching family id", error);
     return { success: false, error: error.message };
   }
 };
@@ -131,43 +153,31 @@ export const getFamilyId = async (userId) => {
 // Fetch parents/guardian
 export const getGuardian = async (familyId) => {
   try {
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+
+    if (userError) {
+      throw new Error(userError.message);
+    }
+
+    if (!userData || !userData.user) {
+      throw new Error("User not logged in or session expired");
+    }
+
+    const loggedInUserId = userData.user.id;
+
     // Fetch parents data based on familyId
     const { data: parents, error: parentsError } = await supabase
       .from("parents")
       .select("*")
-      .eq("family_id", familyId);
+      .eq("family_id", familyId)
+      .or(`parishioner_id.neq.${loggedInUserId},parishioner_id.is.null`); // Fetch rows where parishioner_id is not the logged-in user or is null
 
     if (parentsError) {
-      console.error("Error fetching parents:", parentsError);
       return { success: false, error: parentsError.message };
     }
 
-    // Fetch user data (IDs)
-    const { data: users, error: usersError } = await supabase
-      .from("users")
-      .select("id");
-
-    if (usersError) {
-      console.error("Error fetching user IDs:", usersError);
-      return { success: false, error: usersError.message };
-    }
-
-    // If both parents and users data are retrieved
-    if (parents && users) {
-      // Create a Set of user IDs for fast lookups
-      const userIds = new Set(users.map((user) => user.id));
-
-      // Filter out parents whose parishioner_id matches any user ID
-      const filteredParents = parents.filter(
-        (parent) => !userIds.has(parent.parishioner_id)
-      );
-
-      return filteredParents;
-    } else {
-      return { success: false, error: "Parents or Users data is empty" };
-    }
+    return parents;
   } catch (error) {
-    console.error("Error fetching data:", error);
     return { success: false, error: error.message };
   }
 };

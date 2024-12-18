@@ -65,4 +65,24 @@ export const SIDEBAR_LINKS = Object.freeze({
       selectedIcon: "mingcute:group-3-fill",
     },
   ],
+  coparent: [
+    {
+      label: "Announcements",
+      link: "/announcements",
+      icon: "mingcute:announcement-line",
+      selectedIcon: "mingcute:announcement-fill",
+    },
+    {
+      label: "Events",
+      link: "/events",
+      icon: "mingcute:calendar-time-add-line",
+      selectedIcon: "mingcute:calendar-time-add-fill",
+    },
+    {
+      label: "Family",
+      link: "/family",
+      icon: "mingcute:group-3-line",
+      selectedIcon: "mingcute:group-3-fill",
+    },
+  ],
 });
