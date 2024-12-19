@@ -39,6 +39,7 @@ const Profile = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newContact, setNewContact] = useState("");
+  const [error, setError] = useState("");
 
   const initials = `${getInitial(data?.first_name)}${getInitial(data?.last_name)}`;
 
@@ -48,16 +49,17 @@ const Profile = () => {
     }
   }, [data]);
 
+  const validateContactNumber = (number) => {
+    const regex = /^\+?[1-9]\d{1,14}$/;
+    return regex.test(number);
+  };
+
   const handleUpdateContact = () => {
-    if (!newContact.trim()) {
-      toast({
-        title: "Error",
-        description: "Contact number cannot be empty.",
-        variant: "destructive",
-      });
+    if (!validateContactNumber(newContact)) {
+      setError("Please enter a valid contact number.");
       return;
     }
-
+    setError("");
     mutation.mutate(
       { userId: userData?.id, newContactNumber: newContact },
       {
@@ -117,6 +119,7 @@ const Profile = () => {
                     value={newContact}
                     onChange={(e) => setNewContact(e.target.value)}
                   />
+                  {error && <p className="text-red-500">{error}</p>}
                 </div>
                 <DialogFooter>
                   <Button
