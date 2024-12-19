@@ -64,6 +64,7 @@ Button.displayName = "Button";
 Button.propTypes = {
   className: PropTypes.string,
   variant: PropTypes.string,
+  
   size: PropTypes.string,
   asChild: PropTypes.bool,
 };

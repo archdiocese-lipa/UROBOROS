@@ -16,7 +16,8 @@ const EditReplyForm =  ({
     if (InputDefaultValue) {
       setValue("comment", InputDefaultValue);
     }
-  }, []);
+  }, [InputDefaultValue]);
+  
 return (
     <form
       onSubmit={handleSubmit((inputs) =>

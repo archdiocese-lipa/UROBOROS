@@ -27,6 +27,7 @@ import {
 import { Button } from "@/components/ui/button"; // Assuming you have a Button component
 import { Icon } from "@iconify/react"; // Assuming you have an Icon component
 import useDeleteMeeting from "@/hooks/useDeleteMeeting"; // Import the delete hook
+import Loading from "../Loading";
 
 const MeetingDetails = () => {
   const [urlPrms] = useSearchParams();
@@ -55,7 +56,7 @@ const MeetingDetails = () => {
   // Use the delete meeting hook
   const { mutate: deleteMeeting, isLoading: isDeleting } = useDeleteMeeting();
 
-  if (isLoading) return <div>Loading meeting details...</div>;
+  if (isLoading) return <Loading/>;
 
   if (!meetingId)
     return (

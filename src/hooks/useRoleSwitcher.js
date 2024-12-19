@@ -13,7 +13,7 @@ const useRoleSwitcher = () => {
     if (userData?.role && !temporaryRole) {
       setTemporaryRole(userData.role);
     }
-  }, [userData]); 
+  }, [userData, temporaryRole]); 
 
   const onSwitchRole = (role) => {
     if (!userData) return;
@@ -49,8 +49,6 @@ const useRoleSwitcher = () => {
     }
   });
 
-//   console.log("user",userData)
-//  console.log("temprole before returning", temporaryRole)
 
   return { availableRoles, onSwitchRole, temporaryRole };
 };

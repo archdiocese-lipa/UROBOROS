@@ -11,6 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 import ParishionerDialogCalendar from "@/components/Events/ParishionerDialogCalendar";
 import { fetchUserMinistries } from "@/services/ministryService";
 import { useUser } from "@/context/useUser";
+import Loading from "@/components/Loading";
 
 const Events = () => {
   const currentDateTime = new Date();
@@ -86,7 +87,7 @@ const Events = () => {
       </div>
       <div className="mt-5 grid gap-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
         {isLoading ? (
-          <p>Loading events...</p>
+          <Loading />
         ) : eventsToDisplay?.length === 0 ? (
           <p>No Upcoming Events</p>
         ) : (

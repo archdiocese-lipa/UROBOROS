@@ -119,7 +119,6 @@ const EditEvent = ({
 
   // Mark dito mo connect backend
   const onSubmit = (data) => {
-    console.log(data,"data")
     // Ensure userId is available
     if (!userId) {
       toast({

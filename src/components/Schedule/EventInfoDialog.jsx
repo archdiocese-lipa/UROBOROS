@@ -12,8 +12,8 @@ import { useUser } from "@/context/useUser";
 import ManualAttendEvents from "../Events/ManualAttendEvents";
 
 const EventInfoDialog = ({ open, event, onClose, temporaryRole }) => {
-  const userData = useUser();
-  const role = userData.userData.role;
+  const {userData} = useUser();
+  const role = userData?.role;
 
   const formatUKDate = (dateString) => {
     const date = new Date(dateString);
