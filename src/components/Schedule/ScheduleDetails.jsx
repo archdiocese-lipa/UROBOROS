@@ -72,15 +72,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 // import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import AttendeeEditLogs from "./AttendeeEditLogs";
+import AddAttendee from "./AddAttendee";
+import Loading from "../Loading";
 // import { ROLES } from "@/constants/roles";
 
 const ScheduleDetails = ({ queryKey }) => {
   const [qrCode, setQRCode] = useState(null);
   const [disableSchedule, setDisableSchedule] = useState(false);
   const [urlPrms] = useSearchParams();
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState();
-  const [attendeeEdit, setAttendeeEdit] = useState();
-  const [childAttendeeEdit, setChildAttendeeEdit] = useState();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [attendeeEdit, setAttendeeEdit] = useState("");
+  const [childAttendeeEdit, setChildAttendeeEdit] = useState("");
   const [idEditting, setIdEditting] = useState("");
   const eventId = urlPrms.get("event") || null;
   const printRef = useRef(null);
@@ -333,14 +336,18 @@ const ScheduleDetails = ({ queryKey }) => {
     lastName: "",
   });
 
-  const onSubmit = (data) => {
-    updateMutation.mutate({ ...data, attendeeId: idEditting });
+  const onSubmit = (data, attendeeId) => {
+    updateMutation.mutate({
+      update_id: userData.userData.id,
+      ...data,
+      attendeeId,
+    });
     setIdEditting("");
     setAttendeeEdit(false);
     setChildAttendeeEdit(false);
   };
 
-  if (isLoading || attendanceLoading) return <div>Loading...</div>;
+  if (isLoading || attendanceLoading) return <Loading/>;
 
   if (!eventId)
     return (
@@ -362,60 +369,65 @@ const ScheduleDetails = ({ queryKey }) => {
           <Description>{event?.event_description}</Description>
         </div>
         <div className="flex">
-          {!disableSchedule && (
-            <div className="flex flex-wrap gap-1">
-              <AddRecord eventId={eventId} />
-              <Dialog onOpenChange={generateQRCode}>
-                <DialogTrigger asChild>
-                  <Button>
-                    <Icon icon={"mingcute:qrcode-2-line"} />
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>QR Code</DialogTitle>
-                    <DialogDescription>
-                      Scan this QR code to check the event.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="flex justify-center">
-                    <img src={qrCode} alt="QR Code" className="h-64 w-64" />
-                  </div>
-                </DialogContent>
-              </Dialog>
-              <div className="flex">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button className="rounded-xl px-3 py-3">
-                      <Icon icon={"mingcute:download-2-line"} />
+          <div className="flex flex-wrap gap-1">
+            {!disableSchedule && (
+              <div className="flex gap-1">
+                <AddRecord eventId={eventId} />
+                <Dialog onOpenChange={generateQRCode}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Icon icon={"mingcute:qrcode-2-line"} />
                     </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" side="bottom">
-                    <DropdownMenuItem onClick={() => exportAttendanceList()}>
-                      Download as PDF
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <Dialog>
-                  <DialogTrigger></DialogTrigger>
-                </Dialog>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>QR Code</DialogTitle>
+                      <DialogDescription>
+                        Scan this QR code to check the event.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex justify-center">
+                      <img src={qrCode} alt="QR Code" className="h-64 w-64" />
+                    </div>
+                  </DialogContent>
+              </Dialog>
               </div>
+            )}
+            <div className="flex">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button className="rounded-xl px-3 py-3">
+                    <Icon icon={"mingcute:download-2-line"} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" side="bottom">
+                  <DropdownMenuItem onClick={() => exportAttendanceList()}>
+                    Download as PDF
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Dialog>
+                <DialogTrigger></DialogTrigger>
+              </Dialog>
             </div>
-          )}
+          </div>
+
           <Dialog
             open={deleteDialogOpen}
             onOpenChange={(isOpen) => {
               setDeleteDialogOpen(isOpen);
             }}
           >
-            <DialogTrigger className="ml-2 w-fit" asChild>
-              <Button
-                // onClick={() => deleteMutation.mutate()}
-                className="rounded-xl px-3 py-3"
-              >
-                <Icon icon={"mingcute:delete-3-line"} />
-              </Button>
-            </DialogTrigger>
+            {!disableSchedule && (
+              <DialogTrigger className="ml-2 w-fit" asChild>
+                <Button
+                  // onClick={() => deleteMutation.mutate()}
+                  className="rounded-xl px-3 py-3"
+                >
+                  <Icon icon={"mingcute:delete-3-line"} />
+                </Button>
+              </DialogTrigger>
+            )}
             <DialogContent className="sm:rounded-3xl">
               <DialogHeader>
                 <DialogTitle className="text-2xl text-accent">
@@ -472,6 +484,7 @@ const ScheduleDetails = ({ queryKey }) => {
           </p>
         </div>
         {attendance.data?.map((family, i) => {
+          // console.log(family);
           const mainApplicant = family?.parents.filter(
             (parent) => parent?.main_applicant === true
           )[0];
@@ -488,10 +501,40 @@ const ScheduleDetails = ({ queryKey }) => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-3">
-                <h3 className="text-xl font-semibold text-accent">
-                  Parent(s)/Guardian(s)
-                </h3>
-
+                <div className=" flex justify-between">
+                <div className="flex items-center gap-2">
+                  {" "}
+                  <h3 className="text-xl font-semibold text-accent">
+                    Parent(s)/Guardian(s)
+                  </h3>
+                  {!disableSchedule && <AddAttendee
+                    attendee_type={"parents"}
+                    family_id={family.family_id}
+                    family_surname={family.family_surname}
+                    event_id={eventId}
+                  />}
+                
+                </div>
+                <Dialog >
+                    <DialogTrigger className="mr-5">
+                      <Icon
+                        className="h-10 w-10 text-accent"
+                        icon={"mingcute:calendar-time-add-fill"}
+                      ></Icon>
+                    </DialogTrigger>
+                    <DialogContent className="no-scrollbar max-h-[550px] max-w-[950px] overflow-y-scroll">
+                      <DialogHeader>
+                        <DialogTitle>{family.family_surname} Family Add Logs</DialogTitle>
+                        <DialogDescription>
+                          This table shows added attendees to this family.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="no-scrollbar overflow-y-scroll">
+                        <AttendeeEditLogs family_id={family.family_id} />{" "}
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                  </div>
                 <Table>
                   <TableHeader className="bg-primary">
                     <TableRow>
@@ -499,7 +542,8 @@ const ScheduleDetails = ({ queryKey }) => {
                       <TableHead>Name</TableHead>
                       <TableHead>Contact Tel No.</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead className="rounded-r-lg" />
+                      <TableHead>Action</TableHead>
+                      <TableHead className="rounded-r-lg">Edit Logs</TableHead>
                     </TableRow>
                   </TableHeader>
 
@@ -522,69 +566,10 @@ const ScheduleDetails = ({ queryKey }) => {
                         </TableCell>
 
                         <TableCell>
-                          {/* {idEditting === attendee.id ? (
-                                <div className="flex gap-2">
-                                  <FormField
-                                    control={form.control}
-                                    name="firstName"
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormControl>
-                                          <Input
-                                            placeholder="First name"
-                                            type="text"
-                                            {...field}
-                                          />
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                  <FormField
-                                    control={form.control}
-                                    name="lastName"
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormControl>
-                                          <Input
-                                            placeholder="Last name"
-                                            type="text"
-                                            {...field}
-                                          />
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                </div>
-                              ) : (
-                                <p>{`${attendee.first_name} ${attendee.last_name}`}</p>
-                              )} */}
                           <p>{`${attendee.first_name} ${attendee.last_name}`}</p>
                         </TableCell>
 
                         <TableCell>
-                          {/* {idEditting === attendee.id ? (
-                                <FormField
-                                  control={form.control}
-                                  name="contact"
-                                  render={({ field }) => (
-                                    <FormItem>
-                                      <FormControl>
-                                        <Input
-                                          placeholder="Contact"
-                                          type="text"
-                                          {...field}
-                                        />
-                                      </FormControl>
-                                      <FormMessage />
-                                    </FormItem>
-                                  )}
-                                />
-                              ) : (
-                                <p>{attendee.contact_number}</p>
-                              )} */}
-
                           <p>{attendee.contact_number}</p>
                         </TableCell>
 
@@ -592,14 +577,12 @@ const ScheduleDetails = ({ queryKey }) => {
                           {attendee.attended ? "Attended" : "Pending"}
                         </TableCell>
                         <TableCell className="flex gap-2">
-                          {/* {idEditting === attendee.id ? (
-                                <Button
-                                  type="button"
-                                  onClick={() => setIdEditting("")}
-                                >
-                                   <Icon icon={"mingcute:close-fill"}/>
-                                </Button>
-                              ) : (
+                          <Dialog
+                            open={attendeeEdit}
+                            onOpenChange={setAttendeeEdit}
+                          >
+                            {!disableSchedule && (
+                              <DialogTrigger>
                                 <Button
                                   type="button"
                                   onClick={() => {
@@ -617,59 +600,22 @@ const ScheduleDetails = ({ queryKey }) => {
                                     );
                                     form.setValue(
                                       "contact",
-                                      `0${attendee.contact_number.toString()}`
+                                      `${attendee.contact_number.toString()}`
                                     );
                                     setIdEditting(attendee.id);
+                                    setAttendeeEdit(true);
                                   }}
                                   variant="ghost"
                                   disabled={disableSchedule}
                                 >
                                   <Icon
+                                    className="h-5 w-5 text-accent"
                                     disabled={disableSchedule}
                                     icon={"eva:edit-2-fill"}
                                   />
                                 </Button>
-                              )} */}
-                          {/* {idEditting === attendee.id && (
-                                <Button type="submit">
-                                   <Icon icon={"mingcute:check-fill"}/></Button>
-                              )} */}
-
-                          <Dialog
-                            open={attendeeEdit}
-                            onOpenChange={setAttendeeEdit}
-                          >
-                            <DialogTrigger>
-                              <Button
-                                type="button"
-                                onClick={() => {
-                                  // form.setValue(
-                                  //   "id",
-                                  //   `${attendee.id}`
-                                  // );
-                                  form.setValue(
-                                    "firstName",
-                                    `${attendee.first_name}`
-                                  );
-                                  form.setValue(
-                                    "lastName",
-                                    `${attendee.last_name}`
-                                  );
-                                  form.setValue(
-                                    "contact",
-                                    `0${attendee.contact_number.toString()}`
-                                  );
-                                  setIdEditting(attendee.id);
-                                }}
-                                variant="ghost"
-                                disabled={disableSchedule}
-                              >
-                                <Icon
-                                  disabled={disableSchedule}
-                                  icon={"eva:edit-2-fill"}
-                                />
-                              </Button>
-                            </DialogTrigger>
+                              </DialogTrigger>
+                            )}
                             <DialogContent>
                               <DialogHeader>
                                 <DialogTitle>Edit Parent Attendee</DialogTitle>
@@ -678,7 +624,11 @@ const ScheduleDetails = ({ queryKey }) => {
                                 </DialogDescription>
                               </DialogHeader>
                               <Form {...form}>
-                                <form onSubmit={form.handleSubmit(onSubmit)}>
+                                <form
+                                  onSubmit={form.handleSubmit((data) =>
+                                    onSubmit(data, idEditting)
+                                  )}
+                                >
                                   <FormField
                                     control={form.control}
                                     name="firstName"
@@ -742,19 +692,53 @@ const ScheduleDetails = ({ queryKey }) => {
                             </DialogContent>
                           </Dialog>
                         </TableCell>
+                        <TableCell>
+                          <Dialog>
+                            <DialogTrigger>
+                              <Icon
+                                className="h-5 w-5 text-accent"
+                                icon={"mingcute:calendar-time-add-fill"}
+                              ></Icon>
+                            </DialogTrigger>
+                            <DialogContent className="no-scrollbar max-h-[550px] max-w-[950px] overflow-y-scroll">
+                              <DialogHeader>
+                                <DialogTitle>Attendance Edit Logs</DialogTitle>
+                                <DialogDescription>
+                                  This table shows the edit details done to this
+                                  user.
+                                </DialogDescription>
+                              </DialogHeader>
+                              <div className="no-scrollbar overflow-y-scroll">
+                                <AttendeeEditLogs attendance_id={attendee.id} />
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
 
-                <h3 className="text-xl font-semibold text-accent">Children</h3>
+                <div className="flex gap-2">
+                  <h3 className="text-xl font-semibold text-accent">
+                    Children
+                  </h3>
+                  {!disableSchedule &&  <AddAttendee
+                    attendee_type={"children"}
+                    family_id={family.family_id}
+                    family_surname={family.family_surname}
+                    event_id={eventId}
+                  />}
+                </div>
+
                 <Table>
                   <TableHeader className="bg-primary">
                     <TableRow>
                       <TableHead className="rounded-l-lg" />
                       <TableHead>Name</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead className="rounded-r-lg" />
+                      <TableHead>Action</TableHead>
+                      <TableHead className="rounded-r-lg">Edit Logs</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -775,58 +759,18 @@ const ScheduleDetails = ({ queryKey }) => {
                           />
                         </TableCell>
                         <TableCell>
-                          {/* {idEditting === attendee.id ? (
-                                <div className="flex gap-2">
-                                  <FormField
-                                    control={childrenForm.control}
-                                    name="firstName"
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormControl>
-                                          <Input
-                                            placeholder="First name"
-                                            type="text"
-                                            {...field}
-                                          />
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                  <FormField
-                                    control={childrenForm.control}
-                                    name="lastName"
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormControl>
-                                          <Input
-                                            placeholder="Last name"
-                                            type="text"
-                                            {...field}
-                                          />
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                </div>
-                              ) : (
-                                <p>{`${attendee.first_name} ${attendee.last_name}`}</p>
-                              )} */}
                           <p>{`${attendee.first_name} ${attendee.last_name}`}</p>
                         </TableCell>
                         <TableCell>
                           {attendee.attended ? "Attended" : "Pending"}
                         </TableCell>
                         <TableCell className="flex gap-2">
-                          {/* {idEditting === attendee.id ? (
-                                <Button
-                                  type="button"
-                                  onClick={() => setIdEditting("")}
-                                >
-                                  Cancel
-                                </Button>
-                              ) : (
+                          <Dialog
+                            open={childAttendeeEdit}
+                            onOpenChange={setChildAttendeeEdit}
+                          >
+                            {!disableSchedule && (
+                              <DialogTrigger>
                                 <Button
                                   type="button"
                                   onClick={() => {
@@ -839,47 +783,19 @@ const ScheduleDetails = ({ queryKey }) => {
                                       `${attendee.last_name}`
                                     );
                                     setIdEditting(attendee.id);
+                                    setChildAttendeeEdit(true);
                                   }}
                                   variant="ghost"
                                   disabled={disableSchedule}
                                 >
                                   <Icon
+                                    className="h-5 w-5 text-accent"
                                     disabled={disableSchedule}
                                     icon={"eva:edit-2-fill"}
                                   />
                                 </Button>
-                              )}
-                              {idEditting === attendee.id && (
-                                <Button type="submit">Save</Button>
-                              )} */}
-
-                          <Dialog
-                            open={childAttendeeEdit}
-                            onOpenChange={setChildAttendeeEdit}
-                          >
-                            <DialogTrigger>
-                              <Button
-                                type="button"
-                                onClick={() => {
-                                  childrenForm.setValue(
-                                    "firstName",
-                                    `${attendee.first_name}`
-                                  );
-                                  childrenForm.setValue(
-                                    "lastName",
-                                    `${attendee.last_name}`
-                                  );
-                                  setIdEditting(attendee.id);
-                                }}
-                                variant="ghost"
-                                disabled={disableSchedule}
-                              >
-                                <Icon
-                                  disabled={disableSchedule}
-                                  icon={"eva:edit-2-fill"}
-                                />
-                              </Button>
-                            </DialogTrigger>
+                              </DialogTrigger>
+                            )}
                             <DialogContent>
                               <DialogHeader>
                                 <DialogTitle>Edit Child Attendee</DialogTitle>
@@ -889,7 +805,9 @@ const ScheduleDetails = ({ queryKey }) => {
                               </DialogHeader>
                               <Form {...childrenForm}>
                                 <form
-                                  onSubmit={childrenForm.handleSubmit(onSubmit)}
+                                  onSubmit={childrenForm.handleSubmit((data) =>
+                                    onSubmit(data, idEditting)
+                                  )}
                                 >
                                   <FormField
                                     control={childrenForm.control}
@@ -930,6 +848,26 @@ const ScheduleDetails = ({ queryKey }) => {
                                   </div>
                                 </form>
                               </Form>
+                            </DialogContent>
+                          </Dialog>
+                        </TableCell>
+                        <TableCell>
+                          <Dialog>
+                            <DialogTrigger>
+                              <Icon
+                                className="h-5 w-5 text-accent"
+                                icon={"mingcute:calendar-time-add-fill"}
+                              ></Icon>
+                            </DialogTrigger>
+                            <DialogContent className="max-h-[550px] max-w-[950px]">
+                              <DialogHeader>
+                                <DialogTitle>Attendance Edit Logs</DialogTitle>
+                                <DialogDescription>
+                                  This table shows the edit details done to this
+                                  user.
+                                </DialogDescription>
+                              </DialogHeader>
+                              <AttendeeEditLogs attendance_id={attendee.id} />
                             </DialogContent>
                           </Dialog>
                         </TableCell>

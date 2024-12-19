@@ -127,28 +127,27 @@ const activateUser = async ({ id, payload }) => {
 }; 
 
 const forgotPassword = async(email) => {
-  console.log(email)
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: "https://togatherinv1.vercel.app/reset-password",
   })
   if (error) {
     console.error('Error sending reset password email:', error.message)
   }
-  console.log("success")
-  return {message:"Success"}
+
 }
 
 const updatePassword = async(password) => {
 
-  const { data, error } = await supabase.auth.updateUser({
+  const { error } = await supabase.auth.updateUser({
     password
   })
   if(error){
     throw error
   }
 
-  console.log(data)
 }
+
+
 
 export {
   getUser,

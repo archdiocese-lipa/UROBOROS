@@ -46,6 +46,7 @@ import { fetchUserMinistries } from "@/services/ministryService";
 import AssignVolunteerComboBox from "@/components/Schedule/AssignVolunteerComboBox";
 import useInterObserver from "@/hooks/useInterObserver";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import Loading from "@/components/Loading";
 
 const Announcements = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -302,7 +303,7 @@ const Announcements = () => {
       <div className="no-scrollbar flex h-full w-full flex-col-reverse gap-4 overflow-y-scroll lg:flex-row">
         {/* Announcements List */}
         <div className="no-scrollbar w-full flex-1 overflow-y-scroll rounded-xl border-primary-outline p-1 md:border md:bg-primary md:px-9 md:py-6">
-          {isLoading && <p>Loading...</p>}
+          {isLoading && (<Loading/> )}
 
           {data?.pages?.flatMap((page) => page.items).length === 0 ? (
             <p>No announcements yet.</p>

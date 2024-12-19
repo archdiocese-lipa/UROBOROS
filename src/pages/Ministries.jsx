@@ -1,3 +1,4 @@
+import Loading from "@/components/Loading";
 import CreateMinistry from "@/components/Ministry/CreateMinistry";
 import MinistryCard from "@/components/Ministry/MinistryCard";
 import { Description, Title } from "@/components/Title";
@@ -8,6 +9,7 @@ const Ministries = () => {
 
   const ministryData = ministries?.data;
 
+ 
   return (
     <div className="relative h-full flex flex-col gap-y-5">
       <div className="fixed bottom-20 right-7 z-10 md:bottom-10">
@@ -20,8 +22,8 @@ const Ministries = () => {
       </div>
 
       {/* Render MinistryCard components if data exists */}
-      <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 p-2 h-full overflow-scroll no-scrollbar">
-        {ministryData?.map((ministry) => (
+      <div className="grid gap-4 w-full sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 p-2 h-full overflow-scroll no-scrollbar">
+        {!ministryData ? <Loading /> : ministryData?.map((ministry) => (
           <MinistryCard
             key={ministry.id} // Use `ministry.id` as the key for each card
             ministryId={ministry.id} // Pass the ministry ID to the MinistryCard
