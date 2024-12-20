@@ -31,7 +31,7 @@ const Profile = () => {
   const { userData } = useUser();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isemailDialogOpen, setIsEmailDialogOpen] = useState(false);
-  const initials = `${getInitial(data?.first_name)}${getInitial(data?.last_name)}`;
+ 
 
   const contactSchema = z.object({
     contact_number: z.string().regex(/^[0-9]{11}$/, {
@@ -60,6 +60,8 @@ const Profile = () => {
     user_id: userData?.id,
     setIsDialogOpen,
     setIsEmailDialogOpen,
+    form,
+    emailForm,
   });
 
   const handleUpdateContact = (newContact) => {
@@ -74,6 +76,8 @@ const Profile = () => {
       email: data.email,
     });
   };
+
+  const initials = `${getInitial(data?.first_name)}${getInitial(data?.last_name)}`;
 
   if (isLoading || !userData) {
     return <Loading />;
