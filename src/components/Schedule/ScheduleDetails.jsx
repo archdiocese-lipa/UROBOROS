@@ -75,6 +75,8 @@ import AttendeeEditLogs from "./AttendeeEditLogs";
 import AddAttendee from "./AddAttendee";
 import Loading from "../Loading";
 import { childSchema, parentSchema } from "@/zodSchema/AddFamilySchema";
+import useUsersByRole from "@/hooks/useUsersByRole";
+import VolunteerComboBox from "./VolunteerComboBox";
 // import { ROLES } from "@/constants/roles";
 
 const ScheduleDetails = ({ queryKey }) => {
@@ -90,6 +92,8 @@ const ScheduleDetails = ({ queryKey }) => {
   const userData = useUser();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+
+  const { data: volunteers } = useUsersByRole("volunteer");
 
   const { data: event, isLoading } = useQuery({
     queryKey: ["event", eventId],
@@ -122,7 +126,7 @@ const ScheduleDetails = ({ queryKey }) => {
     },
   });
 
-  const { data: volunteers, isLoading: _volunteersLoading } = useQuery({
+  const { data: eventvolunteers, isLoading: _volunteersLoading } = useQuery({
     queryKey: ["event_volunteers", eventId],
     queryFn: async () => {
       const response = await fetchEventVolunteers(eventId);
@@ -192,12 +196,12 @@ const ScheduleDetails = ({ queryKey }) => {
     let currentY = 30; // Start Y position for the next section
 
     // Add List of Assigned Volunteers
-    if (volunteers && volunteers?.length > 0) {
+    if (eventvolunteers && eventvolunteers?.length > 0) {
       doc.setFontSize(14);
       doc.text("List of Assigned Volunteer(s):", 10, currentY);
       currentY += 10;
 
-      volunteers?.forEach((volunteer, index) => {
+      eventvolunteers?.forEach((volunteer, index) => {
         doc.setFontSize(12);
         doc.text(
           `${index + 1}. ${volunteer.users.first_name.charAt(0).toUpperCase() + volunteer.users.first_name.slice(1)} ${volunteer.users.last_name.charAt(0).toUpperCase() + volunteer.users.last_name.slice(1)}`,
@@ -290,7 +294,6 @@ const ScheduleDetails = ({ queryKey }) => {
     }
   }, [event, userData, disableSchedule]);
 
-
   const updateMutation = useMutation({
     mutationFn: async (data) => await editAttendee(data),
     onSuccess: () => {
@@ -339,7 +342,7 @@ const ScheduleDetails = ({ queryKey }) => {
     setChildAttendeeEdit(false);
   };
 
-  if (isLoading || attendanceLoading) return <Loading/>;
+  if (isLoading || attendanceLoading) return <Loading />;
 
   if (!eventId)
     return (
@@ -351,7 +354,6 @@ const ScheduleDetails = ({ queryKey }) => {
   if (!event) {
     return <p>hi</p>;
   }
-
   return (
     <div className="flex h-full grow flex-col gap-2 overflow-y-hidden px-3 py-2 md:px-9 md:py-6">
       <div className="flex flex-wrap justify-between">
@@ -382,7 +384,7 @@ const ScheduleDetails = ({ queryKey }) => {
                       <img src={qrCode} alt="QR Code" className="h-64 w-64" />
                     </div>
                   </DialogContent>
-              </Dialog>
+                </Dialog>
               </div>
             )}
             <div className="flex">
@@ -456,11 +458,46 @@ const ScheduleDetails = ({ queryKey }) => {
         <Label className="text-primary-text">
           List of Assigned Volunteer(s)
         </Label>
-        {volunteers?.map((volunteer, i) => (
-          <p
-            key={volunteer?.volunteer_id}
-            className="text-primary-text"
-          >{`${i + 1}. ${volunteer.users.first_name.toFirstUpperCase()} ${volunteer.users.last_name.toFirstUpperCase()}`}</p>
+        {eventvolunteers?.map((volunteer, i) => (
+          <div key={i} className="flex gap-2">
+            <p
+              className={cn("text-primary-text", {
+                "line-through": volunteer.replaced === true,
+              })}
+            >{`${i + 1}. ${volunteer.users.first_name.toFirstUpperCase()} ${volunteer.users.last_name.toFirstUpperCase()} `}</p>
+            {volunteer?.volunteer_replacement && (
+              <p
+                className={"text-primary-text"}
+              >{`${volunteer?.volunteer_replacement?.first_name.toFirstUpperCase()} ${volunteer?.volunteer_replacement?.last_name.toFirstUpperCase()}`}</p>
+            )}
+            <Dialog>
+              <DialogTrigger>
+                <Icon
+                  className="h-5 w-5 text-accent hover:cursor-pointer"
+                  disabled={disableSchedule}
+                  icon={"eva:edit-2-fill"}
+                />
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Edit Assigned Volunteer</DialogTitle>
+                  <DialogDescription>
+                    Select a volunteer to replace{" "}
+                    {`${volunteer.users.first_name.toFirstUpperCase()} ${volunteer.users.last_name.toFirstUpperCase()}`}
+                    .
+                  </DialogDescription>
+                </DialogHeader>
+                <VolunteerComboBox
+                  assignedVolunteers={eventvolunteers}
+                  oldVolunteerId={volunteer.volunteer_id}
+                  eventId={eventId}
+                  volunteers={volunteers}
+                  newreplacement_id={volunteer.replacedby_id}
+                  replaced={volunteer.replaced}
+                />
+              </DialogContent>
+            </Dialog>
+          </div>
         ))}
       </div>
 
@@ -476,8 +513,9 @@ const ScheduleDetails = ({ queryKey }) => {
           </p>
         </div>
         {attendance.data?.map((family, i) => {
-          // console.log(family);
+          
           const mainApplicant = family?.parents.filter(
+            
             (parent) => parent?.main_applicant === true
           )[0];
           return (
@@ -493,21 +531,22 @@ const ScheduleDetails = ({ queryKey }) => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-3">
-                <div className=" flex justify-between">
-                <div className="flex items-center gap-2">
-                  {" "}
-                  <h3 className="text-xl font-semibold text-accent">
-                    Parent(s)/Guardian(s)
-                  </h3>
-                  {!disableSchedule && <AddAttendee
-                    attendee_type={"parents"}
-                    family_id={family.family_id}
-                    family_surname={family.family_surname}
-                    event_id={eventId}
-                  />}
-                
-                </div>
-                <Dialog >
+                <div className="flex justify-between">
+                  <div className="flex items-center gap-2">
+                    {" "}
+                    <h3 className="text-xl font-semibold text-accent">
+                      Parent(s)/Guardian(s)
+                    </h3>
+                    {!disableSchedule && (
+                      <AddAttendee
+                        attendee_type={"parents"}
+                        family_id={family.family_id}
+                        family_surname={family.family_surname}
+                        event_id={eventId}
+                      />
+                    )}
+                  </div>
+                  <Dialog>
                     <DialogTrigger className="mr-5">
                       <Icon
                         className="h-10 w-10 text-accent"
@@ -516,17 +555,19 @@ const ScheduleDetails = ({ queryKey }) => {
                     </DialogTrigger>
                     <DialogContent className="no-scrollbar max-h-[550px] max-w-[950px] overflow-y-scroll">
                       <DialogHeader>
-                        <DialogTitle>{family.family_surname} Family Add Logs</DialogTitle>
+                        <DialogTitle>
+                          {family.family_surname} Family Add Logs
+                        </DialogTitle>
                         <DialogDescription>
                           This table shows added attendees to this family.
                         </DialogDescription>
                       </DialogHeader>
                       <div className="no-scrollbar overflow-y-scroll">
-                        <AttendeeEditLogs family_id={family.family_id} />{" "}
+                        <AttendeeEditLogs family_id={family.family_id} />
                       </div>
                     </DialogContent>
                   </Dialog>
-                  </div>
+                </div>
                 <Table>
                   <TableHeader className="bg-primary">
                     <TableRow>
@@ -715,12 +756,14 @@ const ScheduleDetails = ({ queryKey }) => {
                   <h3 className="text-xl font-semibold text-accent">
                     Children
                   </h3>
-                  {!disableSchedule &&  <AddAttendee
-                    attendee_type={"children"}
-                    family_id={family.family_id}
-                    family_surname={family.family_surname}
-                    event_id={eventId}
-                  />}
+                  {!disableSchedule && (
+                    <AddAttendee
+                      attendee_type={"children"}
+                      family_id={family.family_id}
+                      family_surname={family.family_surname}
+                      event_id={eventId}
+                    />
+                  )}
                 </div>
 
                 <Table>

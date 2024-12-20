@@ -14,7 +14,7 @@ import PropTypes from "prop-types";
 import Loading from "../Loading";
 
 const AttendeeEditLogs = ({ attendance_id, family_id }) => {
-
+  console.log("family_id",family_id)
   const { data, isLoading } = useQuery({
     queryKey: ["update_logs",attendance_id,family_id],
     queryFn: async () => fetchAttendanceEditLogs({ attendance_id,family_id }),
@@ -28,6 +28,8 @@ const AttendeeEditLogs = ({ attendance_id, family_id }) => {
         <p>No edit history yet.</p>
     </div>
   }
+
+ 
 
   return (
     

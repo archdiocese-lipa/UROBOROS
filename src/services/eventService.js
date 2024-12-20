@@ -326,7 +326,14 @@ export const fetchEventVolunteers = async (eventId) => {
         `
         volunteer_id,
         assigned_at,
-        users (
+        replaced,
+        replacedby_id,
+        users:volunteer_id (
+          first_name,
+          last_name,
+          email
+        ),
+         volunteer_replacement:replacedby_id (
           first_name,
           last_name,
           email
@@ -414,4 +421,50 @@ export const getEventsByCreatorId = async (creatorId) => {
   }
 
   return data;
+};
+
+export const replaceVolunteer = async ({
+  oldVolunteerId,
+  eventId,
+  replacedby_id,
+  replaced,
+  newreplacement_id,
+}) => {
+  // console.log(
+  //   oldVolunteerId,
+  //   eventId,
+  //   replacedby_id,
+  //   replaced,
+  //   newreplacement_id
+  // );
+  console.log("oldVolunteerId",oldVolunteerId)
+  console.log("newreplacement_id",newreplacement_id)
+  console.log("replaced",replaced)
+  if (replaced) {
+    const { error } = await supabase
+      .from("event_volunteers")
+      .update({
+        volunteer_id: newreplacement_id,
+        replacedby_id,
+        replaced: true,
+      })
+      .eq("event_id", eventId)
+      .eq("volunteer_id", oldVolunteerId);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  const { error } = await supabase
+    .from("event_volunteers")
+    .update({ replacedby_id, replaced: true })
+    .eq("event_id", eventId)
+    .eq("volunteer_id", oldVolunteerId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  console.log("replaced volunteer");
 };

@@ -188,6 +188,8 @@ const CreateEvent = ({
 
   // console.log("form values",eventForm.getValues())
 
+  console.log("members",members)
+
   return (
     <Form {...eventForm}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-2" id={id}>
