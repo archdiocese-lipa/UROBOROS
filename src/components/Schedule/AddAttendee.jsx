@@ -73,8 +73,7 @@ const AddAttendee = ({
     setIsOpen(false);
   };
 
-  console.log("form errors", form.formState.errors);
-
+console.log("family_ids",family_id)
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
