@@ -20,12 +20,12 @@ import {
 } from "../ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Input } from "../ui/input";
 import { addSingleAttendee } from "@/services/attendanceService";
 import { useUser } from "@/context/useUser";
 import { Toast } from "../ui/toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { childSchema, parentSchema } from "@/zodSchema/AddFamilySchema";
 
 const AddAttendee = ({
   attendee_type,
@@ -36,44 +36,25 @@ const AddAttendee = ({
   const { userData } = useUser();
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
-  const attendeeSchema = z.object({
-    first_name: z.string().min(1, "First name is required"),
-    last_name: z.string().min(1, "Last name is required"),
-    // contact_number validation
-    contact_number: z
-      .string()
-      .optional()
-      .refine((val) => {
-
-        // Skip validation if attendee_type is 'children'
-        if (attendee_type === "children") {
-          return true;
-        }
-
-        // Validate that the contact number is 11 digits when it's provided
-        if (val && val.length !== 11) {
-          return false;
-        }
-
-        return true;
-      }, "Contact number must be exactly 11 digits"),
-  });
 
   const addAttendeeMutation = useMutation({
-    mutationFn: async(data) => addSingleAttendee(data),
+    mutationFn: async (data) => addSingleAttendee(data),
     onSuccess: () => {
       Toast({
         title: "Attendee added successfully",
-      })
+      });
     },
     onSettled: () => {
       queryClient.invalidateQueries({
         queryKey: ["attendance", event_id],
-      });    }
-  })
+      });
+    },
+  });
 
   const form = useForm({
-    resolver: zodResolver(attendeeSchema),
+    resolver: zodResolver(
+      attendee_type === "parents" ? parentSchema : childSchema
+    ),
     defaultValues: {
       first_name: "",
       last_name: "",
@@ -91,6 +72,7 @@ const AddAttendee = ({
     });
     setIsOpen(false);
   };
+
   console.log("form errors", form.formState.errors);
 
   return (

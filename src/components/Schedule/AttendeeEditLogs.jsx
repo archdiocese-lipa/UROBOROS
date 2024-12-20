@@ -65,8 +65,8 @@ const AttendeeEditLogs = ({ attendance_id, family_id }) => {
 };
 
 AttendeeEditLogs.propTypes = {
-  attendance_id: PropTypes.string.isRequired,
-  family_id: PropTypes.string.isRequired,
+  attendance_id: PropTypes.string,
+  family_id: PropTypes.string,
 };
 
 export default AttendeeEditLogs;

@@ -1,0 +1,108 @@
+import { useMutation, useQueryClient,useQuery } from "@tanstack/react-query";
+import { fetchUserById, updateContact } from "@/services/authService";
+import { toast } from "./use-toast";
+import { sendChangeEmailVerification, updateEmail } from "@/services/userService";
+import { supabase } from "@/services/supabaseClient";
+import { useEffect } from "react";
+
+export const useProfileChange = ({user_id,setIsDialogOpen,setIsEmailDialogOpen, form, emailForm}) => {
+  const queryClient = useQueryClient();
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["fetchUser", user_id],
+    queryFn: async () => fetchUserById(user_id),
+    enabled: !!user_id,
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to load user profile. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateContactMutation = useMutation({
+    mutationFn: async({ userId, newContactNumber }) =>
+      updateContact(userId, newContactNumber),
+    onSuccess: () => {
+      toast({
+        title: "Contact Updated",
+        description: "The contact number has been updated successfully!",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error Updating Contact",
+        description:
+          error?.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries(["fetchUser"]);
+      setIsDialogOpen(false);
+    }
+  });
+
+  const sendEmailLinkMutation = useMutation({
+  mutationFn: async({ email }) => sendChangeEmailVerification(email),
+  onSuccess: () => {
+    toast({
+      title: "Email change sent",
+      description: "Change email link has been sent to your old and new email!",
+    });
+  },onError: (error) => {
+    toast({
+      title: "Error sending change email link",
+      description:
+        error?.message || "Something went wrong. Please try again.",
+      variant: "destructive",
+    });
+  },onSettled: () => {
+    queryClient.invalidateQueries(["fetchUser"]);
+  }
+  });
+
+  const updateEmailMutation = useMutation({
+    mutationFn: async(data) => updateEmail(data),
+    onSuccess: () => {
+      toast({
+        title: "Email has been updated"});
+    },onError: (error) => {
+      toast({
+        title: "Error Updating Email",
+        description:
+          error?.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    },onSettled: () => {
+      queryClient.invalidateQueries(["fetchUser"]);
+      setIsEmailDialogOpen(false);  }
+    });
+
+    useEffect(() => {
+      const { data } = supabase.auth.onAuthStateChange((event, session) => {
+        if (event === "SIGNED_IN") {
+          const newEmail = localStorage.getItem("newEmail");
+  
+          if (newEmail === session.user.email) {
+            updateEmailMutation.mutate({
+              user_id: session.user.id,
+              email: session.user.email,
+            });
+            localStorage.removeItem("newEmail");
+            return;
+          }
+        }
+      });
+  
+      form.setValue("contact_number", data?.contact_number);
+      emailForm.setValue("email", data?.email);
+  
+      return () => {
+        data.subscription.unsubscribe();
+      };
+    }, [data]);
+
+  return { sendEmailLinkMutation,updateContactMutation, data, isLoading, updateEmailMutation};
+};
