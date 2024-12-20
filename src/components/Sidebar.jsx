@@ -166,6 +166,9 @@ const SidebarProfile = ({ availableRoles, onSwitchRole }) => {
             </DropdownMenuItem>
           ))}
           {userData?.role !== ROLES[2] && <DropdownMenuSeparator />}
+          <DropdownMenuItem onClick={() => navigate("/profile")}>
+            Profile
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
