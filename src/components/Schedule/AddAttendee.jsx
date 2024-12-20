@@ -73,11 +73,10 @@ const AddAttendee = ({
     setIsOpen(false);
   };
 
-console.log("family_ids",family_id)
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="p-3">
+        <Button className="p-3" size="sm">
           <Icon className="h-5 w-5" icon="mingcute:add-fill"></Icon>
         </Button>
       </DialogTrigger>

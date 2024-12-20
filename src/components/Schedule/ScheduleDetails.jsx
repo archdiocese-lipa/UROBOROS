@@ -359,7 +359,6 @@ const ScheduleDetails = ({ queryKey }) => {
       <div className="flex flex-wrap justify-between">
         <div>
           <Title>{event?.event_name}</Title>
-
           <Description>{event?.event_description}</Description>
         </div>
         <div className="flex">
@@ -513,9 +512,7 @@ const ScheduleDetails = ({ queryKey }) => {
           </p>
         </div>
         {attendance.data?.map((family, i) => {
-          
           const mainApplicant = family?.parents.filter(
-            
             (parent) => parent?.main_applicant === true
           )[0];
           return (
@@ -533,7 +530,6 @@ const ScheduleDetails = ({ queryKey }) => {
               <CardContent className="flex flex-col gap-3">
                 <div className="flex justify-between">
                   <div className="flex items-center gap-2">
-                    {" "}
                     <h3 className="text-xl font-semibold text-accent">
                       Parent(s)/Guardian(s)
                     </h3>
@@ -546,7 +542,7 @@ const ScheduleDetails = ({ queryKey }) => {
                       />
                     )}
                   </div>
-                  <Dialog>
+                  {/* <Dialog>
                     <DialogTrigger className="mr-5">
                       <Icon
                         className="h-10 w-10 text-accent"
@@ -566,7 +562,7 @@ const ScheduleDetails = ({ queryKey }) => {
                         <AttendeeEditLogs family_id={family.family_id} />
                       </div>
                     </DialogContent>
-                  </Dialog>
+                  </Dialog> */}
                 </div>
                 <Table>
                   <TableHeader className="bg-primary">
@@ -576,7 +572,7 @@ const ScheduleDetails = ({ queryKey }) => {
                       <TableHead>Contact Tel No.</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Action</TableHead>
-                      <TableHead className="rounded-r-lg">Edit Logs</TableHead>
+                      <TableHead className="rounded-r-lg"></TableHead>
                     </TableRow>
                   </TableHeader>
 
@@ -615,7 +611,7 @@ const ScheduleDetails = ({ queryKey }) => {
                             onOpenChange={setAttendeeEdit}
                           >
                             {!disableSchedule && (
-                              <DialogTrigger>
+                              <DialogTrigger asChild>
                                 <Button
                                   type="button"
                                   onClick={() => {
@@ -726,26 +722,7 @@ const ScheduleDetails = ({ queryKey }) => {
                           </Dialog>
                         </TableCell>
                         <TableCell>
-                          <Dialog>
-                            <DialogTrigger>
-                              <Icon
-                                className="h-5 w-5 text-accent"
-                                icon={"mingcute:calendar-time-add-fill"}
-                              ></Icon>
-                            </DialogTrigger>
-                            <DialogContent className="no-scrollbar max-h-[550px] max-w-[950px] overflow-y-scroll">
-                              <DialogHeader>
-                                <DialogTitle>Attendance Edit Logs</DialogTitle>
-                                <DialogDescription>
-                                  This table shows the edit details done to this
-                                  user.
-                                </DialogDescription>
-                              </DialogHeader>
-                              <div className="no-scrollbar overflow-y-scroll">
-                                <AttendeeEditLogs attendance_id={attendee.id} />
-                              </div>
-                            </DialogContent>
-                          </Dialog>
+                          <AttendeeEditLogs attendance_id={attendee.id} />
                         </TableCell>
                       </TableRow>
                     ))}
@@ -773,7 +750,7 @@ const ScheduleDetails = ({ queryKey }) => {
                       <TableHead>Name</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Action</TableHead>
-                      <TableHead className="rounded-r-lg">Edit Logs</TableHead>
+                      <TableHead className="rounded-r-lg"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -887,24 +864,7 @@ const ScheduleDetails = ({ queryKey }) => {
                           </Dialog>
                         </TableCell>
                         <TableCell>
-                          <Dialog>
-                            <DialogTrigger>
-                              <Icon
-                                className="h-5 w-5 text-accent"
-                                icon={"mingcute:calendar-time-add-fill"}
-                              ></Icon>
-                            </DialogTrigger>
-                            <DialogContent className="max-h-[550px] max-w-[950px]">
-                              <DialogHeader>
-                                <DialogTitle>Attendance Edit Logs</DialogTitle>
-                                <DialogDescription>
-                                  This table shows the edit details done to this
-                                  user.
-                                </DialogDescription>
-                              </DialogHeader>
-                              <AttendeeEditLogs attendance_id={attendee.id} />
-                            </DialogContent>
-                          </Dialog>
+                          <AttendeeEditLogs attendance_id={attendee.id} />
                         </TableCell>
                       </TableRow>
                     ))}
