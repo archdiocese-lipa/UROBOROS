@@ -19,3 +19,13 @@ export const addFamilySchema = z.object({
     })
   ),
 });
+
+
+export const parentSchema = z.object({
+  first_name: z.string().min(1, "First name is required"),
+  last_name: z.string().min(1, "Last name is required"),
+  contact_number: z.string().regex(/^[0-9]{11}$/, {
+    message: "Contact number must be exactly 11 digits.",
+  }),
+});
+export const childSchema = parentSchema.omit({ contact_number: true });

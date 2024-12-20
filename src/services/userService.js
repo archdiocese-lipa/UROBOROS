@@ -146,6 +146,33 @@ const updatePassword = async(password) => {
   }
 
 }
+const sendChangeEmailVerification = async(email) => {
+  const {data} = await supabase.from('users').select('id').eq('email', email).single()
+
+  if(data){
+    throw new Error('email already exist. Please use another email')
+  }
+  
+  const { error } = await supabase.auth.updateUser({
+    email
+  },{
+    emailRedirectTo: 'https://togatherinv1.vercel.app/profile'
+  })
+
+  if(error){
+    throw new Error('Error updating email', error.message)
+  } 
+
+}
+
+const updateEmail = async({user_id,email}) => {
+  console.log(user_id,email)
+   const {error:updateError} = await supabase.from('users').update([{email}]).eq('id', user_id)
+
+  if(updateError){
+    throw new Error('Error updating email', updateError.message)
+  }
+}
 
 
 
@@ -157,5 +184,7 @@ export {
   removeUser,
   updatePassword,
   activateUser,
-  forgotPassword
+  forgotPassword,
+  sendChangeEmailVerification,
+  updateEmail
 };

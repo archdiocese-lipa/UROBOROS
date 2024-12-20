@@ -543,9 +543,9 @@ const insertNewRecord = async (submittedData) => {
 
 const editAttendee = async ({
   update_id,
-  firstName,
-  lastName,
-  contact,
+  first_name,
+  last_name,
+  contact_number,
   attendeeId,
 }) => {
  
@@ -553,9 +553,9 @@ const editAttendee = async ({
   const { error } = await supabase
   .from("attendance")
   .update({
-    first_name: firstName,
-    last_name: lastName,
-    contact_number: contact ?? null,
+    first_name,
+    last_name,
+    contact_number: contact_number ?? null,
   })
   .eq("id", attendeeId);
 
@@ -569,10 +569,10 @@ const { error: addError } = await supabase
     {
       attendance_id: attendeeId,
       updatedby_id: update_id,
-      first_name: firstName,
-      last_name: lastName,
+      first_name,
+      last_name,
       updated_at: new Date(),
-      contact_number: contact ?? null,
+      contact_number: contact_number ?? null,
     },
   ]);
 

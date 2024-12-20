@@ -30,11 +30,11 @@ const Events = () => {
 
   const ids = ministries?.map((ministry) => ministry.id);
 
-  // Fetch events based on the first ministry's ID
+  // Fetch events based on the ministry's ID
   const { data: parishionerEvents, isLoading } = useQuery({
-    queryKey: ["events", ministries], // Access the first ministry's id if available
+    queryKey: ["events", ministries], 
     queryFn: async () => await getEventsCalendar(ids),
-    enabled: !!ministries, // Only fetch events if the first ministry id is available
+    enabled: !!ministries, 
   });
 
   // const { data, isLoading, fetchNextPage, hasNextPage } = useInfiniteQuery({

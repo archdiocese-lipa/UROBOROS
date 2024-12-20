@@ -3,7 +3,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import QRCode from "qrcode";
 import { Icon } from "@iconify/react";
-import * as z from "zod";
 import {
   Form,
   FormControl,
@@ -75,6 +74,7 @@ import autoTable from "jspdf-autotable";
 import AttendeeEditLogs from "./AttendeeEditLogs";
 import AddAttendee from "./AddAttendee";
 import Loading from "../Loading";
+import { childSchema, parentSchema } from "@/zodSchema/AddFamilySchema";
 // import { ROLES } from "@/constants/roles";
 
 const ScheduleDetails = ({ queryKey }) => {
@@ -241,7 +241,7 @@ const ScheduleDetails = ({ queryKey }) => {
           head: [["Parents/Guardians", "Contact", "Status"]],
           body: attendedParents?.map((parent) => [
             `${parent.first_name} ${parent.last_name}`,
-            parent.contact_number || "N/A",
+            parent.contact_number_number || "N/A",
             "Attended",
           ]),
           theme: "striped",
@@ -290,14 +290,6 @@ const ScheduleDetails = ({ queryKey }) => {
     }
   }, [event, userData, disableSchedule]);
 
-  const parentSchema = z.object({
-    firstName: z.string().min(1, "First name is required"),
-    lastName: z.string().min(1, "Last name is required"),
-    contact: z.string().regex(/^[0-9]{11}$/, {
-      message: "Contact number must be exactly 11 digits.",
-    }),
-  });
-  const childSchema = parentSchema.omit({ contact: true });
 
   const updateMutation = useMutation({
     mutationFn: async (data) => await editAttendee(data),
@@ -324,16 +316,16 @@ const ScheduleDetails = ({ queryKey }) => {
     resolver: zodResolver(parentSchema),
     defaultValues: {
       // id: "",
-      firstName: "",
-      lastName: "",
-      contact: "",
+      first_name: "",
+      last_name: "",
+      contact_number: "",
     },
   });
 
   const childrenForm = useForm({
     resolver: zodResolver(childSchema),
-    firstName: "",
-    lastName: "",
+    first_name: "",
+    last_name: "",
   });
 
   const onSubmit = (data, attendeeId) => {
@@ -591,15 +583,15 @@ const ScheduleDetails = ({ queryKey }) => {
                                     //   `${attendee.id}`
                                     // );
                                     form.setValue(
-                                      "firstName",
+                                      "first_name",
                                       `${attendee.first_name}`
                                     );
                                     form.setValue(
-                                      "lastName",
+                                      "last_name",
                                       `${attendee.last_name}`
                                     );
                                     form.setValue(
-                                      "contact",
+                                      "contact_number",
                                       `${attendee.contact_number.toString()}`
                                     );
                                     setIdEditting(attendee.id);
@@ -631,7 +623,7 @@ const ScheduleDetails = ({ queryKey }) => {
                                 >
                                   <FormField
                                     control={form.control}
-                                    name="firstName"
+                                    name="first_name"
                                     render={({ field }) => (
                                       <FormItem>
                                         <FormLabel>First Name</FormLabel>
@@ -649,7 +641,7 @@ const ScheduleDetails = ({ queryKey }) => {
                                   />
                                   <FormField
                                     control={form.control}
-                                    name="lastName"
+                                    name="last_name"
                                     render={({ field }) => (
                                       <FormItem>
                                         <FormLabel>Last Name</FormLabel>
@@ -667,7 +659,7 @@ const ScheduleDetails = ({ queryKey }) => {
                                   />
                                   <FormField
                                     control={form.control}
-                                    name="contact"
+                                    name="contact_number"
                                     render={({ field }) => (
                                       <FormItem>
                                         <FormLabel>Contact</FormLabel>
@@ -775,11 +767,11 @@ const ScheduleDetails = ({ queryKey }) => {
                                   type="button"
                                   onClick={() => {
                                     childrenForm.setValue(
-                                      "firstName",
+                                      "first_name",
                                       `${attendee.first_name}`
                                     );
                                     childrenForm.setValue(
-                                      "lastName",
+                                      "last_name",
                                       `${attendee.last_name}`
                                     );
                                     setIdEditting(attendee.id);
@@ -811,7 +803,7 @@ const ScheduleDetails = ({ queryKey }) => {
                                 >
                                   <FormField
                                     control={childrenForm.control}
-                                    name="firstName"
+                                    name="first_name"
                                     render={({ field }) => (
                                       <FormItem>
                                         <FormLabel>First Name</FormLabel>
@@ -828,7 +820,7 @@ const ScheduleDetails = ({ queryKey }) => {
                                   />
                                   <FormField
                                     control={childrenForm.control}
-                                    name="lastName"
+                                    name="last_name"
                                     render={({ field }) => (
                                       <FormItem>
                                         <FormLabel>Last Name</FormLabel>

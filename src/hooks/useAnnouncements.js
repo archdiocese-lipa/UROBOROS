@@ -27,7 +27,7 @@ const useAnnouncements = ({
 
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {
-      if (lastPage.nextPage) {
+    if (lastPage.nextPage) {
         return lastPage.currentPage + 1;
       }
     },

@@ -1,11 +1,8 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useUser } from "@/context/useUser";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { getInitial } from "@/lib/utils";
-import { useQuery } from "@tanstack/react-query";
-import { fetchUserById } from "@/services/authService";
-import { useToast } from "@/hooks/use-toast";
-import { useUpdateContact } from "@/hooks/useUpdateContact"; // Import the hook
+import { useProfileChange } from "@/hooks/useProfileChange";
 import {
   Dialog,
   DialogContent,
@@ -16,67 +13,70 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import Loading from "@/components/Loading";
+import { DialogDescription } from "@radix-ui/react-dialog";
 
 const Profile = () => {
   const { userData } = useUser();
-  const { toast } = useToast();
-  const mutation = useUpdateContact(); // Access the mutation hook
-
-  const { data } = useQuery({
-    queryKey: ["fetchUser", userData?.id],
-    queryFn: () => fetchUserById(userData?.id),
-    enabled: !!userData?.id,
-    onError: (error) => {
-      console.error("Error fetching user data:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load user profile. Please try again later.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [newContact, setNewContact] = useState("");
-  const [error, setError] = useState("");
-
+  const [isemailDialogOpen, setIsEmailDialogOpen] = useState(false);
   const initials = `${getInitial(data?.first_name)}${getInitial(data?.last_name)}`;
 
-  useEffect(() => {
-    if (data) {
-      setIsLoading(false);
-    }
-  }, [data]);
+  const contactSchema = z.object({
+    contact_number: z.string().regex(/^[0-9]{11}$/, {
+      message: "Contact number must be exactly 11 digits.",
+    }),
+  });
+  const emailSchema = z.object({
+    email: z.string().email(),
+  });
 
-  const validateContactNumber = (number) => {
-    const regex = /^\+?[1-9]\d{1,14}$/;
-    return regex.test(number);
+  const form = useForm({
+    resolver: zodResolver(contactSchema),
+    defaultValues: { contact_number: "" },
+  });
+
+  const emailForm = useForm({
+    resolver: zodResolver(emailSchema),
+    defaultValues: { email: "" },
+  });
+  const {
+    sendEmailLinkMutation,
+    updateContactMutation,
+    data,
+    isLoading,
+  } = useProfileChange({
+    user_id: userData?.id,
+    setIsDialogOpen,
+    setIsEmailDialogOpen,
+  });
+
+  const handleUpdateContact = (newContact) => {
+    updateContactMutation.mutate({
+      userId: userData?.id,
+      newContactNumber: newContact.contact_number,
+    });
+  };
+  const handleSendEmailVerification = (data) => {
+    localStorage.setItem("newEmail", data.email);
+    sendEmailLinkMutation.mutate({
+      email: data.email,
+    });
   };
 
-  const handleUpdateContact = () => {
-    if (!validateContactNumber(newContact)) {
-      setError("Please enter a valid contact number.");
-      return;
-    }
-    setError("");
-    mutation.mutate(
-      { userId: userData?.id, newContactNumber: newContact },
-      {
-        onSuccess: () => {
-          setIsDialogOpen(false);
-          setNewContact(""); // Clear the input field
-        },
-      }
-    );
-  };
-
-  if (isLoading) {
-    return (
-      <div className="bg-gray-50 flex h-screen items-center justify-center">
-        <p className="text-gray-700 text-lg font-medium">Loading profile...</p>
-      </div>
-    );
+  if (isLoading || !userData) {
+    return <Loading />;
   }
 
   return (
@@ -87,7 +87,7 @@ const Profile = () => {
           <Avatar className="h-16 w-16">
             <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
-          <h1 className="text-xl font-semibold">{`${data.first_name} ${data.last_name}`}</h1>
+          <h1 className="text-xl font-semibold">{`${data?.first_name} ${data?.last_name}`}</h1>
         </div>
 
         {/* Display Fields */}
@@ -96,9 +96,72 @@ const Profile = () => {
             <label className="text-gray-700 block text-sm font-medium">
               Email
             </label>
-            <Button>Edit</Button>
+
+            <Dialog
+              open={isemailDialogOpen}
+              onOpenChange={setIsEmailDialogOpen}
+            >
+              <DialogTrigger asChild>
+                <Button>Edit</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Edit Email</DialogTitle>
+                  <DialogDescription className="text-xs">
+                    When you click the send change email verification, it will
+                    send an email to your current and new email. You must click
+                    the link on both emails to change your email.
+                  </DialogDescription>
+                </DialogHeader>
+
+                <Form {...emailForm}>
+                  <form
+                    onSubmit={emailForm.handleSubmit(
+                      handleSendEmailVerification
+                    )}
+                  >
+                    <FormField
+                      control={emailForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email Address</FormLabel>
+                          <FormControl>
+                            <Input
+                              className="text-accent"
+                              placeholder="JhonDoe@example.com"
+                              type="text"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <DialogFooter className={"mt-4"}>
+                      {/* <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => setIsEmailDialogOpen(false)}
+                      >
+                        Cancel
+                      </Button> */}
+                      <Button
+                        className="w-full"
+                        type="submit"
+                        disabled={sendEmailLinkMutation.isPending}
+                      >
+                        {sendEmailLinkMutation.isPending
+                          ? "Sending Change Email Verification..."
+                          : "Send Change Email Verification"}
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
           </div>
-          <p className="text-gray-700">{data.email}</p>
+          <p className="text-gray-700">{data?.email}</p>
 
           <div className="flex items-center justify-between">
             <label className="text-gray-700 block text-sm font-medium">
@@ -113,32 +176,55 @@ const Profile = () => {
                   <DialogTitle>Edit Contact Number</DialogTitle>
                 </DialogHeader>
                 <div className="mt-4 space-y-4">
-                  <Input
-                    type="text"
-                    placeholder="Enter new contact number"
-                    value={newContact}
-                    onChange={(e) => setNewContact(e.target.value)}
-                  />
-                  {error && <p className="text-red-500">{error}</p>}
-                </div>
-                <DialogFooter>
-                  <Button
-                    variant="secondary"
-                    onClick={() => setIsDialogOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={handleUpdateContact}
-                    disabled={mutation.isLoading}
-                  >
-                    {mutation.isLoading ? "Updating..." : "Submit"}
-                  </Button>
-                </DialogFooter>
+                  <Form {...form}>
+                    <form
+                      onSubmit={form.handleSubmit((data) => {
+                        console.log(data);
+                        handleUpdateContact(data);
+                      })}
+                    >
+                      <FormField
+                        control={form.control}
+                        name="contact_number"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Contact Number</FormLabel>
+                            <FormControl>
+                              <Input
+                                className="text-accent"
+                                placeholder="Contact Number"
+                                type="text"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <DialogFooter className={"mt-4"}>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          onClick={() => setIsDialogOpen(false)}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          type="submit"
+                          disabled={updateContactMutation.isPending}
+                        >
+                          {updateContactMutation.isPending
+                            ? "Updating..."
+                            : "Update"}
+                        </Button>
+                      </DialogFooter>
+                    </form>
+                  </Form>
+                </div>{" "}
               </DialogContent>
             </Dialog>
           </div>
-          <p className="text-gray-700">{data.contact_number}</p>
+          <p className="text-gray-700">{data?.contact_number}</p>
         </div>
       </div>
     </div>
