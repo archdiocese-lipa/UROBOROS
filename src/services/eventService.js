@@ -136,6 +136,7 @@ export const updateEvent = async (eventData) => {
 export const getEvents = async ({
   page = 1,
   pageSize,
+  query,
   user,
   selectedYear,
   selectedMonth,
@@ -149,6 +150,9 @@ export const getEvents = async ({
       const selectedDate = `${selectedYear}-${formattedMonth}`; // Example: "2024-12"
 
       filters.date = selectedDate; // Assume `date` is a field in your events table
+    }
+    if(query){
+      filters.ilike = { event_name: query };
     }
 
     let nonAdminEventIds = [];
@@ -430,16 +434,8 @@ export const replaceVolunteer = async ({
   replaced,
   newreplacement_id,
 }) => {
-  // console.log(
-  //   oldVolunteerId,
-  //   eventId,
-  //   replacedby_id,
-  //   replaced,
-  //   newreplacement_id
-  // );
-  console.log("oldVolunteerId",oldVolunteerId)
-  console.log("newreplacement_id",newreplacement_id)
-  console.log("replaced",replaced)
+
+
   if (replaced) {
     const { error } = await supabase
       .from("event_volunteers")
@@ -466,5 +462,4 @@ export const replaceVolunteer = async ({
     throw new Error(error.message);
   }
 
-  console.log("replaced volunteer");
 };

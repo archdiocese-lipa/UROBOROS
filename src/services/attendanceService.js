@@ -434,9 +434,12 @@ const fetchAttendeesByTicketCode = async (registrationCode) => {
 
 const updateAttendeeStatus = async (attendeeID, state) => {
   try {
+    const update = { attended: state, time_attended: state === true ?  new Date().toISOString() : null };
+
+    console.log(new Date().toLocaleTimeString());
     const { data, error } = await supabase
       .from("attendance")
-      .update({ attended: state })
+      .update(update)
       .eq("id", attendeeID)
       .select()
       .single();
@@ -548,91 +551,94 @@ const editAttendee = async ({
   contact_number,
   attendeeId,
 }) => {
- 
-
   const { error } = await supabase
-  .from("attendance")
-  .update({
-    first_name,
-    last_name,
-    contact_number: contact_number ?? null,
-  })
-  .eq("id", attendeeId);
-
-if (error) {
-  throw new Error(error.message);
-}
-
-const { error: addError } = await supabase
-  .from("attendance_update_logs")
-  .insert([
-    {
-      attendance_id: attendeeId,
-      updatedby_id: update_id,
+    .from("attendance")
+    .update({
       first_name,
       last_name,
-      updated_at: new Date(),
       contact_number: contact_number ?? null,
-    },
-  ]);
+    })
+    .select("id")
+    .eq("id", attendeeId);
 
-if (addError) {
-  throw new Error("failed Adding to edit logs!", addError.message);
-}
+  if (error) {
+    throw new Error(error.message);
+  }
 
+  const { error: addError } = await supabase
+    .from("attendance_update_logs")
+    .insert([
+      {
+        attendance_id: attendeeId,
+        updatedby_id: update_id,
+        first_name,
+        last_name,
+        updated_at: new Date(),
+        contact_number: contact_number ?? null,
+      },
+    ]);
+
+  if (addError) {
+    throw new Error("failed Adding to edit logs!", addError.message);
+  }
 };
 
 const fetchAttendanceEditLogs = async ({ attendance_id, family_id }) => {
+  const query = supabase
+    .from("attendance_update_logs")
+    .select("*, users(first_name,last_name)")
+    .order("updated_at", { ascending: false });
 
-    const query = supabase
-      .from("attendance_update_logs")
-      .select("*, users(first_name,last_name)")
-      .order("updated_at", { ascending: false });
+  if (attendance_id) {
+    query.eq("attendance_id", attendance_id);
+  } else if (family_id) {
+    query.eq("family_id", family_id);
+  } else {
+    throw new Error("Either attendance_id or family_id must be provided.");
+  }
 
-    if (attendance_id) {
-      query.eq("attendance_id", attendance_id);
-    } else if (family_id) {
-      query.eq("family_id", family_id);
-    } else {
-      throw new Error("Either attendance_id or family_id must be provided.");
-    }
+  const { data, error } = await query;
 
-    const { data, error } = await query;
+  if (error) {
+    throw new Error("Failed fetching update logs.", error.message);
+  }
 
-    if (error) {
-      throw new Error("Failed fetching update logs.", error.message);
-    }
-
-    return data;
-
+  return data;
 };
 
-const addSingleAttendee = async ({ attendeeData, family_id, editedby_id, attendee_type,event_id }) => {
-
+const addSingleAttendee = async ({
+  attendeeData,
+  family_id,
+  editedby_id,
+  attendee_type,
+  event_id,
+}) => {
   // console.log("backend",attendeeData,family_id, editedby_id)
-  
-    const {  error } = await supabase
-      .from("attendance")
-      .insert([{...attendeeData,family_id,attendee_type,event_id}]);
 
-    if (error) {
-      throw new Error(error.message);
-    }
+  const { error } = await supabase
+    .from("attendance")
+    .insert([{ ...attendeeData, family_id, attendee_type, event_id }]);
 
-    const { error: addLogError } = await supabase.from("attendance_update_logs").insert([{
-      updatedby_id: editedby_id,
-      first_name: attendeeData.first_name,
-      last_name: attendeeData.last_name,
-      updated_at: new Date(),
-      family_id,
-      contact_number: attendeeData.contact_number ?? null,
-    }]);  
+  if (error) {
+    throw new Error(error.message);
+  }
 
-    if(addLogError){
-      throw new Error("failed Adding to edit logs!", addLogError.message);
-    }
+  const { error: addLogError } = await supabase
+    .from("attendance_update_logs")
+    .insert([
+      {
+        updatedby_id: editedby_id,
+        first_name: attendeeData.first_name,
+        last_name: attendeeData.last_name,
+        updated_at: new Date(),
+        family_id,
+        contact_number: attendeeData.contact_number ?? null,
+      },
+    ]);
 
- 
+  if (addLogError) {
+    throw new Error("failed Adding to edit logs!", addLogError.message);
+  }
 };
 export {
   editAttendee,
