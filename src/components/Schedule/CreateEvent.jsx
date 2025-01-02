@@ -33,14 +33,11 @@ import { DownIcon } from "@/assets/icons/icons";
 import { CalendarIcon } from "lucide-react";
 import TimePicker from "./TimePicker";
 import { Textarea } from "../ui/textarea";
-import AssignVolunteerComboBox from "./AssignVolunteerComboBox";
 
 import { useUser } from "@/context/useUser";
 import useCreateEvent from "@/hooks/useCreateEvent";
 import useQuickAccessEvents from "@/hooks/useQuickAccessEvents";
-import useUsersByRole from "@/hooks/useUsersByRole";
 import useGetAllMinistries from "@/hooks/useGetAllMinistries";
-import useMinistryMembers from "@/hooks/useMinistryMembers"; // Import the custom hook
 
 import { updateEvent } from "@/services/eventService";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -52,9 +49,6 @@ const CreateEvent = ({
   queryKey,
 }) => {
   const [isPopoverOpen, setPopoverOpen] = useState(false);
-  const [selectedMinistry, setSelectedMinistry] = useState(null);
-
-  const { members } = useMinistryMembers(selectedMinistry);
 
   const { userData } = useUser(); // Get userData from the context
 
@@ -65,7 +59,6 @@ const CreateEvent = ({
   const queryClient = useQueryClient();
   const { mutate: createEvent, _isLoading } = useCreateEvent();
   const { events } = useQuickAccessEvents();
-  const { data: volunteers } = useUsersByRole("volunteer");
 
   const editMutation = useMutation({
     mutationFn: async ({ eventId, updatedData }) =>
@@ -104,10 +97,10 @@ const CreateEvent = ({
         ? new Date(`${eventData?.event_date}T${eventData?.event_time}`)
         : "",
       eventDescription: eventData?.event_description || "",
-      assignVolunteer:
-        eventData?.event_volunteers.map(
-          (volunteer) => volunteer.volunteer_id
-        ) || [],
+      // assignVolunteer:
+      //   eventData?.event_volunteers.map(
+      //     (volunteer) => volunteer.volunteer_id
+      //   ) || [],
     },
   });
 
@@ -290,7 +283,6 @@ const CreateEvent = ({
                     <Select
                       onValueChange={(value) => {
                         field.onChange(value); // Update the form field value
-                        setSelectedMinistry(value); // Call setSelectedMinistry with the selected value
                       }}
                       value={field.value}
                     >
@@ -320,7 +312,7 @@ const CreateEvent = ({
             />
           )}
         </div>
-        <FormField
+        {/* <FormField
           control={control}
           name="assignVolunteer"
           render={({ field }) => (
@@ -349,7 +341,7 @@ const CreateEvent = ({
               <FormMessage />
             </FormItem>
           )}
-        />
+        /> */}
 
         {/* Event Date, Time */}
         <div className="flex items-center gap-x-2">

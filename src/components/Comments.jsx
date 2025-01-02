@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import CommentDetails from "./CommentComponents/CommentDetails";
 import PropTypes from "prop-types";
 import useInterObserver from "@/hooks/useInterObserver";
+import { memo } from "react";
 
 const Comments = ({ announcement_id }) => {
   const { userData } = useUser();
@@ -19,6 +20,8 @@ const Comments = ({ announcement_id }) => {
   } = useComment(announcement_id, null);
 
   const { ref } = useInterObserver(fetchNextPage);
+
+  console.log("comments")
 
   return (
     <div className="p-1">
@@ -56,7 +59,6 @@ const Comments = ({ announcement_id }) => {
           columnName="comment_id"
         />
       </div>
-      {/* <Separator className="my-3" /> */}
     </div>
   );
 };
@@ -66,4 +68,4 @@ Comments.propTypes = {
     .isRequired,
 };
 
-export default Comments;
+export default memo(Comments);

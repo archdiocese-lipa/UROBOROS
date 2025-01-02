@@ -4,6 +4,7 @@ import { cn, getInitial } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { fetchMinistryMembersFirstNamesAndCount } from "@/services/ministryService";
 import PropTypes from "prop-types";
+import { memo } from "react";
 
 const Filter = ({
   ministry,
@@ -16,9 +17,9 @@ const Filter = ({
   });
 
   if (isLoading) return null;
-  // if (isError) return <p>Error: {error.message}</p>;
 
-  // console.log("ministry id", ministry.id,"selected id", selectedMinistry)
+  console.log("i am running")
+
   return (
     <div
       className={cn(
@@ -92,6 +93,8 @@ const Filter = ({
     </div>
   );
 };
+
+
 Filter.propTypes = {
   ministry: PropTypes.shape({
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
@@ -102,4 +105,4 @@ Filter.propTypes = {
   setSelectedMinistry: PropTypes.func.isRequired,
 };
 
-export default Filter;
+export default memo(Filter);

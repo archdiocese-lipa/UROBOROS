@@ -421,7 +421,7 @@ const Schedule = () => {
                               </DialogTrigger>
                               <DialogContent>
                                 <DialogHeader>
-                                  <DialogTitle>Edit Eventss</DialogTitle>
+                                  <DialogTitle>Edit Events</DialogTitle>
                                   <DialogDescription>
                                     Schedule an upcoming event.
                                   </DialogDescription>
