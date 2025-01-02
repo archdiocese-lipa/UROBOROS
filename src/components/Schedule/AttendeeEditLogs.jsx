@@ -21,12 +21,12 @@ import PropTypes from "prop-types";
 import Loading from "../Loading";
 import { Icon } from "@iconify/react";
 
-const AttendeeEditLogs = ({ attendance_id, family_id }) => {
+const AttendeeEditLogs = ({ attendance_id }) => {
   // console.log(attendance_id)
   const { data, isLoading } = useQuery({ 
-    queryKey: ["update_logs", attendance_id, family_id],
-    queryFn: async () => fetchAttendanceEditLogs({ attendance_id, family_id }),
-    enabled: !!attendance_id || !!family_id,
+    queryKey: ["update_logs", attendance_id],
+    queryFn: async () => fetchAttendanceEditLogs({ attendance_id }),
+    enabled: !!attendance_id,
   });
 
   // if (isLoading) {
@@ -63,7 +63,7 @@ const AttendeeEditLogs = ({ attendance_id, family_id }) => {
                     <TableHead>Contact Tel No.</TableHead>
                     <TableHead>Updated At</TableHead>
                     <TableHead>
-                      {family_id ? "Added by" : "Updated By"}
+                      Updated By
                     </TableHead>
                   </TableRow>
                 </TableHeader>
@@ -96,7 +96,6 @@ const AttendeeEditLogs = ({ attendance_id, family_id }) => {
 
 AttendeeEditLogs.propTypes = {
   attendance_id: PropTypes.string,
-  family_id: PropTypes.string,
 };
 
 export default AttendeeEditLogs;

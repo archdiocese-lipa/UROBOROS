@@ -188,7 +188,6 @@ const CreateEvent = ({
 
   // console.log("form values",eventForm.getValues())
 
-  console.log("members",members)
 
   return (
     <Form {...eventForm}>

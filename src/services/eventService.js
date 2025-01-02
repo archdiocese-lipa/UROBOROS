@@ -151,7 +151,7 @@ export const getEvents = async ({
 
       filters.date = selectedDate; // Assume `date` is a field in your events table
     }
-    if(query){
+    if (query) {
       filters.ilike = { event_name: query };
     }
 
@@ -434,8 +434,6 @@ export const replaceVolunteer = async ({
   replaced,
   newreplacement_id,
 }) => {
-
-
   if (replaced) {
     const { error } = await supabase
       .from("event_volunteers")
@@ -461,5 +459,86 @@ export const replaceVolunteer = async ({
   if (error) {
     throw new Error(error.message);
   }
-
 };
+
+export const removeAssignedVolunteer = async (volunteerId) => {
+  if (!volunteerId) {
+    throw new Error("Volunteer ID is required");
+  }
+  const { data, error: getError } = await supabase
+    .from("event_volunteers")
+    .select("*")
+    .eq("volunteer_id", volunteerId);
+  if (getError) {
+    throw new Error(error.message);
+  }
+
+  if (!data) {
+    throw new Error("No data found");
+  }
+
+  const { error } = await supabase
+    .from("event_volunteers")
+    .delete()
+    .eq("volunteer_id", volunteerId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+};
+
+export const addAssignedVolunteer = async ({ eventId, assignVolunteer }) => {
+  try {
+
+    const getPromises = assignVolunteer.map(async (volunteer_id) => {
+      const { data, error } = await supabase
+        .from("event_volunteers")
+        .select("id")
+        .eq("volunteer_id", volunteer_id).eq("event_id",eventId)
+
+      if (error) {
+        throw new Error("Error checking existence of volunteers!");
+      }
+
+      if (data.length > 0) {
+        throw new Error("Volunteer Already Assigned!");
+      }
+
+      const { data: replaceIdData, error: replaceIdError } = await supabase
+        .from("event_volunteers")
+        .select("id")
+        .eq("replacedby_id", volunteer_id).eq("event_id",eventId)
+  
+
+      if (replaceIdError) {
+        throw new Error("Error checking existence of volunteers!");
+      }
+
+      if (replaceIdData.length > 0) {
+        throw new Error("Volunteer Already Exist!");
+      }
+    });
+
+    await Promise.all(getPromises);
+
+    const Promises = assignVolunteer.map(async (volunteer_id) => {
+      const { error } = await supabase.from("event_volunteers").insert([
+        {
+          event_id: eventId,
+          volunteer_id,
+          assigned_at: new Date().toISOString(),
+        },
+      ]);
+
+      if (error) {
+        throw new Error("Error assigning volunteer");
+      }
+    });
+
+    await Promise.all(Promises);
+  } catch (err) {
+    console.error('Error in adding volunteers:', err);
+    throw err;  // Ensure the error is propagated back to the mutation's onError handler
+  }
+};
+

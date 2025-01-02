@@ -91,16 +91,13 @@ const Schedule = () => {
   const debouncedSearch = useDebounce(query, 300);
 
   const onQuery = (e) => {
-    console.log("event value", e.target.value);
     setQuery(e.target.value);
   };
 
-  console.log("deboolunce", debouncedSearch === "");
 
   useEffect(() => {
     // Directly modify the existing urlPrms
     if (debouncedSearch === "") {
-      console.log("deleting query");
       urlPrms.delete("query");
     } else {
       urlPrms.set("query", debouncedSearch); 

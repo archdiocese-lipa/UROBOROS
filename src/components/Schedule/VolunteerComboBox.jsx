@@ -30,7 +30,6 @@ import {
 import { Icon } from "@iconify/react";
 
 const VolunteerComboBox = ({
-  currentVolunteer,
   disableSchedule,
   assignedVolunteers,
   oldVolunteerId,
@@ -45,31 +44,27 @@ const VolunteerComboBox = ({
   const queryClient = useQueryClient();
   const [volunteerDialogOpen, setVolunteerDialogOpen] = useState(false);
 
-  const previousVolunteer = assignedVolunteers
-    .filter((volunteer) => {
-      if (volunteer.replaced) {
-        return volunteer.replaced;
-      }
-    })
-    .map((volunteer) => volunteer.volunteer_id);
-
-  const replacementVolunteers = assignedVolunteers
-    .filter((volunteer) => {
-      if (volunteer.replaced) {
-        return volunteer.replaced;
-      }
-    })
-    .map((volunteer) => volunteer.replacedby_id);
-
-  const filteredVolunteer = volunteers?.filter(
-    (volunteer) =>
-      !assignedVolunteers.some(
-        (assignedVolunteer) => assignedVolunteer.volunteer_id === volunteer.id
-      ) || previousVolunteer.includes(volunteer.id) 
+  const previousVolunteerIds = new Set(
+    assignedVolunteers
+      .filter((volunteer) => volunteer.replaced)
+      .map((volunteer) => volunteer.volunteer_id)
   );
-  const filteredVolunteer2 = filteredVolunteer?.filter(
-    (volunteer) => !replacementVolunteers.includes(volunteer.id)
-  )
+
+  const replacementVolunteerIds = new Set(
+    assignedVolunteers
+      .filter((volunteer) => volunteer.replaced)
+      .map((volunteer) => volunteer.replacedby_id)
+  );
+
+  const filteredVolunteers = volunteers.filter(
+    (volunteer) =>
+      // Ensure the volunteer is either not assigned or is a previous volunteer
+      (!assignedVolunteers.some(
+        (assignedVolunteer) => assignedVolunteer.volunteer_id === volunteer.id
+      ) ||
+        previousVolunteerIds.has(volunteer.id)) &&
+      !replacementVolunteerIds.has(volunteer.id) // Exclude replacement volunteers
+  );
 
   const replaceVolunteerMutation = useMutation({
     mutationFn: async (data) => replaceVolunteer(data),
@@ -110,20 +105,21 @@ const VolunteerComboBox = ({
   };
   return (
     <Dialog open={volunteerDialogOpen} onOpenChange={setVolunteerDialogOpen}>
-      <DialogTrigger>
-        <Icon
-          className="h-5 w-5 text-accent hover:cursor-pointer"
-          disabled={disableSchedule}
-          icon={"eva:edit-2-fill"}
-        />
-      </DialogTrigger>
+      {!disableSchedule && (
+        <DialogTrigger>
+          <Icon
+            className="h-5 w-5 text-accent hover:cursor-pointer"
+            icon={"eva:edit-2-fill"}
+          />
+        </DialogTrigger>
+      )}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Edit Assigned Volunteer</DialogTitle>
           <DialogDescription>
-            Select a volunteer to replace{" "}
-            {`${currentVolunteer?.users?.first_name.toFirstUpperCase()} ${currentVolunteer?.users?.last_name.toFirstUpperCase()}`}
-            .
+            Select a volunteer to replacement{" "}
+            {/* {`${currentVolunteer?.users?.first_name.toFirstUpperCase()} ${currentVolunteer?.users?.last_name.toFirstUpperCase()}`} */}
+            
           </DialogDescription>
         </DialogHeader>
         <div>
@@ -136,7 +132,7 @@ const VolunteerComboBox = ({
                 className="w-full justify-between"
               >
                 {value
-                  ? `${filteredVolunteer2.find((volunteer) => volunteer.id === value)?.first_name} ${
+                  ? `${filteredVolunteers.find((volunteer) => volunteer.id === value)?.first_name} ${
                       volunteers.find((volunteer) => volunteer.id === value)
                         ?.last_name
                     }`
@@ -153,7 +149,7 @@ const VolunteerComboBox = ({
                 <CommandList>
                   <CommandEmpty>No volunteer found.</CommandEmpty>
                   <CommandGroup>
-                    {filteredVolunteer2?.map((volunteer) => (
+                    {filteredVolunteers?.map((volunteer) => (
                       <CommandItem
                         key={volunteer.id}
                         value={volunteer.id}

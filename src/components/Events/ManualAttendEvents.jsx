@@ -232,7 +232,7 @@ const ManualAttendEvents = ({ eventId, eventName }) => {
 };
 
 ManualAttendEvents.propTypes = {
-  eventId: PropTypes.string.isRequired,
+  eventId: PropTypes.string,
   eventName: PropTypes.string,
 };
 

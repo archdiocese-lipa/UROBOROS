@@ -68,7 +68,6 @@ const registerUser = async ({
 
 // Update user's contact number
 const updateContact = async (userId, newContactNumber) => {
-  console.log("data",userId, newContactNumber);
   try {
     const { data, error } = await supabase
       .from("users")

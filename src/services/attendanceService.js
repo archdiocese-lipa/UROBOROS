@@ -434,9 +434,11 @@ const fetchAttendeesByTicketCode = async (registrationCode) => {
 
 const updateAttendeeStatus = async (attendeeID, state) => {
   try {
-    const update = { attended: state, time_attended: state === true ?  new Date().toISOString() : null };
+    const update = {
+      attended: state,
+      time_attended: state === true ? new Date().toISOString() : null,
+    };
 
-    console.log(new Date().toLocaleTimeString());
     const { data, error } = await supabase
       .from("attendance")
       .update(update)
@@ -615,29 +617,35 @@ const addSingleAttendee = async ({
 }) => {
   // console.log("backend",attendeeData,family_id, editedby_id)
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("attendance")
-    .insert([{ ...attendeeData, family_id, attendee_type, event_id }]);
+    .insert([{ ...attendeeData, family_id, attendee_type, event_id }])
+    .select("id")
+    .single();
 
   if (error) {
     throw new Error(error.message);
   }
 
-  const { error: addLogError } = await supabase
-    .from("attendance_update_logs")
-    .insert([
-      {
-        updatedby_id: editedby_id,
-        first_name: attendeeData.first_name,
-        last_name: attendeeData.last_name,
-        updated_at: new Date(),
-        family_id,
-        contact_number: attendeeData.contact_number ?? null,
-      },
-    ]);
+  if (data) {
+    const { error: addLogError } = await supabase
+      .from("attendance_update_logs")
+      .insert([
+        {
+          // attendance_id: data.id,
+          updatedby_id: editedby_id,
+          first_name: attendeeData.first_name,
+          last_name: attendeeData.last_name,
+          updated_at: new Date(),
+          family_id,
+          contact_number: attendeeData.contact_number ?? null,
+        },
+      ]);
 
-  if (addLogError) {
-    throw new Error("failed Adding to edit logs!", addLogError.message);
+    if (addLogError) {
+      console.error(addLogError.message)
+      throw new Error("failed Adding to edit logs!", addLogError.message);
+    }
   }
 };
 export {
