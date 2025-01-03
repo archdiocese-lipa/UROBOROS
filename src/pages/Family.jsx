@@ -137,6 +137,7 @@ const Family = () => {
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
+                        {/* Show Edit Parent Form */}
                         {editParentForm === parent.id && (
                           <NewCoParent
                             parentId={parent.id}
@@ -147,6 +148,7 @@ const Family = () => {
                             onClose={handleCloseDialog}
                           />
                         )}
+                        {/* Show Delete Parent */}
                         {deleteParentForm === parent.id && (
                           <DeleteParent
                             parentId={parent.id}
