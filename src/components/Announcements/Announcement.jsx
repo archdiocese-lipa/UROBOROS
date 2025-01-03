@@ -105,9 +105,8 @@ const Announcement = ({
   if (!userData) {
     return null;
   }
-  // console.log("single announcement", announcement);
 
-  // console.log("ministryIDs", MinistryIds);
+
   return (
     <div>
       <div className="mb-3 flex justify-between">
@@ -145,14 +144,12 @@ const Announcement = ({
                 open={editDialogOpen}
                 onOpenChange={(open) => {
                   setEditDialogOpen(open);
-                  // open && editSetValue("classname", classdata.class_name);
-                  // !open && reset();
+          
                 }}
               >
                 <DialogTrigger className="w-full" asChild>
                   <Button
                     variant="ghost"
-                    // onClick={() => deleteClassMutation.mutate(classdata.id)}
                     className="w-full rounded-none p-3 hover:cursor-pointer"
                   >
                     Edit
@@ -163,7 +160,6 @@ const Announcement = ({
                     <DialogTitle className="text-2xl font-bold text-accent">
                       Edit Announcement
                     </DialogTitle>
-                    {/* <Separator /> */}
                   </DialogHeader>
                   <div>
                     <Form id="announcement-form" {...form}>
@@ -172,7 +168,6 @@ const Announcement = ({
                         className="space-y-2"
                         encType="multipart/form-data"
                       >
-                        {/* Title Field */}
                         <FormField
                           control={form.control}
                           name="title"
@@ -191,7 +186,6 @@ const Announcement = ({
                           )}
                         />
 
-                        {/* Content Field */}
                         <FormField
                           control={form.control}
                           name="content"
@@ -210,7 +204,6 @@ const Announcement = ({
                           )}
                         />
 
-                        {/* Image Field */}
                         <FormField
                           control={form.control}
                           name="file"
@@ -237,7 +230,6 @@ const Announcement = ({
                           <img src={imagePreview ?? announcement.file_url} alt="" />
                         </div>
 
-                        {/* Visibility Select */}
                         <FormField
                           control={form.control}
                           name="visibility"
@@ -248,7 +240,6 @@ const Announcement = ({
                                 <Select
                                   {...field}
                                   onValueChange={(value) => {
-                                    // Reset the ministry field to an empty array when the visibility is public
                                     if (value === "public") {
                                       form.setValue("ministry", []);
                                     }
@@ -275,7 +266,6 @@ const Announcement = ({
                             </FormItem>
                           )}
                         />
-                        {/* Ministry Select */}
                         <FormField
                           control={form.control}
                           name="ministry"
@@ -302,7 +292,6 @@ const Announcement = ({
                             </FormItem>
                           )}
                         />
-                        {/* Submit Button */}
                         <DialogFooter>
                           <div className="flex justify-end">
                             <Button
@@ -401,25 +390,18 @@ const Announcement = ({
         )}
       <div className="flex items-end justify-between">
         <div className="relative h-5">
-          {/* <img src={LikeIcon} alt={`up icon`} className="h-5 w-5" /> */}
-
-          {/* </div> */}
           <TriggerLikeIcon
             className={"absolute w-14 rounded-3xl bg-white p-1"}
             comment_id={announcement.id}
             user_id={userData?.id}
             columnName={"announcement_id"}
           />
-          {/* <div className="flex h-6 w-12 items-center justify-center gap-1 rounded-[18.5px] bg-primary px-3 py-3 text-accent hover:cursor-pointer">
-          <img src={EyeIcon} alt={`up icon`} className="h-5 w-5" />
-          <p className="text-sm font-semibold text-accent">1</p>*/}
         </div>
       </div>
       <Separator className="my-5" />
 
       <Comments
         announcement_id={announcement?.id}
-        // columnName={"entity_id"}
       />
     </div>
   );

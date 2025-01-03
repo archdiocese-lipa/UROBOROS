@@ -143,17 +143,17 @@ const SidebarProfile = ({ availableRoles, onSwitchRole }) => {
   return (
     <div className="ml-9 hidden h-10 w-56 items-center justify-between rounded-[20px] bg-white p-1 lg:flex">
       <div className="flex items-center gap-2">
-        <Link
+        {/* <Link
           to="/profile"
           className="flex items-center gap-2 hover:cursor-pointer"
-        >
-          <Avatar className="h-8 w-8">
-            <AvatarFallback>{initials}</AvatarFallback>
-          </Avatar>
-          <p className="w-32 overflow-hidden text-ellipsis text-nowrap text-[16px] font-medium capitalize">
-            {fullName}
-          </p>
-        </Link>
+        > */}
+        <Avatar className="h-8 w-8">
+          <AvatarFallback>{initials}</AvatarFallback>
+        </Avatar>
+        <p className="w-32 overflow-hidden text-ellipsis text-nowrap text-[16px] font-medium capitalize">
+          {fullName}
+        </p>
+        {/* </Link> */}
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger className="ml-2 flex h-7 w-11 items-center justify-center rounded-[18.5px] bg-accent px-2 text-white hover:cursor-pointer">
@@ -173,6 +173,12 @@ const SidebarProfile = ({ availableRoles, onSwitchRole }) => {
             Profile
           </DropdownMenuItem>
           <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
+          <Link
+            to="/profile"
+            className="flex items-center w-full gap-2 hover:cursor-pointer"
+          >
+            <DropdownMenuItem className="w-full">Profile</DropdownMenuItem>
+          </Link>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

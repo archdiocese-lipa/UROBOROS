@@ -41,9 +41,9 @@ const AssignVolunteerComboBox = ({
           role="combobox"
           aria-expanded={open}
           disabled={disabled}
-          className="w-full max-w-full justify-between overflow-hidden text-wrap bg-primary text-start hover:bg-primary"
+          className="w-full max-w-full justify-between h-full text-wrap bg-primary text-start hover:bg-primary"
         >
-          {value.length > 0
+          {value?.length > 0
             ? options
                 ?.filter((opt) => value.includes(opt.value))
                 .map((opt) => opt.label)
@@ -57,7 +57,7 @@ const AssignVolunteerComboBox = ({
         <Command>
           <CommandInput placeholder={`${placeholder}`} />
           <CommandEmpty>No options found.</CommandEmpty>
-          <CommandGroup>
+          <CommandGroup className=" h-36 overflow-y-scroll">
             {options?.map((opt) => (
               <CommandItem
                 key={opt.value}
@@ -67,7 +67,7 @@ const AssignVolunteerComboBox = ({
                 {opt.label}
                 <Check
                   className={`ml-auto h-4 w-4 ${
-                    value.includes(opt.value) ? "opacity-100" : "opacity-0"
+                    value?.includes(opt.value) ? "opacity-100" : "opacity-0"
                   }`}
                 />
               </CommandItem>

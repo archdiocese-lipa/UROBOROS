@@ -166,7 +166,6 @@ const sendChangeEmailVerification = async(email) => {
 }
 
 const updateEmail = async({user_id,email}) => {
-  console.log(user_id,email)
    const {error:updateError} = await supabase.from('users').update([{email}]).eq('id', user_id)
 
   if(updateError){

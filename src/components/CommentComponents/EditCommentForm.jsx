@@ -47,7 +47,7 @@ import PropTypes from "prop-types";
 }
 
 EditCommentForm.propTypes = {
-  comment_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+  comment_id: PropTypes.string
     .isRequired,
   setEditting: PropTypes.func.isRequired,
   InputDefaultValue: PropTypes.string,

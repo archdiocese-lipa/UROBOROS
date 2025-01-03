@@ -3,15 +3,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import QRCode from "qrcode";
 import { Icon } from "@iconify/react";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-
 import { Description, Title } from "@/components/Title";
 import {
   Card,
@@ -28,6 +19,7 @@ import {
   DialogTitle,
   DialogFooter,
   DialogTrigger,
+  DialogClose,
 } from "@/components/ui/dialog";
 import {
   Table,
@@ -50,6 +42,8 @@ import {
   getEventById,
   fetchEventVolunteers,
   deleteEvent,
+  removeAssignedVolunteer,
+  addAssignedVolunteer,
 } from "@/services/eventService";
 import {
   getEventAttendance,
@@ -64,7 +58,6 @@ import { Label } from "../ui/label";
 import { useToast } from "@/hooks/use-toast";
 import PropTypes from "prop-types";
 import AddRecord from "./AddRecord";
-import { Input } from "../ui/input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -77,6 +70,19 @@ import Loading from "../Loading";
 import { childSchema, parentSchema } from "@/zodSchema/AddFamilySchema";
 import useUsersByRole from "@/hooks/useUsersByRole";
 import VolunteerComboBox from "./VolunteerComboBox";
+import EditChildAttendeeDialog from "./EditChildAttendeeDialog";
+import EditParentAttendeeDialog from "./EditParentAttendeeDialog";
+import ParentAddLogs from "./AttendeeAddLogs";
+import AssignVolunteerComboBox from "./AssignVolunteerComboBox";
+import { z } from "zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "../ui/form";
 // import { ROLES } from "@/constants/roles";
 
 const ScheduleDetails = ({ queryKey }) => {
@@ -84,9 +90,6 @@ const ScheduleDetails = ({ queryKey }) => {
   const [disableSchedule, setDisableSchedule] = useState(false);
   const [urlPrms] = useSearchParams();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [attendeeEdit, setAttendeeEdit] = useState("");
-  const [childAttendeeEdit, setChildAttendeeEdit] = useState("");
-  const [idEditting, setIdEditting] = useState("");
   const eventId = urlPrms.get("event") || null;
   const printRef = useRef(null);
   const userData = useUser();
@@ -315,6 +318,68 @@ const ScheduleDetails = ({ queryKey }) => {
     },
   });
 
+  const removeAssignedVolunteerMutation = useMutation({
+    mutationFn: async (volunteerId) =>
+      await removeAssignedVolunteer(volunteerId),
+    onSuccess: () => {
+      toast({
+        title: "Volunteer removed successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error removing volunteer",
+        description: `${error.message}`,
+        variant: "destructive",
+      });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["event_volunteers", eventId],
+      });
+    },
+  });
+
+  const addVolunteerMutation = useMutation({
+    mutationFn: async (data) => addAssignedVolunteer(data),
+    onSuccess: () => {
+      toast({
+        title: "Volunteer added successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error adding volunteer",
+        description: `${error.message}`,
+        variant: "destructive",
+      });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["event_volunteers", eventId],
+      });
+    },
+  });
+
+  const volunteerSchema = z.object({
+    assignVolunteer: z
+      .array(z.string())
+      .min(1, "At least one volunteer must be assigned"),
+  });
+  const volunteerForm = useForm({
+    resolver: zodResolver(volunteerSchema),
+    defaultValues: {
+      assignVolunteer: [],
+    },
+  });
+
+  const addVolunteers = (data) => {
+    addVolunteerMutation.mutate({
+      assignVolunteer: data.assignVolunteer,
+      eventId,
+    });
+  };
+
   const form = useForm({
     resolver: zodResolver(parentSchema),
     defaultValues: {
@@ -332,14 +397,20 @@ const ScheduleDetails = ({ queryKey }) => {
   });
 
   const onSubmit = (data, attendeeId) => {
-    updateMutation.mutate({
-      update_id: userData.userData.id,
-      ...data,
-      attendeeId,
-    });
-    setIdEditting("");
-    setAttendeeEdit(false);
-    setChildAttendeeEdit(false);
+    updateMutation.mutate(
+      {
+        update_id: userData.userData.id,
+        ...data,
+        attendeeId,
+      },
+      {
+        onSettled: () => {
+          queryClient.invalidateQueries({
+            queryKey: ["update_logs", attendeeId],
+          });
+        },
+      }
+    );
   };
 
   if (isLoading || attendanceLoading) return <Loading />;
@@ -352,8 +423,9 @@ const ScheduleDetails = ({ queryKey }) => {
     );
 
   if (!event) {
-    return <p>hi</p>;
+    return <p>No Events.</p>;
   }
+
   return (
     <div className="flex h-full grow flex-col gap-2 overflow-y-hidden px-3 py-2 md:px-9 md:py-6">
       <div className="flex flex-wrap justify-between">
@@ -399,9 +471,6 @@ const ScheduleDetails = ({ queryKey }) => {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Dialog>
-                <DialogTrigger></DialogTrigger>
-              </Dialog>
             </div>
           </div>
 
@@ -454,9 +523,57 @@ const ScheduleDetails = ({ queryKey }) => {
         </div>
       </div>
       <div>
-        <Label className="text-primary-text">
-          List of Assigned Volunteer(s)
-        </Label>
+        <div className="flex items-center gap-2">
+          <Label className="text-primary-text">
+            List of Assigned Volunteer(s)
+          </Label>
+          <Dialog>
+            {!disableSchedule &&<DialogTrigger>
+              <button className="rounded-md bg-accent p-1 hover:cursor-pointer">
+                <Icon
+                  className="h-4 w-4 text-white"
+                  icon="mingcute:add-fill"
+                ></Icon>
+              </button>
+            </DialogTrigger>}
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Assign Volunteers</DialogTitle>
+                <DialogDescription>
+                  Select volunteers to assign on this event.
+                </DialogDescription>
+              </DialogHeader>
+              <Form {...volunteerForm}>
+                <form onSubmit={volunteerForm.handleSubmit(addVolunteers)}>
+                  <FormField
+                    control={volunteerForm.control}
+                    name="assignVolunteer"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Assign Volunteer</FormLabel>
+                        <FormControl>
+                          <AssignVolunteerComboBox
+                            options={volunteers?.map((volunteer) => ({
+                              value: volunteer.id,
+                              label: `${volunteer.first_name} ${volunteer.last_name}`,
+                            }))}
+                            value={field.value || null}
+                            onChange={field.onChange}
+                            placeholder="Select Volunteer"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="mt-2 flex justify-end">
+                    <Button type="submit">Add</Button>
+                  </div>
+                </form>
+              </Form>
+            </DialogContent>
+          </Dialog>
+        </div>
         {eventvolunteers?.map((volunteer, i) => (
           <div key={i} className="flex gap-2">
             <p
@@ -469,33 +586,62 @@ const ScheduleDetails = ({ queryKey }) => {
                 className={"text-primary-text"}
               >{`${volunteer?.volunteer_replacement?.first_name.toFirstUpperCase()} ${volunteer?.volunteer_replacement?.last_name.toFirstUpperCase()}`}</p>
             )}
-            <Dialog>
-              <DialogTrigger>
-                <Icon
-                  className="h-5 w-5 text-accent hover:cursor-pointer"
-                  disabled={disableSchedule}
-                  icon={"eva:edit-2-fill"}
-                />
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Edit Assigned Volunteer</DialogTitle>
-                  <DialogDescription>
-                    Select a volunteer to replace{" "}
-                    {`${volunteer.users.first_name.toFirstUpperCase()} ${volunteer.users.last_name.toFirstUpperCase()}`}
-                    .
-                  </DialogDescription>
-                </DialogHeader>
-                <VolunteerComboBox
-                  assignedVolunteers={eventvolunteers}
-                  oldVolunteerId={volunteer.volunteer_id}
-                  eventId={eventId}
-                  volunteers={volunteers}
-                  newreplacement_id={volunteer.replacedby_id}
-                  replaced={volunteer.replaced}
-                />
-              </DialogContent>
-            </Dialog>
+
+            <div className="flex items-center justify-center gap-2">
+              <VolunteerComboBox
+                // setVolunteerDialogOpen={setVolunteerDialogOpen}
+                currentVolunteer={volunteer}
+                assignedVolunteers={eventvolunteers}
+                oldVolunteerId={volunteer.volunteer_id}
+                eventId={eventId}
+                volunteers={volunteers}
+                newreplacement_id={volunteer.replacedby_id}
+                replaced={volunteer.replaced}
+                disableSchedule={disableSchedule}
+              />
+              <Dialog>
+                {!disableSchedule && (
+                  <DialogTrigger>
+                    <Icon
+                      className="h-5 w-5 text-red-500 hover:cursor-pointer"
+                      icon={"mingcute:delete-2-line"}
+                    ></Icon>
+                  </DialogTrigger>
+                )}
+
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>
+                      Remove{" "}
+                      {!volunteer?.volunteer_replacement
+                        ? `${volunteer.users.first_name.toFirstUpperCase()} ${volunteer.users.last_name.toFirstUpperCase()} `
+                        : `${volunteer?.volunteer_replacement?.first_name.toFirstUpperCase()} ${volunteer?.volunteer_replacement?.last_name.toFirstUpperCase()}?`}
+                    </DialogTitle>
+                    <DialogDescription>
+                      Are you sure you want to remove this volunteer?
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <DialogClose asChild>
+                      <Button>Cancel</Button>
+                    </DialogClose>
+                    <DialogClose asChild>
+                      <Button
+                        onClick={() =>
+                          removeAssignedVolunteerMutation.mutate(
+                            volunteer.volunteer_id
+                          )
+                        }
+                        className="rounded-lg"
+                        variant={"destructive"}
+                      >
+                        Delete
+                      </Button>
+                    </DialogClose>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
         ))}
       </div>
@@ -512,6 +658,7 @@ const ScheduleDetails = ({ queryKey }) => {
           </p>
         </div>
         {attendance.data?.map((family, i) => {
+          // console.log("family",family)
           const mainApplicant = family?.parents.filter(
             (parent) => parent?.main_applicant === true
           )[0];
@@ -558,9 +705,9 @@ const ScheduleDetails = ({ queryKey }) => {
                           This table shows added attendees to this family.
                         </DialogDescription>
                       </DialogHeader>
-                      <div className="no-scrollbar overflow-y-scroll">
-                        <AttendeeEditLogs family_id={family.family_id} />
-                      </div>
+                      <div className="no-scrollbar overflow-y-scroll"> */}
+                  <ParentAddLogs family_id={family.family_id} />
+                  {/* </div>
                     </DialogContent>
                   </Dialog> */}
                 </div>
@@ -570,7 +717,7 @@ const ScheduleDetails = ({ queryKey }) => {
                       <TableHead className="rounded-l-lg" />
                       <TableHead>Name</TableHead>
                       <TableHead>Contact Tel No.</TableHead>
-                      <TableHead>Status</TableHead>
+                      <TableHead>Time In</TableHead>
                       <TableHead>Action</TableHead>
                       <TableHead className="rounded-r-lg"></TableHead>
                     </TableRow>
@@ -603,123 +750,23 @@ const ScheduleDetails = ({ queryKey }) => {
                         </TableCell>
 
                         <TableCell>
-                          {attendee.attended ? "Attended" : "Pending"}
+                          {attendee.time_attended
+                            ? new Date(
+                                attendee.time_attended
+                              ).toLocaleTimeString("en-GB", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                hour12: true,
+                              })
+                            : "--/--"}
                         </TableCell>
                         <TableCell className="flex gap-2">
-                          <Dialog
-                            open={attendeeEdit}
-                            onOpenChange={setAttendeeEdit}
-                          >
-                            {!disableSchedule && (
-                              <DialogTrigger asChild>
-                                <Button
-                                  type="button"
-                                  onClick={() => {
-                                    // form.setValue(
-                                    //   "id",
-                                    //   `${attendee.id}`
-                                    // );
-                                    form.setValue(
-                                      "first_name",
-                                      `${attendee.first_name}`
-                                    );
-                                    form.setValue(
-                                      "last_name",
-                                      `${attendee.last_name}`
-                                    );
-                                    form.setValue(
-                                      "contact_number",
-                                      `${attendee.contact_number.toString()}`
-                                    );
-                                    setIdEditting(attendee.id);
-                                    setAttendeeEdit(true);
-                                  }}
-                                  variant="ghost"
-                                  disabled={disableSchedule}
-                                >
-                                  <Icon
-                                    className="h-5 w-5 text-accent"
-                                    disabled={disableSchedule}
-                                    icon={"eva:edit-2-fill"}
-                                  />
-                                </Button>
-                              </DialogTrigger>
-                            )}
-                            <DialogContent>
-                              <DialogHeader>
-                                <DialogTitle>Edit Parent Attendee</DialogTitle>
-                                <DialogDescription>
-                                  Edit attendee information
-                                </DialogDescription>
-                              </DialogHeader>
-                              <Form {...form}>
-                                <form
-                                  onSubmit={form.handleSubmit((data) =>
-                                    onSubmit(data, idEditting)
-                                  )}
-                                >
-                                  <FormField
-                                    control={form.control}
-                                    name="first_name"
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormLabel>First Name</FormLabel>
-                                        <FormControl>
-                                          <Input
-                                            className="text-accent"
-                                            placeholder="First name"
-                                            type="text"
-                                            {...field}
-                                          />
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                  <FormField
-                                    control={form.control}
-                                    name="last_name"
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormLabel>Last Name</FormLabel>
-                                        <FormControl>
-                                          <Input
-                                            className="text-accent"
-                                            placeholder="Last name"
-                                            type="text"
-                                            {...field}
-                                          />
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                  <FormField
-                                    control={form.control}
-                                    name="contact_number"
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormLabel>Contact</FormLabel>
-
-                                        <FormControl>
-                                          <Input
-                                            className="text-accent"
-                                            placeholder="Contact"
-                                            type="text"
-                                            {...field}
-                                          />
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                  <div className="mt-2 flex justify-end">
-                                    <Button>Submit</Button>
-                                  </div>
-                                </form>
-                              </Form>
-                            </DialogContent>
-                          </Dialog>
+                          <EditParentAttendeeDialog
+                            attendee={attendee}
+                            form={form}
+                            onSubmit={onSubmit}
+                            disableSchedule={disableSchedule}
+                          />
                         </TableCell>
                         <TableCell>
                           <AttendeeEditLogs attendance_id={attendee.id} />
@@ -748,7 +795,7 @@ const ScheduleDetails = ({ queryKey }) => {
                     <TableRow>
                       <TableHead className="rounded-l-lg" />
                       <TableHead>Name</TableHead>
-                      <TableHead>Status</TableHead>
+                      <TableHead>Time In</TableHead>
                       <TableHead>Action</TableHead>
                       <TableHead className="rounded-r-lg"></TableHead>
                     </TableRow>
@@ -774,94 +821,25 @@ const ScheduleDetails = ({ queryKey }) => {
                           <p>{`${attendee.first_name} ${attendee.last_name}`}</p>
                         </TableCell>
                         <TableCell>
-                          {attendee.attended ? "Attended" : "Pending"}
+                          {attendee.time_attended
+                            ? new Date(
+                                attendee.time_attended
+                              ).toLocaleTimeString("en-GB", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                hour12: true,
+                              })
+                            : "--/--"}
                         </TableCell>
                         <TableCell className="flex gap-2">
-                          <Dialog
-                            open={childAttendeeEdit}
-                            onOpenChange={setChildAttendeeEdit}
-                          >
-                            {!disableSchedule && (
-                              <DialogTrigger>
-                                <Button
-                                  type="button"
-                                  onClick={() => {
-                                    childrenForm.setValue(
-                                      "first_name",
-                                      `${attendee.first_name}`
-                                    );
-                                    childrenForm.setValue(
-                                      "last_name",
-                                      `${attendee.last_name}`
-                                    );
-                                    setIdEditting(attendee.id);
-                                    setChildAttendeeEdit(true);
-                                  }}
-                                  variant="ghost"
-                                  disabled={disableSchedule}
-                                >
-                                  <Icon
-                                    className="h-5 w-5 text-accent"
-                                    disabled={disableSchedule}
-                                    icon={"eva:edit-2-fill"}
-                                  />
-                                </Button>
-                              </DialogTrigger>
-                            )}
-                            <DialogContent>
-                              <DialogHeader>
-                                <DialogTitle>Edit Child Attendee</DialogTitle>
-                                <DialogDescription>
-                                  Edit child attendee details
-                                </DialogDescription>
-                              </DialogHeader>
-                              <Form {...childrenForm}>
-                                <form
-                                  onSubmit={childrenForm.handleSubmit((data) =>
-                                    onSubmit(data, idEditting)
-                                  )}
-                                >
-                                  <FormField
-                                    control={childrenForm.control}
-                                    name="first_name"
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormLabel>First Name</FormLabel>
-                                        <FormControl>
-                                          <Input
-                                            placeholder="First name"
-                                            type="text"
-                                            {...field}
-                                          />
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                  <FormField
-                                    control={childrenForm.control}
-                                    name="last_name"
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormLabel>Last Name</FormLabel>
-                                        <FormControl>
-                                          <Input
-                                            placeholder="Last name"
-                                            type="text"
-                                            {...field}
-                                          />
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                  <div className="mt-2 flex justify-end">
-                                    <Button type="submit">Submit</Button>
-                                  </div>
-                                </form>
-                              </Form>
-                            </DialogContent>
-                          </Dialog>
+                          {/* MARK: put dialog */}
+                          <EditChildAttendeeDialog
+                            // setIdEditting={setIdEditting}
+                            attendee={attendee}
+                            disableSchedule={disableSchedule}
+                            childrenForm={childrenForm}
+                            onSubmit={onSubmit}
+                          />
                         </TableCell>
                         <TableCell>
                           <AttendeeEditLogs attendance_id={attendee.id} />

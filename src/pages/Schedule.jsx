@@ -1,13 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { useForm } from "react-hook-form";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 Sheet;
 
 import { Title, Description } from "@/components/Title";
-import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import CreateEvent from "@/components/Schedule/CreateEvent";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -38,6 +34,7 @@ import MeetingDetails from "@/components/Schedule/MeetingDetails";
 import useInterObserver from "@/hooks/useInterObserver";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import VolunteerDialogCalendar from "@/components/Schedule/VolunteerDialogCalendar";
+import { useDebounce } from "@/hooks/useDebounce";
 
 const Schedule = () => {
   const [filter, setFilter] = useState("events");
@@ -50,16 +47,7 @@ const Schedule = () => {
   const [urlPrms, setUrlPrms] = useSearchParams();
   const { userData } = useUser();
 
-  const form = useForm({
-    resolver: zodResolver(
-      z.object({
-        query: z.string(),
-      })
-    ),
-    defaultValues: {
-      query: "",
-    },
-  });
+
 
   const { data, isLoading, hasNextPage, fetchNextPage } = useInfiniteQuery({
     queryKey: [
@@ -95,33 +83,41 @@ const Schedule = () => {
     initialPageParam: 1,
     getNextPageParam: (lastPage) =>
       lastPage?.nextPage ? lastPage.currentPage + 1 : undefined,
-
   });
 
   const { ref } = useInterObserver(fetchNextPage);
 
-  const onQuery = (data) => {
-    const newUrlPrms = new URLSearchParams(urlPrms);
-    if (!data?.query) {
-      newUrlPrms.delete("query");
+  const [query, setQuery] = useState("");
+  const debouncedSearch = useDebounce(query, 300);
+
+  const onQuery = (e) => {
+    setQuery(e.target.value);
+  };
+
+
+  useEffect(() => {
+    // Directly modify the existing urlPrms
+    if (debouncedSearch === "") {
+      urlPrms.delete("query");
     } else {
-      newUrlPrms.set("query", data.query);
+      urlPrms.set("query", debouncedSearch); 
     }
-    setUrlPrms(newUrlPrms);
-  };
-
+  
+    // Update the URL search params
+    setUrlPrms(urlPrms);
+  
+  }, [debouncedSearch, urlPrms]);
+  
   const onEventClick = (eventId) => {
-    const newUrlPrms = new URLSearchParams(urlPrms);
-    newUrlPrms.set("event", eventId);
-    newUrlPrms.delete("meeting");
-    setUrlPrms(newUrlPrms);
+    urlPrms.set("event", eventId);
+    urlPrms.delete("meeting");
+    setUrlPrms(urlPrms); 
   };
-
+  
   const onMeetingClick = (meetingId) => {
-    const newUrlPrms = new URLSearchParams(urlPrms);
-    newUrlPrms.set("meeting", meetingId);
-    newUrlPrms.delete("event");
-    setUrlPrms(newUrlPrms);
+    urlPrms.set("meeting", meetingId);
+    urlPrms.delete("event");
+    setUrlPrms(urlPrms); 
   };
 
   const onFilterChange = (value) => {
@@ -175,28 +171,22 @@ const Schedule = () => {
               <CreateMeeting />
             </div>
           )}
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onQuery)}>
-              <FormField
-                control={form.control}
-                name="query"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <div className="relative">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 transform text-2xl text-accent" />
-                        <Input
-                          className="border-none pl-12"
-                          placeholder="Search schedules"
-                          {...field}
-                        />
-                      </div>
-                    </FormControl>
+    
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 transform text-2xl text-accent" />
+            <Input
+              onChange={onQuery}
+              className="border-none pl-12"
+              placeholder="Search schedules"
+              // {...field}
+            />
+          </div>
+          {/* </FormControl>
                   </FormItem>
                 )}
               />
             </form>
-          </Form>
+          </Form> */}
           <div>
             <p className="mb-3 font-montserrat font-semibold text-accent">
               Filters
@@ -431,7 +421,7 @@ const Schedule = () => {
                               </DialogTrigger>
                               <DialogContent>
                                 <DialogHeader>
-                                  <DialogTitle>Edit Eventss</DialogTitle>
+                                  <DialogTitle>Edit Events</DialogTitle>
                                   <DialogDescription>
                                     Schedule an upcoming event.
                                   </DialogDescription>

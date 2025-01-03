@@ -1,9 +1,10 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import PersonIcon from "@/assets/icons/person-icon.svg";
+import {  PersonIcon } from "@/assets/icons/icons";
 import { cn, getInitial } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { fetchMinistryMembersFirstNamesAndCount } from "@/services/ministryService";
 import PropTypes from "prop-types";
+import { memo } from "react";
 
 const Filter = ({
   ministry,
@@ -16,9 +17,9 @@ const Filter = ({
   });
 
   if (isLoading) return null;
-  // if (isError) return <p>Error: {error.message}</p>;
 
-  // console.log("ministry id", ministry.id,"selected id", selectedMinistry)
+  console.log("i am running")
+
   return (
     <div
       className={cn(
@@ -49,7 +50,7 @@ const Filter = ({
             <p className="text-sm font-semibold text-accent">
               {ministryData.count}
             </p>
-            <img src={PersonIcon} alt={`up icon`} className="h-4 w-4" />
+            <PersonIcon className="h-4 w-4 text-accent" />
           </div>
         </div>
         <p
@@ -64,27 +65,8 @@ const Filter = ({
         </p>
         <div className="relative hidden h-8 w-full flex-row-reverse justify-end lg:flex">
           {ministryData.firstNames.map((name, i) => (
-            // <div
-            //   key={i}
-            //   style={{
-            //     left: `${i * 20}px`,
-            //     zIndex: 10 - i,
-            //   }}
-            //   className={cn(`absolute rounded-full bg-white p-[3px]`, {
-            //     "bg-accent": ministry.id === selectedMinistry,
-            //   })}
-            // >
-            // <Avatar
-            //   className={cn(" -mr-2 h-6 w-6 border-2 border-white", {
-            //     "border-accent": ministry.id === selectedMinistry,
-            //   })}
-            // >
-            //   <AvatarImage src="" />
-            //   <AvatarFallback className="bg-primary text-xs">
-            //     {getInitial(name)}
-            //   </AvatarFallback>
-            // </Avatar>
-            // </div>
+
+     
             <div
               key={i}
               style={{
@@ -111,6 +93,8 @@ const Filter = ({
     </div>
   );
 };
+
+
 Filter.propTypes = {
   ministry: PropTypes.shape({
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
@@ -121,4 +105,4 @@ Filter.propTypes = {
   setSelectedMinistry: PropTypes.func.isRequired,
 };
 
-export default Filter;
+export default memo(Filter);

@@ -48,6 +48,9 @@ const AddAttendee = ({
       queryClient.invalidateQueries({
         queryKey: ["attendance", event_id],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["family_add_logs", family_id],
+      });
     },
   });
 
@@ -76,9 +79,14 @@ const AddAttendee = ({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="p-3" size="sm">
-          <Icon className="h-5 w-5" icon="mingcute:add-fill"></Icon>
-        </Button>
+        {/* <Button className="" size="sm"> */}
+        <button className="hover:cursor-pointer bg-accent p-1 rounded-md">
+          <Icon
+            className="h-4 w-4 text-white"
+            icon="mingcute:add-fill"
+          ></Icon>
+        </button>
+        {/* </Button> */}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -135,7 +143,7 @@ const AddAttendee = ({
               ></FormField>
             )}
             <div className="mt-2 flex justify-end">
-              <Button type="submit">Add Parent</Button>
+              <Button type="submit">Add</Button>
             </div>
           </form>
         </Form>
