@@ -29,7 +29,7 @@ export const createEventSchema = z.object({
       message: "Time is required.",
     }),
   eventDescription: z.string().optional().default(""),
-  // assignVolunteer: z
-  //   .array(z.string()) 
-  //   .min(1, { message: "At least one volunteer must be assigned." }),
+  assignVolunteer: z
+    .array(z.string()) 
+    .min(1, { message: "At least one volunteer must be assigned." }),
 });

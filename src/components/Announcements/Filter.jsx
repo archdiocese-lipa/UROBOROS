@@ -18,7 +18,6 @@ const Filter = ({
 
   if (isLoading) return null;
 
-  console.log("i am running")
 
   return (
     <div

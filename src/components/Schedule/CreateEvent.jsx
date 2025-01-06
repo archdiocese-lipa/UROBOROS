@@ -38,9 +38,12 @@ import { useUser } from "@/context/useUser";
 import useCreateEvent from "@/hooks/useCreateEvent";
 import useQuickAccessEvents from "@/hooks/useQuickAccessEvents";
 import useGetAllMinistries from "@/hooks/useGetAllMinistries";
+import useUsersByRole from "@/hooks/useUsersByRole";
+import useMinistryMembers from "@/hooks/useMinistryMembers"; // Import the custom hook
 
 import { updateEvent } from "@/services/eventService";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import AssignVolunteerComboBox from "./AssignVolunteerComboBox";
 
 const CreateEvent = ({
   id = "create-event",
@@ -49,6 +52,11 @@ const CreateEvent = ({
   queryKey,
 }) => {
   const [isPopoverOpen, setPopoverOpen] = useState(false);
+
+  const [selectedMinistry, setSelectedMinistry] = useState(null);
+
+  const { members } = useMinistryMembers(selectedMinistry);
+
 
   const { userData } = useUser(); // Get userData from the context
 
@@ -59,6 +67,8 @@ const CreateEvent = ({
   const queryClient = useQueryClient();
   const { mutate: createEvent, _isLoading } = useCreateEvent();
   const { events } = useQuickAccessEvents();
+  const { data: volunteers } = useUsersByRole("volunteer");
+
 
   const editMutation = useMutation({
     mutationFn: async ({ eventId, updatedData }) =>
@@ -83,8 +93,10 @@ const CreateEvent = ({
     },
   });
 
+  const updateEventSchema = createEventSchema.omit({ assignVolunteer: true });
+
   const eventForm = useForm({
-    resolver: zodResolver(createEventSchema),
+    resolver: zodResolver(eventData ? updateEventSchema : createEventSchema),
     defaultValues: {
       eventName: eventData?.event_name || "",
       eventCategory: eventData?.event_category || "",
@@ -97,12 +109,12 @@ const CreateEvent = ({
         ? new Date(`${eventData?.event_date}T${eventData?.event_time}`)
         : "",
       eventDescription: eventData?.event_description || "",
-      // assignVolunteer:
-      //   eventData?.event_volunteers.map(
-      //     (volunteer) => volunteer.volunteer_id
-      //   ) || [],
+      assignVolunteer:
+        eventData?.event_volunteers.map(
+          (volunteer) => volunteer.volunteer_id
+        ) || [],
     },
-  });
+                                                                                                                                                                                                                                            });
 
   const { setValue, watch, handleSubmit, control, resetField } = eventForm;
   const watchVisibility = watch("eventVisibility");
@@ -283,6 +295,8 @@ const CreateEvent = ({
                     <Select
                       onValueChange={(value) => {
                         field.onChange(value); // Update the form field value
+                        setSelectedMinistry(value); // Call setSelectedMinistry with the selected value
+
                       }}
                       value={field.value}
                     >
@@ -312,12 +326,12 @@ const CreateEvent = ({
             />
           )}
         </div>
-        {/* <FormField
+        { !eventData && <FormField
           control={control}
           name="assignVolunteer"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Assign Volunteer</FormLabel>
+              <FormLabel>Assigns Volunteer</FormLabel>
               <FormControl>
                 <AssignVolunteerComboBox
                   options={
@@ -341,7 +355,7 @@ const CreateEvent = ({
               <FormMessage />
             </FormItem>
           )}
-        /> */}
+        />}
 
         {/* Event Date, Time */}
         <div className="flex items-center gap-x-2">
