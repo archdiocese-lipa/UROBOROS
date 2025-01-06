@@ -315,7 +315,6 @@ const Announcements = () => {
                   className="mb-3 w-full rounded-lg border border-primary-outline bg-white px-8 pb-6 pt-5"
                 >
                   <Announcement
-                    // form={editform}
                     ministries={ministries}
                     fetchNextPage={fetchNextPage}
                     announcement={announcement}

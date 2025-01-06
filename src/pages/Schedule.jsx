@@ -35,6 +35,7 @@ import useInterObserver from "@/hooks/useInterObserver";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import VolunteerDialogCalendar from "@/components/Schedule/VolunteerDialogCalendar";
 import { useDebounce } from "@/hooks/useDebounce";
+import ScheduleCards from "@/components/Schedule/ScheduleCards";
 
 const Schedule = () => {
   const [filter, setFilter] = useState("events");
@@ -46,8 +47,6 @@ const Schedule = () => {
   const [editDialogOpenIndex, setEditDialogOpenIndex] = useState(null);
   const [urlPrms, setUrlPrms] = useSearchParams();
   const { userData } = useUser();
-
-
 
   const { data, isLoading, hasNextPage, fetchNextPage } = useInfiniteQuery({
     queryKey: [
@@ -94,30 +93,28 @@ const Schedule = () => {
     setQuery(e.target.value);
   };
 
-
   useEffect(() => {
     // Directly modify the existing urlPrms
     if (debouncedSearch === "") {
       urlPrms.delete("query");
     } else {
-      urlPrms.set("query", debouncedSearch); 
+      urlPrms.set("query", debouncedSearch);
     }
-  
+
     // Update the URL search params
     setUrlPrms(urlPrms);
-  
   }, [debouncedSearch, urlPrms]);
-  
+
   const onEventClick = (eventId) => {
     urlPrms.set("event", eventId);
     urlPrms.delete("meeting");
-    setUrlPrms(urlPrms); 
+    setUrlPrms(urlPrms);
   };
-  
+
   const onMeetingClick = (meetingId) => {
     urlPrms.set("meeting", meetingId);
     urlPrms.delete("event");
-    setUrlPrms(urlPrms); 
+    setUrlPrms(urlPrms);
   };
 
   const onFilterChange = (value) => {
@@ -171,7 +168,7 @@ const Schedule = () => {
               <CreateMeeting />
             </div>
           )}
-    
+
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 transform text-2xl text-accent" />
             <Input
@@ -214,7 +211,7 @@ const Schedule = () => {
               <select
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(Number(e.target.value))}
-                className="border-gray-300 ml-1 max-h-48 overflow-y-auto rounded-md border px-6 py-2 font-montserrat text-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                className="border-gray-300 max-h-48 overflow-y-auto rounded-md border font-montserrat text-lg shadow-sm"
               >
                 {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
                   <option key={month} value={month}>
@@ -229,7 +226,7 @@ const Schedule = () => {
               <select
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(Number(e.target.value))}
-                className="border-gray-300 max-h-48 overflow-y-auto rounded-md border px-6 py-2 font-montserrat text-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                className="border-gray-300 max-h-48 overflow-y-auto rounded-md border py-2 font-montserrat text-lg shadow-sm "
               >
                 {[...Array(5).keys()].map((offset) => {
                   const year = new Date().getFullYear() - 2 + offset;
@@ -254,208 +251,19 @@ const Schedule = () => {
                 data?.pages?.flatMap((page, i) =>
                   filter === "events"
                     ? page?.items?.map((event, j) => (
-                        <div key={`${i}-${j}`} className="relative">
-                          <div
-                            className={cn(
-                              "hidden cursor-pointer items-start justify-between gap-3 rounded-[10px] bg-primary/50 px-5 py-4 xl:flex",
-                              event.id === urlPrms.get("event") &&
-                                "border border-primary-outline"
-                            )}
-                            onClick={() => onEventClick(event.id)}
-                          >
-                            <div className="flex gap-3">
-                              <EventIcon className="text-2xl text-accent" />
-                              <div>
-                                <p className="mb-[6px] text-base font-bold leading-none text-accent">
-                                  {event.event_name}
-                                </p>
-                                <p className="text-sm text-primary-text">
-                                  {event.description}
-                                </p>
-                                <p className="text-sm leading-tight text-primary-text">
-                                  {event.event_category} -{" "}
-                                  {event.event_visibility}
-                                </p>
-                                <p className="text-sm leading-none text-primary-text">
-                                  <span className="font-semibold">Date: </span>
-                                  {new Date(
-                                    `${event.event_date}T${event.event_time}`
-                                  ).toLocaleDateString("en-GB", {
-                                    day: "2-digit",
-                                    month: "short",
-                                    year: "numeric",
-                                  })}
-                                  ,
-                                  {new Date(
-                                    `${event.event_date}T${event.event_time}`
-                                  ).toLocaleTimeString()}
-                                </p>
-                              </div>
-                            </div>
-                            {userData?.role === ROLES[0] && (
-                              <Dialog
-                                open={editDialogOpenIndex === `${i}-${j}`}
-                                onOpenChange={(isOpen) =>
-                                  setEditDialogOpenIndex(
-                                    isOpen ? `${i}-${j}` : null
-                                  )
-                                }
-                              >
-                                <DialogTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    className="-mt-3 p-0 font-semibold text-accent hover:underline"
-                                  >
-                                    Edit
-                                  </Button>
-                                </DialogTrigger>
-                                <DialogContent>
-                                  <DialogHeader>
-                                    <DialogTitle>Edit Events</DialogTitle>
-                                    <DialogDescription>
-                                      Schedule an upcoming events.
-                                    </DialogDescription>
-                                  </DialogHeader>
-                                  <CreateEvent
-                                    id="update-event"
-                                    eventData={{ ...event }}
-                                    setDialogOpen={(isOpen) => {
-                                      setEditDialogOpenIndex(
-                                        isOpen ? `${i}-${j}` : null
-                                      );
-                                    }}
-                                    queryKey={[
-                                      "schedules",
-                                      filter,
-                                      urlPrms.get("query")?.toString() || "",
-                                    ]}
-                                  />
-                                  {/* Dialog Footer */}
-                                  <DialogFooter>
-                                    <div className="flex justify-end gap-2">
-                                      <DialogClose asChild>
-                                        <Button variant="outline">
-                                          Cancel
-                                        </Button>
-                                      </DialogClose>
-
-                                      <Button type="submit" form="update-event">
-                                        Edit
-                                      </Button>
-                                    </div>
-                                  </DialogFooter>
-                                </DialogContent>
-                              </Dialog>
-                            )}
-                          </div>
-
-                          <div
-                            className={cn(
-                              "lg flex w-full cursor-pointer items-start gap-3 rounded-[10px] bg-primary/50 px-5 py-4 xl:hidden",
-                              event.id === urlPrms.get("event") &&
-                                "border border-primary-outline"
-                            )}
-                            onClick={() => onEventClick(event.id)}
-                          >
-                            <Sheet>
-                              <SheetTrigger asChild>
-                                <div className="flex flex-1 gap-3">
-                                  <EventIcon className="text-2xl text-accent" />
-                                  <div>
-                                    <p className="mb-[6px] text-base font-bold leading-none text-accent">
-                                      {event.event_name}
-                                    </p>
-                                    <p className="text-sm text-primary-text">
-                                      {event.description}
-                                    </p>
-                                    <p className="text-sm leading-tight text-primary-text">
-                                      {event.event_category} -{" "}
-                                      {event.event_visibility}
-                                    </p>
-                                    <p className="text-sm leading-none text-primary-text">
-                                      <span className="font-semibold">
-                                        Date:{" "}
-                                      </span>
-                                      {new Date(
-                                        `${event.event_date}T${event.event_time}`
-                                      ).toLocaleDateString("en-GB", {
-                                        day: "2-digit",
-                                        month: "short",
-                                        year: "numeric",
-                                      })}
-                                      ,
-                                      {new Date(
-                                        `${event.event_date}T${event.event_time}`
-                                      ).toLocaleTimeString()}
-                                    </p>
-                                  </div>
-                                </div>
-                              </SheetTrigger>
-                              <SheetContent className="w-full md:w-full xl:hidden">
-                                {urlPrms.get("event") && (
-                                  <ScheduleDetails
-                                    queryKey={[
-                                      "schedules",
-                                      filter,
-                                      urlPrms.get("query")?.toString() || "",
-                                    ]}
-                                  />
-                                )}
-                              </SheetContent>
-                            </Sheet>
-                            <Dialog
-                              open={sheetEditDialogOpenIndex === `${i}-${j}`}
-                              onOpenChange={(isOpen) =>
-                                setSheetEditDialogOpenIndex(
-                                  isOpen ? `${i}-${j}` : null
-                                )
-                              }
-                            >
-                              <DialogTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  className="-mt-3 p-0 font-semibold text-accent hover:underline"
-                                >
-                                  Edit
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent>
-                                <DialogHeader>
-                                  <DialogTitle>Edit Events</DialogTitle>
-                                  <DialogDescription>
-                                    Schedule an upcoming event.
-                                  </DialogDescription>
-                                </DialogHeader>
-                                <CreateEvent
-                                  id="update-event"
-                                  eventData={{ ...event }}
-                                  setDialogOpen={(isOpen) => {
-                                    setSheetEditDialogOpenIndex(
-                                      isOpen ? `${i}-${j}` : null
-                                    );
-                                  }}
-                                  queryKey={[
-                                    "schedules",
-                                    filter,
-                                    urlPrms.get("query")?.toString() || "",
-                                  ]}
-                                />
-
-                                <DialogFooter>
-                                  <div className="flex justify-end gap-2">
-                                    <DialogClose asChild>
-                                      <Button variant="outline">Cancel</Button>
-                                    </DialogClose>
-
-                                    <Button type="submit" form="update-event">
-                                      Edit
-                                    </Button>
-                                  </div>
-                                </DialogFooter>
-                              </DialogContent>
-                            </Dialog>
-                          </div>
-                        </div>
+                        <ScheduleCards
+                          editDialogOpenIndex={editDialogOpenIndex}
+                          setEditDialogOpenIndex={setEditDialogOpenIndex}
+                          key={`${i}-${j}`}
+                          urlPrms={urlPrms}
+                          event={event}
+                          onEventClick={onEventClick}
+                          filter={filter}
+                          setSheetEditDialogOpenIndex={setSheetEditDialogOpenIndex}
+                          sheetEditDialogOpenIndex={sheetEditDialogOpenIndex}
+                          i={i}
+                          j={j}
+                        />
                       ))
                     : page?.items.map((meeting, j) => (
                         <div key={`${i}-${j}`} className="relative">

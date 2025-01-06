@@ -77,7 +77,6 @@ const Announcement = ({
   });
 
   useEffect(() => {
-    // Ensure the form is reset with the latest announcement data
     form.reset({
       title: announcement.title,
       content: announcement.content,

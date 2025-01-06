@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import QRCode from "qrcode";
 import { Icon } from "@iconify/react";
 import { Description, Title } from "@/components/Title";
+import * as XLSX from "xlsx";
 import {
   Card,
   CardContent,
@@ -61,7 +62,6 @@ import AddRecord from "./AddRecord";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-// import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import AttendeeEditLogs from "./AttendeeEditLogs";
@@ -83,7 +83,6 @@ import {
   FormLabel,
   FormMessage,
 } from "../ui/form";
-// import { ROLES } from "@/constants/roles";
 
 const ScheduleDetails = ({ queryKey }) => {
   const [qrCode, setQRCode] = useState(null);
@@ -176,6 +175,87 @@ const ScheduleDetails = ({ queryKey }) => {
       console.error("Error updating attendee status:", error);
     }
   };
+
+  const downloadExcel = () => {
+    //Get the list of volunteers and replacement volunteers
+    const volunteerList = eventvolunteers
+      ? eventvolunteers.map((volunteer) => {
+          if (!volunteer?.replaced) {
+            return `${volunteer?.users?.first_name?.toFirstUpperCase()} ${volunteer?.users?.last_name?.toFirstUpperCase()}`;
+          }
+          return `${volunteer?.volunteer_replacement?.first_name?.toFirstUpperCase()} ${volunteer?.volunteer_replacement?.last_name?.toFirstUpperCase()}`;
+        })
+      : [];
+
+    const headings = [
+      // ["Field", "Value"],
+      ["Event Name", event?.event_name || "Unknown Event"],
+      ["Event Date", event?.event_date || "Unknown Date"],
+      ["Event Category", event?.event_category || "Unknown Category"],
+      ["Total Attended", attendance?.data?.length || "Unknown Category"],
+      ["Assigned Volunteers", volunteerList.join(", ") || "No Volunteers"],
+      [],
+    ];
+
+    //combine data of parents and children
+    const combinedData =
+      attendance?.data?.flatMap((family) => [
+        ["Family Surname", family?.family_surname],
+        ["Parents", "Name", "Contact", "Time In"],
+        ...family.parents.map((parent) => [
+          "",
+          `${parent?.first_name} ${parent?.last_name}`,
+          `${parent?.contact_number}`,
+          `${
+            parent.time_attended
+              ? new Date(parent.time_attended).toLocaleTimeString("en-GB", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: true,
+                })
+              : "--/--"
+          }`,
+        ]),
+        ["Children", "Name", "Contact", "Time In"],
+        ...family.children.map((child) => [
+          "",
+          `${child?.first_name} ${child?.last_name}`,
+          `${child?.contact_number ?? "N/A"}`,
+          `${
+            child.time_attended
+              ? new Date(child.time_attended).toLocaleTimeString("en-GB", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: true,
+                })
+              : "--/--"
+          }`,
+        ]),
+        [],
+      ]) || [];
+
+    //combine the heading and the attendance
+    const formattedData = [...headings, [], ...combinedData];
+
+    // Converts data to worksheet
+    const worksheet = XLSX.utils.aoa_to_sheet(formattedData);
+
+    // Creates a new workbook and appends the worksheet
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+
+    // Writes workbook to file
+    XLSX.writeFile(workbook, `${event?.event_name}.xlsx`);
+  };
+
+  console.log("parent and children", attendance?.data);
+  // console.log("attendees", attendance.data);
+
+  // const { downloadExcel,formattedData } = useDownLoadExcel({
+  //   volunteers: eventvolunteers || [],
+  //   event: event || {},
+  //   attendees: attendance?.data || [],
+  // });
 
   const exportAttendanceList = () => {
     const doc = new jsPDF();
@@ -286,11 +366,11 @@ const ScheduleDetails = ({ queryKey }) => {
 
     const eventDateTime = new Date(`${event?.event_date}T${event?.event_time}`);
     const currentDateTime = new Date();
-    const twoHoursAhead = new Date(
-      eventDateTime.getTime() + 2 * 60 * 60 * 1000
+    const sevenDaysAhead = new Date(
+      eventDateTime.getTime() + 7 * 24 * 60 * 60 * 1000
     );
 
-    if (currentDateTime > twoHoursAhead) {
+    if (currentDateTime > sevenDaysAhead) {
       setDisableSchedule(true);
     } else {
       setDisableSchedule(false);
@@ -469,6 +549,9 @@ const ScheduleDetails = ({ queryKey }) => {
                   <DropdownMenuItem onClick={() => exportAttendanceList()}>
                     Download as PDF
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={downloadExcel}>
+                    Download as Excel
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -528,14 +611,16 @@ const ScheduleDetails = ({ queryKey }) => {
             List of Assigned Volunteer(s)
           </Label>
           <Dialog>
-            {!disableSchedule &&<DialogTrigger>
-              <button className="rounded-md bg-accent p-1 hover:cursor-pointer">
-                <Icon
-                  className="h-4 w-4 text-white"
-                  icon="mingcute:add-fill"
-                ></Icon>
-              </button>
-            </DialogTrigger>}
+            {!disableSchedule && (
+              <DialogTrigger>
+                <button className="rounded-md bg-accent p-1 hover:cursor-pointer">
+                  <Icon
+                    className="h-4 w-4 text-white"
+                    icon="mingcute:add-fill"
+                  ></Icon>
+                </button>
+              </DialogTrigger>
+            )}
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Assign Volunteers</DialogTitle>
@@ -658,7 +743,6 @@ const ScheduleDetails = ({ queryKey }) => {
           </p>
         </div>
         {attendance.data?.map((family, i) => {
-          // console.log("family",family)
           const mainApplicant = family?.parents.filter(
             (parent) => parent?.main_applicant === true
           )[0];

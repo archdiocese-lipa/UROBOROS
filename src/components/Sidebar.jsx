@@ -169,16 +169,14 @@ const SidebarProfile = ({ availableRoles, onSwitchRole }) => {
             </DropdownMenuItem>
           ))}
           {userData?.role !== ROLES[2] && <DropdownMenuSeparator />}
-          <DropdownMenuItem onClick={() => navigate("/profile")}>
-            Profile
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
+         
           <Link
             to="/profile"
             className="flex items-center w-full gap-2 hover:cursor-pointer"
           >
             <DropdownMenuItem className="w-full">Profile</DropdownMenuItem>
           </Link>
+          <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
