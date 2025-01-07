@@ -49,7 +49,7 @@ const Sidebar = () => {
         {temporaryRole === "coparent" &&
           `Welcome, ${userData.first_name} ${userData.last_name}`}
       </Title>
-      <div className="flex flex-1 justify-between lg:flex-col">
+      <div className="flex flex-1 justify-between lg:flex-col mb-2 lg:mb-0">
         <ul className="flex w-full justify-evenly gap-2 lg:ml-4 lg:mr-8 lg:flex-col lg:items-start">
           {userData &&
             SIDEBAR_LINKS[temporaryRole]?.map((links, index) => (

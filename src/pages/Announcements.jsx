@@ -302,7 +302,7 @@ const Announcements = () => {
 
       <div className="no-scrollbar flex h-full w-full flex-col-reverse gap-4 overflow-y-scroll lg:flex-row">
         {/* Announcements List */}
-        <div className="no-scrollbar w-full flex-1 overflow-y-scroll rounded-xl border-primary-outline p-1 md:border md:bg-primary md:px-9 md:py-6">
+        <div className=" border-t no-scrollbar w-full flex-1 overflow-y-scroll rounded-none md:rounded-xl pt-3 border-primary-outline p-1 md:border md:bg-primary md:px-9 md:py-6">
           {isLoading && (<Loading/> )}
 
           {data?.pages?.flatMap((page) => page.items).length === 0 ? (
@@ -312,7 +312,7 @@ const Announcements = () => {
               page?.items?.map((announcement) => (
                 <div
                   key={announcement.id}
-                  className="mb-3 w-full rounded-lg border border-primary-outline bg-white px-8 pb-6 pt-5"
+                  className="mb-3 w-full  rounded-lg border bg-[#f9f7f7b9] border-primary-outline md:bg-white px-4 md:px-8 pb-6 pt-3 md:pt-5"
                 >
                   <Announcement
                     ministries={ministries}
@@ -325,26 +325,27 @@ const Announcements = () => {
               ))
             )
           )}
+        
 
           {hasNextPage && <div className="mt-20" ref={ref}></div>}
         </div>
         {/* Sidebar */}
-        <div className="no-scrollbar flex w-full flex-row gap-3 overflow-y-hidden overflow-x-scroll rounded-[15px] border border-primary-outline p-2 lg:w-1/4 lg:flex-col lg:gap-0 lg:overflow-y-scroll lg:px-8 lg:py-6">
-          <p className="font-bold text-accent lg:mb-3">
+        <div className="no-scrollbar flex w-full flex-row gap-2 md:gap-3 overflow-y-hidden overflow-x-scroll rounded-[120px] md:rounded-[15px] border border-primary-outline lg:p-2 px-2 py-[6px] lg:w-1/4 lg:flex-col lg:gap-0 lg:overflow-y-scroll lg:px-8 lg:py-6">
+          <p className="hidden lg:block font-bold text-accent lg:mb-3">
             Filter by your ministry.
           </p>
           <div
-            className={cn("h-fit rounded-xl border border-gray bg-white", {
-              "bg-accent": !searchParams.get("ministryId"),
+            className={cn("h-fit rounded-[100px] md:rounded-xl border border-gray/0 bg-accent/5 lg:bg-white", {
+              "bg-accent lg:bg-accent": !searchParams.get("ministryId"),
             })}
           >
             <button
               onClick={() => {
                 navigate("/announcements");
               }}
-              className="relative h-20 w-full px-[18px] py-3 lg:h-fit"
+              className="relative h-10 md:h-20 w-full px-[18px] lg:py-3 lg:h-fit"
             >
-              <div className="flex justify-between gap-3">
+              <div className="flex items-center justify-between gap-3">
                 <h3
                   className={cn("font-bold text-accent", {
                     "text-white": !searchParams.get("ministryId"),
@@ -352,7 +353,7 @@ const Announcements = () => {
                 >
                   All
                 </h3>
-                <div className="flex h-7 items-center justify-center rounded-[18.5px] bg-primary px-3 py-3 text-accent hover:cursor-pointer">
+                <div className="flex h-6 lg:h-7 items-center justify-center rounded-[18.5px] bg-[#D3C9C5] lg:bg-primary px-3 py-3 text-accent hover:cursor-pointer">
                   {/* <img src={GlobeIcon} alt="up icon" className="bg-pr h-5 w-5" /> */}
                   <GlobeIcon className="h-4 w-4" />
                 </div>
@@ -366,13 +367,13 @@ const Announcements = () => {
                 This shows all group announcements
               </p>
               {!searchParams.get("ministryId") && (
-                <div className="-left-4 top-1/2 hidden h-8 w-2 -translate-x-1/2 -translate-y-1/2 transform rounded-md bg-accent lg:absolute lg:block"></div>
+                <div className="left-0 lg:-left-4 top-1/2 hidden h-8 w-2 -translate-x-1/2 -translate-y-1/2 transform rounded-md bg-accent lg:absolute lg:block"></div>
               )}
             </button>
           </div>
 
           <Separator className="my-3 hidden bg-gray lg:block" />
-          <div className="flex gap-3 lg:mb-3 lg:block">
+          <div className="flex items-center md:items-stretch justify-center gap-2 md:gap-3 lg:mb-3 lg:block">
             {ministries?.map((ministry) => (
               <Filter
                 key={ministry.id}

@@ -22,9 +22,9 @@ const Filter = ({
   return (
     <div
       className={cn(
-        "max-h-20 w-full rounded-xl border border-gray bg-white lg:mb-3 lg:h-fit lg:max-h-none",
+        "max-h-20 w-full rounded-[100px] md:rounded-xl border border-gray/0 bg-accent/10 md:border-gray lg:bg-white lg:mb-3 lg:h-fit lg:max-h-none",
         {
-          "bg-accent": ministry.id === selectedMinistry,
+          "bg-accent lg:bg-accent": ministry.id === selectedMinistry,
         }
       )}
     >
@@ -32,7 +32,7 @@ const Filter = ({
         onClick={() => {
           setSelectedMinistry({ministryId:ministry.id})
         }}
-        className="relative h-full px-[18px] py-3"
+        className="relative md:block flex items-center justify-center h-10 md:h-full px-[18px] py-3 "
       >
         <div className="flex justify-between gap-3 lg:flex-wrap">
           <h3
@@ -45,7 +45,7 @@ const Filter = ({
           >
             {ministry.ministry_name}
           </h3>
-          <div className="flex h-6 w-12 items-center justify-center gap-1 rounded-[18.5px] bg-primary px-3 py-3 text-accent hover:cursor-pointer">
+          <div className="flex h-6 w-12 items-center justify-center gap-1 rounded-[18.5px] bg-[#D3C9C5] lg:bg-primary px-3 py-3 text-accent hover:cursor-pointer">
             <p className="text-sm font-semibold text-accent">
               {ministryData.count}
             </p>

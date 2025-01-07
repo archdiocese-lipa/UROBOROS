@@ -113,11 +113,11 @@ const Announcement = ({
           <h2 className="text-lg font-bold text-accent">
             {announcement.title}
           </h2>
-          <div className="flex gap-2">
-            <p className="text-sm font-bold text-accent">
+          <div className="flex gap-2 flex-wrap items-center">
+            <p className=" text-[0.7rem] md:text-sm font-bold text-accent">
               {`${announcement?.users?.first_name} ${announcement?.users?.last_name}`}
             </p>
-            <p className="text-sm text-accent">
+            <p className="text-[0.7rem] md:text-sm text-accent">
               {new Date(announcement.created_at).toDateTime()}
             </p>
             {/* <img src={GlobeIcon} alt="icon" /> */}
@@ -364,11 +364,11 @@ const Announcement = ({
           </Popover>
         )}
       </div>
-      <p className="mb-4 text-justify text-accent">{announcement.content}</p>
+      <p className="mb-4 text-start text-accent">{announcement.content}</p>
 
       {announcement?.file_type &&
         announcement?.file_type.startsWith("image") && (
-          <img className="mb-2" src={announcement.file_url} alt="file" />
+          <img className="mb-1 rounded-[6px]" src={announcement.file_url} alt="file" />
         )}
       {announcement?.file_type &&
         announcement?.file_type.startsWith("application") && (
@@ -397,7 +397,7 @@ const Announcement = ({
           />
         </div>
       </div>
-      <Separator className="my-5" />
+      <Separator className="mt-6 mb-3" />
 
       <Comments
         announcement_id={announcement?.id}
