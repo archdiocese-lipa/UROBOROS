@@ -21,10 +21,10 @@ const Comments = ({ announcement_id }) => {
 
   const { ref } = useInterObserver(fetchNextPage);
 
-  console.log("comments")
+
 
   return (
-    <div className="p-1">
+    <div className="">
       <h1 className="text-md mb-2 font-bold text-accent">
         {commentData?.pages[0]?.totalItems} Comments
       </h1>
@@ -51,7 +51,7 @@ const Comments = ({ announcement_id }) => {
       <div className="flex w-full items-start justify-center gap-3">
         <Avatar className="h-8 w-8">
           <AvatarImage src={""} alt="@shadcn" />
-          <AvatarFallback className="bg-primary">{Initial}</AvatarFallback>
+          <AvatarFallback className="bg-accent text-white">{Initial}</AvatarFallback>
         </Avatar>
         <CommentInput
           HandleAddComment={HandleAddComment}

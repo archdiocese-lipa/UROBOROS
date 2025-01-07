@@ -27,7 +27,7 @@ const CommentInput = ({ announcement_id, HandleAddComment, columnName }) => {
         className="flex-1"
       >
         <Textarea
-          className="rounded-2xl bg-primary resize-none"
+          className="rounded-2xl border-accent/30 bg-white md:bg-primary resize-none"
           {...register(`comment${announcement_id}`,{ required: true })}
           onFocus={() => setIsCommenting(true)}
           name={`comment${announcement_id}`}
@@ -39,8 +39,9 @@ const CommentInput = ({ announcement_id, HandleAddComment, columnName }) => {
         <div className="flex justify-end gap-2 pt-2">
           <Button
             type="button"
+            className="rounded-xl"
             onClick={() => setIsCommenting(false)}
-            variant={"ghost"}
+            variant={"outline"}
           >
             Cancel
           </Button>

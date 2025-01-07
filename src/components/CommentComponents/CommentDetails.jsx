@@ -59,7 +59,7 @@ import TriggerLikeIcon from "./TriggerLikeIcon";
             src={comment.users?.user_image ?? ""}
             alt="profile picture"
           />
-          <AvatarFallback className="h-8 w-8 rounded-full bg-primary p-2">
+          <AvatarFallback className="h-8 w-8 rounded-full bg-accent text-white p-2">
             {getInitial(comment.users.first_name)}
           </AvatarFallback>
         </Avatar>
