@@ -35,7 +35,7 @@ const paginate = async ({
       .from(key)
       .select(select)
       .range(from, to)
-      .match(query)
+      .match(query);
 
     // Apply ordering dynamically
     if (order.length > 0) {
@@ -94,9 +94,9 @@ const paginate = async ({
       for (const [column, value] of Object.entries(filters.lte)) {
         supabaseQuery = supabaseQuery.lte(column, value);
       }
-  }
+    }
     // Apply distinct filters if provided
-  
+
     // Apply ilike filters if provided
     if (filters.ilike) {
       for (const [column, value] of Object.entries(filters.ilike)) {

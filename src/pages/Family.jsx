@@ -99,7 +99,7 @@ const Family = () => {
               ) : parentData?.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={3} className="text-center">
-                    No parent/guardian data available.
+                    No data available.
                   </TableCell>
                 </TableRow>
               ) : (
@@ -188,7 +188,7 @@ const Family = () => {
               ) : childData?.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={2} className="text-center">
-                    No children data available.
+                    No data available.
                   </TableCell>
                 </TableRow>
               ) : (

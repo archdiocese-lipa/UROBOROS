@@ -115,114 +115,124 @@ const ManualAttendEvents = ({ eventId, eventName }) => {
               onSubmit={form.handleSubmit(onSubmit)}
               className="flex flex-col space-y-2"
             >
-              <Label className="text-primary-text">Parent/Guardian</Label>
-              {!isLoading ? (
-                parentData?.map((parent) => (
-                  <FormField
-                    key={parent.id}
-                    control={form.control}
-                    name="parents"
-                    render={({ field }) => (
-                      <FormItem className="space-x-2 space-y-0">
-                        <div className="flex items-center gap-x-2">
-                          <FormControl>
-                            <Checkbox
-                              checked={
-                                Array.isArray(field.value) &&
-                                field.value.some(
-                                  (item) => item.id === parent.id
-                                )
-                              }
-                              onCheckedChange={(checked) => {
-                                const updatedValue = checked
-                                  ? [
-                                      ...(field.value || []),
-                                      {
-                                        id: parent.id,
-                                        first_name: parent.first_name,
-                                        last_name: parent.last_name,
-                                        contact_number: parent.contact_number,
-                                        family_id: parent.family_id,
-                                      },
-                                    ]
-                                  : (field.value || []).filter(
-                                      (item) => item.id !== parent.id
-                                    );
-
-                                field.onChange(updatedValue);
-                              }}
-                            />
-                          </FormControl>
-                          <Label>{`${parent.first_name} ${parent.last_name}`}</Label>
-                          <FormMessage />
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                ))
+              {parentData?.length === 0 && childData?.length === 0 ? (
+                <Label className="text-primary-text">Add Family Member</Label>
               ) : (
-                <p>Loading...</p>
-              )}
-              {error && <p>Error fetching guardian</p>}
-              {form.formState.errors.children && (
-                <FormMessage>
-                  {form.formState.errors.children.message}
-                </FormMessage>
-              )}
-              <Label className="text-primary-text">Children</Label>
+                <div>
+                  {parentData?.length > 0 && (
+                    <Label className="text-primary-text">Parent/Guardian</Label>
+                  )}
+                  {!isLoading ? (
+                    parentData?.map((parent) => (
+                      <FormField
+                        key={parent.id}
+                        control={form.control}
+                        name="parents"
+                        render={({ field }) => (
+                          <FormItem className="space-x-2 space-y-0">
+                            <div className="flex items-center gap-x-2">
+                              <FormControl>
+                                <Checkbox
+                                  checked={
+                                    Array.isArray(field.value) &&
+                                    field.value.some(
+                                      (item) => item.id === parent.id
+                                    )
+                                  }
+                                  onCheckedChange={(checked) => {
+                                    const updatedValue = checked
+                                      ? [
+                                          ...(field.value || []),
+                                          {
+                                            id: parent.id,
+                                            first_name: parent.first_name,
+                                            last_name: parent.last_name,
+                                            contact_number:
+                                              parent.contact_number,
+                                            family_id: parent.family_id,
+                                          },
+                                        ]
+                                      : (field.value || []).filter(
+                                          (item) => item.id !== parent.id
+                                        );
 
-              {!isLoading ? (
-                childData?.map((child) => (
-                  <FormField
-                    key={child.id}
-                    control={form.control}
-                    name="children"
-                    render={({ field }) => (
-                      <>
-                        <FormItem className="space-x-2 space-y-0">
-                          <div className="flex items-center gap-x-2">
-                            <FormControl>
-                              <Checkbox
-                                checked={
-                                  Array.isArray(field.value) &&
-                                  field.value.some(
-                                    (item) => item.id === child.id
-                                  ) // Check if the array contains the object with the same id
-                                }
-                                onCheckedChange={(checked) => {
-                                  const updatedValue = checked
-                                    ? [
-                                        ...(field.value || []),
-                                        {
-                                          id: child.id,
-                                          first_name: child.first_name,
-                                          last_name: child.last_name,
-                                          family_id: child.family_id,
-                                        },
-                                      ]
-                                    : (field.value || []).filter(
-                                        (item) => item.id !== child.id
-                                      ); // Remove the object if unchecked
+                                    field.onChange(updatedValue);
+                                  }}
+                                />
+                              </FormControl>
+                              <Label>{`${parent.first_name} ${parent.last_name}`}</Label>
+                              <FormMessage />
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+                    ))
+                  ) : (
+                    <p>Loading...</p>
+                  )}
+                  {error && <p>Error fetching guardian</p>}
+                  {form.formState.errors.children && (
+                    <FormMessage>
+                      {form.formState.errors.children.message}
+                    </FormMessage>
+                  )}
+                  {childData?.length > 0 && (
+                    <Label className="text-primary-text">Children</Label>
+                  )}
+                  {!isLoading ? (
+                    childData?.map((child) => (
+                      <FormField
+                        key={child.id}
+                        control={form.control}
+                        name="children"
+                        render={({ field }) => (
+                          <>
+                            <FormItem className="space-x-2 space-y-0">
+                              <div className="flex items-center gap-x-2">
+                                <FormControl>
+                                  <Checkbox
+                                    checked={
+                                      Array.isArray(field.value) &&
+                                      field.value.some(
+                                        (item) => item.id === child.id
+                                      ) // Check if the array contains the object with the same id
+                                    }
+                                    onCheckedChange={(checked) => {
+                                      const updatedValue = checked
+                                        ? [
+                                            ...(field.value || []),
+                                            {
+                                              id: child.id,
+                                              first_name: child.first_name,
+                                              last_name: child.last_name,
+                                              family_id: child.family_id,
+                                            },
+                                          ]
+                                        : (field.value || []).filter(
+                                            (item) => item.id !== child.id
+                                          ); // Remove the object if unchecked
 
-                                  // Update the field value
-                                  field.onChange(updatedValue);
-                                }}
-                              />
-                            </FormControl>
-                            <Label>{`${child.first_name} ${child.last_name}`}</Label>
-                          </div>
-                        </FormItem>
-                      </>
-                    )}
-                  />
-                ))
-              ) : (
-                <p>Loading...</p>
+                                      // Update the field value
+                                      field.onChange(updatedValue);
+                                    }}
+                                  />
+                                </FormControl>
+                                <Label>{`${child.first_name} ${child.last_name}`}</Label>
+                              </div>
+                            </FormItem>
+                          </>
+                        )}
+                      />
+                    ))
+                  ) : (
+                    <p>Loading...</p>
+                  )}
+                  {error && <p>Error fetching guardian</p>}
+                  <div className="text-end">
+                    <Button type="submit">Attend</Button>
+                  </div>
+                </div>
               )}
-              {error && <p>Error fetching guardian</p>}
-              <div className="text-end">
-                <Button type="submit">Attend</Button>
-              </div>
             </form>
           </Form>
         </div>
