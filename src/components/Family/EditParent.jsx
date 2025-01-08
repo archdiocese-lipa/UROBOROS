@@ -26,9 +26,17 @@ import { useEditParent } from "@/hooks/useFamily";
 import { editParentSchema } from "@/zodSchema/Family/EditParentSchema";
 
 const EditParent = forwardRef(
-  ({ parentId, parentFirstName, parentLastName, parentContactNumber }, ref) => {
+  (
+    {
+      parentId,
+      parentFirstName,
+      parentLastName,
+      parentContactNumber,
+      parentUserId,
+    },
+    ref
+  ) => {
     const [openDialog, setOpenDialog] = useState(false);
-
     const form = useForm({
       resolver: zodResolver(editParentSchema),
       defaultValues: {
@@ -47,7 +55,7 @@ const EditParent = forwardRef(
         contactNumber: data.contactNumber,
       };
 
-      editParent({ parentId, data: parentData });
+      editParent({ parentId, data: parentData, parentUserId });
       setOpenDialog(false);
     };
 
@@ -132,6 +140,7 @@ EditParent.propTypes = {
   parentFirstName: PropTypes.string.isRequired,
   parentLastName: PropTypes.string.isRequired,
   parentContactNumber: PropTypes.string.isRequired,
+  parentUserId: PropTypes.string.isRequired,
 };
 
 EditParent.displayName = "EditParent";

@@ -248,7 +248,6 @@ const ScheduleDetails = ({ queryKey }) => {
     XLSX.writeFile(workbook, `${event?.event_name}.xlsx`);
   };
 
-  console.log("parent and children", attendance?.data);
   // console.log("attendees", attendance.data);
 
   // const { downloadExcel,formattedData } = useDownLoadExcel({

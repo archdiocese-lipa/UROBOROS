@@ -49,8 +49,8 @@ const Sidebar = () => {
         {temporaryRole === "coparent" &&
           `Welcome, ${userData.first_name} ${userData.last_name}`}
       </Title>
-      <div className="flex flex-1 justify-between lg:flex-col mb-2 lg:mb-0">
-        <ul className="flex w-full justify-evenly gap-2 lg:ml-4 lg:mr-8 lg:flex-col lg:items-start">
+      <div className="mb-2 flex flex-1 justify-between lg:mb-0 lg:flex-col">
+        <ul className="flex w-full items-center justify-evenly gap-0 sm:gap-2 lg:ml-4 lg:mr-8 lg:flex-col lg:items-start">
           {userData &&
             SIDEBAR_LINKS[temporaryRole]?.map((links, index) => (
               <SidebarLink
@@ -169,10 +169,10 @@ const SidebarProfile = ({ availableRoles, onSwitchRole }) => {
             </DropdownMenuItem>
           ))}
           {userData?.role !== ROLES[2] && <DropdownMenuSeparator />}
-         
+
           <Link
             to="/profile"
-            className="flex items-center w-full gap-2 hover:cursor-pointer"
+            className="flex w-full items-center gap-2 hover:cursor-pointer"
           >
             <DropdownMenuItem className="w-full">Profile</DropdownMenuItem>
           </Link>
@@ -185,7 +185,7 @@ const SidebarProfile = ({ availableRoles, onSwitchRole }) => {
 
 const SidebarLink = ({ label, link, icon, selectedIcon, isActive }) => {
   return (
-    <div className="w-10 md:w-16 lg:w-fit">
+    <div className="w-16 md:w-16 lg:w-fit">
       <li
         className={cn(
           "flex items-center justify-center rounded-3xl p-2 lg:justify-start lg:px-6",
@@ -196,11 +196,11 @@ const SidebarLink = ({ label, link, icon, selectedIcon, isActive }) => {
           to={link}
           className="flex items-center justify-center text-[16px] font-medium lg:gap-2"
         >
-          <Icon icon={isActive ? selectedIcon : icon} className="h-6 w-6" />
+          <Icon icon={isActive ? selectedIcon : icon} className="h-5 w-5" />
           <p className="hidden lg:block">{label}</p>
         </Link>
       </li>
-      <p className="hidden text-center text-xs font-bold text-accent md:block lg:hidden">
+      <p className="mt-1 sm:mt-0 text-center text-[7px] font-bold text-accent lg:hidden">
         {label}
       </p>
     </div>

@@ -87,7 +87,7 @@ const useEditParent = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: ({ parentId, data }) => updateParent(parentId, data),
+    mutationFn: ({ parentId, data, parentUserId }) => updateParent(parentId, data, parentUserId),
     onSuccess: (data) => {
       toast({
         title: "Guardian updated successfully",
