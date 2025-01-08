@@ -32,9 +32,9 @@ const Events = () => {
 
   // Fetch events based on the ministry's ID
   const { data: parishionerEvents, isLoading } = useQuery({
-    queryKey: ["events", ministries], 
+    queryKey: ["events", ministries],
     queryFn: async () => await getEventsCalendar(ids),
-    enabled: !!ministries, 
+    enabled: !!ministries,
   });
 
   // const { data, isLoading, fetchNextPage, hasNextPage } = useInfiniteQuery({
