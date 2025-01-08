@@ -198,7 +198,7 @@ export const getChildren = async (familyId) => {
 };
 
 // Edit parent
-export const updateParent = async (parentId, data) => {
+export const updateParent = async (parentId, data, parentUserId) => {
   if (!data) {
     throw new Error("Data is undefined");
   }
@@ -222,6 +222,21 @@ export const updateParent = async (parentId, data) => {
 
   if (error) {
     throw new Error(error.message); // Throw an error to be caught by the mutation
+  }
+  // Update user details in the 'users' table if userId is provided
+  if (parentUserId) {
+    const { error: userError } = await supabase
+      .from("users")
+      .update({
+        first_name: firstName,
+        last_name: lastName,
+        contact_number: contactNumber,
+      })
+      .eq("id", parentUserId);
+
+    if (userError) {
+      throw new Error(`Error updating user: ${userError.message}`);
+    }
   }
 
   return updatedParent; // Return the updated child data

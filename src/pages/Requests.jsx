@@ -183,8 +183,8 @@ const Requests = () => {
           <TableHeader className="bg-primary">
             <TableRow>
               {/* <TableHead className="rounded-l-lg text-center">Active</TableHead> */}
-              <TableHead className="text-center">Email</TableHead>
               <TableHead className="text-center">Name</TableHead>
+              <TableHead className="text-center">Email</TableHead>
               <TableHead className="text-center">Contact Tel No.</TableHead>
 
               <TableHead className="rounded-r-lg text-center">Action</TableHead>
@@ -209,10 +209,10 @@ const Requests = () => {
                     />
                   </TableCell> */}
                   <TableCell className="w-[300px] text-center">
-                    {row.email}
+                  {`${row.first_name} ${row.last_name}`}
                   </TableCell>
                   <TableCell className="w-[300px] text-center">
-                    {`${row.first_name} ${row.last_name}`}
+                    {row.email}
                   </TableCell>
                   <TableCell className="w-[300px] text-center">
                     {row.contact_number}

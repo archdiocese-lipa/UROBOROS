@@ -128,6 +128,7 @@ const Family = () => {
                                 parentFirstName={parent.first_name}
                                 parentLastName={parent.last_name}
                                 parentContactNumber={parent.contact_number}
+                                parentUserId={parent.parishioner_id}
                               />
                             </DropdownMenuItem>
                             <DropdownMenuItem
