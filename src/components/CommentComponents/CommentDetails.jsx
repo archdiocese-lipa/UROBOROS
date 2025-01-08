@@ -66,7 +66,7 @@ import TriggerLikeIcon from "./TriggerLikeIcon";
       </div>
       <div className="flex-grow">
         {!isEditting ? (
-          <div className="tems-center relative flex flex-col justify-between rounded-3xl bg-primary px-5 py-3">
+          <div className="relative flex flex-col justify-between rounded-3xl bg-primary px-5 pt-3 pb-5">
             <div className="flex items-center justify-between gap-2">
               <div>
                 <p className="text-sm font-bold text-accent opacity-80">{`${comment.users.first_name} ${comment.users.last_name}`}</p>
