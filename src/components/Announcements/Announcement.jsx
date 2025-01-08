@@ -364,7 +364,7 @@ const Announcement = ({
           </Popover>
         )}
       </div>
-      <p className="mb-4 text-start text-accent">{announcement.content}</p>
+      <p className="mb-4 text-start text-accent whitespace-pre-wrap leading-5">{announcement.content}</p>
 
       {announcement?.file_type &&
         announcement?.file_type.startsWith("image") && (
