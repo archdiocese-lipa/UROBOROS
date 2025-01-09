@@ -13,6 +13,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
+import ReactSelect from "react-select";
+
 import {
   Select,
   SelectContent,
@@ -43,7 +45,6 @@ import { useUser } from "@/context/useUser";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { fetchUserMinistries } from "@/services/ministryService";
-import AssignVolunteerComboBox from "@/components/Schedule/AssignVolunteerComboBox";
 import useInterObserver from "@/hooks/useInterObserver";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import Loading from "@/components/Loading";
@@ -124,7 +125,7 @@ const Announcements = () => {
               setIsOpen(open);
               if (!open) {
                 setImagePreview(null);
-                form.reset()
+                form.reset();
               }
             }}
           >
@@ -137,7 +138,7 @@ const Announcements = () => {
                 <p className="hidden lg:block"> Create Announcement</p>
               </Button>
             </DialogTrigger>
-            <DialogContent className="no-scrollbar w-fullp h-full overflow-y-scroll border-none px-9 pt-8 sm:rounded-3xl md:h-[450px] md:w-[600px]">
+            <DialogContent className=" h-fit border-none px-9 pt-8 sm:rounded-3xl md:w-[600px]">
               <DialogHeader>
                 <DialogTitle className="text-2xl font-bold text-accent">
                   Create Announcement
@@ -254,30 +255,39 @@ const Announcements = () => {
                   />
 
                   {/* Ministry Select */}
-                  <FormField
+                  {formVisibility === "private" &&<FormField
                     control={form.control}
                     name="ministry"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Ministry</FormLabel>
                         <FormControl>
-                          <AssignVolunteerComboBox
+                          <ReactSelect
+                            isMulti
                             options={ministries?.map((ministry) => ({
                               value: ministry.id,
                               label: `${ministry.ministry_name}`,
                             }))}
-                            value={
-                              Array.isArray(field.value) ? field.value : []
-                            }
-                            onChange={field.onChange}
+                            value={field.value.map((value) => ({
+                              value,
+                              label:
+                                ministries?.find(
+                                  (ministry) => ministry.id === value
+                                )?.ministry_name || "",
+                            }))}
+                            onChange={(selectedOptions) => {
+                              field.onChange(
+                                selectedOptions.map((option) => option.value)
+                              ); // Update field value to an array of ids
+                            }}
                             placeholder="Select Ministry"
-                            disabled={formVisibility !== "private"}
+                            // disabled={formVisibility !== "private"}
                           />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
-                  />
+                  />}
 
                   {/* Submit Button */}
                   <DialogFooter>
@@ -302,8 +312,8 @@ const Announcements = () => {
 
       <div className="no-scrollbar flex h-full w-full flex-col-reverse gap-4 overflow-y-scroll lg:flex-row">
         {/* Announcements List */}
-        <div className=" border-t no-scrollbar w-full flex-1 overflow-y-scroll rounded-none md:rounded-xl pt-3 border-primary-outline p-1 md:border md:bg-primary md:px-9 md:py-6">
-          {isLoading && (<Loading/> )}
+        <div className="no-scrollbar w-full flex-1 overflow-y-scroll rounded-none border-t border-primary-outline p-1 pt-3 md:rounded-xl md:border md:bg-primary md:px-9 md:py-6">
+          {isLoading && <Loading />}
 
           {data?.pages?.flatMap((page) => page.items).length === 0 ? (
             <p>No announcements yet.</p>
@@ -312,7 +322,7 @@ const Announcements = () => {
               page?.items?.map((announcement) => (
                 <div
                   key={announcement.id}
-                  className="mb-3 w-full  rounded-lg border bg-[#f9f7f7b9] border-primary-outline md:bg-white px-4 md:px-8 pb-6 pt-3 md:pt-5"
+                  className="mb-3 w-full rounded-lg border border-primary-outline bg-[#f9f7f7b9] px-4 pb-6 pt-3 md:bg-white md:px-8 md:pt-5"
                 >
                   <Announcement
                     ministries={ministries}
@@ -325,25 +335,27 @@ const Announcements = () => {
               ))
             )
           )}
-        
 
           {hasNextPage && <div className="mt-20" ref={ref}></div>}
         </div>
         {/* Sidebar */}
-        <div className="no-scrollbar flex w-full flex-row gap-2 md:gap-3 overflow-y-hidden overflow-x-scroll rounded-[120px] md:rounded-[15px] border border-primary-outline lg:p-2 px-2 py-[6px] lg:w-1/4 lg:flex-col lg:gap-0 lg:overflow-y-scroll lg:px-8 lg:py-6">
-          <p className="hidden lg:block font-bold text-accent lg:mb-3">
+        <div className="no-scrollbar flex w-full flex-row gap-2 overflow-y-hidden overflow-x-scroll rounded-[120px] border border-primary-outline px-2 py-[6px] md:gap-3 md:rounded-[15px] lg:w-1/4 lg:flex-col lg:gap-0 lg:overflow-y-scroll lg:p-2 lg:px-8 lg:py-6">
+          <p className="hidden font-bold text-accent lg:mb-3 lg:block">
             Filter by your ministry.
           </p>
           <div
-            className={cn("h-fit rounded-[100px]  md:rounded-xl border border-gray/0 md:border-gray bg-accent/5 lg:bg-white", {
-              "bg-accent lg:bg-accent": !searchParams.get("ministryId"),
-            })}
+            className={cn(
+              "h-fit rounded-[100px] border border-gray/0 bg-accent/5 md:rounded-xl md:border-gray lg:bg-white",
+              {
+                "bg-accent lg:bg-accent": !searchParams.get("ministryId"),
+              }
+            )}
           >
             <button
               onClick={() => {
                 navigate("/announcements");
               }}
-              className="relative h-10 md:h-20 w-full px-[18px] lg:py-3 lg:h-fit"
+              className="relative h-10 w-full px-[18px] md:h-20 lg:h-fit lg:py-3"
             >
               <div className="flex items-center justify-between gap-3">
                 <h3
@@ -353,7 +365,7 @@ const Announcements = () => {
                 >
                   All
                 </h3>
-                <div className="flex h-6 lg:h-7 items-center justify-center rounded-[18.5px] bg-[#D3C9C5] lg:bg-primary px-3 py-3 text-accent hover:cursor-pointer">
+                <div className="flex h-6 items-center justify-center rounded-[18.5px] bg-[#D3C9C5] px-3 py-3 text-accent hover:cursor-pointer lg:h-7 lg:bg-primary">
                   {/* <img src={GlobeIcon} alt="up icon" className="bg-pr h-5 w-5" /> */}
                   <GlobeIcon className="h-4 w-4" />
                 </div>
@@ -367,13 +379,13 @@ const Announcements = () => {
                 This shows all group announcements
               </p>
               {!searchParams.get("ministryId") && (
-                <div className="left-0 lg:-left-4 top-1/2 hidden h-8 w-2 -translate-x-1/2 -translate-y-1/2 transform rounded-md bg-accent lg:absolute lg:block"></div>
+                <div className="left-0 top-1/2 hidden h-8 w-2 -translate-x-1/2 -translate-y-1/2 transform rounded-md bg-accent lg:absolute lg:-left-4 lg:block"></div>
               )}
             </button>
           </div>
 
           <Separator className="my-3 hidden bg-gray lg:block" />
-          <div className="flex items-center md:items-stretch justify-center gap-2 md:gap-3 lg:mb-3 lg:block">
+          <div className="flex items-center justify-center gap-2 md:items-stretch md:gap-3 lg:mb-3 lg:block">
             {ministries?.map((ministry) => (
               <Filter
                 key={ministry.id}

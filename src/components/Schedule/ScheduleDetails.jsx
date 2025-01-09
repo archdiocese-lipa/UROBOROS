@@ -22,6 +22,8 @@ import {
   DialogTrigger,
   DialogClose,
 } from "@/components/ui/dialog";
+
+import ReactSelect from "react-select";
 import {
   Table,
   TableBody,
@@ -69,11 +71,9 @@ import AddAttendee from "./AddAttendee";
 import Loading from "../Loading";
 import { childSchema, parentSchema } from "@/zodSchema/AddFamilySchema";
 import useUsersByRole from "@/hooks/useUsersByRole";
-import VolunteerComboBox from "./VolunteerComboBox";
 import EditChildAttendeeDialog from "./EditChildAttendeeDialog";
 import EditParentAttendeeDialog from "./EditParentAttendeeDialog";
 import ParentAddLogs from "./AttendeeAddLogs";
-import AssignVolunteerComboBox from "./AssignVolunteerComboBox";
 import { z } from "zod";
 import {
   Form,
@@ -83,6 +83,7 @@ import {
   FormLabel,
   FormMessage,
 } from "../ui/form";
+import VolunteerSelect from "./VolunteerSelect";
 
 const ScheduleDetails = ({ queryKey }) => {
   const [qrCode, setQRCode] = useState(null);
@@ -636,13 +637,36 @@ const ScheduleDetails = ({ queryKey }) => {
                       <FormItem>
                         <FormLabel>Assign Volunteer</FormLabel>
                         <FormControl>
-                          <AssignVolunteerComboBox
-                            options={volunteers?.map((volunteer) => ({
-                              value: volunteer.id,
-                              label: `${volunteer.first_name} ${volunteer.last_name}`,
-                            }))}
-                            value={field.value || null}
-                            onChange={field.onChange}
+                          <ReactSelect
+                            isMulti
+                            options={
+                              volunteers?.map((volunteer) => ({
+                                value: volunteer?.id || "", // Fallback for undefined id
+                                label: `${volunteer?.first_name || "Unknown"} ${
+                                  volunteer?.last_name || "Unknown"
+                                }`, // Fallback for undefined name
+                              })) || [] // Default to an empty array if volunteers is undefined
+                            }
+                            value={
+                              field.value?.map((selectedId) => {
+                                const volunteer = volunteers?.find(
+                                  (v) => v.id === selectedId
+                                );
+                                return volunteer
+                                  ? {
+                                      value: volunteer.id,
+                                      label: `${volunteer.first_name || "Unknown"} ${
+                                        volunteer.last_name || "Unknown"
+                                      }`,
+                                    }
+                                  : null;
+                              }) || []
+                            } // Map selected IDs to matching options
+                            onChange={(selectedOptions) => {
+                              field.onChange(
+                                selectedOptions.map((option) => option.value)
+                              ); // Extract IDs from selected options
+                            }}
                             placeholder="Select Volunteer"
                           />
                         </FormControl>
@@ -651,7 +675,9 @@ const ScheduleDetails = ({ queryKey }) => {
                     )}
                   />
                   <div className="mt-2 flex justify-end">
+                    <DialogClose>
                     <Button type="submit">Add</Button>
+                    </DialogClose>
                   </div>
                 </form>
               </Form>
@@ -672,7 +698,7 @@ const ScheduleDetails = ({ queryKey }) => {
             )}
 
             <div className="flex items-center justify-center gap-2">
-              <VolunteerComboBox
+              <VolunteerSelect
                 // setVolunteerDialogOpen={setVolunteerDialogOpen}
                 currentVolunteer={volunteer}
                 assignedVolunteers={eventvolunteers}
