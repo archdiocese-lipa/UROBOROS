@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { format } from "date-fns";
 import PropTypes from "prop-types";
+import ReactSelect from "react-select";
 
 import { createEventSchema } from "@/zodSchema/CreateEventSchema";
 import {
@@ -43,8 +44,6 @@ import useMinistryMembers from "@/hooks/useMinistryMembers"; // Import the custo
 
 import { updateEvent } from "@/services/eventService";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import AssignVolunteerComboBox from "./AssignVolunteerComboBox";
-
 const CreateEvent = ({
   id = "create-event",
   eventData = null,
@@ -57,7 +56,6 @@ const CreateEvent = ({
 
   const { members } = useMinistryMembers(selectedMinistry);
 
-
   const { userData } = useUser(); // Get userData from the context
 
   const userId = userData?.id; // Extract the userId, safely checking if userData exists
@@ -68,7 +66,6 @@ const CreateEvent = ({
   const { mutate: createEvent, _isLoading } = useCreateEvent();
   const { events } = useQuickAccessEvents();
   const { data: volunteers } = useUsersByRole("volunteer");
-
 
   const editMutation = useMutation({
     mutationFn: async ({ eventId, updatedData }) =>
@@ -114,7 +111,7 @@ const CreateEvent = ({
           (volunteer) => volunteer.volunteer_id
         ) || [],
     },
-                                                                                                                                                                                                                                            });
+  });
 
   const { setValue, watch, handleSubmit, control, resetField } = eventForm;
   const watchVisibility = watch("eventVisibility");
@@ -192,7 +189,6 @@ const CreateEvent = ({
   };
 
   // console.log("form values",eventForm.getValues())
-
 
   return (
     <Form {...eventForm}>
@@ -296,7 +292,6 @@ const CreateEvent = ({
                       onValueChange={(value) => {
                         field.onChange(value); // Update the form field value
                         setSelectedMinistry(value); // Call setSelectedMinistry with the selected value
-
                       }}
                       value={field.value}
                     >
@@ -326,36 +321,58 @@ const CreateEvent = ({
             />
           )}
         </div>
-        { !eventData && <FormField
-          control={control}
-          name="assignVolunteer"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Assigns Volunteer</FormLabel>
-              <FormControl>
-                <AssignVolunteerComboBox
-                  options={
-                    selectedMinistry && members?.length > 0
-                      ? members.map((member) => ({
-                          value: member.user_id, // Use the user_id for the value
-                          label: `${member.users?.first_name || "Unknown"} ${member.users?.last_name || "Unknown"}`, // Safely access nested properties
-                        }))
-                      : volunteers?.map((volunteer) => ({
-                          value: volunteer.id,
-                          label: `${volunteer.first_name} ${volunteer.last_name}`,
-                        }))
-                  }
-                  value={
-                    Array.isArray(field.value) ? field.value : [field.value]
-                  } // Ensure it's always an array
-                  onChange={field.onChange} // Update the form state
-                  placeholder="Select Volunteer"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />}
+        {!eventData && (
+          <FormField
+            control={control}
+            name="assignVolunteer"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Assigns Volunteer</FormLabel>
+                <FormControl>
+                  <ReactSelect
+                    isMulti
+                    options={
+                      selectedMinistry && members?.length > 0
+                        ? members.map((member) => ({
+                            value: member?.user_id || "", // Ensure fallback for undefined user_id
+                            label: `${member?.users?.first_name || "Unknown"} ${
+                              member?.users?.last_name || "Unknown"
+                            }`, // Safely access nested properties
+                          }))
+                        : volunteers?.map((volunteer) => ({
+                            value: volunteer?.id || "", // Ensure fallback for undefined id
+                            label: `${volunteer?.first_name || "Unknown"} ${
+                              volunteer?.last_name || "Unknown"
+                            }`, // Safely access properties
+                          }))
+                    }
+                    value={
+                      Array.isArray(field.value)
+                        ? field.value.map((value) => ({
+                            value,
+                            label:
+                              members?.find((m) => m.user_id === value)?.users
+                                ?.first_name ||
+                              volunteers?.find((v) => v.id === value)
+                                ?.first_name ||
+                              "Unknown",
+                          }))
+                        : []
+                    } // Ensure the value matches the format used in options
+                    onChange={(selected) =>
+                      field.onChange(
+                        selected ? selected.map((option) => option.value) : []
+                      )
+                    }
+                    placeholder="Select Volunteer"
+                    classNamePrefix="react-select" // Add a prefix for styling if needed
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
 
         {/* Event Date, Time */}
         <div className="flex items-center gap-x-2">

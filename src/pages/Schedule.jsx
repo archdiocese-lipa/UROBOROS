@@ -226,7 +226,7 @@ const Schedule = () => {
               <select
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(Number(e.target.value))}
-                className="border-gray-300 max-h-48 overflow-y-auto rounded-md border py-2 font-montserrat text-lg shadow-sm "
+                className="border-gray-300 max-h-48 overflow-y-auto rounded-md border py-2 font-montserrat text-lg shadow-sm"
               >
                 {[...Array(5).keys()].map((offset) => {
                   const year = new Date().getFullYear() - 2 + offset;
@@ -247,8 +247,7 @@ const Schedule = () => {
             <div className="flex flex-col gap-2 font-montserrat">
               {isLoading ? (
                 <Skeleton className="flex h-[85px] w-full rounded-xl bg-primary" />
-              ) : (
-                data?.pages?.flatMap((page, i) =>
+              ) : data?.pages?.flatMap((page, i) =>
                   filter === "events"
                     ? page?.items?.map((event, j) => (
                         <ScheduleCards
@@ -259,13 +258,15 @@ const Schedule = () => {
                           event={event}
                           onEventClick={onEventClick}
                           filter={filter}
-                          setSheetEditDialogOpenIndex={setSheetEditDialogOpenIndex}
+                          setSheetEditDialogOpenIndex={
+                            setSheetEditDialogOpenIndex
+                          }
                           sheetEditDialogOpenIndex={sheetEditDialogOpenIndex}
                           i={i}
                           j={j}
                         />
                       ))
-                    : page?.items.map((meeting, j) => (
+                    : page?.items?.map((meeting, j) => (
                         <div key={`${i}-${j}`} className="relative">
                           <Sheet className="">
                             <SheetTrigger asChild>
@@ -296,7 +297,7 @@ const Schedule = () => {
                                       month: "short",
                                       year: "numeric",
                                     })}
-                                    ,
+                                    ,{" "}
                                     {new Date(
                                       `${meeting.meeting_date}T${meeting.start_time}`
                                     ).toLocaleTimeString()}
@@ -310,7 +311,36 @@ const Schedule = () => {
                           </Sheet>
                         </div>
                       ))
+                )?.length > 0 ? (
+                data?.pages?.flatMap((page, i) =>
+                  filter === "events"
+                    ? page?.items?.map((event, j) => (
+                        <ScheduleCards
+                          editDialogOpenIndex={editDialogOpenIndex}
+                          setEditDialogOpenIndex={setEditDialogOpenIndex}
+                          key={`${i}-${j}`}
+                          urlPrms={urlPrms}
+                          event={event}
+                          onEventClick={onEventClick}
+                          filter={filter}
+                          setSheetEditDialogOpenIndex={
+                            setSheetEditDialogOpenIndex
+                          }
+                          sheetEditDialogOpenIndex={sheetEditDialogOpenIndex}
+                          i={i}
+                          j={j}
+                        />
+                      ))
+                    : page?.items?.map((meeting, j) => (
+                        <div key={`${i}-${j}`} className="relative">
+                          {/* Meeting Schedule Details */}
+                        </div>
+                      ))
                 )
+              ) : (
+                <p className="text-center text-primary-text">
+                  No schedules found.
+                </p>
               )}
             </div>
             <div ref={ref}>{hasNextPage && <Skeleton />}</div>

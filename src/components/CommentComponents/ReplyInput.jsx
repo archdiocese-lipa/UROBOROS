@@ -50,7 +50,7 @@ import PropTypes from "prop-types";
                   src={userData?.user_image ?? ""}
                   alt="@shadcn"
                 />
-                <AvatarFallback className="bg-primary">
+                <AvatarFallback className="bg-accent text-white">
                   {getInitial(userData?.first_name)}
                 </AvatarFallback>
               </Avatar>

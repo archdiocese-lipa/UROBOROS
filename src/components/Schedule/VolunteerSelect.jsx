@@ -1,21 +1,5 @@
-import { Button } from "@/components/ui/button";
-import { Check, ChevronsUpDown } from "lucide-react";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import PropTypes from "prop-types";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { useState } from "react";
-import { cn } from "@/lib/utils";
+import PropTypes from "prop-types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
 import { replaceVolunteer } from "@/services/eventService";
@@ -27,9 +11,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { Icon } from "@iconify/react";
+import ReactSelect from "react-select";
 
-const VolunteerComboBox = ({
+const VolunteerSelect = ({
   disableSchedule,
   assignedVolunteers,
   oldVolunteerId,
@@ -38,11 +24,10 @@ const VolunteerComboBox = ({
   replaced,
   newreplacement_id,
 }) => {
-  const [open, setOpen] = useState(false);
-  const [value, setValue] = useState("");
+  const [volunteerDialogOpen, setVolunteerDialogOpen] = useState(false);
+  const [selectedVolunteer, setSelectedVolunteer] = useState(null);
   const [error, setError] = useState("");
   const queryClient = useQueryClient();
-  const [volunteerDialogOpen, setVolunteerDialogOpen] = useState(false);
 
   const previousVolunteerIds = new Set(
     assignedVolunteers
@@ -58,13 +43,17 @@ const VolunteerComboBox = ({
 
   const filteredVolunteers = volunteers.filter(
     (volunteer) =>
-      // Ensure the volunteer is either not assigned or is a previous volunteer
       (!assignedVolunteers.some(
         (assignedVolunteer) => assignedVolunteer.volunteer_id === volunteer.id
       ) ||
         previousVolunteerIds.has(volunteer.id)) &&
-      !replacementVolunteerIds.has(volunteer.id) // Exclude replacement volunteers
+      !replacementVolunteerIds.has(volunteer.id)
   );
+
+  const volunteerOptions = filteredVolunteers.map((volunteer) => ({
+    value: volunteer.id,
+    label: `${volunteer.first_name} ${volunteer.last_name}`,
+  }));
 
   const replaceVolunteerMutation = useMutation({
     mutationFn: async (data) => replaceVolunteer(data),
@@ -89,20 +78,21 @@ const VolunteerComboBox = ({
   });
 
   const handleSubmit = () => {
-    if (!value) {
+    if (!selectedVolunteer) {
       setError("Please select a volunteer.");
       return;
     }
 
     replaceVolunteerMutation.mutate({
       oldVolunteerId,
-      replacedby_id: value,
+      replacedby_id: selectedVolunteer.value,
       replaced,
       eventId,
       newreplacement_id,
     });
     setVolunteerDialogOpen(false);
   };
+
   return (
     <Dialog open={volunteerDialogOpen} onOpenChange={setVolunteerDialogOpen}>
       {!disableSchedule && (
@@ -117,68 +107,22 @@ const VolunteerComboBox = ({
         <DialogHeader>
           <DialogTitle>Edit Assigned Volunteer</DialogTitle>
           <DialogDescription>
-            Select a volunteer to replacement{" "}
-            {/* {`${currentVolunteer?.users?.first_name.toFirstUpperCase()} ${currentVolunteer?.users?.last_name.toFirstUpperCase()}`} */}
-            
+            Select a volunteer to replace.
           </DialogDescription>
         </DialogHeader>
         <div>
-          <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                role="combobox"
-                aria-expanded={open}
-                className="w-full justify-between"
-              >
-                {value
-                  ? `${filteredVolunteers.find((volunteer) => volunteer.id === value)?.first_name} ${
-                      volunteers.find((volunteer) => volunteer.id === value)
-                        ?.last_name
-                    }`
-                  : "Select Volunteer..."}
-                <ChevronsUpDown className="opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="min-w-[450px] p-0">
-              <Command>
-                <CommandInput
-                  placeholder="Search volunteer..."
-                  className="h-9"
-                />
-                <CommandList>
-                  <CommandEmpty>No volunteer found.</CommandEmpty>
-                  <CommandGroup>
-                    {filteredVolunteers?.map((volunteer) => (
-                      <CommandItem
-                        key={volunteer.id}
-                        value={volunteer.id}
-                        onSelect={(currentValue) => {
-                          setValue(currentValue === value ? "" : currentValue);
-                          setOpen(false);
-                          setError("");
-                        }}
-                      >
-                        {volunteer.first_name} {volunteer.last_name}
-                        <Check
-                          className={cn(
-                            "ml-auto",
-                            value === volunteer.id ? "opacity-100" : "opacity-0"
-                          )}
-                        />
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </PopoverContent>
-          </Popover>
+          <ReactSelect
+            options={volunteerOptions}
+            value={selectedVolunteer}
+            onChange={setSelectedVolunteer}
+            placeholder="Select a Volunteer"
+            isClearable
+          />
           {error && (
             <div className="mt-2 text-sm font-semibold text-red-500">
               {error}
             </div>
-          )}{" "}
-          {/* Display error message */}
+          )}
           <div className="flex justify-end">
             <Button className="mt-2" onClick={handleSubmit}>
               Replace Volunteer
@@ -189,13 +133,8 @@ const VolunteerComboBox = ({
     </Dialog>
   );
 };
-VolunteerComboBox.propTypes = {
-  currentVolunteer: PropTypes.shape({
-    users: PropTypes.shape({
-      first_name: PropTypes.string,
-      last_name: PropTypes.string,
-    }),
-  }),
+
+VolunteerSelect.propTypes = {
   disableSchedule: PropTypes.bool.isRequired,
   assignedVolunteers: PropTypes.arrayOf(
     PropTypes.shape({
@@ -217,4 +156,4 @@ VolunteerComboBox.propTypes = {
   newreplacement_id: PropTypes.string,
 };
 
-export default VolunteerComboBox;
+export default VolunteerSelect;

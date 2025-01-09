@@ -3,7 +3,6 @@ import QrScannerEvents from "@/components/Events/QRScannerEvents";
 import { Description, Title } from "@/components/Title";
 
 import {
-  getEventsByCreatorId,
   getEventsCalendar,
 } from "@/services/eventService";
 
@@ -14,7 +13,6 @@ import { useUser } from "@/context/useUser";
 import Loading from "@/components/Loading";
 
 const Events = () => {
-  const currentDateTime = new Date();
   const { userData } = useUser();
 
   const { data: ministries } = useQuery({
@@ -22,11 +20,11 @@ const Events = () => {
     queryFn: () => fetchUserMinistries(userData?.id),
     enabled: !!userData?.id,
   });
-  const { data: eventsOwned } = useQuery({
-    queryKey: ["events", userData?.id],
-    queryFn: () => getEventsByCreatorId(userData?.id),
-    enabled: !!userData?.id,
-  });
+  // const { data: eventsOwned } = useQuery({
+  //   queryKey: ["events", userData?.id],
+  //   queryFn: () => getEventsByCreatorId(userData?.id),
+  //   enabled: !!userData?.id,
+  // });
 
   const ids = ministries?.map((ministry) => ministry.id);
 
@@ -68,30 +66,30 @@ const Events = () => {
   // );
 
   // Filter out events that have already ended
-  const filterEvents = (events) => {
-    return events.filter((event) => {
-      const eventDateTime = new Date(`${event.event_date}T${event.event_time}`);
-      return eventDateTime >= currentDateTime;
-    });
-  };
-  const filteredParishionerEvents = filterEvents(parishionerEvents?.data || []);
-  const eventsToDisplay =
-    userData?.role === "admin" ? eventsOwned : filteredParishionerEvents;
+  // const filterEvents = (events) => {
+  //   return events.filter((event) => {
+  //     const eventDateTime = new Date(`${event.event_date}T${event.event_time}`);
+  //     return eventDateTime >= currentDateTime;
+  //   });
+  // };
+  // const filteredParishionerEvents = filterEvents(parishionerEvents?.data || []);
+  // const eventsToDisplay =
+  //   userData?.role === "admin" ? eventsOwned : parishionerEvents?.data;
   return (
     <>
       <Title>Events</Title>
       <Description>Latest upcoming events at the church</Description>
       <div className="mt-5 flex justify-center gap-x-2 md:justify-start">
-        <ParishionerDialogCalendar events={eventsToDisplay} />
-        <QrScannerEvents eventData={eventsToDisplay} />
+        <ParishionerDialogCalendar events={parishionerEvents?.data} />
+        <QrScannerEvents eventData={parishionerEvents?.data} />
       </div>
       <div className="mt-5 grid gap-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
         {isLoading ? (
           <Loading />
-        ) : eventsToDisplay?.length === 0 ? (
+        ) : parishionerEvents?.data.length === 0 ? (
           <p>No Upcoming Events</p>
         ) : (
-          eventsToDisplay?.map((event, i) => (
+          parishionerEvents?.data.map((event, i) => (
             <EventCard
               key={i}
               eventId={event.id}

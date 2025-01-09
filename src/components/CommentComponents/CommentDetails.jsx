@@ -1,7 +1,7 @@
 import { Button } from "../ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import PropTypes from "prop-types";
-import { ReplyIcon, KebabIcon} from "@/assets/icons/icons";
+import { ReplyIcon, KebabIcon } from "@/assets/icons/icons";
 
 import {
   Dialog,
@@ -29,11 +29,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import Replies from "./Replies";
 import TriggerLikeIcon from "./TriggerLikeIcon";
 // import TriggerDislikeIcon from "./TriggerDislikeIcon";
- const CommentDetails = ({
-  announcement_id,
-  comment,
-  columnName,
-}) => {
+const CommentDetails = ({ announcement_id, comment, columnName }) => {
   const { userData } = useUser();
   const [isReplying, setIsReplying] = useState(false);
   const [showReply, setShowReply] = useState(false);
@@ -59,14 +55,14 @@ import TriggerLikeIcon from "./TriggerLikeIcon";
             src={comment.users?.user_image ?? ""}
             alt="profile picture"
           />
-          <AvatarFallback className="h-8 w-8 rounded-full bg-accent text-white p-2">
+          <AvatarFallback className="h-8 w-8 rounded-full bg-accent p-2 text-white">
             {getInitial(comment.users.first_name)}
           </AvatarFallback>
         </Avatar>
       </div>
       <div className="flex-grow">
         {!isEditting ? (
-          <div className="relative flex flex-col justify-between rounded-3xl bg-primary px-5 pt-3 pb-5">
+          <div className="relative flex flex-col justify-between rounded-3xl bg-primary px-5 pb-5 pt-3">
             <div className="flex items-center justify-between gap-2">
               <div>
                 <p className="text-sm font-bold text-accent opacity-80">{`${comment.users.first_name} ${comment.users.last_name}`}</p>
@@ -75,19 +71,86 @@ import TriggerLikeIcon from "./TriggerLikeIcon";
                   isEdited={comment.edited}
                 />
               </div>
-              <div></div>
+              <div>
+              {userData?.id === comment.users.id && (
+                <Popover>
+                  <PopoverTrigger>
+                    <KebabIcon className="h-5 w-5 text-accent" />
+                  </PopoverTrigger>
+                  <PopoverContent className="flex w-28 flex-col overflow-hidden p-0">
+                    <Button
+                      onClick={() => setEditting(true)}
+                      className="w-full rounded-none"
+                      variant={"outline"}
+                    >
+                      Edit
+                    </Button>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button
+                          className="w-full rounded-none"
+                          variant={"ghost"}
+                        >
+                          Delete
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[425px] sm:rounded-3xl">
+                        <DialogHeader>
+                          <DialogTitle className="font-bold text-accent">
+                            Delete Comment
+                          </DialogTitle>
+                          <DialogDescription className="text-accent opacity-80">
+                            Delete Your Comment Permanently
+                          </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                          <DialogClose asChild>
+                            <Button
+                              // onClick={}
+                              className="rounded-xl text-accent hover:text-accent"
+                              type="button"
+                              variant="outline"
+                            >
+                              Cancel
+                            </Button>
+                          </DialogClose>
+                          <DialogClose asChild>
+                            <Button
+                              className="rounded-xl"
+                              onClick={() => handleDeleteComment(comment.id)}
+                              variant={"destructive"}
+                              type="submit"
+                            >
+                              Delete
+                            </Button>
+                          </DialogClose>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  </PopoverContent>
+                </Popover>
+              )}
+              <button
+                onClick={() => setIsReplying(true)}
+                className="ml-2 rounded-2xl"
+              >
+                <ReplyIcon className="h-5 w-5 text-accent hover:cursor-pointer" />
+              </button>
+            </div>
             </div>
             <div className="text-accent">{comment.comment_content}</div>
+         
+          
+
             <div className="flex items-center">
-             
-                <TriggerLikeIcon
-                  className="absolute -bottom-4 right-8 w-14 rounded-3xl bg-white p-1"
-                  comment_id={comment.id}
-                  user_id={userData?.id}
-                  columnName={"comment_id"}
-                />
-                
-                {/* 
+              <TriggerLikeIcon
+                className="absolute -bottom-4 right-8 w-14 rounded-3xl bg-white p-1"
+                comment_id={comment.id}
+                user_id={userData?.id}
+                columnName={"comment_id"}
+              />
+
+              {/* 
                 Incase dislike id needed in the future
                 <TriggerDislikeIcon
                   className="absolute -bottom-4 right-2 w-14 rounded-3xl bg-white p-1"
@@ -142,68 +205,9 @@ import TriggerLikeIcon from "./TriggerLikeIcon";
           )}
         </div>
       </div>
-      {userData?.id === comment.users.id && (
-        <Popover>
-          <PopoverTrigger>
-            <KebabIcon className="h-5 w-5 text-accent" />
-          </PopoverTrigger>
-          <PopoverContent className="flex w-28 flex-col overflow-hidden  p-0">
-            <Button
-              onClick={() => setEditting(true)}
-              className="w-full rounded-none"
-              variant={"outline"}
-            >
-              Edit
-            </Button>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button className="w-full rounded-none" variant={"ghost"}>
-                  Delete
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px] sm:rounded-3xl">
-                <DialogHeader>
-                  <DialogTitle className="font-bold text-accent">
-                    Delete Comment
-                  </DialogTitle>
-                  <DialogDescription className="text-accent opacity-80">
-                    Delete Your Comment Permanently
-                  </DialogDescription>
-                </DialogHeader>
-                <DialogFooter>
-                  <DialogClose asChild>
-                    <Button
-                      // onClick={}
-                      className="rounded-xl text-accent hover:text-accent"
-                      type="button"
-                      variant="outline"
-                    >
-                      Cancel
-                    </Button>
-                  </DialogClose>
-                  <DialogClose asChild>
-                    <Button
-                      className="rounded-xl"
-                      onClick={() => handleDeleteComment(comment.id)}
-                      variant={"destructive"}
-                      type="submit"
-                    >
-                      Delete
-                    </Button>
-                  </DialogClose>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </PopoverContent>
-        </Popover>
-      )}
-      <button onClick={() => setIsReplying(true)} className="ml-2 rounded-2xl">
-      <ReplyIcon className="w-5 h-5 hover:cursor-pointer text-accent"/>
-
-      </button>
     </div>
   );
-}
+};
 
 CommentDetails.propTypes = {
   announcement_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
@@ -224,4 +228,4 @@ CommentDetails.propTypes = {
   columnName: PropTypes.string.isRequired,
 };
 
-export default CommentDetails
+export default CommentDetails;

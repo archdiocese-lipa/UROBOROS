@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useUser } from "@/context/useUser";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { getInitial } from "@/lib/utils";
@@ -10,6 +10,7 @@ import {
   DialogTitle,
   DialogFooter,
   DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,44 +26,64 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import Loading from "@/components/Loading";
-import { DialogDescription } from "@radix-ui/react-dialog";
+import { Label } from "@/components/ui/label";
 
 const Profile = () => {
   const { userData } = useUser();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isemailDialogOpen, setIsEmailDialogOpen] = useState(false);
- 
-
+  const [iseNameDialogOpen, setIsNameDialogOpen] = useState(false);
   const contactSchema = z.object({
     contact_number: z.string().regex(/^[0-9]{11}$/, {
       message: "Contact number must be exactly 11 digits.",
     }),
   });
+  const nameSchema = z.object({
+    first_name: z.string().min(1, "First name is required."),
+    last_name: z.string().min(1, "First name is required."),
+  });
   const emailSchema = z.object({
     email: z.string().email(),
-  });
-
-  const form = useForm({
-    resolver: zodResolver(contactSchema),
-    defaultValues: { contact_number: "" },
   });
 
   const emailForm = useForm({
     resolver: zodResolver(emailSchema),
     defaultValues: { email: "" },
   });
-  const {
-    sendEmailLinkMutation,
-    updateContactMutation,
-    data,
-    isLoading,
-  } = useProfileChange({
-    user_id: userData?.id,
-    setIsDialogOpen,
-    setIsEmailDialogOpen,
-    form,
-    emailForm,
+  const form = useForm({
+    resolver: zodResolver(contactSchema),
+    defaultValues: { contact_number: "" },
   });
+
+  const {  updateNameMutation,sendEmailLinkMutation, updateContactMutation, data, isLoading } =
+    useProfileChange({
+      user_id: userData?.id,
+      setIsDialogOpen,
+      setIsEmailDialogOpen,
+      setIsNameDialogOpen,
+      form,
+      emailForm,
+    });
+
+  const nameForm = useForm({
+    resolver: zodResolver(nameSchema),
+    defaultValues: {
+      first_name: "",
+      last_name: "",
+    },
+  });
+
+  useEffect(() => {
+    if (userData) {
+      nameForm.reset({
+        first_name: userData.first_name,
+        last_name: userData.last_name,
+      });
+      form.reset({
+        contact_number: userData.contact_number,
+      });
+    }
+  }, [userData, nameForm]);
 
   const handleUpdateContact = (newContact) => {
     updateContactMutation.mutate({
@@ -76,10 +97,17 @@ const Profile = () => {
       email: data.email,
     });
   };
+  const handleUpdateName = (data) => {
+      updateNameMutation.mutate({
+      userId: userData?.id,
+      first_name: data.first_name,
+      last_name: data.last_name
+    })
+  }
 
   const initials = `${getInitial(data?.first_name)}${getInitial(data?.last_name)}`;
 
-  if (isLoading || !userData) {
+  if (isLoading || !userData || !data) {
     return <Loading />;
   }
 
@@ -91,11 +119,86 @@ const Profile = () => {
           <Avatar className="h-16 w-16">
             <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
-          <h1 className="text-xl font-semibold">{`${data?.first_name} ${data?.last_name}`}</h1>
         </div>
 
         {/* Display Fields */}
         <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <Label>Name</Label>
+            <Dialog open={iseNameDialogOpen} onOpenChange={setIsNameDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>Edit</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Edit Name</DialogTitle>
+                </DialogHeader>
+
+                <Form {...nameForm}>
+                  <form
+                    onSubmit={nameForm.handleSubmit(
+                      handleUpdateName
+                    )}
+                  >
+                    <FormField
+                      control={nameForm.control}
+                      name="first_name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>First Name</FormLabel>
+                          <FormControl>
+                            <Input
+                              className="text-accent"
+                              type="text"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={nameForm.control}
+                      name="last_name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Last Name</FormLabel>
+                          <FormControl>
+                            <Input
+                              className="text-accent"
+                              type="text"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <DialogFooter className={"mt-4"}>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => setIsNameDialogOpen(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                  
+                        type="submit"
+                        disabled={updateNameMutation.isPending}
+                      >
+                        {updateNameMutation.isPending
+                          ? "Updating..."
+                          : "Update"}
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
+          </div>
+          <p className="text-gray-700">{`${data?.first_name} ${data?.last_name}`}</p>
+
           <div className="flex items-center justify-between">
             <label className="text-gray-700 block text-sm font-medium">
               Email
@@ -129,7 +232,7 @@ const Profile = () => {
                       name="email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Email Address</FormLabel>
+                          <FormLabel>New Email Address</FormLabel>
                           <FormControl>
                             <Input
                               className="text-accent"
@@ -173,7 +276,9 @@ const Profile = () => {
             </label>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button>Edit</Button>
+                <Button onClick={form.setValue(data?.contact_number)}>
+                  Edit
+                </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
