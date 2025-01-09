@@ -269,11 +269,14 @@ export const getAllEvents = async () => {
 // Updated getEventsCalendar to accept year and month as arguments
 export const getEventsCalendar = async (ministry = []) => {
   try {
+
+
     // Fetch all public events (no filtering by ministry)
     const publicEventsQuery = supabase
       .from("events")
       .select("*")
-      .eq("event_visibility", "public");
+      .eq("event_visibility", "public")
+      .gte("event_date", new Date().toISOString());
 
     // Fetch private events filtered by ministry IDs (only if provided)
     const privateEventsQuery =
@@ -282,7 +285,8 @@ export const getEventsCalendar = async (ministry = []) => {
             .from("events")
             .select("*")
             .eq("event_visibility", "private")
-            .in("ministry_id", ministry) // Apply ministry filter
+            .in("ministry_id", ministry)
+            .gte("event_date",  new Date().toISOString()) // Apply ministry filter
         : null;
 
     // Execute both queries
@@ -415,10 +419,14 @@ export const getEventsByMinistryId = async (ministryIds) => {
   return events;
 };
 export const getEventsByCreatorId = async (creatorId) => {
+  const now = new Date(); // Get the current date and time
+
   const { data, error } = await supabase
     .from("events")
     .select("*")
-    .eq("creator_id", creatorId);
+    .gte("event_date", now.toISOString()) 
+    .eq("creator_id", creatorId)         
+    .order("event_date", { ascending: false }); 
 
   if (error) {
     throw new Error(error.message);
@@ -489,12 +497,12 @@ export const removeAssignedVolunteer = async (volunteerId) => {
 
 export const addAssignedVolunteer = async ({ eventId, assignVolunteer }) => {
   try {
-
     const getPromises = assignVolunteer.map(async (volunteer_id) => {
       const { data, error } = await supabase
         .from("event_volunteers")
         .select("id")
-        .eq("volunteer_id", volunteer_id).eq("event_id",eventId)
+        .eq("volunteer_id", volunteer_id)
+        .eq("event_id", eventId);
 
       if (error) {
         throw new Error("Error checking existence of volunteers!");
@@ -507,8 +515,8 @@ export const addAssignedVolunteer = async ({ eventId, assignVolunteer }) => {
       const { data: replaceIdData, error: replaceIdError } = await supabase
         .from("event_volunteers")
         .select("id")
-        .eq("replacedby_id", volunteer_id).eq("event_id",eventId)
-  
+        .eq("replacedby_id", volunteer_id)
+        .eq("event_id", eventId);
 
       if (replaceIdError) {
         throw new Error("Error checking existence of volunteers!");
@@ -537,8 +545,7 @@ export const addAssignedVolunteer = async ({ eventId, assignVolunteer }) => {
 
     await Promise.all(Promises);
   } catch (err) {
-    console.error('Error in adding volunteers:', err);
-    throw err;  // Ensure the error is propagated back to the mutation's onError handler
+    console.error("Error in adding volunteers:", err);
+    throw err; // Ensure the error is propagated back to the mutation's onError handler
   }
 };
-

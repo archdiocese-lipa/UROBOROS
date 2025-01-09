@@ -22,7 +22,7 @@ export const createEventSchema = z.object({
     .instanceof(Date, { message: "Please select date." }) 
     .refine((date) => !isNaN(date.getTime()), {
       message: "Date is required.",
-    }),
+    }).refine((date) => date >= new Date(),{message:"Date must not be in the past."}),
   eventTime: z
     .instanceof(Date, { message: "Time is required" })
     .refine((date) => date.getHours() >= 0 && date.getHours() < 24, {

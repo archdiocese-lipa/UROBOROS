@@ -335,7 +335,7 @@ const Announcements = () => {
             Filter by your ministry.
           </p>
           <div
-            className={cn("h-fit rounded-[100px] md:rounded-xl border border-gray/0 bg-accent/5 lg:bg-white", {
+            className={cn("h-fit rounded-[100px]  md:rounded-xl border border-gray/0 md:border-gray bg-accent/5 lg:bg-white", {
               "bg-accent lg:bg-accent": !searchParams.get("ministryId"),
             })}
           >

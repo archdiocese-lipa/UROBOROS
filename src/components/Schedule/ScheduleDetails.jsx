@@ -741,6 +741,11 @@ const ScheduleDetails = ({ queryKey }) => {
             Total Pending: {attendanceCount?.total - attendanceCount?.attended}
           </p>
         </div>
+        {attendance.data.length < 1 && (
+          <div className="flex items-center justify-center">
+            <p>No Family registered yet.</p>
+          </div>
+        )}
         {attendance.data?.map((family, i) => {
           const mainApplicant = family?.parents.filter(
             (parent) => parent?.main_applicant === true
@@ -859,7 +864,7 @@ const ScheduleDetails = ({ queryKey }) => {
                   </TableBody>
                 </Table>
 
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2">
                   <h3 className="text-xl font-semibold text-accent">
                     Children
                   </h3>

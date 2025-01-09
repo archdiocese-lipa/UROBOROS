@@ -173,6 +173,20 @@ const updateEmail = async({user_id,email}) => {
   }
 }
 
+const updateName = async({userId,first_name,last_name}) => {
+  console.log("data",userId,first_name,last_name)
+
+ const {error} = await supabase.from("users").update({
+  first_name,
+  last_name
+ }).eq("id",userId)
+
+ if(error){
+  throw new Error("Error updating name!", error.message)
+ }
+
+}
+
 
 
 export {
@@ -185,5 +199,6 @@ export {
   activateUser,
   forgotPassword,
   sendChangeEmailVerification,
-  updateEmail
+  updateEmail,
+  updateName,
 };
