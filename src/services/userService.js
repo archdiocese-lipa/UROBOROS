@@ -124,70 +124,89 @@ const activateUser = async ({ id, payload }) => {
     console.error("Error updating user", error.message);
     throw error;
   }
-}; 
+};
 
-const forgotPassword = async(email) => {
+const forgotPassword = async (email) => {
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: "https://togatherinv1.vercel.app/reset-password",
-  })
+  });
   if (error) {
-    console.error('Error sending reset password email:', error.message)
+    console.error("Error sending reset password email:", error.message);
   }
+};
 
-}
-
-const updatePassword = async(password) => {
-
+const updatePassword = async (password) => {
   const { error } = await supabase.auth.updateUser({
-    password
-  })
-  if(error){
-    throw error
+    password,
+  });
+  if (error) {
+    throw error;
+  }
+};
+const sendChangeEmailVerification = async (email) => {
+  const { data } = await supabase
+    .from("users")
+    .select("id")
+    .eq("email", email)
+    .single();
+
+  if (data) {
+    throw new Error("email already exist. Please use another email");
   }
 
-}
-const sendChangeEmailVerification = async(email) => {
-  const {data} = await supabase.from('users').select('id').eq('email', email).single()
+  const { error } = await supabase.auth.updateUser(
+    {
+      email,
+    },
+    {
+      emailRedirectTo: "https://togatherinv1.vercel.app/profile",
+    }
+  );
 
-  if(data){
-    throw new Error('email already exist. Please use another email')
+  if (error) {
+    throw new Error("Error updating email", error.message);
   }
-  
-  const { error } = await supabase.auth.updateUser({
-    email
-  },{
-    emailRedirectTo: 'https://togatherinv1.vercel.app/profile'
-  })
+};
 
-  if(error){
-    throw new Error('Error updating email', error.message)
-  } 
+const updateEmail = async ({ user_id, email }) => {
+  const { error: updateError } = await supabase
+    .from("users")
+    .update([{ email }])
+    .eq("id", user_id);
 
-}
-
-const updateEmail = async({user_id,email}) => {
-   const {error:updateError} = await supabase.from('users').update([{email}]).eq('id', user_id)
-
-  if(updateError){
-    throw new Error('Error updating email', updateError.message)
+  if (updateError) {
+    throw new Error("Error updating email", updateError.message);
   }
-}
+};
 
-const updateName = async({userId,first_name,last_name}) => {
-  console.log("data",userId,first_name,last_name)
+const updateName = async ({ userId, first_name, last_name }) => {
 
- const {error} = await supabase.from("users").update({
-  first_name,
-  last_name
- }).eq("id",userId)
+  const { error } = await supabase
+    .from("users")
+    .update({
+      first_name,
+      last_name,
+    })
+    .eq("id", userId);
 
- if(error){
-  throw new Error("Error updating name!", error.message)
- }
+    if (error) {
+      throw new Error("Error updating name!", error.message);
+    }
 
-}
+  const { error: parentError } = await supabase
+    .from("parents")
+    .update({
+      first_name,
+      last_name,
+    })
+    .eq("parishioner_id", userId);
 
+    if(parentError){
+      throw new Error("Error pupdating parent name", error.message)
+    }
 
+ 
+};
 
 export {
   getUser,

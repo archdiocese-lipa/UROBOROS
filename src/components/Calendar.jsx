@@ -44,7 +44,6 @@ const Calendar = ({ events }) => {
         id: item.id,
       }));
 
-      console.log("my event data",eventData)
 
   const meetingData = safeMeetings.map((meeting) => ({
     title: meeting.meeting_name,
