@@ -72,75 +72,73 @@ const CommentDetails = ({ announcement_id, comment, columnName }) => {
                 />
               </div>
               <div>
-              {userData?.id === comment.users.id && (
-                <Popover>
-                  <PopoverTrigger>
-                    <KebabIcon className="h-5 w-5 text-accent" />
-                  </PopoverTrigger>
-                  <PopoverContent className="flex w-28 flex-col overflow-hidden p-0">
-                    <Button
-                      onClick={() => setEditting(true)}
-                      className="w-full rounded-none"
-                      variant={"outline"}
-                    >
-                      Edit
-                    </Button>
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button
-                          className="w-full rounded-none"
-                          variant={"ghost"}
-                        >
-                          Delete
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="sm:max-w-[425px] sm:rounded-3xl">
-                        <DialogHeader>
-                          <DialogTitle className="font-bold text-accent">
-                            Delete Comment
-                          </DialogTitle>
-                          <DialogDescription className="text-accent opacity-80">
-                            Delete Your Comment Permanently
-                          </DialogDescription>
-                        </DialogHeader>
-                        <DialogFooter>
-                          <DialogClose asChild>
-                            <Button
-                              // onClick={}
-                              className="rounded-xl text-accent hover:text-accent"
-                              type="button"
-                              variant="outline"
-                            >
-                              Cancel
-                            </Button>
-                          </DialogClose>
-                          <DialogClose asChild>
-                            <Button
-                              className="rounded-xl"
-                              onClick={() => handleDeleteComment(comment.id)}
-                              variant={"destructive"}
-                              type="submit"
-                            >
-                              Delete
-                            </Button>
-                          </DialogClose>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
-                  </PopoverContent>
-                </Popover>
-              )}
-              <button
-                onClick={() => setIsReplying(true)}
-                className="ml-2 rounded-2xl"
-              >
-                <ReplyIcon className="h-5 w-5 text-accent hover:cursor-pointer" />
-              </button>
-            </div>
+                {userData?.id === comment.users.id && (
+                  <Popover>
+                    <PopoverTrigger>
+                      <KebabIcon className="h-5 w-5 text-accent" />
+                    </PopoverTrigger>
+                    <PopoverContent className="flex w-28 flex-col overflow-hidden p-0">
+                      <Button
+                        onClick={() => setEditting(true)}
+                        className="w-full rounded-none"
+                        variant={"outline"}
+                      >
+                        Edit
+                      </Button>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button
+                            className="w-full rounded-none"
+                            variant={"ghost"}
+                          >
+                            Delete
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[425px] sm:rounded-3xl">
+                          <DialogHeader>
+                            <DialogTitle className="font-bold text-accent">
+                              Delete Comment
+                            </DialogTitle>
+                            <DialogDescription className="text-accent opacity-80">
+                              Delete Your Comment Permanently
+                            </DialogDescription>
+                          </DialogHeader>
+                          <DialogFooter>
+                            <DialogClose asChild>
+                              <Button
+                                // onClick={}
+                                className="rounded-xl text-accent hover:text-accent"
+                                type="button"
+                                variant="outline"
+                              >
+                                Cancel
+                              </Button>
+                            </DialogClose>
+                            <DialogClose asChild>
+                              <Button
+                                className="rounded-xl"
+                                onClick={() => handleDeleteComment(comment.id)}
+                                variant={"destructive"}
+                                type="submit"
+                              >
+                                Delete
+                              </Button>
+                            </DialogClose>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                    </PopoverContent>
+                  </Popover>
+                )}
+                <button
+                  onClick={() => setIsReplying(true)}
+                  className="ml-2 rounded-2xl"
+                >
+                  <ReplyIcon className="h-5 w-5 text-accent hover:cursor-pointer" />
+                </button>
+              </div>
             </div>
             <div className="text-accent">{comment.comment_content}</div>
-         
-          
 
             <div className="flex items-center">
               <TriggerLikeIcon

@@ -45,9 +45,9 @@ const Sidebar = () => {
         {temporaryRole === ROLES[0] && "Admin Management Centre"}
         {temporaryRole === ROLES[1] && "Volunteer Management Centre"}
         {temporaryRole === ROLES[2] &&
-          `Welcome, ${userData.first_name} ${userData.last_name}`}
+          `Welcome, ${userData?.first_name??""} ${userData?.last_name??""}`}
         {temporaryRole === "coparent" &&
-          `Welcome, ${userData.first_name} ${userData.last_name}`}
+          `Welcome, ${userData?.first_name??""} ${userData?.last_name??""}`}
       </Title>
       <div className="mb-2 flex flex-1 justify-between lg:mb-0 lg:flex-col">
         <ul className="flex w-full items-center justify-evenly gap-0 sm:gap-2 lg:ml-4 lg:mr-8 lg:flex-col lg:items-start">
