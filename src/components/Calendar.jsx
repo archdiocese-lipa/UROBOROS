@@ -11,6 +11,8 @@ import { useState } from "react";
 import useRoleSwitcher from "@/hooks/useRoleSwitcher";
 
 const Calendar = ({ events }) => {
+
+
   const { data: getEvents } = useGetEvents();
   const [selectedShowCalendar, setSelectedShowCalendar] = useState("Events");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -41,6 +43,8 @@ const Calendar = ({ events }) => {
         description: item.event_description,
         id: item.id,
       }));
+
+      console.log("my event data",eventData)
 
   const meetingData = safeMeetings.map((meeting) => ({
     title: meeting.meeting_name,

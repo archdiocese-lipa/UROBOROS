@@ -4,6 +4,7 @@ import Calendar from "../Calendar";
 import PropTypes from "prop-types";
 
 const ParishionerDialogCalendar = ({ events }) => {
+
   return (
     <Dialog>
       <DialogTrigger asChild>
