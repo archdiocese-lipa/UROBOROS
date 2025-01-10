@@ -9,6 +9,7 @@ import Announcements from "@/pages/Announcements";
 import Family from "@/pages/Family";
 import Events from "@/pages/Events";
 import Profile from "@/pages/Profile";
+import PrivacyPolicy from "@/pages/Privacy-Policy";
 
 import RequireRole from "@/components/RequireRole";
 
@@ -22,7 +23,8 @@ const App = () => {
       <Routes>
         {/* Auth Routes */}
         <Route path="/" element={<Home />} />
-
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />{" "}
+        {/* Privacy Policy Route */}
         {/* Protected Routes */}
         <Route element={<MainLayout />}>
           {/* ========================================================= */}

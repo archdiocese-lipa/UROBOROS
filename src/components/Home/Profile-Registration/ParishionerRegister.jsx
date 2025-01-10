@@ -27,11 +27,13 @@ import { useToast } from "@/hooks/use-toast";
 import { parishionerRegisterSchema } from "@/zodSchema/ParishionerRegisterSchema";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/context/useUser";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const ParishionerRegister = () => {
   const [activeTab, setActiveTab] = useState("profile");
 
   const [isProfileDisabled, setIsProfileDisabled] = useState(false); // Disable Profile tab after submission
+  const [isAgreed, setIsAgreed] = useState(false);
   const { toast } = useToast();
 
   // Access register function from context
@@ -59,7 +61,7 @@ const ParishionerRegister = () => {
       // After successful registration
       toast({
         title: "Profile Created Successfully",
-        description: "New profile has been created.",
+        description: "Please confirm your email to complete the setup.",
       });
 
       form.reset(); // Reset the form after successful submission
@@ -244,6 +246,20 @@ const ParishionerRegister = () => {
                     />
                   </div>
                 </div>
+                <div className="text-gray-500 mt-2 flex items-center gap-1 text-xs text-primary-text">
+                  <Checkbox
+                    checked={isAgreed}
+                    onCheckedChange={(checked) => setIsAgreed(checked)}
+                  />
+                  I agree to the{" "}
+                  <a href="/privacy-policy" className="underline" target="_blank">
+                    Privacy Policy
+                  </a>{" "}
+                  and{" "}
+                  <a href="/privacy-policy" className="underline" target="_blank">
+                    Terms and Conditions.
+                  </a>
+                </div>
                 <DialogFooter>
                   <DialogClose asChild>
                     <Button type="button" variant="outline">
@@ -253,7 +269,9 @@ const ParishionerRegister = () => {
                   <Button
                     variant="primary"
                     type="submit"
-                    disabled={form.formState.isSubmitting || isLoading}
+                    disabled={
+                      form.formState.isSubmitting || isLoading || !isAgreed
+                    }
                   >
                     {isLoading ? "Submitting..." : "Register"}
                   </Button>
