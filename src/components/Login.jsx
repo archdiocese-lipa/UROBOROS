@@ -63,8 +63,8 @@ const Login = () => {
     } catch (error) {
       console.error("Login failed:", error.message);
       toast({
-        title: "Please check your inbox and confirm your email to log in.",
-        description: error.message,
+        title: error.message,
+        variant: 'destructive'
       });
     }
   };
