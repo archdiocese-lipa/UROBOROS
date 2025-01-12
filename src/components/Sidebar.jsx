@@ -1,7 +1,7 @@
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import { Icon } from "@iconify/react";
 import PropTypes from "prop-types";
-import { useUser } from "@/context/useUser"; // Adjust the path as needed
+import { useUser } from "@/context/useUser";
 
 import { Title } from "@/components/Title";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -32,12 +32,17 @@ const Sidebar = () => {
     try {
       await logout();
       navigate("/", { replace: true });
+
+      localStorage.removeItem("temporaryRole")
+      localStorage.clear();
     } catch (error) {
       console.error("Logout failed:", error.message);
     }
   };
 
   const initials = `${getInitial(userData?.first_name)}${getInitial(userData?.last_name)}`;
+
+  console.log("temp role",temporaryRole, userData?.role,availableRoles);
 
   return (
     <div className="flex lg:my-9 lg:w-64 lg:flex-col">
@@ -117,6 +122,8 @@ const SidebarProfile = ({ availableRoles, onSwitchRole }) => {
     try {
       await logout();
       navigate("/", { replace: true });
+      localStorage.removeItem("temporaryRole")
+      localStorage.clear();
     } catch (error) {
       console.error("Logout failed:", error.message);
     }
