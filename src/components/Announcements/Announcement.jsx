@@ -2,7 +2,7 @@ import { Separator } from "@/components/ui/separator";
 import { KebabIcon, GlobeIcon, PersonIcon } from "@/assets/icons/icons";
 import { Input } from "@/components/ui/input";
 import PropTypes from "prop-types";
-
+import ReactSelect from "react-select";
 import {
   Popover,
   PopoverContent,
@@ -43,7 +43,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useUser } from "@/context/useUser";
 import Comments from "../Comments";
 import TriggerLikeIcon from "../CommentComponents/TriggerLikeIcon";
-import AssignVolunteerComboBox from "../Schedule/AssignVolunteerComboBox";
+// import AssignVolunteerComboBox from "../Schedule/AssignVolunteerComboBox";
 import { useQuery } from "@tanstack/react-query";
 import { getAnnouncementMinistryId } from "@/services/AnnouncementsService";
 
@@ -105,7 +105,6 @@ const Announcement = ({
     return null;
   }
 
-
   return (
     <div>
       <div className="mb-3 flex justify-between">
@@ -113,11 +112,11 @@ const Announcement = ({
           <h2 className="text-lg font-bold text-accent">
             {announcement.title}
           </h2>
-          <div className="flex gap-2 flex-wrap items-center">
-            <p className=" text-[0.7rem] md:text-sm font-bold text-accent">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-[0.7rem] font-bold text-accent md:text-sm">
               {`${announcement?.users?.first_name} ${announcement?.users?.last_name}`}
             </p>
-            <p className="text-[0.7rem] md:text-sm text-accent">
+            <p className="text-[0.7rem] text-accent md:text-sm">
               {new Date(announcement.created_at).toDateTime()}
             </p>
             {/* <img src={GlobeIcon} alt="icon" /> */}
@@ -143,7 +142,6 @@ const Announcement = ({
                 open={editDialogOpen}
                 onOpenChange={(open) => {
                   setEditDialogOpen(open);
-          
                 }}
               >
                 <DialogTrigger className="w-full" asChild>
@@ -154,7 +152,7 @@ const Announcement = ({
                     Edit
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="no-scrollbar max-h-[75%] overflow-y-scroll rounded-md">
+                <DialogContent className=" h-fit overflow-scroll max-h-[80%] border-none px-9 pt-8 sm:rounded-3xl md:w-[600px]">
                   <DialogHeader>
                     <DialogTitle className="text-2xl font-bold text-accent">
                       Edit Announcement
@@ -214,9 +212,11 @@ const Announcement = ({
                                   // {...fieldProps}
                                   type="file"
                                   onChange={(e) => {
-                                    const file = e.target.files?.[0]
+                                    const file = e.target.files?.[0];
                                     field.onChange(file),
-                                      setImagePreview(URL.createObjectURL(file));
+                                      setImagePreview(
+                                        URL.createObjectURL(file)
+                                      );
                                   }}
                                 />
                               </FormControl>
@@ -226,7 +226,10 @@ const Announcement = ({
                         />
 
                         <div className="flex items-center justify-center">
-                          <img src={imagePreview ?? announcement.file_url} alt="" />
+                          <img
+                            src={imagePreview ?? announcement.file_url}
+                            alt=""
+                          />
                         </div>
 
                         <FormField
@@ -265,14 +268,38 @@ const Announcement = ({
                             </FormItem>
                           )}
                         />
-                        <FormField
-                          control={form.control}
-                          name="ministry"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Ministry</FormLabel>
-                              <FormControl>
-                                <AssignVolunteerComboBox
+                        {formVisibility === "private" && (
+                          <FormField
+                            control={form.control}
+                            name="ministry"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Ministry</FormLabel>
+                                <FormControl>
+                                  <ReactSelect
+                                    isMulti
+                                    options={ministries?.map((ministry) => ({
+                                      value: ministry.id,
+                                      label: `${ministry.ministry_name}`,
+                                    }))}
+                                    value={field.value.map((value) => ({
+                                      value,
+                                      label:
+                                        ministries?.find(
+                                          (ministry) => ministry.id === value
+                                        )?.ministry_name || "",
+                                    }))}
+                                    onChange={(selectedOptions) => {
+                                      field.onChange(
+                                        selectedOptions.map(
+                                          (option) => option.value
+                                        )
+                                      ); // Update field value to an array of ids
+                                    }}
+                                    placeholder="Select Ministry"
+                                    // disabled={formVisibility !== "private"}
+                                  />
+                                  {/* <AssignVolunteerComboBox
                                   options={ministries?.map((ministry) => ({
                                     value: ministry.id,
                                     label: `${ministry.ministry_name}`,
@@ -285,12 +312,13 @@ const Announcement = ({
                                   onChange={field.onChange}
                                   placeholder="Select Ministry"
                                   disabled={formVisibility !== "private"}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                                /> */}
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        )}
                         <DialogFooter>
                           <div className="flex justify-end">
                             <Button
@@ -364,11 +392,17 @@ const Announcement = ({
           </Popover>
         )}
       </div>
-      <p className="mb-4 text-start text-accent whitespace-pre-wrap leading-5">{announcement.content}</p>
+      <p className="mb-4 whitespace-pre-wrap text-start leading-5 text-accent">
+        {announcement.content}
+      </p>
 
       {announcement?.file_type &&
         announcement?.file_type.startsWith("image") && (
-          <img className="mb-1 rounded-[6px]" src={announcement.file_url} alt="file" />
+          <img
+            className="mb-1 rounded-[6px]"
+            src={announcement.file_url}
+            alt="file"
+          />
         )}
       {announcement?.file_type &&
         announcement?.file_type.startsWith("application") && (
@@ -397,11 +431,9 @@ const Announcement = ({
           />
         </div>
       </div>
-      <Separator className="mt-6 mb-3" />
+      <Separator className="mb-3 mt-6" />
 
-      <Comments
-        announcement_id={announcement?.id}
-      />
+      <Comments announcement_id={announcement?.id} />
     </div>
   );
 };
