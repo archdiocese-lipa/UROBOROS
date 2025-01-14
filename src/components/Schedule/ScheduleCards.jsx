@@ -32,24 +32,22 @@ const ScheduleCards = ({
   j,
 }) => {
   const { userData } = useUser();
-  const [disableEdit, setDisabledEdit] = useState(false)
-  
+  const [disableEdit, setDisabledEdit] = useState(false);
+
   useEffect(() => {
-    if(event.event_date){
-      const eventDate = new Date(`${event.event_date}T${event.event_time}`)
+    if (event.event_date) {
+      const eventDate = new Date(`${event.event_date}T${event.event_time}`);
       const sevenDaysAhead = new Date(
         eventDate.getTime() + 7 * 24 * 60 * 60 * 1000
-  
       );
-      const currentDate = new Date()
-      if(sevenDaysAhead < currentDate){
-        setDisabledEdit(true)
-      } else{
-        setDisabledEdit(false)
+      const currentDate = new Date();
+      if (sevenDaysAhead < currentDate) {
+        setDisabledEdit(true);
+      } else {
+        setDisabledEdit(false);
       }
     }
-  },[event.event_date])
-
+  }, [event.event_date]);
 
   return (
     <div className="relative">
@@ -64,13 +62,23 @@ const ScheduleCards = ({
           <EventIcon className="text-2xl text-accent" />
           <div>
             <p className="mb-[6px] text-base font-bold leading-none text-accent">
-              {event.event_name}
+              {`${event.event_name}, ${new Date(
+                `${event.event_date}T${event.event_time}`
+              )
+                .toLocaleTimeString("en-US", {
+                  hour: "numeric",
+                  minute: "numeric",
+                  hour12: true,
+                })
+                .replace(":", ".")
+                .replace(" ", "")
+                .toLowerCase()}`}{" "}
             </p>
             <p className="text-sm text-primary-text">{event.description}</p>
             <p className="text-sm leading-tight text-primary-text">
               {event.event_category} - {event.event_visibility}
             </p>
-            <p className="text-sm leading-none text-primary-text">
+            <p className="text-md font-bold leading-none text-primary-text">
               <span className="font-semibold">Date: </span>
               {new Date(
                 `${event.event_date}T${event.event_time}`
@@ -79,10 +87,6 @@ const ScheduleCards = ({
                 month: "short",
                 year: "numeric",
               })}
-              ,
-              {new Date(
-                `${event.event_date}T${event.event_time}`
-              ).toLocaleTimeString()}
             </p>
           </div>
         </div>
@@ -93,14 +97,16 @@ const ScheduleCards = ({
               setEditDialogOpenIndex(isOpen ? `${i}-${j}` : null)
             }
           >
-            {!disableEdit && <DialogTrigger asChild>
-              <Button
-                variant="ghost"
-                className="-mt-3 p-0 font-semibold text-accent hover:underline"
-              >
-                Edit
-              </Button>
-            </DialogTrigger>}
+            {!disableEdit && (
+              <DialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="-mt-3 p-0 font-semibold text-accent hover:underline"
+                >
+                  Edit
+                </Button>
+              </DialogTrigger>
+            )}
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Edit Events</DialogTitle>
@@ -150,13 +156,13 @@ const ScheduleCards = ({
               <EventIcon className="text-2xl text-accent" />
               <div>
                 <p className="mb-[6px] text-base font-bold leading-none text-accent">
-                  {event.event_name}
+                  {`${event.event_name}, ${new Date(`${event.event_date}T${event.event_time}`).toLocaleTimeString()}`}
                 </p>
                 <p className="text-sm text-primary-text">{event.description}</p>
                 <p className="text-sm leading-tight text-primary-text">
                   {event.event_category} - {event.event_visibility}
                 </p>
-                <p className="text-sm leading-none text-primary-text">
+                <p className="text-md font-bold leading-none text-primary-text">
                   <span className="font-semibold">Date: </span>
                   {new Date(
                     `${event.event_date}T${event.event_time}`
@@ -165,10 +171,6 @@ const ScheduleCards = ({
                     month: "short",
                     year: "numeric",
                   })}
-                  ,
-                  {new Date(
-                    `${event.event_date}T${event.event_time}`
-                  ).toLocaleTimeString()}
                 </p>
               </div>
             </div>
