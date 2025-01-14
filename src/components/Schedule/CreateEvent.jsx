@@ -220,7 +220,17 @@ const CreateEvent = ({
                           onClick={() => handleEventSelect(eventItem)}
                           className="text-gray-700 hover:bg-gray-200 mt-1 w-full rounded-md border border-secondary-accent px-4 py-2 text-left text-sm"
                         >
-                          {eventItem.event_name}
+                          {`${eventItem.event_name}, ${new Date(
+                            `1970-01-01T${eventItem.event_time}`
+                          )
+                            .toLocaleTimeString("en-US", {
+                              hour: "numeric",
+                              minute: "numeric",
+                              hour12: true,
+                            })
+                            .replace(":", ".")
+                            .replace(" ", "")
+                            .toLowerCase()}`}
                         </button>
                       ))}
                     </PopoverContent>

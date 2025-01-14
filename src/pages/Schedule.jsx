@@ -286,7 +286,7 @@ const Schedule = () => {
                                   <p className="text-sm text-primary-text">
                                     {meeting.details}
                                   </p>
-                                  <p className="text-sm leading-none text-primary-text">
+                                  <p className="text-md leading-none text-primary-text">
                                     <span className="font-semibold">
                                       Date:{" "}
                                     </span>
