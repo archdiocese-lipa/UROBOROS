@@ -76,7 +76,6 @@ export const updateEvent = async (eventData) => {
       eventTime, // formatted time from the form
       eventDescription,
       // userId, // Creator's ID
-      assignVolunteer, // Array of volunteer IDs
     } = eventData.updatedData;
 
     // Step 1: Update the event data in the 'events' table
@@ -99,31 +98,31 @@ export const updateEvent = async (eventData) => {
       throw new Error(eventError.message); // Handle any errors
     }
 
-    // Step 2: Remove all existing volunteer assignments for the event
-    const { error: removeError } = await supabase
-      .from("event_volunteers")
-      .delete()
-      .eq("event_id", eventData.eventId); // Remove all existing volunteer assignments for the event
+    // // Step 2: Remove all existing volunteer assignments for the event
+    // const { error: removeError } = await supabase
+    //   .from("event_volunteers")
+    //   .delete()
+    //   .eq("event_id", eventData.eventId); // Remove all existing volunteer assignments for the event
 
-    if (removeError) {
-      throw new Error(removeError.message); // Handle any errors
-    }
+    // if (removeError) {
+    //   throw new Error(removeError.message); // Handle any errors
+    // }
 
-    // Step 3: Insert new volunteer assignments (if any volunteers are selected)
-    if (assignVolunteer?.length > 0) {
-      const volunteerData = assignVolunteer.map((volunteerId) => ({
-        event_id: eventData.eventId, // Use the event ID to assign volunteers
-        volunteer_id: volunteerId,
-      }));
+    // // Step 3: Insert new volunteer assignments (if any volunteers are selected)
+    // if (assignVolunteer?.length > 0) {
+    //   const volunteerData = assignVolunteer.map((volunteerId) => ({
+    //     event_id: eventData.eventId, // Use the event ID to assign volunteers
+    //     volunteer_id: volunteerId,
+    //   }));
 
-      const { error: volunteerError } = await supabase
-        .from("event_volunteers")
-        .insert(volunteerData);
+    //   const { error: volunteerError } = await supabase
+    //     .from("event_volunteers")
+    //     .insert(volunteerData);
 
-      if (volunteerError) {
-        throw new Error(volunteerError.message); // Handle any errors
-      }
-    }
+    //   if (volunteerError) {
+    //     throw new Error(volunteerError.message); // Handle any errors
+    //   }
+    // }
 
     return { success: true, data: updatedEvent }; // Return success structure
   } catch (error) {

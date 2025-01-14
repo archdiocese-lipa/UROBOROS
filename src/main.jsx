@@ -1,7 +1,7 @@
 // /src/index.js (React 18 setup)
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import {  QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'; // Import Devtools
 import { Toaster } from '@/components/ui/toaster';
 import App from '@/App';
