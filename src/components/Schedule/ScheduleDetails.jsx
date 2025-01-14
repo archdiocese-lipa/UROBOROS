@@ -328,7 +328,7 @@ const ScheduleDetails = ({ queryKey }) => {
           head: [["Parents/Guardians", "Contact", "Status"]],
           body: attendedParents?.map((parent) => [
             `${parent.first_name} ${parent.last_name}`,
-            parent.contact_number_number || "N/A",
+            parent.contact_number || "N/A",
             "Attended",
           ]),
           theme: "striped",
@@ -511,6 +511,13 @@ const ScheduleDetails = ({ queryKey }) => {
       <div className="flex flex-wrap justify-between">
         <div>
           <Title>{event?.event_name}</Title>
+          <Label className="text-lg text-primary-text">
+            {new Date(event?.event_date).toLocaleDateString("en-GB", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            })}
+          </Label>
           <Description>{event?.event_description}</Description>
         </div>
         <div className="flex">
@@ -676,7 +683,7 @@ const ScheduleDetails = ({ queryKey }) => {
                   />
                   <div className="mt-2 flex justify-end">
                     <DialogClose>
-                    <Button type="submit">Add</Button>
+                      <Button type="submit">Add</Button>
                     </DialogClose>
                   </div>
                 </form>
@@ -792,7 +799,7 @@ const ScheduleDetails = ({ queryKey }) => {
                 <div className="flex justify-between">
                   <div className="flex items-center gap-2">
                     <h3 className="text-xl font-semibold text-accent">
-                      Parent(s)/Guardian(s)
+                      Parent(s)/Co-Parent(s)
                     </h3>
                     {!disableSchedule && (
                       <AddAttendee
@@ -830,7 +837,7 @@ const ScheduleDetails = ({ queryKey }) => {
                     <TableRow>
                       <TableHead className="rounded-l-lg" />
                       <TableHead>Name</TableHead>
-                      <TableHead>Contact Tel No.</TableHead>
+                      <TableHead>Contact</TableHead>
                       <TableHead>Time In</TableHead>
                       <TableHead>Action</TableHead>
                       <TableHead className="rounded-r-lg"></TableHead>
