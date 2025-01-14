@@ -799,7 +799,7 @@ const ScheduleDetails = ({ queryKey }) => {
                 <div className="flex justify-between">
                   <div className="flex items-center gap-2">
                     <h3 className="text-xl font-semibold text-accent">
-                      Parent(s)/Co-Parent(s)
+                      Parent(s)/ Guardian(s)
                     </h3>
                     {!disableSchedule && (
                       <AddAttendee
