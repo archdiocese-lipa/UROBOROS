@@ -152,7 +152,7 @@ const Announcement = ({
                     Edit
                   </Button>
                 </DialogTrigger>
-                <DialogContent className=" h-fit overflow-scroll max-h-[80%] border-none px-9 pt-8 sm:rounded-3xl md:w-[600px]">
+                <DialogContent className=" h-fit overflow-scroll no-scrollbar max-h-[80%] border-none px-9 pt-8 sm:rounded-3xl md:w-[600px]">
                   <DialogHeader>
                     <DialogTitle className="text-2xl font-bold text-accent">
                       Edit Announcement

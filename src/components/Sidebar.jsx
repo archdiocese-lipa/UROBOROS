@@ -32,9 +32,7 @@ const Sidebar = () => {
     try {
       await logout();
       navigate("/", { replace: true });
-
-      localStorage.removeItem("temporaryRole")
-      localStorage.clear();
+      localStorage.removeItem("temporaryRole");
     } catch (error) {
       console.error("Logout failed:", error.message);
     }
@@ -42,17 +40,15 @@ const Sidebar = () => {
 
   const initials = `${getInitial(userData?.first_name)}${getInitial(userData?.last_name)}`;
 
-  console.log("temp role",temporaryRole, userData?.role,availableRoles);
-
   return (
     <div className="flex lg:my-9 lg:w-64 lg:flex-col">
       <Title className="mb-12 ml-9 hidden max-w-[201px] lg:block">
         {temporaryRole === ROLES[0] && "Admin Management Centre"}
         {temporaryRole === ROLES[1] && "Volunteer Management Centre"}
         {temporaryRole === ROLES[2] &&
-          `Welcome, ${userData?.first_name??""} ${userData?.last_name??""}`}
+          `Welcome, ${userData?.first_name ?? ""} ${userData?.last_name ?? ""}`}
         {temporaryRole === "coparent" &&
-          `Welcome, ${userData?.first_name??""} ${userData?.last_name??""}`}
+          `Welcome, ${userData?.first_name ?? ""} ${userData?.last_name ?? ""}`}
       </Title>
       <div className="mb-2 flex flex-1 justify-between lg:mb-0 lg:flex-col">
         <ul className="flex w-full items-center justify-evenly gap-0 sm:gap-2 lg:ml-4 lg:mr-8 lg:flex-col lg:items-start">
@@ -122,8 +118,7 @@ const SidebarProfile = ({ availableRoles, onSwitchRole }) => {
     try {
       await logout();
       navigate("/", { replace: true });
-      localStorage.removeItem("temporaryRole")
-      localStorage.clear();
+      localStorage.removeItem("temporaryRole");
     } catch (error) {
       console.error("Logout failed:", error.message);
     }
@@ -207,7 +202,7 @@ const SidebarLink = ({ label, link, icon, selectedIcon, isActive }) => {
           <p className="hidden lg:block">{label}</p>
         </Link>
       </li>
-      <p className="mt-1 sm:mt-0 text-center text-[7px] font-bold text-accent lg:hidden">
+      <p className="mt-1 text-center text-[7px] font-bold text-accent sm:mt-0 lg:hidden">
         {label}
       </p>
     </div>
