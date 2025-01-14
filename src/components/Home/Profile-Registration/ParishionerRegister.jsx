@@ -109,7 +109,9 @@ const ParishionerRegister = () => {
   return (
     <Dialog onOpenChange={handleDialogClose}>
       <DialogTrigger asChild>
-        <Button variant="landingsecondary">Create New Profile</Button>
+        <Button variant="landingsecondary" disabled={true}>
+          Create New Profile
+        </Button>
       </DialogTrigger>
       <DialogContent
         className={cn(
@@ -252,11 +254,19 @@ const ParishionerRegister = () => {
                     onCheckedChange={(checked) => setIsAgreed(checked)}
                   />
                   I agree to the{" "}
-                  <a href="/privacy-policy" className="underline" target="_blank">
+                  <a
+                    href="/privacy-policy"
+                    className="underline"
+                    target="_blank"
+                  >
                     Privacy Policy
                   </a>{" "}
                   and{" "}
-                  <a href="/privacy-policy" className="underline" target="_blank">
+                  <a
+                    href="/privacy-policy"
+                    className="underline"
+                    target="_blank"
+                  >
                     Terms and Conditions.
                   </a>
                 </div>
