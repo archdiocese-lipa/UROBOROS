@@ -51,7 +51,7 @@ const Home = () => {
           {"Growing in Faith\nTogether"}
         </p>
         <p className="absolute top-[calc(12rem_+_24dvw)] w-screen max-w-[80dvw] whitespace-pre text-[5.8dvw] font-medium text-accent sm:top-[calc(20dvh_+_12rem)] sm:max-w-xl sm:text-[2.6rem] lg:bottom-[calc(50dvh_-_14dvh)] lg:top-auto lg:ml-[24.2dvw] lg:max-w-full lg:text-[4.6dvh]">
-          {"Engaging our Parishioner in the \nJoy of Gospel"}
+          {"Engaging our Parishioners in the \nJoy of Gospel"}
         </p>
       </div>
       <div className="relative flex h-[10rem] w-full items-end bg-[#663F30] pb-2 pl-4 sm:h-[1.8rem]">
