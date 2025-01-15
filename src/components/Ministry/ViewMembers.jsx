@@ -33,8 +33,15 @@ const ViewMembers = ({
   const [openDialog, setOpenDialog] = useState(false);
 
   const formatDateToUK = (dateString) => {
-    const date = new Date(dateString); // Convert the date string to a Date object
-    return new Intl.DateTimeFormat("en-GB").format(date); // Format it to DD/MM/YYYY
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    }).format(date);
   };
 
   const formattedCreatedDate = formatDateToUK(createdDate);

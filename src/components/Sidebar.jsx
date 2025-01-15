@@ -202,7 +202,7 @@ const SidebarLink = ({ label, link, icon, selectedIcon, isActive }) => {
           <p className="hidden lg:block">{label}</p>
         </Link>
       </li>
-      <p className="mt-1 text-center text-[7px] font-bold text-accent sm:mt-0 lg:hidden">
+      <p className="mt-1 text-center text-[8px] font-bold text-accent sm:mt-0 lg:hidden">
         {label}
       </p>
     </div>

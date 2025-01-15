@@ -74,7 +74,7 @@ const AssignMembers = ({ ministryId, title }) => {
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="font-normal">
-            Assign members to <span className="font-bold">{`"${title}"`}</span>
+            Assign member to <span className="font-bold">{`"${title}"`}</span>
           </DialogTitle>
           <DialogDescription className="sr-only">
             This action cannot be undone. This will permanently delete your
