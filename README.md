@@ -1,2 +1,1 @@
-What is Project UROBOROS?
 Project UROBOROS is a web-based tool that simplifies event management and participation. It supports QR code-based registrations, offers announcements with interactive components, and provides users a full calendar view for simple event monitoring. In order to ensure efficient operation and community involvement, the program has specific features for administrators, volunteers, and parishioners.
