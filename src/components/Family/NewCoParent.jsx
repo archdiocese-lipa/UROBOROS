@@ -74,10 +74,10 @@ const NewCoParent = forwardRef(
         >
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Set up account for Co-Parent</DialogTitle>
+              <DialogTitle>Set up account for Parent/Guardian</DialogTitle>
               <DialogDescription>
                 Complete the details below to set up an account for the
-                co-parent. This will enable shared access and collaboration on
+                parent/guardian. This will enable shared access and collaboration on
                 family-related information.
               </DialogDescription>
               <Form {...form}>

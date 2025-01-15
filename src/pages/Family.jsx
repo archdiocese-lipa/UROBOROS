@@ -76,7 +76,7 @@ const Family = () => {
       {/* Family Members */}
       <div className="flex flex-col justify-center gap-2 lg:flex-row">
         <div className="no-scrollbar h-96 grow-[3] overflow-scroll rounded-xl border border-primary p-5 lg:h-auto">
-          <Label className="text-primary-text">Parents/Guardians</Label>
+          <Label className="text-primary-text">Parent(s)/Guardian(s)</Label>
           <Table>
             <TableHeader className="rounded-xl bg-primary">
               <TableRow>
@@ -120,7 +120,7 @@ const Family = () => {
                               onSelect={() => handleOpenDialog(parent.id)}
                               disabled={parent.parishioner_id !== null}
                             >
-                              Set up Co-Parent Account
+                              Set up Parent/Guardian Account
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>
                               <EditParent

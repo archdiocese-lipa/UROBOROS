@@ -2,7 +2,6 @@ import { useState, useEffect, forwardRef } from "react";
 import PropTypes from "prop-types";
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -11,6 +10,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useDeleteParent } from "@/hooks/useFamily";
+import { Button } from "../ui/button";
 
 const DeleteParent = forwardRef(
   ({ parentId, openModal = false, onClose }, ref) => {
@@ -44,9 +44,9 @@ const DeleteParent = forwardRef(
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDeleteParent}>
+              <Button variant="destructive" onClick={handleDeleteParent}>
                 Continue
-              </AlertDialogAction>
+              </Button>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
