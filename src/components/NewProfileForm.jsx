@@ -40,7 +40,7 @@ const NewProfileForm = ({ id = "new-user-form", user, onClose }) => {
       last_name: user?.last_name || "",
       contact_number: user?.contact_number || "",
       role: user?.role || "",
-      email: user?.email || "",
+      email: "",
       password: "",
       confirm_password: "",
     },
@@ -143,20 +143,23 @@ const NewProfileForm = ({ id = "new-user-form", user, onClose }) => {
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="email"
-          type="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <FormControl>
-                <Input placeholder="e.g john@email.com" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {!user && (
+          <FormField
+            control={form.control}
+            name="email"
+            type="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g john@email.com" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
         {!user && (
           <div className="flex gap-3">
             <FormField

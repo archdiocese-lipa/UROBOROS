@@ -123,6 +123,7 @@ const Requests = () => {
           <TabsList>
             <TabsTrigger value="volunteer">Volunteers</TabsTrigger>
             <TabsTrigger value="parishioner">Parishioners</TabsTrigger>
+            <TabsTrigger value="admin">Admins</TabsTrigger>
           </TabsList>
         </Tabs>
         <div className="mt-2 flex h-fit w-fit items-center gap-3">
