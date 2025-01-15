@@ -75,62 +75,64 @@ const MinistryCard = ({ ministryId, title, description, createdDate }) => {
 
   return (
     <Card className="rounded-2xl border text-primary-text">
-      <CardHeader className="relative">
-        <CardTitle className="font-bold">{title}</CardTitle>
+      <CardHeader className="text-pretty">
+        <div className="flex items-center justify-between">
+          <CardTitle className="font-bold">{title}</CardTitle>
+          <div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="transparent" className="h-5 w-5">
+                  <ThreeDotsIcon className="text-black" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleEdit}>
+                  Edit
+                </DropdownMenuItem>{" "}
+                {/* Trigger Edit */}
+                <Dialog
+                  open={isDeleteDialogOpen}
+                  onOpenChange={setDeleteDialogOpen}
+                >
+                  <DialogTrigger asChild>
+                    <DropdownMenuItem
+                      onSelect={(event) => {
+                        event.preventDefault(); // Prevent the dropdown from closing
+                        setDeleteDialogOpen(true); // Open the delete confirmation dialog
+                      }}
+                    >
+                      Delete
+                    </DropdownMenuItem>
+                  </DialogTrigger>
+                  <DialogContent className="rounded-xl p-6 text-primary-text">
+                    <DialogHeader>
+                      <DialogTitle>Confirm Delete</DialogTitle>
+                      <DialogDescription>
+                        Are you sure you want to delete this ministry? This
+                        action cannot be undone.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                      <DialogClose asChild>
+                        <Button variant="outline">Cancel</Button>
+                      </DialogClose>
+                      <Button onClick={handleDelete} disabled={isDeleting}>
+                        {isDeleting ? "Deleting..." : "Delete"}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
         <CardDescription>{description}</CardDescription>
         <p>
           <span className="font-medium">Created: </span>
           {formattedCreatedDate}
         </p>
-        <div className="absolute right-5 top-5">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="transparent" className="h-5 w-5">
-                <ThreeDotsIcon className="text-black" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleEdit}>
-                Edit
-              </DropdownMenuItem>{" "}
-              {/* Trigger Edit */}
-              <Dialog
-                open={isDeleteDialogOpen}
-                onOpenChange={setDeleteDialogOpen}
-              >
-                <DialogTrigger asChild>
-                  <DropdownMenuItem
-                    onSelect={(event) => {
-                      event.preventDefault(); // Prevent the dropdown from closing
-                      setDeleteDialogOpen(true); // Open the delete confirmation dialog
-                    }}
-                  >
-                    Delete
-                  </DropdownMenuItem>
-                </DialogTrigger>
-                <DialogContent className="rounded-xl p-6 text-primary-text">
-                  <DialogHeader>
-                    <DialogTitle>Confirm Delete</DialogTitle>
-                    <DialogDescription>
-                      Are you sure you want to delete this ministry? This action
-                      cannot be undone.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <DialogFooter>
-                    <DialogClose asChild>
-                      <Button variant="outline">Cancel</Button>
-                    </DialogClose>
-                    <Button onClick={handleDelete} disabled={isDeleting}>
-                      {isDeleting ? "Deleting..." : "Delete"}
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
       </CardHeader>
       <CardContent>
         <div className="flex flex-col gap-y-3 rounded-2xl bg-primary px-5 py-3">
