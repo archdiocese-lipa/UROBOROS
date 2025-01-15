@@ -25,6 +25,5 @@ export const editingUserSchema = z.object({
     message:
       "Contact number must be a valid phone number with exactly 11 digits.",
   }),
-  email: z.string().email().min(1, "Email is Required"),
   role: z.string().min(1, "Role is Required"),
 });
