@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect,memo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import QRCode from "qrcode";
@@ -85,10 +85,11 @@ import {
 } from "../ui/form";
 import VolunteerSelect from "./VolunteerSelect";
 
-const ScheduleDetails = ({ queryKey }) => {
+
+const ScheduleDetails = () => {
   const [qrCode, setQRCode] = useState(null);
   const [disableSchedule, setDisableSchedule] = useState(false);
-  const [urlPrms] = useSearchParams();
+  const [urlPrms, setUrlPrms] = useSearchParams();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const eventId = urlPrms.get("event") || null;
   const printRef = useRef(null);
@@ -123,9 +124,16 @@ const ScheduleDetails = ({ queryKey }) => {
       });
     },
     onSettled: () => {
-      queryClient.invalidateQueries({
-        queryKey,
-      });
+      queryClient.invalidateQueries([
+        "schedules",
+        "events",
+        userData,
+        urlPrms.get("month")?.toString(),
+        urlPrms.get("year")?.toString(),
+        urlPrms.get("query")?.toString() || "",
+      ]);
+      urlPrms.delete("event");
+      setUrlPrms(urlPrms);
     },
   });
 
@@ -178,7 +186,7 @@ const ScheduleDetails = ({ queryKey }) => {
   };
 
   const downloadExcel = () => {
-    //Get the list of volunteers and replacement volunteers
+    // Get the list of volunteers and replacement volunteers
     const volunteerList = eventvolunteers
       ? eventvolunteers.map((volunteer) => {
           if (!volunteer?.replaced) {
@@ -187,67 +195,84 @@ const ScheduleDetails = ({ queryKey }) => {
           return `${volunteer?.volunteer_replacement?.first_name?.toFirstUpperCase()} ${volunteer?.volunteer_replacement?.last_name?.toFirstUpperCase()}`;
         })
       : [];
-
+  
     const headings = [
-      // ["Field", "Value"],
       ["Event Name", event?.event_name || "Unknown Event"],
       ["Event Date", event?.event_date || "Unknown Date"],
       ["Event Category", event?.event_category || "Unknown Category"],
-      ["Total Attended", attendance?.data?.length || "Unknown Category"],
+      ["Total Attended", attendanceCount?.attended || "Unknown"],
       ["Assigned Volunteers", volunteerList.join(", ") || "No Volunteers"],
       [],
     ];
-
-    //combine data of parents and children
+  
+    // Combine data of parents and children, keeping only those who attended
     const combinedData =
-      attendance?.data?.flatMap((family) => [
-        ["Family Surname", family?.family_surname],
-        ["Parents", "Name", "Contact", "Time In"],
-        ...family.parents.map((parent) => [
-          "",
-          `${parent?.first_name} ${parent?.last_name}`,
-          `${parent?.contact_number}`,
-          `${
-            parent.time_attended
-              ? new Date(parent.time_attended).toLocaleTimeString("en-GB", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  hour12: true,
-                })
-              : "--/--"
-          }`,
-        ]),
-        ["Children", "Name", "Contact", "Time In"],
-        ...family.children.map((child) => [
-          "",
-          `${child?.first_name} ${child?.last_name}`,
-          `${child?.contact_number ?? "N/A"}`,
-          `${
-            child.time_attended
-              ? new Date(child.time_attended).toLocaleTimeString("en-GB", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  hour12: true,
-                })
-              : "--/--"
-          }`,
-        ]),
-        [],
-      ]) || [];
-
-    //combine the heading and the attendance
+      attendance?.data
+        ?.filter(
+          (family) =>
+            family.parents.some((parent) => parent.time_attended) ||
+            family.children.some((child) => child.time_attended)
+        )
+        .flatMap((family) => {
+          // Filter parents and children who attended
+          const attendedParents = family.parents.filter(
+            (parent) => parent.time_attended
+          );
+          const attendedChildren = family.children.filter(
+            (child) => child.time_attended
+          );
+  
+          return [
+            ["Family Surname", family?.family_surname],
+            ...(attendedParents.length > 0
+              ? [
+                  ["Parents", "Name", "Contact", "Time In"],
+                  ...attendedParents.map((parent) => [
+                    "",
+                    `${parent?.first_name} ${parent?.last_name}`,
+                    `${parent?.contact_number}`,
+                    new Date(parent.time_attended).toLocaleTimeString("en-GB", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: true,
+                    }),
+                  ]),
+                ]
+              : []),
+            ...(attendedChildren.length > 0
+              ? [
+                  ["Children", "Name", "Contact", "Time In"],
+                  ...attendedChildren.map((child) => [
+                    "",
+                    `${child?.first_name} ${child?.last_name}`,
+                    `${child?.contact_number ?? "N/A"}`,
+                    new Date(child.time_attended).toLocaleTimeString("en-GB", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: true,
+                    }),
+                  ]),
+                ]
+              : []),
+            [],
+          ];
+        }) || [];
+  
+    // Combine the heading and the attendance
     const formattedData = [...headings, [], ...combinedData];
-
+  
     // Converts data to worksheet
     const worksheet = XLSX.utils.aoa_to_sheet(formattedData);
-
+  
     // Creates a new workbook and appends the worksheet
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
-
+  
     // Writes workbook to file
     XLSX.writeFile(workbook, `${event?.event_name}.xlsx`);
   };
+  
+  
 
   // console.log("attendees", attendance.data);
 
@@ -978,7 +1003,7 @@ const ScheduleDetails = ({ queryKey }) => {
   );
 };
 ScheduleDetails.propTypes = {
-  queryKey: PropTypes.array,
+  filter: PropTypes.string,
 };
 
-export default ScheduleDetails;
+export default memo(ScheduleDetails);

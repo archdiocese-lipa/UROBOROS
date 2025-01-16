@@ -153,7 +153,22 @@ export const getMeetings = async ({
     if (selectedYear && selectedMonth) {
       const formattedMonth = String(selectedMonth).padStart(2, "0");
       const selectedDate = `${selectedYear}-${formattedMonth}`; // Example: "2024-12"
-      filters.date = selectedDate; // Assume `date` is a field in your meetings table
+      const [year, month] = selectedDate.split("-");
+
+      // Get the first day of the month
+      const startOfMonth = `${year}-${month}-01`;
+
+      // Get the last day of the month
+      const lastDayOfMonth = new Date(year, month, 0).getDate(); // `month` is 0-indexed
+      const endOfMonth = `${year}-${month}-${lastDayOfMonth}`;
+
+      filters.gte = {
+        "meeting_date": startOfMonth
+      }
+      filters.lte = {
+        "meeting_date": endOfMonth
+      }
+
     }
 
     // Filter by meeting name (optional query search)
@@ -197,6 +212,7 @@ export const getMeetings = async ({
       pageSize,
       filters,
     });
+
 
     return data;
   } catch (error) {

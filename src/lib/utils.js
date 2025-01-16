@@ -66,22 +66,22 @@ const paginate = async ({
     }
 
     // Apply date filters (this is where the date filter is handled)
-    if (filters.date) {
-      // Assuming filters.date is in the 'YYYY-MM' format
-      const [year, month] = filters.date.split("-");
+    // if (filters.date) {
+    //   // Assuming filters.date is in the 'YYYY-MM' format
+    //   const [year, month] = filters.date.split("-");
 
-      // Get the first day of the month
-      const startOfMonth = `${year}-${month}-01`;
+    //   // Get the first day of the month
+    //   const startOfMonth = `${year}-${month}-01`;
 
-      // Get the last day of the month
-      const lastDayOfMonth = new Date(year, month, 0).getDate(); // `month` is 0-indexed
-      const endOfMonth = `${year}-${month}-${lastDayOfMonth}`;
+    //   // Get the last day of the month
+    //   const lastDayOfMonth = new Date(year, month, 0).getDate(); // `month` is 0-indexed
+    //   const endOfMonth = `${year}-${month}-${lastDayOfMonth}`;
 
-      // Apply filtering based on the year and month
-      supabaseQuery = supabaseQuery
-        .gte("event_date", startOfMonth) // Filter events from the start of the month
-        .lte("event_date", endOfMonth); // Filter events until the last day of the month
-    }
+    //   // Apply filtering based on the year and month
+    //   supabaseQuery = supabaseQuery
+    //     .gte("event_date", startOfMonth) // Filter events from the start of the month
+    //     .lte("event_date", endOfMonth); // Filter events until the last day of the month
+    // }
 
     // Apply gte and lte filters if provided
     if (filters.gte) {

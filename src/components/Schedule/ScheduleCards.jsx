@@ -34,6 +34,7 @@ const ScheduleCards = ({
   const { userData } = useUser();
   const [disableEdit, setDisabledEdit] = useState(false);
 
+
   useEffect(() => {
     if (event.event_date) {
       const eventDate = new Date(`${event.event_date}T${event.event_time}`);
@@ -72,7 +73,7 @@ const ScheduleCards = ({
                 })
                 .replace(":", ".")
                 .replace(" ", "")
-                .toLowerCase()}`}{" "}
+                .toLowerCase()}`}
             </p>
             <p className="text-sm text-primary-text">{event.description}</p>
             <p className="text-sm leading-tight text-primary-text">
@@ -237,7 +238,7 @@ const ScheduleCards = ({
   );
 };
 ScheduleCards.propTypes = {
-  editDialogOpenIndex: PropTypes.string,
+  editDialogOpenIndex: PropTypes.bool.isRequired,
   setEditDialogOpenIndex: PropTypes.func.isRequired,
   event: PropTypes.shape({
     id: PropTypes.string.isRequired,
@@ -251,7 +252,7 @@ ScheduleCards.propTypes = {
   onEventClick: PropTypes.func.isRequired,
   urlPrms: PropTypes.object.isRequired,
   filter: PropTypes.string.isRequired,
-  sheetEditDialogOpenIndex: PropTypes.string,
+  sheetEditDialogOpenIndex: PropTypes.bool.isRequired,
   setSheetEditDialogOpenIndex: PropTypes.func.isRequired,
   i: PropTypes.number.isRequired,
   j: PropTypes.number.isRequired,

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
-import { useState } from "react";
+import { useState,memo } from "react";
 
 import { Description, Title } from "@/components/Title";
 import {
@@ -28,6 +28,7 @@ import { Button } from "@/components/ui/button"; // Assuming you have a Button c
 import { Icon } from "@iconify/react"; // Assuming you have an Icon component
 import useDeleteMeeting from "@/hooks/useDeleteMeeting"; // Import the delete hook
 import Loading from "../Loading";
+
 
 const MeetingDetails = () => {
   const [urlPrms] = useSearchParams();
@@ -64,6 +65,7 @@ const MeetingDetails = () => {
         <Description>Select a Meeting to view and configure</Description>
       </div>
     );
+
 
   const formatTime = (time) => {
     if (!time) return ""; // Handle null/undefined cases
@@ -192,4 +194,4 @@ const MeetingDetails = () => {
   );
 };
 
-export default MeetingDetails;
+export default memo(MeetingDetails);
