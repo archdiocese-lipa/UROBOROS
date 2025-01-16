@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect,memo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import QRCode from "qrcode";
@@ -85,10 +85,11 @@ import {
 } from "../ui/form";
 import VolunteerSelect from "./VolunteerSelect";
 
-const ScheduleDetails = ({ queryKey }) => {
+
+const ScheduleDetails = () => {
   const [qrCode, setQRCode] = useState(null);
   const [disableSchedule, setDisableSchedule] = useState(false);
-  const [urlPrms] = useSearchParams();
+  const [urlPrms, setUrlPrms] = useSearchParams();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const eventId = urlPrms.get("event") || null;
   const printRef = useRef(null);
@@ -123,9 +124,16 @@ const ScheduleDetails = ({ queryKey }) => {
       });
     },
     onSettled: () => {
-      queryClient.invalidateQueries({
-        queryKey,
-      });
+      queryClient.invalidateQueries([
+        "schedules",
+        "events",
+        userData,
+        urlPrms.get("month")?.toString(),
+        urlPrms.get("year")?.toString(),
+        urlPrms.get("query")?.toString() || "",
+      ]);
+      urlPrms.delete("event");
+      setUrlPrms(urlPrms);
     },
   });
 
@@ -978,7 +986,7 @@ const ScheduleDetails = ({ queryKey }) => {
   );
 };
 ScheduleDetails.propTypes = {
-  queryKey: PropTypes.array,
+  filter: PropTypes.string,
 };
 
-export default ScheduleDetails;
+export default memo(ScheduleDetails);

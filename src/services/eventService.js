@@ -142,13 +142,28 @@ export const getEvents = async ({
 } = {}) => {
   try {
     const filters = {};
+
     // Apply filters for the selected year and month
     if (selectedYear && selectedMonth) {
       // Create a filter for events that fall within the selected month of the selected year
       const formattedMonth = String(selectedMonth).padStart(2, "0");
       const selectedDate = `${selectedYear}-${formattedMonth}`; // Example: "2024-12"
 
-      filters.date = selectedDate; // Assume `date` is a field in your events table
+      const [year, month] = selectedDate.split("-");
+
+      // Get the first day of the month
+      const startOfMonth = `${year}-${month}-01`;
+
+      // Get the last day of the month
+      const lastDayOfMonth = new Date(year, month, 0).getDate(); // `month` is 0-indexed
+      const endOfMonth = `${year}-${month}-${lastDayOfMonth}`;
+
+      filters.gte = {
+        "event_date": startOfMonth
+      }
+      filters.lte = {
+        "event_date": endOfMonth
+      }
     }
     if (query) {
       filters.ilike = { event_name: query };
@@ -175,6 +190,8 @@ export const getEvents = async ({
     const order = [
       { column: "event_date", ascending: true }, // Descending order by created_at
     ];
+
+    // console.log("filters",filters)
     // Fetch data using pagination
     const data = await paginate({
       key: "events",
@@ -184,6 +201,7 @@ export const getEvents = async ({
       filters,
       order,
     });
+    // console.log("backend data",data)
 
     return data;
   } catch (error) {

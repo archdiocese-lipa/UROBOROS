@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useInfiniteQuery } from "@tanstack/react-query";
 Sheet;
@@ -26,7 +26,6 @@ import { getEvents } from "@/services/eventService";
 import { getMeetings } from "@/services/meetingService";
 import { useUser } from "@/context/useUser";
 
-import { cn } from "@/lib/utils";
 import { Search, EventIcon } from "@/assets/icons/icons";
 import { ROLES } from "@/constants/roles";
 
@@ -36,16 +35,16 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import VolunteerDialogCalendar from "@/components/Schedule/VolunteerDialogCalendar";
 import { useDebounce } from "@/hooks/useDebounce";
 import ScheduleCards from "@/components/Schedule/ScheduleCards";
+import MeetingCards from "@/components/Schedule/MeetingCards";
 
 const Schedule = () => {
-  const [filter, setFilter] = useState("events");
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [sheetEditDialogOpenIndex, setSheetEditDialogOpenIndex] =
     useState(false);
   const [editDialogOpenIndex, setEditDialogOpenIndex] = useState(null);
   const [urlPrms, setUrlPrms] = useSearchParams();
+  const [filter, setFilter] = useState(urlPrms.get("filter")?.toString());
+
   const { userData } = useUser();
 
   const { data, isLoading, hasNextPage, fetchNextPage } = useInfiniteQuery({
@@ -54,8 +53,8 @@ const Schedule = () => {
       filter,
       urlPrms.get("query")?.toString() || "",
       userData,
-      selectedYear, // Added selectedYear
-      selectedMonth, // Added selectedMonth
+      urlPrms.get("year")?.toString(),
+      urlPrms.get("month")?.toString(),
     ],
     queryFn: async ({ pageParam }) => {
       let response;
@@ -65,8 +64,8 @@ const Schedule = () => {
           query: urlPrms.get("query")?.toString() || "",
           pageSize: 10,
           user: userData,
-          selectedYear,
-          selectedMonth,
+          selectedYear: Number(urlPrms.get("year")),
+          selectedMonth: Number(urlPrms.get("month")?.toString()),
         });
       } else if (filter === "meetings") {
         response = await getMeetings({
@@ -74,6 +73,8 @@ const Schedule = () => {
           query: urlPrms.get("query")?.toString() || "",
           pageSize: 10,
           user: userData,
+          selectedYear: Number(urlPrms.get("year")),
+          selectedMonth: Number(urlPrms.get("month")?.toString()),
         });
       }
       return response;
@@ -86,38 +87,53 @@ const Schedule = () => {
 
   const { ref } = useInterObserver(fetchNextPage);
 
-  const [query, setQuery] = useState("");
-  const debouncedSearch = useDebounce(query, 300);
-
-  const onQuery = (e) => {
+  const [query, setQuery] = useState(urlPrms.get("query")?.toString() || "");
+  const debouncedSearch = useDebounce(query, 600);
+  const onQuery = useCallback((e) => {
     setQuery(e.target.value);
-  };
+  }, []);
 
   useEffect(() => {
-    // Directly modify the existing urlPrms
-    if (debouncedSearch === "") {
+    if (!urlPrms.get("filter")) {
+      urlPrms.set("filter", "events");
+    }
+    if (!urlPrms.get("year")) {
+      urlPrms.set("year", new Date().getFullYear());
+    }
+    if (!urlPrms.get("month")) {
+      urlPrms.set("month", new Date().getMonth() + 1);
+    }
+    if (query === "") {
+     
       urlPrms.delete("query");
     } else {
       urlPrms.set("query", debouncedSearch);
     }
 
-    // Update the URL search params
     setUrlPrms(urlPrms);
   }, [debouncedSearch, urlPrms]);
 
-  const onEventClick = (eventId) => {
-    urlPrms.set("event", eventId);
-    urlPrms.delete("meeting");
-    setUrlPrms(urlPrms);
-  };
+  const onEventClick = useCallback(
+    (eventId) => {
+      urlPrms.set("event", eventId);
+      urlPrms.delete("meeting");
+      setUrlPrms(urlPrms);
+    },
+    [urlPrms]
+  );
 
-  const onMeetingClick = (meetingId) => {
-    urlPrms.set("meeting", meetingId);
-    urlPrms.delete("event");
-    setUrlPrms(urlPrms);
-  };
+  const onMeetingClick = useCallback(
+    (meetingId) => {
+      urlPrms.set("meeting", meetingId);
+      urlPrms.delete("event");
+      setUrlPrms(urlPrms);
+    },
+    [urlPrms]
+  );
 
   const onFilterChange = (value) => {
+    urlPrms.set("filter", value);
+    setUrlPrms(urlPrms);
     setFilter(value);
   };
 
@@ -172,10 +188,11 @@ const Schedule = () => {
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 transform text-2xl text-accent" />
             <Input
+            value={query}
+              defaultValue={urlPrms.get("query")?.toString()}
               onChange={onQuery}
               className="border-none pl-12"
               placeholder="Search schedules"
-              // {...field}
             />
           </div>
           {/* </FormControl>
@@ -209,8 +226,10 @@ const Schedule = () => {
             <div className="flex gap-2">
               {/* Month Selector */}
               <select
-                value={selectedMonth}
-                onChange={(e) => setSelectedMonth(Number(e.target.value))}
+                value={urlPrms.get("month")}
+                onChange={(e) => {
+                  urlPrms.set("month", e.target.value), setUrlPrms(urlPrms);
+                }}
                 className="border-gray-300 max-h-48 overflow-y-auto rounded-md border font-montserrat text-lg shadow-sm"
               >
                 {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
@@ -224,8 +243,10 @@ const Schedule = () => {
 
               {/* Year Selector */}
               <select
-                value={selectedYear}
-                onChange={(e) => setSelectedYear(Number(e.target.value))}
+                value={urlPrms.get("year")}
+                onChange={(e) => {
+                  urlPrms.set("year", e.target.value), setUrlPrms(urlPrms);
+                }}
                 className="border-gray-300 max-h-48 overflow-y-auto rounded-md border py-2 font-montserrat text-lg shadow-sm"
               >
                 {[...Array(5).keys()].map((offset) => {
@@ -269,42 +290,7 @@ const Schedule = () => {
                     : page?.items?.map((meeting, j) => (
                         <div key={`${i}-${j}`} className="relative">
                           <Sheet className="">
-                            <SheetTrigger asChild>
-                              <div
-                                className={cn(
-                                  "flex cursor-pointer gap-3 rounded-[10px] bg-primary/50 px-5 py-4",
-                                  meeting.id === urlPrms.get("meeting") &&
-                                    "border border-primary-outline hover:underline"
-                                )}
-                                onClick={() => onMeetingClick(meeting.id)}
-                              >
-                                <EventIcon className="text-2xl text-accent" />
-                                <div>
-                                  <p className="mb-[6px] text-base font-bold leading-none text-accent">
-                                    {meeting.meeting_name}
-                                  </p>
-                                  <p className="text-sm text-primary-text">
-                                    {meeting.details}
-                                  </p>
-                                  <p className="text-md leading-none text-primary-text">
-                                    <span className="font-semibold">
-                                      Date:{" "}
-                                    </span>
-                                    {new Date(
-                                      `${meeting.meeting_date}T${meeting.start_time}`
-                                    ).toLocaleDateString("en-GB", {
-                                      day: "2-digit",
-                                      month: "short",
-                                      year: "numeric",
-                                    })}
-                                    ,{" "}
-                                    {new Date(
-                                      `${meeting.meeting_date}T${meeting.start_time}`
-                                    ).toLocaleTimeString()}
-                                  </p>
-                                </div>
-                              </div>
-                            </SheetTrigger>
+                            <SheetTrigger asChild></SheetTrigger>
                             <SheetContent className="w-full sm:max-w-full md:w-full lg:hidden">
                               {urlPrms.get("meeting") && <MeetingDetails />}
                             </SheetContent>
@@ -333,7 +319,11 @@ const Schedule = () => {
                       ))
                     : page?.items?.map((meeting, j) => (
                         <div key={`${i}-${j}`} className="relative">
-                          {/* Meeting Schedule Details */}
+                          <MeetingCards
+                            urlPrms={urlPrms}
+                            onMeetingClick={onMeetingClick}
+                            meeting={meeting}
+                          />
                         </div>
                       ))
                 )
@@ -348,19 +338,11 @@ const Schedule = () => {
         </div>
       </div>
       <div className="no-scrollbar hidden w-full overflow-y-scroll rounded-2xl outline outline-2 outline-[#e7dad3] xl:block">
-        {urlPrms.get("event") && (
-          <ScheduleDetails
-            queryKey={[
-              "schedules",
-              filter,
-              urlPrms.get("query")?.toString() || "",
-            ]}
-          />
-        )}
+        {urlPrms.get("event") && <ScheduleDetails />}
 
         {!urlPrms.get("event") && !urlPrms.get("meeting") && (
           <div className="flex h-full items-center justify-center">
-            <p>No event selected.</p>
+            <p>No schedule selected.</p>
           </div>
         )}
         {urlPrms.get("meeting") && <MeetingDetails />}

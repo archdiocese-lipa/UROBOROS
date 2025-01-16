@@ -41,7 +41,7 @@ const VolunteerSelect = ({
       .map((volunteer) => volunteer.replacedby_id)
   );
 
-  const filteredVolunteers = volunteers.filter(
+  const filteredVolunteers = volunteers?.filter(
     (volunteer) =>
       (!assignedVolunteers.some(
         (assignedVolunteer) => assignedVolunteer.volunteer_id === volunteer.id
@@ -50,7 +50,7 @@ const VolunteerSelect = ({
       !replacementVolunteerIds.has(volunteer.id)
   );
 
-  const volunteerOptions = filteredVolunteers.map((volunteer) => ({
+  const volunteerOptions = filteredVolunteers?.map((volunteer) => ({
     value: volunteer.id,
     label: `${volunteer.first_name} ${volunteer.last_name}`,
   }));
