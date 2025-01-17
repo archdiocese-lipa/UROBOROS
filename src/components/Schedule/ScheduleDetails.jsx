@@ -80,12 +80,18 @@ import {
   FormMessage,
 } from "../ui/form";
 import VolunteerSelect from "./VolunteerSelect";
+import { Input } from "../ui/input";
+import { Search } from "@/assets/icons/icons";
+import { useDebounce } from "@/hooks/useDebounce";
 
 const ScheduleDetails = () => {
   const [qrCode, setQRCode] = useState(null);
   const [disableSchedule, setDisableSchedule] = useState(false);
   const [urlPrms, setUrlPrms] = useSearchParams();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [filteredParentAttendance, setFilteredParentAttendance] = useState([]);
+  const [filteredChildAttendance, setFilteredChildAttendance] = useState([]);
   const eventId = urlPrms.get("event") || null;
   const userData = useUser();
   const queryClient = useQueryClient();
@@ -156,6 +162,46 @@ const ScheduleDetails = () => {
       return response;
     },
   });
+
+  const debouncedSearch = useDebounce(search, 500);
+
+  const handleSearch = (e) => {
+    setSearch(e.target.value);
+  };
+
+  useEffect(() => {
+    const allAttendance = attendance?.data?.flatMap((family) => [
+      ...family.parents.map((parent) => parent),
+      ...family.children.map((child) => child),
+    ]);
+
+    const filteredSearch = allAttendance?.filter((attendee) =>
+      `${attendee.first_name} ${attendee.last_name}`
+        .toLocaleLowerCase()
+        .includes(debouncedSearch.toLocaleLowerCase())
+    );
+    
+    console.log(filteredSearch.length === allAttendance.length)
+   
+  if (filteredSearch.length === allAttendance.length) {
+    // If no search term or all attendees match, clear filters
+    setFilteredParentAttendance([]);
+    setFilteredChildAttendance([]);
+  } else {
+    console.log(filteredSearch)
+    // Separate filtered results into parents and children
+    setFilteredParentAttendance(
+      filteredSearch.filter((attendee) => attendee.attendee_type === "parents")
+    );
+    setFilteredChildAttendance(
+      filteredSearch.filter((attendee) => attendee.attendee_type === "children")
+    );
+  }
+    
+  }, [debouncedSearch]);
+  // console.log("filtered Attendance", filteredAttendance);
+
+  console.log("filter", filteredChildAttendance);
 
   const generateQRCode = async () => {
     try {
@@ -334,7 +380,7 @@ const ScheduleDetails = () => {
   }
 
   return (
-    <div className="flex h-full grow flex-col gap-2 overflow-y-scroll no-scrollbar px-3 py-2 md:px-9 md:py-6">
+    <div className="no-scrollbar flex h-full grow flex-col gap-2 overflow-y-scroll px-3 py-2 md:px-9 md:py-6">
       <div className="flex flex-wrap justify-between">
         <div>
           <Title>{event?.event_name}</Title>
@@ -594,26 +640,199 @@ const ScheduleDetails = () => {
         ref={printRef}
         className="no-scrollbar flex max-h-dvh flex-col  overflow-y-scroll"
       > */}
-        <div className="flex flex-wrap justify-evenly font-montserrat font-semibold text-accent">
-          <p>Total Registered: {attendanceCount?.total}</p>
-          <p>Total Attended: {attendanceCount?.attended}</p>
-          <p>
-            Total Pending: {attendanceCount?.total - attendanceCount?.attended}
-          </p>
+      <div className="flex flex-wrap justify-evenly font-montserrat font-semibold text-accent">
+        <p>Total Registered: {attendanceCount?.total}</p>
+        <p>Total Attended: {attendanceCount?.attended}</p>
+        <p>
+          Total Pending: {attendanceCount?.total - attendanceCount?.attended}
+        </p>
+      </div>
+      <div className="flex items-center justify-center">
+        <div className="relative w-8/12">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 transform text-2xl text-accent" />
+          <Input
+            value={search}
+            onChange={handleSearch}
+            className="border-none pl-12"
+            placeholder="Search attendee"
+          />
         </div>
-        {attendance.data.length < 1 && (
-          <div className="flex items-center justify-center">
-            <p>No Family registered yet.</p>
+      </div>
+
+      {attendance.data.length < 1 && (
+        <div className="flex items-center justify-center">
+          <p>No Family registered yet.</p>
+        </div>
+      )}
+      {filteredParentAttendance.length || filteredChildAttendance.length > 0 ? (
+        <Card className="border-none" >
+        <CardHeader className="p-2">
+          {/* <CardTitle className="font-montserrat font-bold text-accent">
+            {mainApplicant
+              ? `${mainApplicant?.last_name} Family`
+              : `Unknown Family`}
+          </CardTitle> */}
+          <CardDescription className="sr-only">
+            Family Details
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-3 p-1">
+          <div className="flex justify-between">
+            <div className="flex items-center gap-2">
+              <h3 className="text-xl font-semibold text-accent">
+                Parent(s)/ Guardian(s)
+              </h3>
+            </div>
+
           </div>
-        )}
-        {attendance.data?.map((family, i) => {
+          <Table>
+            <TableHeader className="bg-primary">
+              <TableRow>
+                <TableHead className="rounded-l-lg" />
+                <TableHead>Name</TableHead>
+                <TableHead>Time</TableHead>
+                <TableHead>Contact</TableHead>
+                <TableHead>Action</TableHead>
+                <TableHead className="rounded-r-lg"></TableHead>
+              </TableRow>
+            </TableHeader>
+
+            <TableBody>
+              {filteredParentAttendance.map((attendee, i) => (
+                <TableRow
+                  key={i}
+                  className={cn(
+                    i % 2 !== 0 ? "bg-primary bg-opacity-35" : "bg-white"
+                  )}
+                >
+                  <TableCell className="py-0 md:p-4">
+                    <Switch
+                      defaultChecked={attendee.attended}
+                      disabled={disableSchedule}
+                      onCheckedChange={(state) =>
+                        onRowAttend(attendee?.id, state, queryClient)
+                      }
+                    />
+                  </TableCell>
+
+                  <TableCell className="text-nowrap py-0 md:p-4">
+                    <p>{`${attendee.first_name} ${attendee.last_name}`}</p>
+                  </TableCell>
+
+                  <TableCell className="text-nowrap p-0 md:p-4">
+                    {attendee.time_attended
+                      ? new Date(
+                          attendee.time_attended
+                        ).toLocaleTimeString("en-GB", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: true,
+                        })
+                      : "--/--"}
+                  </TableCell>
+
+                  <TableCell className="py-0 md:p-4">
+                    <p>{attendee.contact_number}</p>
+                  </TableCell>
+                  <TableCell className="flex gap-2 py-0">
+                    <EditParentAttendeeDialog
+                      attendee={attendee}
+                      form={form}
+                      onSubmit={onSubmit}
+                      disableSchedule={disableSchedule}
+                    />
+                  </TableCell>
+                  <TableCell className="py-0 md:p-4">
+                    <AttendeeEditLogs attendance_id={attendee.id} />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+
+          <div className="flex items-center gap-2">
+            <h3 className="text-xl font-semibold text-accent">
+              Children
+            </h3>
+            {/* {!disableSchedule && (
+              <AddAttendee
+                attendee_type={"children"}
+                family_id={family.family_id}
+                family_surname={family.family_surname}
+                event_id={eventId}
+              />
+            )} */}
+          </div>
+
+          <Table>
+            <TableHeader className="bg-primary">
+              <TableRow>
+                <TableHead className="rounded-l-lg" />
+                <TableHead>Name</TableHead>
+                <TableHead>Time</TableHead>
+                <TableHead>Action</TableHead>
+                <TableHead className="rounded-r-lg"></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredChildAttendance.map((attendee, i) => (
+                <TableRow
+                  key={i}
+                  className={cn(
+                    i % 2 !== 0 ? "bg-primary bg-opacity-35" : "bg-white"
+                  )}
+                >
+                  <TableCell className="p-0 md:p-4">
+                    <Switch
+                      defaultChecked={attendee.attended}
+                      disabled={disableSchedule}
+                      onCheckedChange={(state) =>
+                        onRowAttend(attendee?.id, state, queryClient)
+                      }
+                    />
+                  </TableCell>
+                  <TableCell className="text-nowrap p-0 md:p-4">
+                    <p>{`${attendee.first_name} ${attendee.last_name}`}</p>
+                  </TableCell>
+                  <TableCell className="text-nowrap p-0 md:p-4">
+                    {attendee.time_attended
+                      ? new Date(
+                          attendee.time_attended
+                        ).toLocaleTimeString("en-GB", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: true,
+                        })
+                      : "--/--"}
+                  </TableCell>
+                  <TableCell className="flex gap-2 p-0 md:p-4">
+                    {/* MARK: put dialog */}
+                    <EditChildAttendeeDialog
+                      // setIdEditting={setIdEditting}
+                      attendee={attendee}
+                      disableSchedule={disableSchedule}
+                      childrenForm={childrenForm}
+                      onSubmit={onSubmit}
+                    />
+                  </TableCell>
+                  <TableCell className="p-0 md:p-4">
+                    <AttendeeEditLogs attendance_id={attendee.id} />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+      ) : (
+        attendance.data?.map((family, i) => {
           const mainApplicant = family?.parents.filter(
             (parent) => parent?.main_applicant === true
           )[0];
           return (
-            <Card className="border-none " key={i}>
+            <Card className="border-none" key={i}>
               <CardHeader className="p-2">
-                <CardTitle className="font-montserrat  font-bold text-accent">
+                <CardTitle className="font-montserrat font-bold text-accent">
                   {mainApplicant
                     ? `${mainApplicant?.last_name} Family`
                     : `Unknown Family`}
@@ -622,7 +841,7 @@ const ScheduleDetails = () => {
                   Family Details
                 </CardDescription>
               </CardHeader>
-              <CardContent className="flex flex-col p-1 gap-3">
+              <CardContent className="flex flex-col gap-3 p-1">
                 <div className="flex justify-between">
                   <div className="flex items-center gap-2">
                     <h3 className="text-xl font-semibold text-accent">
@@ -689,11 +908,11 @@ const ScheduleDetails = () => {
                           />
                         </TableCell>
 
-                        <TableCell className=" text-nowrap py-0 md:p-4">
+                        <TableCell className="text-nowrap py-0 md:p-4">
                           <p>{`${attendee.first_name} ${attendee.last_name}`}</p>
                         </TableCell>
 
-                        <TableCell className=" text-nowrap p-0 md:p-4">
+                        <TableCell className="text-nowrap p-0 md:p-4">
                           {attendee.time_attended
                             ? new Date(
                                 attendee.time_attended
@@ -704,7 +923,7 @@ const ScheduleDetails = () => {
                               })
                             : "--/--"}
                         </TableCell>
-                        
+
                         <TableCell className="py-0 md:p-4">
                           <p>{attendee.contact_number}</p>
                         </TableCell>
@@ -799,7 +1018,8 @@ const ScheduleDetails = () => {
               </CardContent>
             </Card>
           );
-        })}
+        })
+      )}
       {/* </div> */}
     </div>
   );
