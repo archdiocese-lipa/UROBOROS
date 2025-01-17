@@ -181,9 +181,8 @@ const ScheduleDetails = () => {
         .includes(debouncedSearch.toLocaleLowerCase())
     );
     
-    console.log(filteredSearch.length === allAttendance.length)
    
-  if (filteredSearch.length === allAttendance.length) {
+  if (filteredSearch?.length === allAttendance?.length) {
     // If no search term or all attendees match, clear filters
     setFilteredParentAttendance([]);
     setFilteredChildAttendance([]);
@@ -201,7 +200,6 @@ const ScheduleDetails = () => {
   }, [debouncedSearch]);
   // console.log("filtered Attendance", filteredAttendance);
 
-  console.log("filter", filteredChildAttendance);
 
   const generateQRCode = async () => {
     try {
