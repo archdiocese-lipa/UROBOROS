@@ -8,21 +8,21 @@ import { supabase } from "@/services/supabaseClient";
 
 const Home = () => {
   const navigate = useNavigate();
+  const currentYear = new Date().getFullYear();
 
   useEffect(() => {
     const getSession = async () => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
-      
-      supabase.auth.onAuthStateChange((event) => {
-        if (event === 'PASSWORD_RECOVERY') {
-          // show screen to update user's password
-          navigate("/reset-password")
-          return
-        }
-      })
 
+      supabase.auth.onAuthStateChange((event) => {
+        if (event === "PASSWORD_RECOVERY") {
+          // show screen to update user's password
+          navigate("/reset-password");
+          return;
+        }
+      });
 
       // Navigate to /announcements if there is an active session
       if (session) {
@@ -32,7 +32,6 @@ const Home = () => {
 
     getSession();
   }, [navigate]);
-
 
   return (
     <>
@@ -53,12 +52,26 @@ const Home = () => {
         <p className="absolute top-[calc(12rem_+_24dvw)] w-screen max-w-[80dvw] whitespace-pre text-[5.8dvw] font-medium text-accent sm:top-[calc(20dvh_+_12rem)] sm:max-w-xl sm:text-[2.6rem] lg:bottom-[calc(50dvh_-_14dvh)] lg:top-auto lg:ml-[24.2dvw] lg:max-w-full lg:text-[4.6dvh]">
           {"Engaging our Parishioners in the \nJoy of Gospel"}
         </p>
+        <div className="z-99 absolute bottom-0 left-1 h-40 w-72 md:bottom-48 md:left-12 md:h-60 md:w-96 lg:bottom-10 lg:left-72 lg:w-[30rem] lg:h-64">
+          <iframe
+            src="https://www.youtube.com/embed/3pAuz0TTVn0?controls=1"
+            title="Creating a Parishioner Account"
+            style={{
+              border: "1px solid #663F30 ",
+              width: "100%",
+              height: "100%",
+            }}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
+          ></iframe>
+        </div>
       </div>
       <div className="relative flex h-[10rem] w-full items-end bg-[#663F30] pb-2 pl-4 sm:h-[1.8rem]">
         <p className="font-regular text-[0.8rem] text-[#FBCCC0]/40">
           Developed by{" "}
-          <a href="http://a2kgroup.org" className="underline">
-            A2K Group Corporation
+          <a href="http://a2kgroup.org" className="underline" target="_blank">
+            A2K Group Corporation <span> © {currentYear}</span>
           </a>
         </p>
       </div>
