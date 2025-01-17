@@ -176,7 +176,7 @@ const ScheduleCards = ({
               </div>
             </div>
           </SheetTrigger>
-          <SheetContent className="w-full md:w-full xl:hidden">
+          <SheetContent className="w-full p-0 md:w-full xl:hidden">
             {urlPrms.get("event") && (
               <ScheduleDetails
                 queryKey={[

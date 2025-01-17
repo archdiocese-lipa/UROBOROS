@@ -1,6 +1,9 @@
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { supabase } from "@/services/supabaseClient";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
 
 const cn = (...inputs) => {
   return twMerge(clsx(inputs));
@@ -166,4 +169,194 @@ const getInitial = (name) => {
     .toUpperCase();
 };
 
-export { cn, paginate, getInitial };
+const downloadExcel = (event, eventvolunteers, attendance, attendanceCount) => {
+  // Get the list of volunteers and replacement volunteers
+  const volunteerList = eventvolunteers
+    ? eventvolunteers.map((volunteer) => {
+        if (!volunteer?.replaced) {
+          return `${volunteer?.users?.first_name?.toFirstUpperCase()} ${volunteer?.users?.last_name?.toFirstUpperCase()}`;
+        }
+        return `${volunteer?.volunteer_replacement?.first_name?.toFirstUpperCase()} ${volunteer?.volunteer_replacement?.last_name?.toFirstUpperCase()}`;
+      })
+    : [];
+
+  const headings = [
+    ["Event Name", event?.event_name || "Unknown Event"],
+    ["Event Date", event?.event_date || "Unknown Date"],
+    ["Event Category", event?.event_category || "Unknown Category"],
+    ["Total Attended", attendanceCount?.attended || "Unknown"],
+    ["Assigned Volunteers", volunteerList.join(", ") || "No Volunteers"],
+    [],
+  ];
+
+  // Combine data of parents and children, keeping only those who attended
+  const combinedData =
+    attendance?.data
+      ?.filter(
+        (family) =>
+          family.parents.some((parent) => parent.time_attended) ||
+          family.children.some((child) => child.time_attended)
+      )
+      .flatMap((family) => {
+        // Filter parents and children who attended
+        const attendedParents = family.parents.filter(
+          (parent) => parent.time_attended
+        );
+        const attendedChildren = family.children.filter(
+          (child) => child.time_attended
+        );
+
+        return [
+          ["Family Surname", family?.family_surname],
+          ...(attendedParents.length > 0
+            ? [
+                ["Parents", "Name", "Contact", "Time In"],
+                ...attendedParents.map((parent) => [
+                  "",
+                  `${parent?.first_name} ${parent?.last_name}`,
+                  `${parent?.contact_number}`,
+                  new Date(parent.time_attended).toLocaleTimeString("en-GB", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: true,
+                  }),
+                ]),
+              ]
+            : []),
+          ...(attendedChildren.length > 0
+            ? [
+                ["Children", "Name", "Contact", "Time In"],
+                ...attendedChildren.map((child) => [
+                  "",
+                  `${child?.first_name} ${child?.last_name}`,
+                  `${child?.contact_number ?? "N/A"}`,
+                  new Date(child.time_attended).toLocaleTimeString("en-GB", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: true,
+                  }),
+                ]),
+              ]
+            : []),
+          [],
+        ];
+      }) || [];
+
+  // Combine the heading and the attendance
+  const formattedData = [...headings, [], ...combinedData];
+
+  // Converts data to worksheet
+  const worksheet = XLSX.utils.aoa_to_sheet(formattedData);
+
+  // Creates a new workbook and appends the worksheet
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+
+  // Writes workbook to file
+  XLSX.writeFile(workbook, `${event?.event_name}.xlsx`);
+};
+
+const exportAttendanceList = (
+  event,
+  eventvolunteers,
+  attendance,
+  attendanceCount
+) => {
+  const doc = new jsPDF();
+
+  // Add Title
+  doc.setFontSize(18);
+  doc.text(`Event Name: ${event.event_name}`, 10, 10);
+
+  // Format Event Date
+  const eventDate = new Date(event.event_date);
+  const formattedDate = eventDate.toLocaleDateString("en-US", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+  doc.text(`Event Date: ${formattedDate}`, 10, 20);
+
+  // Add Total Attended
+  doc.text(`Total Attended: ${attendanceCount.attended}`, 150, 10);
+
+  let currentY = 30; // Start Y position for the next section
+
+  // Add List of Assigned Volunteers
+  if (eventvolunteers && eventvolunteers.length > 0) {
+    doc.setFontSize(14);
+    doc.text("List of Assigned Volunteer(s):", 10, currentY);
+    currentY += 10;
+
+    eventvolunteers.forEach((volunteer, index) => {
+      doc.setFontSize(12);
+      doc.text(
+        `${index + 1}. ${volunteer.users.first_name.charAt(0).toUpperCase() + volunteer.users.first_name.slice(1)} ${volunteer.users.last_name.charAt(0).toUpperCase() + volunteer.users.last_name.slice(1)}`,
+        10,
+        currentY
+      );
+      currentY += 7; // Spacing for each volunteer
+    });
+
+    currentY += 5; // Additional spacing after the volunteer list
+  }
+
+  // Loop through the family data
+  attendance?.data.forEach((family) => {
+    // Filter out the parents who attended
+    const attendedParents = family.parents.filter((parent) => parent.attended);
+
+    // Filter out the children who attended
+    const attendedChildren = family.children.filter((child) => child.attended);
+
+    // Skip families with no attendees
+    if (attendedParents.length === 0 && attendedChildren.length === 0) {
+      return;
+    }
+
+    // Add Family Surname Header
+    doc.setFontSize(14);
+    doc.text(`${family.family_surname} Family`, 10, currentY);
+
+    // Update currentY for the next element
+    currentY += 10;
+
+    // Add Parents Table for those who attended
+    if (attendedParents.length > 0) {
+      autoTable(doc, {
+        startY: currentY,
+        head: [["Parents/Guardians", "Contact", "Status"]],
+        body: attendedParents.map((parent) => [
+          `${parent.first_name} ${parent.last_name}`,
+          parent.contact_number || "N/A",
+          "Attended",
+        ]),
+        theme: "striped",
+      });
+
+      // Update currentY after parents table
+      currentY = doc.lastAutoTable.finalY + 5;
+    }
+
+    // Add Children Table for those who attended
+    if (attendedChildren.length > 0) {
+      autoTable(doc, {
+        startY: currentY,
+        head: [["Child's Name", "Status"]],
+        body: attendedChildren.map((child) => [
+          `${child.first_name} ${child.last_name}`,
+          "Attended",
+        ]),
+        theme: "grid",
+      });
+
+      // Update currentY after children table
+      currentY = doc.lastAutoTable.finalY + 5;
+    }
+  });
+
+  // Save the PDF
+  doc.save(`${event.event_name}-${formattedDate}.pdf`);
+};
+
+export { cn, paginate, getInitial, downloadExcel,exportAttendanceList };

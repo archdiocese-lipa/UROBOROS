@@ -1,10 +1,9 @@
-import { useEffect,memo, useRef, useState } from "react";
+import { useEffect, memo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import QRCode from "qrcode";
 import { Icon } from "@iconify/react";
 import { Description, Title } from "@/components/Title";
-import * as XLSX from "xlsx";
 import {
   Card,
   CardContent,
@@ -56,16 +55,13 @@ import {
 } from "@/services/attendanceService";
 
 import { useUser } from "@/context/useUser";
-import { cn } from "@/lib/utils";
+import { cn, downloadExcel, exportAttendanceList } from "@/lib/utils";
 import { Label } from "../ui/label";
 import { useToast } from "@/hooks/use-toast";
 import PropTypes from "prop-types";
 import AddRecord from "./AddRecord";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 import AttendeeEditLogs from "./AttendeeEditLogs";
 import AddAttendee from "./AddAttendee";
 import Loading from "../Loading";
@@ -85,14 +81,12 @@ import {
 } from "../ui/form";
 import VolunteerSelect from "./VolunteerSelect";
 
-
 const ScheduleDetails = () => {
   const [qrCode, setQRCode] = useState(null);
   const [disableSchedule, setDisableSchedule] = useState(false);
   const [urlPrms, setUrlPrms] = useSearchParams();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const eventId = urlPrms.get("event") || null;
-  const printRef = useRef(null);
   const userData = useUser();
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -185,203 +179,12 @@ const ScheduleDetails = () => {
     }
   };
 
-  const downloadExcel = () => {
-    // Get the list of volunteers and replacement volunteers
-    const volunteerList = eventvolunteers
-      ? eventvolunteers.map((volunteer) => {
-          if (!volunteer?.replaced) {
-            return `${volunteer?.users?.first_name?.toFirstUpperCase()} ${volunteer?.users?.last_name?.toFirstUpperCase()}`;
-          }
-          return `${volunteer?.volunteer_replacement?.first_name?.toFirstUpperCase()} ${volunteer?.volunteer_replacement?.last_name?.toFirstUpperCase()}`;
-        })
-      : [];
-  
-    const headings = [
-      ["Event Name", event?.event_name || "Unknown Event"],
-      ["Event Date", event?.event_date || "Unknown Date"],
-      ["Event Category", event?.event_category || "Unknown Category"],
-      ["Total Attended", attendanceCount?.attended || "Unknown"],
-      ["Assigned Volunteers", volunteerList.join(", ") || "No Volunteers"],
-      [],
-    ];
-  
-    // Combine data of parents and children, keeping only those who attended
-    const combinedData =
-      attendance?.data
-        ?.filter(
-          (family) =>
-            family.parents.some((parent) => parent.time_attended) ||
-            family.children.some((child) => child.time_attended)
-        )
-        .flatMap((family) => {
-          // Filter parents and children who attended
-          const attendedParents = family.parents.filter(
-            (parent) => parent.time_attended
-          );
-          const attendedChildren = family.children.filter(
-            (child) => child.time_attended
-          );
-  
-          return [
-            ["Family Surname", family?.family_surname],
-            ...(attendedParents.length > 0
-              ? [
-                  ["Parents", "Name", "Contact", "Time In"],
-                  ...attendedParents.map((parent) => [
-                    "",
-                    `${parent?.first_name} ${parent?.last_name}`,
-                    `${parent?.contact_number}`,
-                    new Date(parent.time_attended).toLocaleTimeString("en-GB", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: true,
-                    }),
-                  ]),
-                ]
-              : []),
-            ...(attendedChildren.length > 0
-              ? [
-                  ["Children", "Name", "Contact", "Time In"],
-                  ...attendedChildren.map((child) => [
-                    "",
-                    `${child?.first_name} ${child?.last_name}`,
-                    `${child?.contact_number ?? "N/A"}`,
-                    new Date(child.time_attended).toLocaleTimeString("en-GB", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: true,
-                    }),
-                  ]),
-                ]
-              : []),
-            [],
-          ];
-        }) || [];
-  
-    // Combine the heading and the attendance
-    const formattedData = [...headings, [], ...combinedData];
-  
-    // Converts data to worksheet
-    const worksheet = XLSX.utils.aoa_to_sheet(formattedData);
-  
-    // Creates a new workbook and appends the worksheet
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
-  
-    // Writes workbook to file
-    XLSX.writeFile(workbook, `${event?.event_name}.xlsx`);
+  const handleDownloadExcel = () => {
+    downloadExcel(event, eventvolunteers, attendance, attendanceCount);
   };
-  
-  
 
-  // console.log("attendees", attendance.data);
-
-  // const { downloadExcel,formattedData } = useDownLoadExcel({
-  //   volunteers: eventvolunteers || [],
-  //   event: event || {},
-  //   attendees: attendance?.data || [],
-  // });
-
-  const exportAttendanceList = () => {
-    const doc = new jsPDF();
-
-    // Add Title
-    doc.setFontSize(18);
-    doc.text(`Event Name: ${event.event_name}`, 10, 10);
-
-    // Format Event Date
-    const eventDate = new Date(event.event_date);
-    const formattedDate = eventDate.toLocaleDateString("en-US", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-    });
-    doc.text(`Event Date: ${formattedDate}`, 10, 20);
-
-    // Add Total Attended
-    doc.text(`Total Attended: ${attendanceCount.attended}`, 150, 10);
-
-    let currentY = 30; // Start Y position for the next section
-
-    // Add List of Assigned Volunteers
-    if (eventvolunteers && eventvolunteers?.length > 0) {
-      doc.setFontSize(14);
-      doc.text("List of Assigned Volunteer(s):", 10, currentY);
-      currentY += 10;
-
-      eventvolunteers?.forEach((volunteer, index) => {
-        doc.setFontSize(12);
-        doc.text(
-          `${index + 1}. ${volunteer.users.first_name.charAt(0).toUpperCase() + volunteer.users.first_name.slice(1)} ${volunteer.users.last_name.charAt(0).toUpperCase() + volunteer.users.last_name.slice(1)}`,
-          10,
-          currentY
-        );
-        currentY += 7; // Spacing for each volunteer
-      });
-
-      currentY += 5; // Additional spacing after the volunteer list
-    }
-
-    // Loop through the family data
-    attendance?.data.forEach((family) => {
-      // Filter out the parents who attended
-      const attendedParents = family.parents.filter(
-        (parent) => parent.attended
-      );
-
-      // Filter out the children who attended
-      const attendedChildren = family.children.filter(
-        (child) => child.attended
-      );
-
-      // Skip families with no attendees
-      if (attendedParents.length === 0 && attendedChildren?.length === 0) {
-        return;
-      }
-
-      // Add Family Surname Header
-      doc.setFontSize(14);
-      doc.text(`${family.family_surname} Family`, 10, currentY);
-
-      // Update currentY for the next element
-      currentY += 10;
-
-      // Add Parents Table for those who attended
-      if (attendedParents?.length > 0) {
-        autoTable(doc, {
-          startY: currentY,
-          head: [["Parents/Guardians", "Contact", "Status"]],
-          body: attendedParents?.map((parent) => [
-            `${parent.first_name} ${parent.last_name}`,
-            parent.contact_number || "N/A",
-            "Attended",
-          ]),
-          theme: "striped",
-        });
-
-        // Update currentY after parents table
-        currentY = doc.lastAutoTable.finalY + 5;
-      }
-
-      // Add Children Table for those who attended
-      if (attendedChildren?.length > 0) {
-        autoTable(doc, {
-          startY: currentY,
-          head: [["Child's Name", "Status"]],
-          body: attendedChildren?.map((child) => [
-            `${child.first_name} ${child.last_name}`,
-            "Attended",
-          ]),
-          theme: "grid",
-        });
-
-        // Update currentY after children table
-        currentY = doc.lastAutoTable.finalY + 5;
-      }
-    });
-
-    // Save the PDF
-    doc.save(`${event.event_name}-${formattedDate}.pdf`);
+  const handleDownloadPDF = () => {
+    exportAttendanceList(event, eventvolunteers, attendance, attendanceCount);
   };
 
   useEffect(() => {
@@ -488,7 +291,6 @@ const ScheduleDetails = () => {
   const form = useForm({
     resolver: zodResolver(parentSchema),
     defaultValues: {
-      // id: "",
       first_name: "",
       last_name: "",
       contact_number: "",
@@ -532,7 +334,7 @@ const ScheduleDetails = () => {
   }
 
   return (
-    <div className="flex h-full grow flex-col gap-2 overflow-y-hidden px-3 py-2 md:px-9 md:py-6">
+    <div className="flex h-full grow flex-col gap-2 overflow-y-scroll no-scrollbar px-3 py-2 md:px-9 md:py-6">
       <div className="flex flex-wrap justify-between">
         <div>
           <Title>{event?.event_name}</Title>
@@ -578,10 +380,10 @@ const ScheduleDetails = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" side="bottom">
-                  <DropdownMenuItem onClick={() => exportAttendanceList()}>
+                  <DropdownMenuItem onClick={handleDownloadPDF}>
                     Download as PDF
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={downloadExcel}>
+                  <DropdownMenuItem onClick={handleDownloadExcel}>
                     Download as Excel
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -788,10 +590,10 @@ const ScheduleDetails = () => {
         ))}
       </div>
 
-      <div
+      {/* <div
         ref={printRef}
-        className="no-scrollbar flex max-h-dvh flex-col gap-5 overflow-y-scroll"
-      >
+        className="no-scrollbar flex max-h-dvh flex-col  overflow-y-scroll"
+      > */}
         <div className="flex flex-wrap justify-evenly font-montserrat font-semibold text-accent">
           <p>Total Registered: {attendanceCount?.total}</p>
           <p>Total Attended: {attendanceCount?.attended}</p>
@@ -809,9 +611,9 @@ const ScheduleDetails = () => {
             (parent) => parent?.main_applicant === true
           )[0];
           return (
-            <Card key={i}>
-              <CardHeader>
-                <CardTitle className="font-montserrat font-bold text-accent">
+            <Card className="border-none " key={i}>
+              <CardHeader className="p-2">
+                <CardTitle className="font-montserrat  font-bold text-accent">
                   {mainApplicant
                     ? `${mainApplicant?.last_name} Family`
                     : `Unknown Family`}
@@ -820,7 +622,7 @@ const ScheduleDetails = () => {
                   Family Details
                 </CardDescription>
               </CardHeader>
-              <CardContent className="flex flex-col gap-3">
+              <CardContent className="flex flex-col p-1 gap-3">
                 <div className="flex justify-between">
                   <div className="flex items-center gap-2">
                     <h3 className="text-xl font-semibold text-accent">
@@ -862,8 +664,8 @@ const ScheduleDetails = () => {
                     <TableRow>
                       <TableHead className="rounded-l-lg" />
                       <TableHead>Name</TableHead>
+                      <TableHead>Time</TableHead>
                       <TableHead>Contact</TableHead>
-                      <TableHead>Time In</TableHead>
                       <TableHead>Action</TableHead>
                       <TableHead className="rounded-r-lg"></TableHead>
                     </TableRow>
@@ -877,7 +679,7 @@ const ScheduleDetails = () => {
                           i % 2 !== 0 ? "bg-primary bg-opacity-35" : "bg-white"
                         )}
                       >
-                        <TableCell>
+                        <TableCell className="py-0 md:p-4">
                           <Switch
                             defaultChecked={attendee.attended}
                             disabled={disableSchedule}
@@ -887,15 +689,11 @@ const ScheduleDetails = () => {
                           />
                         </TableCell>
 
-                        <TableCell>
+                        <TableCell className=" text-nowrap py-0 md:p-4">
                           <p>{`${attendee.first_name} ${attendee.last_name}`}</p>
                         </TableCell>
 
-                        <TableCell>
-                          <p>{attendee.contact_number}</p>
-                        </TableCell>
-
-                        <TableCell>
+                        <TableCell className=" text-nowrap p-0 md:p-4">
                           {attendee.time_attended
                             ? new Date(
                                 attendee.time_attended
@@ -906,7 +704,11 @@ const ScheduleDetails = () => {
                               })
                             : "--/--"}
                         </TableCell>
-                        <TableCell className="flex gap-2">
+                        
+                        <TableCell className="py-0 md:p-4">
+                          <p>{attendee.contact_number}</p>
+                        </TableCell>
+                        <TableCell className="flex gap-2 py-0">
                           <EditParentAttendeeDialog
                             attendee={attendee}
                             form={form}
@@ -914,7 +716,7 @@ const ScheduleDetails = () => {
                             disableSchedule={disableSchedule}
                           />
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="py-0 md:p-4">
                           <AttendeeEditLogs attendance_id={attendee.id} />
                         </TableCell>
                       </TableRow>
@@ -941,7 +743,7 @@ const ScheduleDetails = () => {
                     <TableRow>
                       <TableHead className="rounded-l-lg" />
                       <TableHead>Name</TableHead>
-                      <TableHead>Time In</TableHead>
+                      <TableHead>Time</TableHead>
                       <TableHead>Action</TableHead>
                       <TableHead className="rounded-r-lg"></TableHead>
                     </TableRow>
@@ -954,7 +756,7 @@ const ScheduleDetails = () => {
                           i % 2 !== 0 ? "bg-primary bg-opacity-35" : "bg-white"
                         )}
                       >
-                        <TableCell>
+                        <TableCell className="p-0 md:p-4">
                           <Switch
                             defaultChecked={attendee.attended}
                             disabled={disableSchedule}
@@ -963,10 +765,10 @@ const ScheduleDetails = () => {
                             }
                           />
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="text-nowrap p-0 md:p-4">
                           <p>{`${attendee.first_name} ${attendee.last_name}`}</p>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="text-nowrap p-0 md:p-4">
                           {attendee.time_attended
                             ? new Date(
                                 attendee.time_attended
@@ -977,7 +779,7 @@ const ScheduleDetails = () => {
                               })
                             : "--/--"}
                         </TableCell>
-                        <TableCell className="flex gap-2">
+                        <TableCell className="flex gap-2 p-0 md:p-4">
                           {/* MARK: put dialog */}
                           <EditChildAttendeeDialog
                             // setIdEditting={setIdEditting}
@@ -987,7 +789,7 @@ const ScheduleDetails = () => {
                             onSubmit={onSubmit}
                           />
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="p-0 md:p-4">
                           <AttendeeEditLogs attendance_id={attendee.id} />
                         </TableCell>
                       </TableRow>
@@ -998,7 +800,7 @@ const ScheduleDetails = () => {
             </Card>
           );
         })}
-      </div>
+      {/* </div> */}
     </div>
   );
 };
