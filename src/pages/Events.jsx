@@ -2,9 +2,7 @@ import EventCard from "@/components/Events/EventCard";
 import QrScannerEvents from "@/components/Events/QRScannerEvents";
 import { Description, Title } from "@/components/Title";
 
-import {
-  getEventsCalendar,
-} from "@/services/eventService";
+import { getEventsCalendar } from "@/services/eventService";
 
 import { useQuery } from "@tanstack/react-query";
 import ParishionerDialogCalendar from "@/components/Events/ParishionerDialogCalendar";

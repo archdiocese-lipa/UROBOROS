@@ -34,6 +34,7 @@ const Family = () => {
 
   const userData = useUser();
   const userRole = userData?.userData?.role;
+  const userId = userData?.userData?.id;
 
   const { parentData, childData, isLoading, error } = useFamilyData();
   const { mutateAsync: deleteChild } = useDeleteChild();
@@ -105,61 +106,65 @@ const Family = () => {
               ) : (
                 parentData?.flatMap((parent) => (
                   <TableRow key={parent.id}>
-                    <TableCell className="text-center">{`${parent.first_name} ${parent.last_name}`}</TableCell>
+                    <TableCell className="text-center">
+                      {`${parent.first_name} ${parent.last_name}`}
+                      {parent.parishioner_id === userId && " (You)"}
+                    </TableCell>
                     <TableCell className="text-center">
                       {parent.contact_number}
                     </TableCell>
-                    {userRole !== "coparent" && (
-                      <TableCell className="text-center">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger>
-                            <ThreeDotsIcon />
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent>
-                            <DropdownMenuItem
-                              onSelect={() => handleOpenDialog(parent.id)}
-                              disabled={parent.parishioner_id !== null}
-                            >
-                              Set up Parent/Guardian Account
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                              <EditParent
-                                parentId={parent.id}
-                                parentFirstName={parent.first_name}
-                                parentLastName={parent.last_name}
-                                parentContactNumber={parent.contact_number}
-                                parentUserId={parent.parishioner_id}
-                              />
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onSelect={() => showDeleteParentForm(parent.id)}
-                            >
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                        {/* Show Edit Parent Form */}
-                        {editParentForm === parent.id && (
-                          <NewCoParent
-                            parentId={parent.id}
-                            parentFirstName={parent.first_name}
-                            parentLastName={parent.last_name}
-                            parentContactNumber={parent.contact_number}
-                            openModal={true}
-                            onClose={handleCloseDialog}
-                          />
-                        )}
-                        {/* Show Delete Parent */}
-                        {deleteParentForm === parent.id && (
-                          <DeleteParent
-                            parentId={parent.id}
-                            userId={parent.parishioner_id}
-                            openModal={true}
-                            onClose={handleCloseDialog}
-                          />
-                        )}
-                      </TableCell>
-                    )}
+                    {userRole !== "coparent" &&
+                      parent.parishioner_id !== userId && (
+                        <TableCell className="text-center">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger>
+                              <ThreeDotsIcon />
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                              <DropdownMenuItem
+                                onSelect={() => handleOpenDialog(parent.id)}
+                                disabled={parent.parishioner_id !== null}
+                              >
+                                Set up Parent/Guardian Account
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <EditParent
+                                  parentId={parent.id}
+                                  parentFirstName={parent.first_name}
+                                  parentLastName={parent.last_name}
+                                  parentContactNumber={parent.contact_number}
+                                  parentUserId={parent.parishioner_id}
+                                />
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onSelect={() => showDeleteParentForm(parent.id)}
+                              >
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                          {/* Show Edit Parent Form */}
+                          {editParentForm === parent.id && (
+                            <NewCoParent
+                              parentId={parent.id}
+                              parentFirstName={parent.first_name}
+                              parentLastName={parent.last_name}
+                              parentContactNumber={parent.contact_number}
+                              openModal={true}
+                              onClose={handleCloseDialog}
+                            />
+                          )}
+                          {/* Show Delete Parent */}
+                          {deleteParentForm === parent.id && (
+                            <DeleteParent
+                              parentId={parent.id}
+                              userId={parent.parishioner_id}
+                              openModal={true}
+                              onClose={handleCloseDialog}
+                            />
+                          )}
+                        </TableCell>
+                      )}
                   </TableRow>
                 ))
               )}
