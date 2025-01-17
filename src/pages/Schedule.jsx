@@ -43,7 +43,7 @@ const Schedule = () => {
     useState(false);
   const [editDialogOpenIndex, setEditDialogOpenIndex] = useState(null);
   const [urlPrms, setUrlPrms] = useSearchParams();
-  const [filter, setFilter] = useState(urlPrms.get("filter")?.toString());
+  const [filter, setFilter] = useState(urlPrms.get("filter")?.toString() || "events");
 
   const { userData } = useUser();
 
@@ -136,7 +136,6 @@ const Schedule = () => {
     setUrlPrms(urlPrms);
     setFilter(value);
   };
-
   return (
     <div className="flex h-full w-full xl:gap-8">
       <div className="no-scrollbar flex w-full flex-col gap-8 overflow-y-auto lg:min-w-[400px] xl:flex-1">
