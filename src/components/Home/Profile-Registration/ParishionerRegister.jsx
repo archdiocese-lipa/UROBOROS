@@ -109,7 +109,7 @@ const ParishionerRegister = () => {
   return (
     <Dialog onOpenChange={handleDialogClose}>
       <DialogTrigger asChild>
-        <Button variant="landingsecondary" disabled={true}>
+        <Button variant="landingsecondary">
           Create New Profile
         </Button>
       </DialogTrigger>
