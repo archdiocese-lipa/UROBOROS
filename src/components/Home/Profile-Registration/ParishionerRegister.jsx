@@ -116,7 +116,7 @@ const ParishionerRegister = () => {
       <DialogContent
         className={cn(
           "h-dvh sm:max-w-2xl md:h-auto",
-          activeTab === "family" && "h-auto"
+          activeTab === "family" && "h-[38rem] md:h-auto overflow-scroll no-scrollbar"
         )}
       >
         <DialogHeader>
