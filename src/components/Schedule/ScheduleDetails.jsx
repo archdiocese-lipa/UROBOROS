@@ -23,14 +23,7 @@ import {
 } from "@/components/ui/dialog";
 
 import ReactSelect from "react-select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,7 +31,6 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 
 import {
   getEventById,
@@ -62,13 +54,9 @@ import PropTypes from "prop-types";
 import AddRecord from "./AddRecord";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import AttendeeEditLogs from "./AttendeeEditLogs";
 import AddAttendee from "./AddAttendee";
 import Loading from "../Loading";
-import { childSchema, parentSchema } from "@/zodSchema/AddFamilySchema";
 import useUsersByRole from "@/hooks/useUsersByRole";
-import EditChildAttendeeDialog from "./EditChildAttendeeDialog";
-import EditParentAttendeeDialog from "./EditParentAttendeeDialog";
 import ParentAddLogs from "./AttendeeAddLogs";
 import { z } from "zod";
 import {
@@ -83,6 +71,7 @@ import VolunteerSelect from "./VolunteerSelect";
 import { Input } from "../ui/input";
 import { Search } from "@/assets/icons/icons";
 import { useDebounce } from "@/hooks/useDebounce";
+import AttendanceTable from "./AttendanceTable";
 
 const ScheduleDetails = () => {
   const [qrCode, setQRCode] = useState(null);
@@ -180,26 +169,27 @@ const ScheduleDetails = () => {
         .toLocaleLowerCase()
         .includes(debouncedSearch.toLocaleLowerCase())
     );
-    
-   
-  if (filteredSearch?.length === allAttendance?.length) {
-    // If no search term or all attendees match, clear filters
-    setFilteredParentAttendance([]);
-    setFilteredChildAttendance([]);
-  } else {
-    console.log(filteredSearch)
-    // Separate filtered results into parents and children
-    setFilteredParentAttendance(
-      filteredSearch.filter((attendee) => attendee.attendee_type === "parents")
-    );
-    setFilteredChildAttendance(
-      filteredSearch.filter((attendee) => attendee.attendee_type === "children")
-    );
-  }
-    
-  }, [debouncedSearch]);
-  // console.log("filtered Attendance", filteredAttendance);
+    console.log("filtered search",filteredSearch)
 
+    if (filteredSearch?.length === allAttendance?.length) {
+      // If no search term or all attendees match, clear filters
+      setFilteredParentAttendance([]);
+      setFilteredChildAttendance([]);
+    } else {
+     
+      // Separate filtered results into parents and children
+      setFilteredParentAttendance(
+        filteredSearch.filter(
+          (attendee) => attendee.attendee_type === "parents"
+        )
+      );
+      setFilteredChildAttendance(
+        filteredSearch.filter(
+          (attendee) => attendee.attendee_type === "children"
+        )
+      );
+    }
+  }, [debouncedSearch, attendance?.data]);
 
   const generateQRCode = async () => {
     try {
@@ -211,7 +201,7 @@ const ScheduleDetails = () => {
     }
   };
 
-  const onRowAttend = async (attendeeId, state, queryClient) => {
+  const onRowAttend = async (attendeeId, state) => {
     try {
       // Update attendee status in your database
       await updateAttendeeStatus(attendeeId, state);
@@ -331,21 +321,6 @@ const ScheduleDetails = () => {
       eventId,
     });
   };
-
-  const form = useForm({
-    resolver: zodResolver(parentSchema),
-    defaultValues: {
-      first_name: "",
-      last_name: "",
-      contact_number: "",
-    },
-  });
-
-  const childrenForm = useForm({
-    resolver: zodResolver(childSchema),
-    first_name: "",
-    last_name: "",
-  });
 
   const onSubmit = (data, attendeeId) => {
     updateMutation.mutate(
@@ -633,11 +608,6 @@ const ScheduleDetails = () => {
           </div>
         ))}
       </div>
-
-      {/* <div
-        ref={printRef}
-        className="no-scrollbar flex max-h-dvh flex-col  overflow-y-scroll"
-      > */}
       <div className="flex flex-wrap justify-evenly font-montserrat font-semibold text-accent">
         <p>Total Registered: {attendanceCount?.total}</p>
         <p>Total Attended: {attendanceCount?.attended}</p>
@@ -662,173 +632,47 @@ const ScheduleDetails = () => {
           <p>No Family registered yet.</p>
         </div>
       )}
-      {filteredParentAttendance.length || filteredChildAttendance.length > 0 ? (
-        <Card className="border-none" >
-        <CardHeader className="p-2">
-          {/* <CardTitle className="font-montserrat font-bold text-accent">
-            {mainApplicant
-              ? `${mainApplicant?.last_name} Family`
-              : `Unknown Family`}
-          </CardTitle> */}
-          <CardDescription className="sr-only">
-            Family Details
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-3 p-1">
-          <div className="flex justify-between">
-            <div className="flex items-center gap-2">
-              <h3 className="text-xl font-semibold text-accent">
-                Parent(s)/ Guardian(s)
-              </h3>
+      { search !== "" ? (
+        <Card className="">
+          <CardHeader className="p-2">
+            <CardDescription className="sr-only">
+              Family Details
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-3 p-1">
+            <div className="flex justify-between">
+              <div className="flex items-center gap-2">
+                <h3 className="text-xl font-semibold text-accent">
+                  Parent(s)/ Guardian(s)
+                </h3>
+              </div>
             </div>
+            <AttendanceTable
+              onSubmit={onSubmit}
+              attendeeType={"parents"}
+              disableSchedule={disableSchedule}
+              attendance={filteredParentAttendance}
+              onRowAttend={onRowAttend}
+            />
 
-          </div>
-          <Table>
-            <TableHeader className="bg-primary">
-              <TableRow>
-                <TableHead className="rounded-l-lg" />
-                <TableHead>Name</TableHead>
-                <TableHead>Time</TableHead>
-                <TableHead>Contact</TableHead>
-                <TableHead>Action</TableHead>
-                <TableHead className="rounded-r-lg"></TableHead>
-              </TableRow>
-            </TableHeader>
-
-            <TableBody>
-              {filteredParentAttendance.map((attendee, i) => (
-                <TableRow
-                  key={i}
-                  className={cn(
-                    i % 2 !== 0 ? "bg-primary bg-opacity-35" : "bg-white"
-                  )}
-                >
-                  <TableCell className="py-0 md:p-4">
-                    <Switch
-                      defaultChecked={attendee.attended}
-                      disabled={disableSchedule}
-                      onCheckedChange={(state) =>
-                        onRowAttend(attendee?.id, state, queryClient)
-                      }
-                    />
-                  </TableCell>
-
-                  <TableCell className="text-nowrap py-0 md:p-4">
-                    <p>{`${attendee.first_name} ${attendee.last_name}`}</p>
-                  </TableCell>
-
-                  <TableCell className="text-nowrap p-0 md:p-4">
-                    {attendee.time_attended
-                      ? new Date(
-                          attendee.time_attended
-                        ).toLocaleTimeString("en-GB", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: true,
-                        })
-                      : "--/--"}
-                  </TableCell>
-
-                  <TableCell className="py-0 md:p-4">
-                    <p>{attendee.contact_number}</p>
-                  </TableCell>
-                  <TableCell className="flex gap-2 py-0">
-                    <EditParentAttendeeDialog
-                      attendee={attendee}
-                      form={form}
-                      onSubmit={onSubmit}
-                      disableSchedule={disableSchedule}
-                    />
-                  </TableCell>
-                  <TableCell className="py-0 md:p-4">
-                    <AttendeeEditLogs attendance_id={attendee.id} />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-
-          <div className="flex items-center gap-2">
-            <h3 className="text-xl font-semibold text-accent">
-              Children
-            </h3>
-            {/* {!disableSchedule && (
-              <AddAttendee
-                attendee_type={"children"}
-                family_id={family.family_id}
-                family_surname={family.family_surname}
-                event_id={eventId}
-              />
-            )} */}
-          </div>
-
-          <Table>
-            <TableHeader className="bg-primary">
-              <TableRow>
-                <TableHead className="rounded-l-lg" />
-                <TableHead>Name</TableHead>
-                <TableHead>Time</TableHead>
-                <TableHead>Action</TableHead>
-                <TableHead className="rounded-r-lg"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredChildAttendance.map((attendee, i) => (
-                <TableRow
-                  key={i}
-                  className={cn(
-                    i % 2 !== 0 ? "bg-primary bg-opacity-35" : "bg-white"
-                  )}
-                >
-                  <TableCell className="p-0 md:p-4">
-                    <Switch
-                      defaultChecked={attendee.attended}
-                      disabled={disableSchedule}
-                      onCheckedChange={(state) =>
-                        onRowAttend(attendee?.id, state, queryClient)
-                      }
-                    />
-                  </TableCell>
-                  <TableCell className="text-nowrap p-0 md:p-4">
-                    <p>{`${attendee.first_name} ${attendee.last_name}`}</p>
-                  </TableCell>
-                  <TableCell className="text-nowrap p-0 md:p-4">
-                    {attendee.time_attended
-                      ? new Date(
-                          attendee.time_attended
-                        ).toLocaleTimeString("en-GB", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: true,
-                        })
-                      : "--/--"}
-                  </TableCell>
-                  <TableCell className="flex gap-2 p-0 md:p-4">
-                    {/* MARK: put dialog */}
-                    <EditChildAttendeeDialog
-                      // setIdEditting={setIdEditting}
-                      attendee={attendee}
-                      disableSchedule={disableSchedule}
-                      childrenForm={childrenForm}
-                      onSubmit={onSubmit}
-                    />
-                  </TableCell>
-                  <TableCell className="p-0 md:p-4">
-                    <AttendeeEditLogs attendance_id={attendee.id} />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+            <div className="flex items-center gap-2">
+              <h3 className="text-xl font-semibold text-accent">Children</h3>
+            </div>
+            <AttendanceTable
+              onSubmit={onSubmit}
+              disableSchedule={disableSchedule}
+              attendance={filteredChildAttendance}
+              onRowAttend={onRowAttend}
+            />
+          </CardContent>
+        </Card>
       ) : (
         attendance.data?.map((family, i) => {
           const mainApplicant = family?.parents.filter(
             (parent) => parent?.main_applicant === true
           )[0];
           return (
-            <Card className="border-none" key={i}>
+            <Card className="p-2" key={i}>
               <CardHeader className="p-2">
                 <CardTitle className="font-montserrat font-bold text-accent">
                   {mainApplicant
@@ -854,92 +698,16 @@ const ScheduleDetails = () => {
                       />
                     )}
                   </div>
-                  {/* <Dialog>
-                    <DialogTrigger className="mr-5">
-                      <Icon
-                        className="h-10 w-10 text-accent"
-                        icon={"mingcute:calendar-time-add-fill"}
-                      ></Icon>
-                    </DialogTrigger>
-                    <DialogContent className="no-scrollbar max-h-[550px] max-w-[950px] overflow-y-scroll">
-                      <DialogHeader>
-                        <DialogTitle>
-                          {family.family_surname} Family Add Logs
-                        </DialogTitle>
-                        <DialogDescription>
-                          This table shows added attendees to this family.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="no-scrollbar overflow-y-scroll"> */}
                   <ParentAddLogs family_id={family.family_id} />
-                  {/* </div>
-                    </DialogContent>
-                  </Dialog> */}
                 </div>
-                <Table>
-                  <TableHeader className="bg-primary">
-                    <TableRow>
-                      <TableHead className="rounded-l-lg" />
-                      <TableHead>Name</TableHead>
-                      <TableHead>Time</TableHead>
-                      <TableHead>Contact</TableHead>
-                      <TableHead>Action</TableHead>
-                      <TableHead className="rounded-r-lg"></TableHead>
-                    </TableRow>
-                  </TableHeader>
-
-                  <TableBody>
-                    {family?.parents?.map((attendee, i) => (
-                      <TableRow
-                        key={i}
-                        className={cn(
-                          i % 2 !== 0 ? "bg-primary bg-opacity-35" : "bg-white"
-                        )}
-                      >
-                        <TableCell className="py-0 md:p-4">
-                          <Switch
-                            defaultChecked={attendee.attended}
-                            disabled={disableSchedule}
-                            onCheckedChange={(state) =>
-                              onRowAttend(attendee?.id, state, queryClient)
-                            }
-                          />
-                        </TableCell>
-
-                        <TableCell className="text-nowrap py-0 md:p-4">
-                          <p>{`${attendee.first_name} ${attendee.last_name}`}</p>
-                        </TableCell>
-
-                        <TableCell className="text-nowrap p-0 md:p-4">
-                          {attendee.time_attended
-                            ? new Date(
-                                attendee.time_attended
-                              ).toLocaleTimeString("en-GB", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                hour12: true,
-                              })
-                            : "--/--"}
-                        </TableCell>
-
-                        <TableCell className="py-0 md:p-4">
-                          <p>{attendee.contact_number}</p>
-                        </TableCell>
-                        <TableCell className="flex gap-2 py-0">
-                          <EditParentAttendeeDialog
-                            attendee={attendee}
-                            form={form}
-                            onSubmit={onSubmit}
-                            disableSchedule={disableSchedule}
-                          />
-                        </TableCell>
-                        <TableCell className="py-0 md:p-4">
-                          <AttendeeEditLogs attendance_id={attendee.id} />
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                <AttendanceTable
+           
+                  onSubmit={onSubmit}
+                  attendeeType="parents"
+                  disableSchedule={disableSchedule}
+                  attendance={family.parents}
+                  onRowAttend={onRowAttend}
+                />
 
                 <div className="flex items-center gap-2">
                   <h3 className="text-xl font-semibold text-accent">
@@ -955,70 +723,17 @@ const ScheduleDetails = () => {
                   )}
                 </div>
 
-                <Table>
-                  <TableHeader className="bg-primary">
-                    <TableRow>
-                      <TableHead className="rounded-l-lg" />
-                      <TableHead>Name</TableHead>
-                      <TableHead>Time</TableHead>
-                      <TableHead>Action</TableHead>
-                      <TableHead className="rounded-r-lg"></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {family?.children?.map((attendee, i) => (
-                      <TableRow
-                        key={i}
-                        className={cn(
-                          i % 2 !== 0 ? "bg-primary bg-opacity-35" : "bg-white"
-                        )}
-                      >
-                        <TableCell className="p-0 md:p-4">
-                          <Switch
-                            defaultChecked={attendee.attended}
-                            disabled={disableSchedule}
-                            onCheckedChange={(state) =>
-                              onRowAttend(attendee?.id, state, queryClient)
-                            }
-                          />
-                        </TableCell>
-                        <TableCell className="text-nowrap p-0 md:p-4">
-                          <p>{`${attendee.first_name} ${attendee.last_name}`}</p>
-                        </TableCell>
-                        <TableCell className="text-nowrap p-0 md:p-4">
-                          {attendee.time_attended
-                            ? new Date(
-                                attendee.time_attended
-                              ).toLocaleTimeString("en-GB", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                hour12: true,
-                              })
-                            : "--/--"}
-                        </TableCell>
-                        <TableCell className="flex gap-2 p-0 md:p-4">
-                          {/* MARK: put dialog */}
-                          <EditChildAttendeeDialog
-                            // setIdEditting={setIdEditting}
-                            attendee={attendee}
-                            disableSchedule={disableSchedule}
-                            childrenForm={childrenForm}
-                            onSubmit={onSubmit}
-                          />
-                        </TableCell>
-                        <TableCell className="p-0 md:p-4">
-                          <AttendeeEditLogs attendance_id={attendee.id} />
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                <AttendanceTable
+                  onSubmit={onSubmit}
+                  disableSchedule={disableSchedule}
+                  attendance={family.children}
+                  onRowAttend={onRowAttend}
+                />
               </CardContent>
             </Card>
           );
         })
       )}
-      {/* </div> */}
     </div>
   );
 };
