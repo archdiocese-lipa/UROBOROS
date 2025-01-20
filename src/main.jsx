@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client';
 import {  QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'; // Import Devtools
 import { Toaster } from '@/components/ui/toaster';
+import { TooltipProvider } from '@radix-ui/react-tooltip';
 import App from '@/App';
 import '@/index.css';
 import '@/lib/prototypes'; // From the main branch
@@ -20,11 +21,13 @@ const root = createRoot(rootElement);
 root.render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
       <UserProvider>
         {/* Wrap the app in UserProvider */}
         <App />
         <Toaster />
       </UserProvider>
+      </TooltipProvider>
       {/* Add ReactQueryDevtools for debugging */}
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
