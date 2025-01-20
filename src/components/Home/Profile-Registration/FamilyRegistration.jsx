@@ -202,13 +202,13 @@ const FamilyRegistration = ({ skipBtn, closeModal }) => {
 
         <div className="flex justify-end gap-x-2">
           {/* Skip Button */}
-          {skipBtn && (
+          {
             <DialogClose asChild>
               <Button type="button" variant="outline" onClick={skipBtn}>
                 Skip
               </Button>
             </DialogClose>
-          )}
+          }
 
           <Button
             variant="primary"

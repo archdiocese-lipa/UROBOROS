@@ -109,14 +109,13 @@ const ParishionerRegister = () => {
   return (
     <Dialog onOpenChange={handleDialogClose}>
       <DialogTrigger asChild>
-        <Button variant="landingsecondary">
-          Create New Profile
-        </Button>
+        <Button variant="landingsecondary">Create New Profile</Button>
       </DialogTrigger>
       <DialogContent
         className={cn(
-          "h-[45rem] overflow-scroll sm:max-w-2xl md:h-auto",
-          activeTab === "family" && "h-[38rem] md:h-auto overflow-scroll no-scrollbar"
+          "h-[45rem] overflow-scroll sm:max-w-2xl md:h-auto no-scrollbar",
+          activeTab === "family" &&
+            "no-scrollbar h-[38rem] overflow-scroll md:h-auto"
         )}
       >
         <DialogHeader>
@@ -248,12 +247,12 @@ const ParishionerRegister = () => {
                     />
                   </div>
                 </div>
-                <div className="text-gray-500 mt-2 flex items-center gap-1 text-xs text-primary-text">
+                <div className="text-gray-500 mt-2 flex gap-1 text-xs text-primary-text">
                   <Checkbox
                     checked={isAgreed}
                     onCheckedChange={(checked) => setIsAgreed(checked)}
                   />
-                  I agree to the{" "}
+                  {/* I agree to the{" "}
                   <a
                     href="/privacy-policy"
                     className="underline"
@@ -268,7 +267,8 @@ const ParishionerRegister = () => {
                     target="_blank"
                   >
                     Terms and Conditions.
-                  </a>
+                  </a> */}
+                  I confirm that St Laurence’s Parish may store the personal information provided here and may use this data to contact me (including by email) about Parish support, news, and activities. This data may be shared with Parish staff and volunteers administering the Parish database, and with volunteers who organise support or activities in which I expressed an interest. I understand that I can withdraw this consent any time by contacting the Parish Office.
                 </div>
                 <DialogFooter>
                   <DialogClose asChild>
