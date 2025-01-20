@@ -1,9 +1,13 @@
-
-import { addReply, deleteReply, fetchNestedReplies, updateComment } from "@/services/commentsService";
+import {
+  addReply,
+  deleteReply,
+  fetchNestedReplies,
+  updateComment,
+} from "@/services/commentsService";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "./use-toast";
 
- const useReply = (commentId, showReply,announcement_id) => {
+const useReply = (commentId, showReply, announcement_id) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -14,19 +18,18 @@ import { useToast } from "./use-toast";
         title: "Success",
         description: "Reply Added.",
       });
-
     },
     onError: (error) => {
-      // console.error("Mutation error:", error);
       toast({
         title: "Something went wrong",
         description: `${error.message}`,
       });
     },
     onSettled: () => {
-      // console.log("revalidaing", announcement_id);
-      queryClient.invalidateQueries({ queryKey: ["replies",commentId] });
-      queryClient.invalidateQueries({ queryKey: ["comments",announcement_id] });
+      queryClient.invalidateQueries({ queryKey: ["replies", commentId] });
+      queryClient.invalidateQueries({
+        queryKey: ["comments", announcement_id],
+      });
     },
   });
   const deleteReplyMutation = useMutation({
@@ -38,16 +41,16 @@ import { useToast } from "./use-toast";
       });
     },
     onError: (error) => {
-      // console.error("Mutation error:", error);
       toast({
         title: "Something went wrong",
         description: `${error.message}`,
-    });
+      });
     },
     onSettled: () => {
-      // console.log("revalidaing", announcement_id);
-      queryClient.invalidateQueries({ queryKey: ["replies",commentId] });
-      queryClient.invalidateQueries({ queryKey: ["comments",announcement_id] });
+      queryClient.invalidateQueries({ queryKey: ["replies", commentId] });
+      queryClient.invalidateQueries({
+        queryKey: ["comments", announcement_id],
+      });
     },
   });
   const updateReplyMutation = useMutation({
@@ -57,31 +60,28 @@ import { useToast } from "./use-toast";
         title: "Success",
         description: "Comment Updated.",
       });
-
-      //   reset()
     },
     onError: (error) => {
-      // console.error("Mutation error:", error);
       toast({
         title: "Something went wrong",
         description: `${error.message}`,
       });
     },
     onSettled: () => {
-      // console.log("before invalidating", commentId);
       queryClient.invalidateQueries({
-        queryKey: ["replies",commentId],
+        queryKey: ["replies", commentId],
       });
-
-      // const cached = queryClient.getQueryCache();
-      // const keys = cached
-      //   .getAll()
-      //   .map((query) => ({ key: query.queryKey, value: query.state.data }));
-      // console.log(keys);
     },
   });
 
-  const handleAddReply = (inputs, user_id, comment_id, setEditting, reset,setIsReplying) => {
+  const handleAddReply = (
+    inputs,
+    user_id,
+    comment_id,
+    setEditting,
+    reset,
+    setIsReplying
+  ) => {
     addReplyMutation.mutate(
       {
         reply: inputs.reply,
@@ -95,9 +95,9 @@ import { useToast } from "./use-toast";
         onSuccess: () => {
           reset();
           setEditting(false);
-          setIsReplying(false)
+          setIsReplying(false);
         },
-      },
+      }
     );
   };
   const handleDeleteReply = (comment_id) => {
@@ -105,23 +105,17 @@ import { useToast } from "./use-toast";
   };
 
   const handleUpdateReply = (inputs, comment_id, setEditting) => {
-
-    // console.log("comment_ID",inputs,comment_id)
     updateReplyMutation.mutate(
-      { comment:inputs.comment, comment_id, setEditting },
+      { comment: inputs.comment, comment_id, setEditting },
       {
         onSuccess: () => {
           setEditting(false);
         },
-      },
+      }
     );
   };
 
-  const {
-    data,
-    isLoading,
-    isError,
-  } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["replies", commentId],
     queryFn: async () => await fetchNestedReplies(commentId),
     enabled: showReply,
@@ -130,6 +124,13 @@ import { useToast } from "./use-toast";
     },
   });
 
-  return { handleAddReply, handleDeleteReply,handleUpdateReply, data, isLoading, isError };
-}
-export default useReply
+  return {
+    handleAddReply,
+    handleDeleteReply,
+    handleUpdateReply,
+    data,
+    isLoading,
+    isError,
+  };
+};
+export default useReply;

@@ -19,14 +19,28 @@ import {
 import { useState } from "react";
 import { Input } from "../ui/input";
 import PropTypes from "prop-types";
+import { useForm } from "react-hook-form"; 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { parentSchema } from "@/zodSchema/AddFamilySchema";
 
-const EditParentAttendeeDialog = ({
-  form,
-  attendee,
-  onSubmit,
-  disableSchedule,
-}) => {
-  const [attendeeEdit, setAttendeeEdit] = useState("");
+
+const EditAttendeeDialog = ({ attendee, onSubmit, disableSchedule }) => {
+  const [attendeeEdit, setAttendeeEdit] = useState(false);
+
+
+  // Conditionally omit 'contact_number' field if attendee is a children
+  const schema = attendee.attendee_type === "children"
+    ? parentSchema.omit({ contact_number: true }) 
+    : parentSchema;
+
+  const form = useForm({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      first_name: "",
+      last_name: "",
+      contact_number: "",
+    },
+  });
 
   return (
     <Dialog open={attendeeEdit} onOpenChange={setAttendeeEdit}>
@@ -35,13 +49,11 @@ const EditParentAttendeeDialog = ({
           <Button
             type="button"
             onClick={() => {
-              form.setValue("first_name", `${attendee.first_name}`);
-              form.setValue("last_name", `${attendee.last_name}`);
-              form.setValue(
-                "contact_number",
-                `${attendee.contact_number.toString()}`
-              );
-              //   setIdEditting(attendee.id);
+              form.setValue("first_name", attendee.first_name || "");
+              form.setValue("last_name", attendee.last_name || "");
+              if (attendee.attendee_type !== "children") {
+                form.setValue("contact_number", attendee.contact_number || "");
+              }
               setAttendeeEdit(true);
             }}
             variant="ghost"
@@ -63,7 +75,8 @@ const EditParentAttendeeDialog = ({
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit((data) => {
-              onSubmit(data, attendee.id), setAttendeeEdit(false);
+              onSubmit(data, attendee.id);
+              setAttendeeEdit(false);
             })}
           >
             <FormField
@@ -102,25 +115,26 @@ const EditParentAttendeeDialog = ({
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="contact_number"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Contact</FormLabel>
-
-                  <FormControl>
-                    <Input
-                      className="text-accent"
-                      placeholder="Contact"
-                      type="text"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {attendee.attendee_type !== "children" && (
+              <FormField
+                control={form.control}
+                name="contact_number"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Contact</FormLabel>
+                    <FormControl>
+                      <Input
+                        className="text-accent"
+                        placeholder="Contact"
+                        type="text"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
             <div className="mt-2 flex justify-end">
               <Button type="submit">Submit</Button>
             </div>
@@ -129,19 +143,18 @@ const EditParentAttendeeDialog = ({
       </DialogContent>
     </Dialog>
   );
-}
-
-EditParentAttendeeDialog.propTypes = {
-  form: PropTypes.object.isRequired, 
-  attendee: PropTypes.shape({
-    id: PropTypes.string.isRequired, 
-    first_name: PropTypes.string.isRequired,
-    last_name: PropTypes.string.isRequired,
-    contact_number:
-      PropTypes.string.isRequired
-  }).isRequired,
-  onSubmit: PropTypes.func.isRequired,
-  disableSchedule: PropTypes.bool.isRequired, 
 };
 
-export default EditParentAttendeeDialog;
+EditAttendeeDialog.propTypes = {
+  attendee: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    first_name: PropTypes.string.isRequired,
+    last_name: PropTypes.string.isRequired,
+    contact_number: PropTypes.string,
+    attendee_type: PropTypes.oneOf(["parent", "children"]).isRequired,
+  }).isRequired,
+  onSubmit: PropTypes.func.isRequired,
+  disableSchedule: PropTypes.bool.isRequired,
+};
+
+export default EditAttendeeDialog;

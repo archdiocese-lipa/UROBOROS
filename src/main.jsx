@@ -2,12 +2,13 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import {  QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'; // Import Devtools
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'; 
 import { Toaster } from '@/components/ui/toaster';
 import App from '@/App';
 import '@/index.css';
-import '@/lib/prototypes'; // From the main branch
-import { UserProvider } from '@/context/UserContext'; // Import UserProvider from context-setup branch
+import '@/lib/prototypes';
+import { UserProvider } from '@/context/UserContext';
+import { TooltipProvider } from './components/ui/tooltip';
 
 // Create a new instance of QueryClient
 const queryClient = new QueryClient();
@@ -20,11 +21,13 @@ const root = createRoot(rootElement);
 root.render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
       <UserProvider>
         {/* Wrap the app in UserProvider */}
         <App />
         <Toaster />
       </UserProvider>
+      </TooltipProvider>
       {/* Add ReactQueryDevtools for debugging */}
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
