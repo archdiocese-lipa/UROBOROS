@@ -72,7 +72,7 @@ const NewCoParent = forwardRef(
             if (!isOpen && onClose) onClose();
           }}
         >
-          <DialogContent className="h-96">
+          <DialogContent className="h-[80%] md:h-fit  overflow-y-scroll">
             <DialogHeader>
               <DialogTitle>Set up account for Parent/Guardian</DialogTitle>
               <DialogDescription>
