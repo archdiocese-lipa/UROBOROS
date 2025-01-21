@@ -27,12 +27,14 @@ import {
 } from "@/components/ui/form";
 import Loading from "@/components/Loading";
 import { Label } from "@/components/ui/label";
+import { Link } from "react-router-dom";
 
 const Profile = () => {
   const { userData } = useUser();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isemailDialogOpen, setIsEmailDialogOpen] = useState(false);
   const [iseNameDialogOpen, setIsNameDialogOpen] = useState(false);
+
   const contactSchema = z.object({
     contact_number: z.string().regex(/^[0-9]{11}$/, {
       message: "Contact number must be exactly 11 digits.",
@@ -42,6 +44,7 @@ const Profile = () => {
     first_name: z.string().min(1, "First name is required."),
     last_name: z.string().min(1, "First name is required."),
   });
+
   const emailSchema = z.object({
     email: z.string().email(),
   });
@@ -55,15 +58,20 @@ const Profile = () => {
     defaultValues: { contact_number: "" },
   });
 
-  const {  updateNameMutation,sendEmailLinkMutation, updateContactMutation, data, isLoading } =
-    useProfileChange({
-      user_id: userData?.id,
-      setIsDialogOpen,
-      setIsEmailDialogOpen,
-      setIsNameDialogOpen,
-      form,
-      emailForm,
-    });
+  const {
+    updateNameMutation,
+    sendEmailLinkMutation,
+    updateContactMutation,
+    data,
+    isLoading,
+  } = useProfileChange({
+    user_id: userData?.id,
+    setIsDialogOpen,
+    setIsEmailDialogOpen,
+    setIsNameDialogOpen,
+    form,
+    emailForm,
+  });
 
   const nameForm = useForm({
     resolver: zodResolver(nameSchema),
@@ -72,7 +80,7 @@ const Profile = () => {
       last_name: "",
     },
   });
-
+  // after the userData is fetched it will set the initial value of the fields
   useEffect(() => {
     if (userData) {
       nameForm.reset({
@@ -91,6 +99,7 @@ const Profile = () => {
       newContactNumber: newContact.contact_number,
     });
   };
+
   const handleSendEmailVerification = (data) => {
     localStorage.setItem("newEmail", data.email);
     sendEmailLinkMutation.mutate({
@@ -98,12 +107,13 @@ const Profile = () => {
     });
   };
   const handleUpdateName = (data) => {
-      updateNameMutation.mutate({
+    updateNameMutation.mutate({
       userId: userData?.id,
       first_name: data.first_name,
-      last_name: data.last_name
-    })
-  }
+      last_name: data.last_name,
+    });
+  };
+
 
   const initials = `${getInitial(data?.first_name)}${getInitial(data?.last_name)}`;
 
@@ -135,11 +145,7 @@ const Profile = () => {
                 </DialogHeader>
 
                 <Form {...nameForm}>
-                  <form
-                    onSubmit={nameForm.handleSubmit(
-                      handleUpdateName
-                    )}
-                  >
+                  <form onSubmit={nameForm.handleSubmit(handleUpdateName)}>
                     <FormField
                       control={nameForm.control}
                       name="first_name"
@@ -183,7 +189,6 @@ const Profile = () => {
                         Cancel
                       </Button>
                       <Button
-                  
                         type="submit"
                         disabled={updateNameMutation.isPending}
                       >
@@ -246,13 +251,6 @@ const Profile = () => {
                       )}
                     />
                     <DialogFooter className={"mt-4"}>
-                      {/* <Button
-                        type="button"
-                        variant="secondary"
-                        onClick={() => setIsEmailDialogOpen(false)}
-                      >
-                        Cancel
-                      </Button> */}
                       <Button
                         className="w-full"
                         type="submit"
@@ -333,6 +331,7 @@ const Profile = () => {
             </Dialog>
           </div>
           <p className="text-gray-700">{data?.contact_number}</p>
+          <Link to={"/reset-password"} className=" mt-4 cursor-pointer hover:underline">Change Password</Link>
         </div>
       </div>
     </div>
