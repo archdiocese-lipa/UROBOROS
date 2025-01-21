@@ -331,7 +331,10 @@ const Profile = () => {
             </Dialog>
           </div>
           <p className="text-gray-700">{data?.contact_number}</p>
-          <Link to={"/reset-password"} className=" mt-4 cursor-pointer hover:underline">Change Password</Link>
+        </div>
+        <div className="flex justify-end">
+        <Link to={"/reset-password"} className=" mt-4 cursor-pointer hover:underline">Change Password</Link>
+
         </div>
       </div>
     </div>
