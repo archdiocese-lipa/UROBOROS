@@ -50,7 +50,7 @@ export const useProfileChange = ({
       });
     },
     onSettled: () => {
-      queryClient.invalidateQueries(["fetchUser"]);
+      queryClient.invalidateQueries(["fetchUser",user_id]);
       setIsDialogOpen(false);
     },
   });
@@ -73,7 +73,7 @@ export const useProfileChange = ({
       });
     },
     onSettled: () => {
-      queryClient.invalidateQueries(["fetchUser"]);
+      queryClient.invalidateQueries(["fetchUser",user_id]);
     },
   });
 
@@ -93,7 +93,7 @@ export const useProfileChange = ({
       });
     },
     onSettled: () => {
-      queryClient.invalidateQueries(["fetchUser"]);
+      queryClient.invalidateQueries(["fetchUser",user_id]);
       setIsEmailDialogOpen(false);
     },
   });
@@ -114,7 +114,7 @@ export const useProfileChange = ({
       });
     },
     onSettled: () => {
-      queryClient.invalidateQueries(["fetchUser"]);
+      queryClient.invalidateQueries(["fetchUser",user_id]);
       setIsNameDialogOpen(false);
     },
   });
