@@ -161,17 +161,31 @@ export const getGuardian = async (familyId) => {
 
     const loggedInUserId = userData.user.id;
 
-    // Fetch parents data based on familyId
-    const { data: parents, error: parentsError } = await supabase
+    // Fetch the logged-in user first
+    const { data: loggedInUser, error: loggedInUserError } = await supabase
       .from("parents")
       .select("*")
       .eq("family_id", familyId)
-      .or(`parishioner_id.neq.${loggedInUserId},parishioner_id.is.null`); // Fetch rows where parishioner_id is not the logged-in user or is null
+      .eq("parishioner_id", loggedInUserId)
+      .single();
 
-    if (parentsError) {
-      return { success: false, error: parentsError.message };
+    if (loggedInUserError) {
+      throw new Error(loggedInUserError.message);
     }
 
+    // Fetch the rest of the parents excluding the logged-in user
+    const { data: otherParents, error: otherParentsError } = await supabase
+      .from("parents")
+      .select("*")
+      .eq("family_id", familyId)
+      .or(`parishioner_id.neq.${loggedInUserId},parishioner_id.is.null`);
+
+    if (otherParentsError) {
+      throw new Error(otherParentsError.message);
+    }
+
+    // Combine the results, ensuring the logged-in user is first
+    const parents = [loggedInUser, ...otherParents];
     return parents;
   } catch (error) {
     return { success: false, error: error.message };

@@ -24,12 +24,12 @@ import { useUser } from "@/context/useUser";
 import {
   useChildrenManualAttendance,
   useGuardianManualAttendEvent,
-  useMainApplicantAttendEvent,
+  // useMainApplicantAttendEvent,
 } from "@/hooks/useManualAttendEvent";
 import { useFamilyData } from "@/hooks/useFamilyData";
 import { manualAttendEventsSchema } from "@/zodSchema/ManualAttendEventsSchema";
 
-const ManualAttendEvents = ({ eventId, eventName }) => {
+const ManualAttendEvents = ({ eventId, eventName, eventTime, eventDate }) => {
   const [selectedEvent, setselectedEvent] = useState(""); // set the selected event
 
   const { userData } = useUser(); // Get the userId
@@ -44,25 +44,26 @@ const ManualAttendEvents = ({ eventId, eventName }) => {
     },
   });
 
-  const { mutate: mainApplicantAttend } = useMainApplicantAttendEvent();
+  // const { mutate: mainApplicantAttend } = useMainApplicantAttendEvent();
   const { mutate: guardianManualAttend } = useGuardianManualAttendEvent();
   const { mutate: childrenManualAttend } = useChildrenManualAttendance();
 
   const onSubmit = (data) => {
-    // Main applicant data (always included)
-    const mainApplicant = [
-      {
-        attendee_id: userId,
-        event_id: selectedEvent,
-        attendee_type: "parents",
-        attended: false,
-        main_applicant: true,
-        family_id: parentData[0].family_id,
-        first_name: userData.first_name,
-        last_name: userData.last_name,
-        contact_number: userData.contact_number,
-      },
-    ];
+    // // Main applicant data (always included)
+    // const mainApplicant = [
+    //   {
+    //     attendee_id: userId,
+    //     event_id: selectedEvent,
+    //     attendee_type: "parents",
+    //     attended: false,
+    //     main_applicant: true,
+    //     family_id: parentData[0].family_id,
+    //     first_name: userData.first_name,
+    //     last_name: userData.last_name,
+    //     contact_number: userData.contact_number,
+    //   },
+    // ];
+
     // Guardian (parent) data, only map if there are parents selected
     const parentsData =
       data.parents?.map((parent) => ({
@@ -88,7 +89,7 @@ const ManualAttendEvents = ({ eventId, eventName }) => {
       last_name: children.last_name,
     }));
 
-    mainApplicantAttend(mainApplicant);
+    // mainApplicantAttend(mainApplicant);
     guardianManualAttend(parentsData);
     childrenManualAttend(childrenData);
   };
@@ -104,7 +105,10 @@ const ManualAttendEvents = ({ eventId, eventName }) => {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{eventName}</DialogTitle>
+          <DialogTitle>{`${eventName}`}</DialogTitle>
+          <Label>
+            Date: {new Date(`${eventDate}T${eventTime}`).toDateTime()}
+          </Label>
           <DialogDescription>
             Please choose who you would like to attend with.
           </DialogDescription>
@@ -118,7 +122,7 @@ const ManualAttendEvents = ({ eventId, eventName }) => {
               {parentData?.length === 0 && childData?.length === 0 ? (
                 <Label className="text-primary-text">Add Family Member</Label>
               ) : (
-                <div>
+                <div className="flex flex-col space-y-1">
                   {parentData?.length > 0 && (
                     <Label className="text-primary-text">Parent/Guardian</Label>
                   )}
@@ -160,7 +164,7 @@ const ManualAttendEvents = ({ eventId, eventName }) => {
                                   }}
                                 />
                               </FormControl>
-                              <Label>{`${parent.first_name} ${parent.last_name}`}</Label>
+                              <Label>{`${parent.first_name} ${parent.last_name} ${userId === parent.parishioner_id ? "(You)" : ""}`}</Label>{" "}
                               <FormMessage />
                             </div>
                           </FormItem>
@@ -244,6 +248,8 @@ const ManualAttendEvents = ({ eventId, eventName }) => {
 ManualAttendEvents.propTypes = {
   eventId: PropTypes.string,
   eventName: PropTypes.string,
+  eventTime: PropTypes.string,
+  eventDate: PropTypes.string,
 };
 
 export default ManualAttendEvents;

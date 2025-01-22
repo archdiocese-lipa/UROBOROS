@@ -140,7 +140,7 @@ EditParent.propTypes = {
   parentFirstName: PropTypes.string.isRequired,
   parentLastName: PropTypes.string.isRequired,
   parentContactNumber: PropTypes.string.isRequired,
-  parentUserId: PropTypes.string.isRequired,
+  parentUserId: PropTypes.string,
 };
 
 EditParent.displayName = "EditParent";

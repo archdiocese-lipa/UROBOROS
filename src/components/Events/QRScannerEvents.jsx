@@ -25,7 +25,7 @@ import { useUser } from "@/context/useUser";
 import {
   useChildrenManualAttendance,
   useGuardianManualAttendEvent,
-  useMainApplicantAttendEvent,
+  // useMainApplicantAttendEvent,
 } from "@/hooks/useManualAttendEvent";
 import { useFamilyData } from "@/hooks/useFamilyData";
 import { manualAttendEventsSchema } from "@/zodSchema/ManualAttendEventsSchema";
@@ -50,25 +50,25 @@ const QrScannerEvents = ({ eventData }) => {
     },
   });
 
-  const { mutate: mainApplicantAttend } = useMainApplicantAttendEvent();
+  // const { mutate: mainApplicantAttend } = useMainApplicantAttendEvent();
   const { mutate: guardianManualAttend } = useGuardianManualAttendEvent();
   const { mutate: childrenManualAttend } = useChildrenManualAttendance();
 
   const onSubmit = (data) => {
     // Main applicant data (always included)
-    const mainApplicant = [
-      {
-        attendee_id: userId,
-        event_id: selectedEvent,
-        attendee_type: "parents",
-        attended: false,
-        main_applicant: true,
-        family_id: parentData[0].family_id,
-        first_name: userData.first_name,
-        last_name: userData.last_name,
-        contact_number: userData.contact_number,
-      },
-    ];
+    // const mainApplicant = [
+    //   {
+    //     attendee_id: userId,
+    //     event_id: selectedEvent,
+    //     attendee_type: "parents",
+    //     attended: false,
+    //     main_applicant: true,
+    //     family_id: parentData[0].family_id,
+    //     first_name: userData.first_name,
+    //     last_name: userData.last_name,
+    //     contact_number: userData.contact_number,
+    //   },
+    // ];
     // Guardian (parent) data, only map if there are parents selected
     const parentsData =
       data.parents?.map((parent) => ({
@@ -94,7 +94,7 @@ const QrScannerEvents = ({ eventData }) => {
       last_name: children.last_name,
     }));
 
-    mainApplicantAttend(mainApplicant);
+    // mainApplicantAttend(mainApplicant);
     guardianManualAttend(parentsData);
     childrenManualAttend(childrenData);
   };
@@ -160,10 +160,8 @@ const QrScannerEvents = ({ eventData }) => {
         {isQrScanned && (
           <>
             <div>
-              <h2 className="text-lg text-primary-text">
-                {eventDetails.event_name}
-              </h2>
-              <p className="text-sm text-primary-text">
+              <h2 className="text-lg">{eventDetails.event_name}</h2>
+              <p className="text-sm">
                 {new Date(
                   `${eventDetails.event_date}T${eventDetails.event_time}`
                 ).toDateTime()}
@@ -174,7 +172,7 @@ const QrScannerEvents = ({ eventData }) => {
                 <Label>Add Family Member</Label>
               ) : (
                 <div>
-                  <Label className="text-primary-text">
+                  <Label>
                     Please choose who you would like to attend with.
                   </Label>
                   <Form {...form}>
@@ -226,7 +224,7 @@ const QrScannerEvents = ({ eventData }) => {
                                       }}
                                     />
                                   </FormControl>
-                                  <Label>{`${parent.first_name} ${parent.last_name}`}</Label>
+                                  <Label>{`${parent.first_name} ${parent.last_name} ${userId === parent.parishioner_id ? "(You)" : ""}`}</Label>{" "}
                                   <FormMessage />
                                 </div>
                               </FormItem>
@@ -310,11 +308,7 @@ const QrScannerEvents = ({ eventData }) => {
 };
 
 QrScannerEvents.propTypes = {
-  eventData: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-    })
-  ).isRequired,
+  eventData: PropTypes.array,
 };
 
 export default QrScannerEvents;
