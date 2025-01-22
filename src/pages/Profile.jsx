@@ -240,7 +240,6 @@ const Profile = () => {
                           <FormControl>
                             <Input
                               className="text-accent"
-                              placeholder="JhonDoe@example.com"
                               type="text"
                               {...field}
                             />

@@ -1,3 +1,4 @@
+import { paginate } from "@/lib/utils";
 import { supabase } from "./supabaseClient";
 
 // Check for duplicate names of all family members
@@ -357,4 +358,20 @@ export const deleteChild = async (childId) => {
   }
 
   return data; // Return the deleted data if successful
+};
+
+export const fetchFamilies = async ({page,pageSize}) => {
+
+  const select = "id,users(last_name), parents(first_name,last_name,contact_number), children(first_name,last_name)"
+  
+  const paginatedData = await paginate({
+    key:"family_group",
+    page,
+    pageSize,
+    select
+  })
+
+  
+
+  return paginatedData;
 };
