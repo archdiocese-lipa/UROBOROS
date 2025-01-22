@@ -50,7 +50,6 @@ import { useUser } from "@/context/useUser";
 import { cn, downloadExcel, exportAttendanceList } from "@/lib/utils";
 import { Label } from "../ui/label";
 import { useToast } from "@/hooks/use-toast";
-import PropTypes from "prop-types";
 import AddRecord from "./AddRecord";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -72,6 +71,7 @@ import { Input } from "../ui/input";
 import { Search } from "@/assets/icons/icons";
 import { useDebounce } from "@/hooks/useDebounce";
 import AttendanceTable from "./AttendanceTable";
+import useRoleSwitcher from "@/hooks/useRoleSwitcher";
 
 const ScheduleDetails = () => {
   const [qrCode, setQRCode] = useState(null);
@@ -82,9 +82,11 @@ const ScheduleDetails = () => {
   const [filteredParentAttendance, setFilteredParentAttendance] = useState([]);
   const [filteredChildAttendance, setFilteredChildAttendance] = useState([]);
   const eventId = urlPrms.get("event") || null;
-  const userData = useUser();
+  const { userData } = useUser();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+
+  const { temporaryRole } = useRoleSwitcher();
 
   const { data: volunteers } = useUsersByRole("volunteer");
 
@@ -323,7 +325,7 @@ const ScheduleDetails = () => {
   const onSubmit = (data, attendeeId) => {
     updateMutation.mutate(
       {
-        update_id: userData.userData.id,
+        update_id: userData.id,
         ...data,
         attendeeId,
       },
@@ -350,11 +352,25 @@ const ScheduleDetails = () => {
     return <p>No Events.</p>;
   }
 
+  console.log(event);
+
   return (
     <div className="no-scrollbar flex h-full grow flex-col gap-2 overflow-y-scroll px-3 py-2 md:px-9 md:py-6">
       <div className="flex flex-wrap justify-between">
         <div>
-          <Title>{event?.event_name}</Title>
+          <Title>
+            {`${event.event_name}, ${new Date(
+                `${event.event_date}T${event.event_time}`
+              )
+                .toLocaleTimeString("en-US", {
+                  hour: "numeric",
+                  minute: "numeric",
+                  hour12: true,
+                })
+                .replace(":", ".")
+                .replace(" ", "")
+                .toLowerCase()}`}
+          </Title>
           <Label className="text-lg text-primary-text">
             {new Date(event?.event_date).toLocaleDateString("en-GB", {
               day: "numeric",
@@ -366,7 +382,7 @@ const ScheduleDetails = () => {
         </div>
         <div className="flex">
           <div className="flex flex-wrap gap-1">
-            {!disableSchedule && (
+            {!disableSchedule && temporaryRole === "admin" && (
               <div className="flex gap-1">
                 <AddRecord eventId={eventId} />
                 <Dialog onOpenChange={generateQRCode}>
@@ -414,7 +430,7 @@ const ScheduleDetails = () => {
               setDeleteDialogOpen(isOpen);
             }}
           >
-            {!disableSchedule && (
+            {!disableSchedule && temporaryRole === "admin" && (
               <DialogTrigger className="ml-2 w-fit" asChild>
                 <Button
                   // onClick={() => deleteMutation.mutate()}
@@ -462,7 +478,7 @@ const ScheduleDetails = () => {
             List of Assigned Volunteer(s)
           </Label>
           <Dialog>
-            {!disableSchedule && (
+            {!disableSchedule && temporaryRole === "admin" && (
               <DialogTrigger>
                 <button className="rounded-md bg-accent p-1 hover:cursor-pointer">
                   <Icon
@@ -549,19 +565,21 @@ const ScheduleDetails = () => {
             )}
 
             <div className="flex items-center justify-center gap-2">
-              <VolunteerSelect
-                // setVolunteerDialogOpen={setVolunteerDialogOpen}
-                currentVolunteer={volunteer}
-                assignedVolunteers={eventvolunteers}
-                oldVolunteerId={volunteer.volunteer_id}
-                eventId={eventId}
-                volunteers={volunteers}
-                newreplacement_id={volunteer.replacedby_id}
-                replaced={volunteer.replaced}
-                disableSchedule={disableSchedule}
-              />
+              {!disableSchedule && temporaryRole === "admin" && (
+                <VolunteerSelect
+                  // setVolunteerDialogOpen={setVolunteerDialogOpen}
+                  currentVolunteer={volunteer}
+                  assignedVolunteers={eventvolunteers}
+                  oldVolunteerId={volunteer.volunteer_id}
+                  eventId={eventId}
+                  volunteers={volunteers}
+                  newreplacement_id={volunteer.replacedby_id}
+                  replaced={volunteer.replaced}
+                  disableSchedule={disableSchedule}
+                />
+              )}
               <Dialog>
-                {!disableSchedule && (
+                {!disableSchedule && temporaryRole === "admin" && (
                   <DialogTrigger>
                     <Icon
                       className="h-5 w-5 text-red-500 hover:cursor-pointer"
@@ -740,8 +758,6 @@ const ScheduleDetails = () => {
     </div>
   );
 };
-ScheduleDetails.propTypes = {
-  filter: PropTypes.string,
-};
+
 
 export default memo(ScheduleDetails);
