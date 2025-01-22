@@ -16,15 +16,19 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { updatePassword } from "@/services/userService";
 import { useMutation } from "@tanstack/react-query";
+import { useUser } from "@/context/useUser";
 
 export const ResetPassword = () => {
   const { toast } = useToast();
+  const {userData} = useUser()
   const [passwordVisible, setPasswordVisible] = useState(false);
-
   const changePasswordSchema = z
     .object({
+      currentPassword: z
+        .string()
+        .min(1, "you must input your current password."),
       password: z.string().min(6, "Password must be 6 digits"),
-      confirmPassword: z.string().min(1, "Re-type your password"),
+      confirmPassword: z.string().min(1, "Retype your password"),
     })
     .refine((data) => data.password === data.confirmPassword, {
       message: "password must be match",
@@ -39,18 +43,29 @@ export const ResetPassword = () => {
         description: "Password updated.",
       });
     },
+    onError:(error) => {
+      toast({
+        variant: "destructive",
+        description: `Error updating password, ${error.message}`,
+      });
+    }
   });
   const togglePasswordVisibility = () => {
     setPasswordVisible((prevState) => !prevState);
   };
 
   const onSubmit = (data) => {
-    resetPasswordMutation.mutate(data.password);
+    resetPasswordMutation.mutate({
+      email: userData.email,
+      currentPassword: data.currentPassword,
+      password: data.password,
+    });
   };
 
   const changePasswordForm = useForm({
     resolver: zodResolver(changePasswordSchema),
     defaultValues: {
+      currentPassword: "",
       password: "",
       confirmPassword: "",
     },
@@ -61,10 +76,23 @@ export const ResetPassword = () => {
         <Title>Change Password</Title>
         <Description>Change your password</Description>
         <Form {...changePasswordForm}>
-          <form
-            // id="verificationform"
-            onSubmit={changePasswordForm.handleSubmit(onSubmit)}
-          >
+          <form onSubmit={changePasswordForm.handleSubmit(onSubmit)}>
+            <FormField
+              control={changePasswordForm.control}
+              name="currentPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Current Password</FormLabel>
+                  <FormControl>
+                    <Input
+                      type={passwordVisible ? "text" : "password"}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={changePasswordForm.control}
               name="password"
@@ -74,7 +102,6 @@ export const ResetPassword = () => {
                   <FormControl>
                     <Input
                       type={passwordVisible ? "text" : "password"}
-                      placeholder="e.g johndoe@gmail.com"
                       {...field}
                     />
                   </FormControl>
@@ -91,7 +118,6 @@ export const ResetPassword = () => {
                   <FormControl>
                     <Input
                       type={passwordVisible ? "text" : "password"}
-                      placeholder="e.g johndoe@gmail.com"
                       {...field}
                     />
                   </FormControl>
@@ -103,11 +129,7 @@ export const ResetPassword = () => {
               <input type="checkbox" onClick={togglePasswordVisibility} />
               <p>Show Password</p>
             </div>
-            <Button
-              type="submit"
-              //   form="verificationform"
-              className="mt-2 w-full"
-            >
+            <Button type="submit" className="mt-2 w-full">
               Save Password
             </Button>
           </form>
