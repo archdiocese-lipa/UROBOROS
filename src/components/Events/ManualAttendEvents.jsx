@@ -76,6 +76,7 @@ const ManualAttendEvents = ({ eventId, eventName, eventTime, eventDate }) => {
         first_name: parent.first_name,
         last_name: parent.last_name,
         contact_number: parent.contact_number,
+        registered_by: userId,
       })) || [];
 
     const childrenData = data.children?.map((children) => ({
@@ -87,6 +88,7 @@ const ManualAttendEvents = ({ eventId, eventName, eventTime, eventDate }) => {
       family_id: children.family_id,
       first_name: children.first_name,
       last_name: children.last_name,
+      registered_by: userId,
     }));
 
     // mainApplicantAttend(mainApplicant);

@@ -175,7 +175,6 @@ const ScheduleDetails = () => {
       setFilteredParentAttendance([]);
       setFilteredChildAttendance([]);
     } else {
-     
       // Separate filtered results into parents and children
       setFilteredParentAttendance(
         filteredSearch.filter(
@@ -631,7 +630,7 @@ const ScheduleDetails = () => {
           <p>No Family registered yet.</p>
         </div>
       )}
-      { search !== "" ? (
+      {search !== "" ? (
         <Card className="">
           <CardHeader className="p-2">
             <CardDescription className="sr-only">
@@ -667,16 +666,22 @@ const ScheduleDetails = () => {
         </Card>
       ) : (
         attendance.data?.map((family, i) => {
-          const mainApplicant = family?.parents.filter(
-            (parent) => parent?.main_applicant === true
-          )[0];
+          const mainApplicant = family?.registered_by;
+          const walkInMainApplicant = family?.parents?.find(
+            (parent) => parent.main_applicant
+          );
+
+          const applicantName = mainApplicant
+            ? `${mainApplicant.first_name} ${mainApplicant.last_name} Family`
+            : walkInMainApplicant
+              ? `${walkInMainApplicant.first_name} ${walkInMainApplicant.last_name} Family`
+              : "Unknown Family";
+
           return (
             <Card className="p-2" key={i}>
               <CardHeader className="p-2">
                 <CardTitle className="font-montserrat font-bold text-accent">
-                  {mainApplicant
-                    ? `${mainApplicant?.last_name} Family`
-                    : `Unknown Family`}
+                  {applicantName}
                 </CardTitle>
                 <CardDescription className="sr-only">
                   Family Details
@@ -700,7 +705,6 @@ const ScheduleDetails = () => {
                   <ParentAddLogs family_id={family.family_id} />
                 </div>
                 <AttendanceTable
-           
                   onSubmit={onSubmit}
                   attendeeType="parents"
                   disableSchedule={disableSchedule}
