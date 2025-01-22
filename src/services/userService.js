@@ -136,24 +136,22 @@ const forgotPassword = async (email) => {
 };
 
 const updatePassword = async ({ email, currentPassword, password }) => {
-console.log(email,currentPassword)
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password: currentPassword,
-    });
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password: currentPassword,
+  });
 
-    if (error) {
-      throw new Error('current password is incorrect.');
-    }
+  if (error) {
+    throw new Error("current password is incorrect.");
+  }
 
-    // If login is successful, the current password is correct
-    const { error:updateError } = await supabase.auth.updateUser({
-      password,
-    });
-    if (updateError) {
-      throw error;
-    }
- 
+  // If login is successful, the current password is correct
+  const { error: updateError } = await supabase.auth.updateUser({
+    password,
+  });
+  if (updateError) {
+    throw error;
+  }
 };
 
 const sendChangeEmailVerification = async (email) => {
@@ -193,7 +191,6 @@ const updateEmail = async ({ user_id, email }) => {
 };
 
 const updateName = async ({ userId, first_name, last_name }) => {
-
   const { error } = await supabase
     .from("users")
     .update({
@@ -202,9 +199,9 @@ const updateName = async ({ userId, first_name, last_name }) => {
     })
     .eq("id", userId);
 
-    if (error) {
-      throw new Error("Error updating name!", error.message);
-    }
+  if (error) {
+    throw new Error("Error updating name!", error.message);
+  }
 
   const { error: parentError } = await supabase
     .from("parents")
@@ -214,14 +211,10 @@ const updateName = async ({ userId, first_name, last_name }) => {
     })
     .eq("parishioner_id", userId);
 
-    if(parentError){
-      throw new Error("Error pupdating parent name", error.message)
-    }
-
- 
+  if (parentError) {
+    throw new Error("Error pupdating parent name", error.message);
+  }
 };
-
-
 
 export {
   getUser,

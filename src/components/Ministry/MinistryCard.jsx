@@ -74,7 +74,7 @@ const MinistryCard = ({ ministryId, title, description, createdDate }) => {
   const remainingCount = Math.max(members.length - maxVisible, 0);
 
   return (
-    <Card className="rounded-2xl border text-primary-text">
+    <Card className="max-h-96 rounded-2xl border text-primary-text">
       <CardHeader className="text-pretty">
         <div className="flex items-center justify-between">
           <CardTitle className="font-bold">{title}</CardTitle>
@@ -128,7 +128,7 @@ const MinistryCard = ({ ministryId, title, description, createdDate }) => {
             </DropdownMenu>
           </div>
         </div>
-        <CardDescription>{description}</CardDescription>
+        <CardDescription className="break-words">{description}</CardDescription>
         <p>
           <span className="font-medium">Created: </span>
           {formattedCreatedDate}

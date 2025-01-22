@@ -85,9 +85,15 @@ const EditMinistry = ({
                 name="ministryDescription"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description</FormLabel>
+                    <FormLabel>
+                      Description{" "}
+                      <span className="font-light italic">(optional)</span>
+                    </FormLabel>
                     <FormControl>
-                      <Textarea placeholder="Optional" {...field} />
+                      <Textarea
+                        placeholder="Maximum of 128 characters"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

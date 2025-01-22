@@ -94,10 +94,13 @@ const CreateMinistry = () => {
                 name="ministryDescription"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description</FormLabel>
+                    <FormLabel>
+                      Description
+                      <span className="font-light italic">(optional)</span>
+                    </FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Optional"
+                        placeholder="Maximum of 128 characters"
                         {...field}
                         className="resize-none"
                       />

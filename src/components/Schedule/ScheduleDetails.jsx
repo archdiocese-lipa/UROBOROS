@@ -169,7 +169,6 @@ const ScheduleDetails = () => {
         .toLocaleLowerCase()
         .includes(debouncedSearch.toLocaleLowerCase())
     );
-    console.log("filtered search",filteredSearch)
 
     if (filteredSearch?.length === allAttendance?.length) {
       // If no search term or all attendees match, clear filters
