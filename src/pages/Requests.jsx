@@ -63,11 +63,12 @@ const Requests = () => {
     // queryKey: ["users-list", tab, activeFilter], // Include activeFilter in the query key
     queryKey: ["users-list", tab],
     queryFn: async ({ pageParam }) => {
+      const roles = tab == "parishioner" ? ["parishioner", "coparent"] : [tab];
       const response = await getUsers({
         // activeFilter,
         page: pageParam,
         pageSize: 10,
-        role: tab,
+        roles,
       });
 
       return response;
@@ -210,7 +211,7 @@ const Requests = () => {
                     />
                   </TableCell> */}
                   <TableCell className="w-[300px] text-center">
-                  {`${row.first_name} ${row.last_name}`}
+                    {`${row.first_name} ${row.last_name}`}
                   </TableCell>
                   <TableCell className="w-[300px] text-center">
                     {row.email}

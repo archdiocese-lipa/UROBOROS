@@ -41,11 +41,13 @@ const getUsersByRole = async (role) => {
   }
 };
 
-const getUsers = async ({ activeFilter, page, pageSize, role }) => {
+const getUsers = async ({ activeFilter, page, pageSize, roles }) => {
   try {
     const query = {};
-    if (role) {
-      query.role = role;
+    const inquery = {};
+
+    if (roles && roles.length > 0) {
+      inquery.role = roles;
     }
 
     const filters = {
@@ -57,6 +59,7 @@ const getUsers = async ({ activeFilter, page, pageSize, role }) => {
       page,
       pageSize,
       query,
+      inquery,
       filters, // Apply filters to the pagination function
       order: [{ column: "created_at", ascending: false }],
     });
