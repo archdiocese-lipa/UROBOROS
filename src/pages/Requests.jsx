@@ -45,7 +45,7 @@ import { cn } from "@/lib/utils";
 // import useActivateUser from "@/hooks/useActivateUser";
 
 const Requests = () => {
-  const [tab, setTab] = useState("volunteer");
+  const [tab, setTab] = useState("parishioner");
   const [open, setOpen] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
   // const [activeFilter, setActiveFilter] = useState(null);
@@ -122,8 +122,8 @@ const Requests = () => {
           className="w-full"
         >
           <TabsList>
-            <TabsTrigger value="volunteer">Volunteers</TabsTrigger>
             <TabsTrigger value="parishioner">Parishioners</TabsTrigger>
+            <TabsTrigger value="volunteer">Volunteers</TabsTrigger>
             <TabsTrigger value="admin">Admins</TabsTrigger>
           </TabsList>
         </Tabs>
@@ -193,8 +193,8 @@ const Requests = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data?.pages.flatMap((page) =>
-              page.items.map((row, j) => (
+            {data?.pages?.flatMap((page) =>
+              page?.items?.map((row, j) => (
                 <TableRow
                   key={row.id}
                   className={cn(

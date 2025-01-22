@@ -131,7 +131,7 @@ const activateUser = async ({ id, payload }) => {
 
 const forgotPassword = async (email) => {
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: "https://portal.saintlaurence.co.uk/reset-password",
+    redirectTo: "https://togatherinv1.vercel.app/reset-password",
   });
   if (error) {
     console.error("Error sending reset password email:", error.message);
@@ -173,7 +173,7 @@ const sendChangeEmailVerification = async (email) => {
       email,
     },
     {
-      emailRedirectTo: "https://portal.sainlaurence.co.uk/profile",
+      emailRedirectTo: "https://togatherinv1.vercel.app/profile",
     }
   );
 
