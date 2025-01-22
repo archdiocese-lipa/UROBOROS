@@ -135,14 +135,27 @@ const forgotPassword = async (email) => {
   }
 };
 
-const updatePassword = async (password) => {
-  const { error } = await supabase.auth.updateUser({
-    password,
-  });
-  if (error) {
-    throw error;
-  }
+const updatePassword = async ({ email, currentPassword, password }) => {
+console.log(email,currentPassword)
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password: currentPassword,
+    });
+
+    if (error) {
+      throw new Error('current password is incorrect.');
+    }
+
+    // If login is successful, the current password is correct
+    const { error:updateError } = await supabase.auth.updateUser({
+      password,
+    });
+    if (updateError) {
+      throw error;
+    }
+ 
 };
+
 const sendChangeEmailVerification = async (email) => {
   const { data } = await supabase
     .from("users")
