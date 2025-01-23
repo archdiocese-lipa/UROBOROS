@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Icon } from "@iconify/react";
-// import { Switch } from "@/components/ui/switch";
 
 import { Title, Description } from "@/components/Title";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -23,15 +22,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-// import {
-//   Select,
-//   SelectContent,
-//   SelectItem,
-//   // SelectLabel,
-//   SelectGroup,
-//   SelectTrigger,
-//   SelectValue,
-// } from "@/components/ui/select";
+
 import { Button } from "@/components/ui/button";
 import NewProfileForm from "@/components/NewProfileForm";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -41,11 +32,11 @@ import useInterObserver from "@/hooks/useInterObserver";
 import { getUsers } from "@/services/userService";
 
 import { cn } from "@/lib/utils";
-// import DownIcon from "@/assets/icons/down-icon.svg";
-// import useActivateUser from "@/hooks/useActivateUser";
+import FamilyCards from "@/components/Request/FamilyCards";
+
 
 const Requests = () => {
-  const [tab, setTab] = useState("volunteer");
+  const [tab, setTab] = useState("parishioner");
   const [open, setOpen] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
   // const [activeFilter, setActiveFilter] = useState(null);
@@ -57,17 +48,18 @@ const Requests = () => {
     refetch,
     hasNextPage,
     fetchNextPage,
-    _isFetchingNextPage,
+    isFetchingNextPage,
     error,
   } = useInfiniteQuery({
     // queryKey: ["users-list", tab, activeFilter], // Include activeFilter in the query key
     queryKey: ["users-list", tab],
     queryFn: async ({ pageParam }) => {
+      const roles = tab === "parishioner" ? ["parishioner", "coparent"] : [tab];
       const response = await getUsers({
         // activeFilter,
         page: pageParam,
         pageSize: 10,
-        role: tab,
+        roles,
       });
 
       return response;
@@ -96,16 +88,6 @@ const Requests = () => {
     setOpen(true);
   };
 
-  // const handleStatusChange = (checked, id) => {
-  //   // Check if the mutate function is available
-  //   if (activateUser) {
-  //     activateUser({
-  //       id, // User ID
-  //       payload: checked, // Passing the boolean value directly for activation/deactivation
-  //     });
-  //   }
-  // };
-
   if (error) return <div>Error: {error.message}</div>;
 
   return (
@@ -121,35 +103,13 @@ const Requests = () => {
           className="w-full"
         >
           <TabsList>
-            <TabsTrigger value="volunteer">Volunteers</TabsTrigger>
             <TabsTrigger value="parishioner">Parishioners</TabsTrigger>
+            <TabsTrigger value="volunteer">Volunteers</TabsTrigger>
             <TabsTrigger value="admin">Admins</TabsTrigger>
+            <TabsTrigger value="family">Families</TabsTrigger>
           </TabsList>
         </Tabs>
         <div className="mt-2 flex h-fit w-fit items-center gap-3">
-          {/* <div className="w-fit rounded-full border border-primary py-2 pl-4 pr-1">
-            <div className="flex items-center gap-4">
-              <p className="text-md font-semibold text-accent">
-                All Volunteers
-              </p>
-
-              <div className="flex h-7 w-11 items-center justify-center rounded-[18.5px] bg-secondary-accent px-2 text-white hover:cursor-pointer">
-                <img src={DownIcon} alt={`up icon`} className="h-2 w-4" />
-              </div>
-            </div>
-          </div> */}
-          {/* <Select onValueChange={(value) => setActiveFilter(value)}>
-            <SelectTrigger className="rounded-full">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select> */}
           <Dialog open={open} onOpenChange={onDialogStateChange}>
             <DialogTrigger asChild>
               <Button>Create User</Button>
@@ -179,11 +139,10 @@ const Requests = () => {
           </Dialog>
         </div>
       </div>
-      {!isLoading ? (
+      {!isLoading && tab !== "family" ? (
         <Table>
           <TableHeader className="bg-primary">
             <TableRow>
-              {/* <TableHead className="rounded-l-lg text-center">Active</TableHead> */}
               <TableHead className="text-center">Name</TableHead>
               <TableHead className="text-center">Email</TableHead>
               <TableHead className="text-center">Contact Tel No.</TableHead>
@@ -192,25 +151,16 @@ const Requests = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data?.pages.flatMap((page) =>
-              page.items.map((row, j) => (
+            {data?.pages?.flatMap((page) =>
+              page?.items?.map((row, j) => (
                 <TableRow
                   key={row.id}
                   className={cn(
                     j % 2 !== 0 ? "bg-primary bg-opacity-35" : "bg-white"
                   )}
                 >
-                  {/* <TableCell className="text-center">
-                    <Switch
-                      checked={row.is_confirmed}
-                      onCheckedChange={(checked) =>
-                        handleStatusChange(checked, row.id)
-                      } // Trigger optimistic update
-                      aria-label="Confirmation Status"
-                    />
-                  </TableCell> */}
                   <TableCell className="w-[300px] text-center">
-                  {`${row.first_name} ${row.last_name}`}
+                    {`${row.first_name} ${row.last_name}`}
                   </TableCell>
                   <TableCell className="w-[300px] text-center">
                     {row.email}
@@ -231,18 +181,19 @@ const Requests = () => {
                 </TableRow>
               ))
             )}
-            {hasNextPage && (
+            {hasNextPage &&  (
               <TableRow ref={ref}>
                 <TableCell colSpan={4}>
-                  <Skeleton className="h-10 w-full rounded-xl" />
+                  {isFetchingNextPage &&  <Skeleton className="h-10 w-full rounded-xl" />}
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
-      ) : (
+      ) : hasNextPage  && (
         <Skeleton className="h-96 w-full rounded-xl" />
       )}
+      {tab === "family" && <FamilyCards/>}
     </div>
   );
 };

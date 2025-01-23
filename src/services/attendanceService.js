@@ -147,7 +147,7 @@ const getEventAttendance = async (eventId) => {
     // Fetch attendance records for the given event
     const { data: attendanceData, error: attendanceError } = await supabase
       .from("attendance")
-      .select("*")
+      .select("*, registered_by:users(first_name,last_name)")
       .eq("event_id", eventId)
       .order("created_at", { ascending: true })
       .order("first_name", { ascending: true })
@@ -174,10 +174,10 @@ const getEventAttendance = async (eventId) => {
           family_surname: record.last_name || "Unknown",
           parents: [],
           children: [],
+          registered_by: record.registered_by,
         };
         acc.push(familyGroup);
       }
-
       // Categorize attendees by type
       if (attendee_type === "parents") {
         familyGroup.parents.push(record);
@@ -299,6 +299,7 @@ export const insertGuardians = async (guardiansData) => {
         last_name: guardian.last_name,
         contact_number: guardian.contact_number,
         family_id: guardian.family_id,
+        registered_by: guardian.registered_by,
       }))
     )
     .select();
@@ -350,6 +351,7 @@ export const insertChildren = async (childrenData) => {
         last_name: child.last_name,
         family_id: child.family_id,
         registration_code: child.registration_code,
+        registered_by: child.registered_by,
       }))
     )
     .select();
@@ -643,7 +645,7 @@ const addSingleAttendee = async ({
       ]);
 
     if (addLogError) {
-      console.error(addLogError.message)
+      console.error(addLogError.message);
       throw new Error("failed Adding to edit logs!", addLogError.message);
     }
   }

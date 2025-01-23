@@ -9,9 +9,8 @@ const Ministries = () => {
 
   const ministryData = ministries?.data;
 
- 
   return (
-    <div className="relative h-full flex flex-col gap-y-5">
+    <div className="relative flex h-full flex-col gap-y-5">
       <div className="fixed bottom-20 right-7 z-10 md:bottom-10">
         <CreateMinistry />
       </div>
@@ -22,16 +21,20 @@ const Ministries = () => {
       </div>
 
       {/* Render MinistryCard components if data exists */}
-      <div className="grid gap-4 w-full sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 p-2 h-full overflow-scroll no-scrollbar">
-        {!ministryData ? <Loading /> : ministryData?.map((ministry) => (
-          <MinistryCard
-            key={ministry.id} // Use `ministry.id` as the key for each card
-            ministryId={ministry.id} // Pass the ministry ID to the MinistryCard
-            title={ministry.ministry_name} // Pass ministry properties
-            description={ministry.ministry_description}
-            createdDate={ministry.created_at} // Assuming created_at is the date field
-          />
-        ))}
+      <div className="no-scrollbar grid h-full w-full gap-4 overflow-scroll p-2 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-4">
+        {!ministryData ? (
+          <Loading />
+        ) : (
+          ministryData?.map((ministry) => (
+            <MinistryCard
+              key={ministry.id} // Use `ministry.id` as the key for each card
+              ministryId={ministry.id} // Pass the ministry ID to the MinistryCard
+              title={ministry.ministry_name} // Pass ministry properties
+              description={ministry.ministry_description}
+              createdDate={ministry.created_at} // Assuming created_at is the date field
+            />
+          ))
+        )}
       </div>
     </div>
   );

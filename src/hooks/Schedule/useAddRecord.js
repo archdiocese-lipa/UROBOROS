@@ -1,9 +1,11 @@
-import { useMutation } from "@tanstack/react-query";
+import {  useMutation, useQueryClient } from "@tanstack/react-query";
 import { insertNewRecord } from "@/services/attendanceService";
 import { useToast } from "@/hooks/use-toast";
 
-const useAddRecord = () => {
+const useAddRecord = ({eventId}) => {
   const { toast } = useToast();
+
+  const queryClient = useQueryClient()
 
   // React Query mutation for inserting event attendance
   const mutation = useMutation({
@@ -28,7 +30,9 @@ const useAddRecord = () => {
       });
     },
     onSettled: () => {
-      // Optionally handle additional cleanup or refetching if necessary
+      queryClient.invalidateQueries({
+        queryKey: ["attendance", eventId],
+      });
     },
   });
 

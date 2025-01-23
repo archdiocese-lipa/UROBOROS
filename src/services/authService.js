@@ -115,14 +115,14 @@ const registerCoParent = async ({
 
     if (insertError) throw insertError;
 
-    // Insert the co parent to family_group
-    const { error: familyError } = await supabase.from("family_group").upsert([
-      {
-        user_id: user.user.id,
-      },
-    ]);
+    // // Insert the co parent to family_group
+    // const { error: familyError } = await supabase.from("family_group").upsert([
+    //   {
+    //     user_id: user.user.id,
+    //   },
+    // ]);
 
-    if (familyError) throw familyError;
+    // if (familyError) throw familyError;
 
     // Insert the user data into the 'parents' table
     const { error: parentsInsertError } = await supabase
@@ -131,8 +131,6 @@ const registerCoParent = async ({
         parishioner_id: user.user.id,
       })
       .eq("id", parentId);
-
-    if (parentsInsertError) throw parentsInsertError;
 
     if (parentsInsertError) throw parentsInsertError;
 

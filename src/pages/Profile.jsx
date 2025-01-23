@@ -114,7 +114,6 @@ const Profile = () => {
     });
   };
 
-
   const initials = `${getInitial(data?.first_name)}${getInitial(data?.last_name)}`;
 
   if (isLoading || !userData || !data) {
@@ -241,7 +240,6 @@ const Profile = () => {
                           <FormControl>
                             <Input
                               className="text-accent"
-                              placeholder="JhonDoe@example.com"
                               type="text"
                               {...field}
                             />
@@ -333,8 +331,12 @@ const Profile = () => {
           <p className="text-gray-700">{data?.contact_number}</p>
         </div>
         <div className="flex justify-end">
-        <Link to={"/reset-password"} className=" mt-4 cursor-pointer hover:underline">Change Password</Link>
-
+          <Link
+            to={"/reset-password"}
+            className="mt-4 cursor-pointer hover:underline"
+          >
+            Change Password
+          </Link>
         </div>
       </div>
     </div>

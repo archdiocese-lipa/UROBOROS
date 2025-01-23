@@ -50,7 +50,7 @@ const AddRecord = ({ eventId }) => {
     },
   });
 
-  const { mutate: registerAttendance, isLoading } = useAddRecord(); // Initialize the mutation hook
+  const { mutate: registerAttendance, isLoading } = useAddRecord({eventId}); // Initialize the mutation hook
 
   const onSubmit = (values) => {
     // Proceed with submission

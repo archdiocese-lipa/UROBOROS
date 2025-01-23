@@ -1,11 +1,13 @@
-import { Icon } from "@iconify/react";
+import { LoadingIcon } from "@/assets/icons/icons";
 
 const Loading = () => {
-return (
+  return (
     <div className="flex w-full h-full items-center justify-center">
-        <Icon className="h-14 w-14 animate-spin" icon="eos-icons:loading" />
+      <LoadingIcon
+        className="h-14 w-14"
+      />
     </div>
-);
+  );
 };
 
 export default Loading;
