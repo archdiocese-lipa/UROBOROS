@@ -39,7 +39,7 @@ const EditMinistry = ({
       ministryDescription: currentDescription,
     },
   });
-
+  console.log("testing deployment")
   const { editMutation } = useMinistry(); // Use the hook
 
   const onSubmit = (values) => {
