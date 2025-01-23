@@ -117,6 +117,10 @@ const paginate = async ({
     if (filters.id) {
       supabaseQuery = supabaseQuery.in("id", filters.id);
     }
+    if (filters.not) {
+      const { column,filter, value } = filters.not;
+      supabaseQuery = supabaseQuery.not(column, filter, value);
+    }
 
     // Fetch the total count of items, applying eq filters here as well
     let countQuery = supabase

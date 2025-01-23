@@ -11,12 +11,14 @@ const useRoleSwitcher = () => {
     localStorage.getItem("temporaryRole")
   );
 
+ 
+
    useEffect(() => {
     if (userData?.role && !temporaryRole) {
       setTemporaryRole(userData.role);
       localStorage.setItem("temporaryRole", userData.role);
     }
-  }, []);
+  }, [userData, temporaryRole]);
   const onSwitchRole = (role) => {
     if (!userData) return;
     setTemporaryRole(role);

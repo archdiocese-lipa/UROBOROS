@@ -362,13 +362,16 @@ export const deleteChild = async (childId) => {
 
 export const fetchFamilies = async ({page,pageSize}) => {
 
-  const select = "id,users(last_name), parents(first_name,last_name,contact_number), children(first_name,last_name)"
-  
+  const select = "id,users(first_name,last_name,contact_number), parents(first_name,last_name,contact_number), children(first_name,last_name)"
+  const filters = {
+    not: {column:"user_id", filter:"is", value: null}
+  }
   const paginatedData = await paginate({
     key:"family_group",
     page,
     pageSize,
-    select
+    select,
+    filters
   })
 
   
