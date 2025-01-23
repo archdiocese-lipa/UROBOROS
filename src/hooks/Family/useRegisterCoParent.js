@@ -16,7 +16,8 @@ const useRegisterCoParent = () => {
     onSuccess: () => {
       toast({
         title: "Profile Created Successfully",
-        description: "New profile has been created.",
+        description:
+          "A confirmation has been sent to the email of the co-parent.",
       });
     },
     onError: (error) => {
