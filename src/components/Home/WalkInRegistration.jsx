@@ -185,7 +185,9 @@ const WalkInRegistration = () => {
     <>
       <Dialog open={openDialog} onOpenChange={handleDialogChange}>
         <DialogTrigger asChild>
-          <Button variant="landingsecondary">Walk - In Register</Button>
+          <Button variant="landingsecondary" disabled={true}>
+            Walk - In Register
+          </Button>
         </DialogTrigger>
         <DialogContent className="no-scrollbar max-h-[45rem] overflow-scroll sm:max-w-2xl md:max-h-[38rem]">
           <DialogHeader>

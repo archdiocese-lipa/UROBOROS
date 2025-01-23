@@ -360,21 +360,19 @@ export const deleteChild = async (childId) => {
   return data; // Return the deleted data if successful
 };
 
-export const fetchFamilies = async ({page,pageSize}) => {
-
-  const select = "id,users(first_name,last_name,contact_number), parents(first_name,last_name,contact_number), children(first_name,last_name)"
+export const fetchFamilies = async ({ page, pageSize }) => {
+  const select =
+    "id,users(first_name,last_name,contact_number), parents(first_name,last_name,contact_number), children(first_name,last_name)";
   const filters = {
-    not: {column:"user_id", filter:"is", value: null}
-  }
+    not: { column: "user_id", filter: "is", value: null },
+  };
   const paginatedData = await paginate({
-    key:"family_group",
+    key: "family_group",
     page,
     pageSize,
     select,
-    filters
-  })
-
-  
+    filters,
+  });
 
   return paginatedData;
 };

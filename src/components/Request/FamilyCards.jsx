@@ -106,7 +106,7 @@ const FamilyCards = () => {
                         <p>{`${family?.users?.contact_number}`}</p>
                       </TableCell>
                     </TableRow> */}
-                    {family.parents.map((parent, i) => (
+                    {family?.parents?.map((parent, i) => (
                       <TableRow
                         key={i}
                         className={cn(
@@ -129,7 +129,7 @@ const FamilyCards = () => {
               <div className="flex items-center gap-2">
                 <h3 className="text-xl font-semibold text-accent">Children</h3>
               </div>
-              {family.children && (
+              {family?.children && (
                 <Table>
                   <TableHeader className="bg-primary">
                     <TableRow>
@@ -138,7 +138,7 @@ const FamilyCards = () => {
                   </TableHeader>
 
                   <TableBody>
-                    {family.children.length < 1 && (
+                    {family?.children.length < 1 && (
                       <TableRow>
                         <TableCell colSpan={6} className="text-center">
                           <div className="flex w-full items-center justify-center">
@@ -147,7 +147,7 @@ const FamilyCards = () => {
                         </TableCell>
                       </TableRow>
                     )}
-                    {family.children.map((child, i) => (
+                    {family?.children.map((child, i) => (
                       <TableRow
                         key={i}
                         className={cn(
@@ -166,8 +166,6 @@ const FamilyCards = () => {
           </Card>
         ))
       )}
-      
-
       {/* Loading Next Page */}
       {isFetchingNextPage && <Loading />}
 
