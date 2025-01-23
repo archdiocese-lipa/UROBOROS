@@ -24,7 +24,7 @@ import { Input } from "@/components/ui/input";
 import { PuzzleIcon } from "@/assets/icons/icons";
 import { createMinistrySchema } from "@/zodSchema/CreateMinistrySchema";
 import { Textarea } from "../ui/textarea";
-import { useCreateMinistry } from "@/hooks/useCreateMinistry"; // Import the hook
+import useMinistry from "@/hooks/useMinistry";
 
 const CreateMinistry = () => {
   const [openDialog, setOpenDialog] = useState(false);
@@ -37,17 +37,17 @@ const CreateMinistry = () => {
     },
   });
 
-  const createMinistryMutation = useCreateMinistry();
+
+  const { createMutation } = useMinistry({});
 
   const onSubmit = (values) => {
-    createMinistryMutation.mutate(
+    createMutation.mutate(
       {
         ministry_name: values.ministryName,
         ministry_description: values.ministryDescription,
       },
       {
         onSuccess: () => {
-          // Close the dialog after successful ministry creation
           setOpenDialog(false);
         },
       }
@@ -115,14 +115,14 @@ const CreateMinistry = () => {
                 </DialogClose>
                 <Button
                   type="submit"
-                  disabled={createMinistryMutation.isLoading}
+                  disabled={createMutation.isLoading}
                 >
-                  {createMinistryMutation.isLoading ? "Creating..." : "Submit"}
+                  {createMutation.isPending ? "Creating..." : "Submit"}
                 </Button>
               </div>
-              {createMinistryMutation.isError && (
+              {createMutation.isError && (
                 <p className="text-red-500">
-                  Error: {createMinistryMutation.error.message}
+                  Error: {createMutation.error.message}
                 </p>
               )}
             </form>

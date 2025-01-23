@@ -36,14 +36,13 @@ import TimePicker from "./TimePicker";
 import { Textarea } from "../ui/textarea";
 
 import { useUser } from "@/context/useUser";
-import useCreateEvent from "@/hooks/useCreateEvent";
-import useQuickAccessEvents from "@/hooks/useQuickAccessEvents";
-import useGetAllMinistries from "@/hooks/useGetAllMinistries";
 import useUsersByRole from "@/hooks/useUsersByRole";
-import useMinistryMembers from "@/hooks/useMinistryMembers"; // Import the custom hook
+// import useMinistryMembers from "@/hooks/useMinistryMembers"; // Import the custom hook
 
 import { updateEvent } from "@/services/eventService";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import useMinistry from "@/hooks/useMinistry";
+import useEvent from "@/hooks/useEvent";
 const CreateEvent = ({
   id = "create-event",
   eventData = null,
@@ -54,18 +53,17 @@ const CreateEvent = ({
 
   const [selectedMinistry, setSelectedMinistry] = useState(null);
 
-  const { members } = useMinistryMembers(selectedMinistry);
+  const { ministryMembers, ministries } = useMinistry({ selectedMinistry });
 
   const { userData } = useUser(); // Get userData from the context
 
   const userId = userData?.id; // Extract the userId, safely checking if userData exists
-  const { data: ministries } = useGetAllMinistries();
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { mutate: createEvent, _isLoading } = useCreateEvent();
-  const { events } = useQuickAccessEvents();
+  const { createEventMutation,quickAccessEvents } = useEvent();
   const { data: volunteers } = useUsersByRole("volunteer");
+
 
   const editMutation = useMutation({
     mutationFn: async ({ eventId, updatedData }) =>
@@ -175,7 +173,7 @@ const CreateEvent = ({
 
     // Call the create event function with the prepared data
     if (!eventData) {
-      createEvent(eventPayload);
+      createEventMutation.mutate(eventPayload);
       setDialogOpen(false); // Close the dialog if success
       return;
     } else {
@@ -214,14 +212,14 @@ const CreateEvent = ({
                       </button>
                     </PopoverTrigger>
                     <PopoverContent className="p-2">
-                      {events?.map((eventItem, index) => (
+                      {quickAccessEvents?.map((event, index) => (
                         <button
                           key={index}
-                          onClick={() => handleEventSelect(eventItem)}
+                          onClick={() => handleEventSelect(event)}
                           className="text-gray-700 hover:bg-gray-200 mt-1 w-full rounded-md border border-secondary-accent px-4 py-2 text-left text-sm"
                         >
-                          {`${eventItem.event_name}, ${new Date(
-                            `1970-01-01T${eventItem.event_time}`
+                          {`${event.event_name}, ${new Date(
+                            `1970-01-01T${event.event_time}`
                           )
                             .toLocaleTimeString("en-US", {
                               hour: "numeric",
@@ -342,8 +340,8 @@ const CreateEvent = ({
                   <ReactSelect
                     isMulti
                     options={
-                      selectedMinistry && members?.length > 0
-                        ? members.map((member) => ({
+                      selectedMinistry && ministryMembers?.data?.length > 0
+                        ? ministryMembers?.data?.map((member) => ({
                             value: member?.user_id || "", // Ensure fallback for undefined user_id
                             label: `${member?.users?.first_name || "Unknown"} ${
                               member?.users?.last_name || "Unknown"
@@ -361,8 +359,9 @@ const CreateEvent = ({
                         ? field.value.map((value) => ({
                             value,
                             label:
-                              members?.find((m) => m.user_id === value)?.users
-                                ?.first_name ||
+                              ministryMembers?.data?.find(
+                                (m) => m.user_id === value
+                              )?.users?.first_name ||
                               volunteers?.find((v) => v.id === value)
                                 ?.first_name ||
                               "Unknown",
