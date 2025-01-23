@@ -22,7 +22,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { editMinistrySchema } from "@/zodSchema/EditMinistrySchema";
 import { Textarea } from "../ui/textarea";
-import { useEditMinistry } from "@/hooks/useEditMinistry";
+import useMinistry from "@/hooks/useMinistry";
 
 const EditMinistry = ({
   ministryId,
@@ -40,11 +40,11 @@ const EditMinistry = ({
     },
   });
 
-  const { mutate: editMinistry, isLoading, isError } = useEditMinistry(); // Use the hook
+  const { editMutation } = useMinistry(); // Use the hook
 
   const onSubmit = (values) => {
     // Call the editMinistry service with the values directly
-    editMinistry(values);
+    editMutation.mutate(values);
 
     // Close the dialog after submitting the form
     closeDialog();
@@ -103,13 +103,13 @@ const EditMinistry = ({
                 <DialogClose asChild>
                   <Button variant="outline">Cancel</Button>
                 </DialogClose>
-                <Button type="submit" disabled={isLoading}>
-                  {isLoading ? "Updating..." : "Submit"}
+                <Button type="submit" disabled={editMutation.isPending}>
+                  {editMutation.isPending ? "Updating..." : "Submit"}
                 </Button>
               </div>
-              {isError && (
+              {editMutation.isError && (
                 <p className="text-red-500">
-                  Error: {isError?.message || "Something went wrong"}
+                  Error: {editMutation.isError?.message || "Something went wrong"}
                 </p>
               )}
             </form>
