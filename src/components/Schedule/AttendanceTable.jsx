@@ -12,7 +12,11 @@ import { cn } from "@/lib/utils";
 import AttendeeEditLogs from "./AttendeeEditLogs";
 import { memo } from "react";
 import EditParentAttendeeDialog from "./EditAttendeeDialog";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import PropTypes from "prop-types";
 
 const AttendanceTable = ({
@@ -27,14 +31,14 @@ const AttendanceTable = ({
       <TableHeader className="bg-primary">
         <TableRow>
           <TableHead className="rounded-l-lg">
-            <Tooltip>
-              <TooltipTrigger asChild>
+            <Popover>
+              <PopoverTrigger asChild>
                 <Icon className="h-5 w-5" icon="mingcute:question-line" />
-              </TooltipTrigger>
-              <TooltipContent>
+              </PopoverTrigger>
+              <PopoverContent>
                 <p>Click the switch to attend</p>
-              </TooltipContent>
-            </Tooltip>
+              </PopoverContent>
+            </Popover>
           </TableHead>
           <TableHead>Name</TableHead>
           <TableHead>Time</TableHead>
@@ -121,7 +125,7 @@ AttendanceTable.propTypes = {
   disableSchedule: PropTypes.bool,
   onSubmit: PropTypes.func.isRequired,
   onRowAttend: PropTypes.func.isRequired,
-  attendeeType: PropTypes.string
+  attendeeType: PropTypes.string,
 };
 
 export default memo(AttendanceTable);

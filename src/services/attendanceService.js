@@ -196,66 +196,66 @@ const getEventAttendance = async (eventId) => {
 };
 
 // Insert main applicant
-export const insertMainApplicant = async (guardiansData) => {
-  try {
-    // Check for existing main_applicant entries before upserting
-    const { data: existingRecords, error: checkError } = await supabase
-      .from("attendance")
-      .select("attendee_id, event_id")
-      .in(
-        "attendee_id",
-        guardiansData.map((guardian) => guardian.attendee_id)
-      )
-      .in(
-        "event_id",
-        guardiansData.map((guardian) => guardian.event_id)
-      );
+// export const insertMainApplicant = async (guardiansData) => {
+//   try {
+//     // Check for existing main_applicant entries before upserting
+//     const { data: existingRecords, error: checkError } = await supabase
+//       .from("attendance")
+//       .select("attendee_id, event_id")
+//       .in(
+//         "attendee_id",
+//         guardiansData.map((guardian) => guardian.attendee_id)
+//       )
+//       .in(
+//         "event_id",
+//         guardiansData.map((guardian) => guardian.event_id)
+//       );
 
-    if (checkError) {
-      throw new Error(checkError.message);
-    }
+//     if (checkError) {
+//       throw new Error(checkError.message);
+//     }
 
-    // Filter out any guardians who are already registered as main applicants
-    const newGuardiansData = guardiansData.filter((guardian) => {
-      return !existingRecords.some(
-        (record) =>
-          record.attendee_id === guardian.attendee_id &&
-          record.event_id === guardian.event_id
-      );
-    });
+//     // Filter out any guardians who are already registered as main applicants
+//     const newGuardiansData = guardiansData.filter((guardian) => {
+//       return !existingRecords.some(
+//         (record) =>
+//           record.attendee_id === guardian.attendee_id &&
+//           record.event_id === guardian.event_id
+//       );
+//     });
 
-    // Only upsert the new guardians if there are any
-    if (newGuardiansData.length > 0) {
-      const { data, error } = await supabase.from("attendance").upsert(
-        newGuardiansData.map((guardian) => ({
-          event_id: guardian.event_id,
-          attendee_id: guardian.attendee_id,
-          attendee_type: guardian.attendee_type,
-          attended: guardian.attended,
-          main_applicant: guardian.main_applicant,
-          first_name: guardian.first_name,
-          last_name: guardian.last_name,
-          contact_number: guardian.contact_number,
-          family_id: guardian.family_id,
-          registration_code: guardian.registration_code,
-        }))
-      );
+//     // Only upsert the new guardians if there are any
+//     if (newGuardiansData.length > 0) {
+//       const { data, error } = await supabase.from("attendance").upsert(
+//         newGuardiansData.map((guardian) => ({
+//           event_id: guardian.event_id,
+//           attendee_id: guardian.attendee_id,
+//           attendee_type: guardian.attendee_type,
+//           attended: guardian.attended,
+//           main_applicant: guardian.main_applicant,
+//           first_name: guardian.first_name,
+//           last_name: guardian.last_name,
+//           contact_number: guardian.contact_number,
+//           family_id: guardian.family_id,
+//           registration_code: guardian.registration_code,
+//         }))
+//       );
 
-      if (error) {
-        throw new Error(error.message);
-      }
+//       if (error) {
+//         throw new Error(error.message);
+//       }
 
-      return data;
-    } else {
-      // No new guardians to insert, return a message or handle it silently
-      return null;
-    }
-  } catch (error) {
-    console.error("Error adding guardian", error);
-    // Do not throw the error to avoid breaking the flow
-    return null;
-  }
-};
+//       return data;
+//     } else {
+//       // No new guardians to insert, return a message or handle it silently
+//       return null;
+//     }
+//   } catch (error) {
+//     console.error("Error adding guardian", error);
+//     // Do not throw the error to avoid breaking the flow
+//     return null;
+//   }
+// };
 
 // Parishioner insert family/guardian
 export const insertGuardians = async (guardiansData) => {
@@ -650,6 +650,33 @@ const addSingleAttendee = async ({
     }
   }
 };
+
+const fetchAlreadyRegistered = async (eventId, attendeeIds) => {
+  const { data, error } = await supabase
+    .from("attendance")
+    .select("attendee_id")
+    .eq("event_id", eventId)
+    .in("attendee_id", attendeeIds);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+};
+
+const removeAttendee = async (attendeeId) => {
+  const { data, error } = await supabase
+    .from("attendance")
+    .delete()
+    .eq("attendee_id", attendeeId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+  return data;
+};
+
 export {
   editAttendee,
   getEventAttendance,
@@ -660,4 +687,6 @@ export {
   insertNewRecord,
   addSingleAttendee,
   fetchAttendanceEditLogs,
+  fetchAlreadyRegistered,
+  removeAttendee,
 };

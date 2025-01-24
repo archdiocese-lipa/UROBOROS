@@ -115,7 +115,7 @@ const registerCoParent = async ({
 
     if (insertError) throw insertError;
 
-    // // Insert the co parent to family_group
+    // Insert the co parent to family_group
     // const { error: familyError } = await supabase.from("family_group").upsert([
     //   {
     //     user_id: user.user.id,
