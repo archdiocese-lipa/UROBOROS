@@ -157,6 +157,15 @@ const updatePassword = async ({ email, currentPassword, password }) => {
   }
 };
 
+const resetPassword = async ({ password }) => {
+  const { error: updateError } = await supabase.auth.updateUser({
+    password,
+  });
+  if (updateError) {
+    throw updateError;
+  }
+};
+
 const sendChangeEmailVerification = async (email) => {
   const { data } = await supabase
     .from("users")
@@ -173,7 +182,7 @@ const sendChangeEmailVerification = async (email) => {
       email,
     },
     {
-      emailRedirectTo: "https://portal.sainlaurence.org.uk/profile",
+      emailRedirectTo: "https://portal.saintlaurence.org.uk/profile",
     }
   );
 
@@ -231,4 +240,5 @@ export {
   sendChangeEmailVerification,
   updateEmail,
   updateName,
+  resetPassword,
 };

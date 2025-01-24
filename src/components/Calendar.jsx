@@ -1,6 +1,5 @@
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
-import { useGetEvents } from "@/hooks/useGetAllEvents";
 import PropTypes from "prop-types";
 import { useUser } from "@/context/useUser";
 import { useQuery } from "@tanstack/react-query";
@@ -9,11 +8,12 @@ import EventInfoDialog from "./Schedule/EventInfoDialog";
 import { Button } from "./ui/button";
 import { useState } from "react";
 import useRoleSwitcher from "@/hooks/useRoleSwitcher";
+import useEvent from "@/hooks/useEvent";
 
 const Calendar = ({ events }) => {
 
 
-  const { data: getEvents } = useGetEvents();
+  const { calendarEvents } = useEvent();
   const [selectedShowCalendar, setSelectedShowCalendar] = useState("Events");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -27,7 +27,7 @@ const Calendar = ({ events }) => {
   });
 
   // Make sure getEvents is available and is an array
-  const eventArray = Array.isArray(getEvents?.data) ? getEvents.data : [];
+  const eventArray = Array.isArray(calendarEvents?.data) ? calendarEvents.data : [];
   const safeMeetings = Array.isArray(meetings) ? meetings : [];
 
   const eventData = events

@@ -35,6 +35,7 @@ const ParishionerRegister = () => {
   const [isProfileDisabled, setIsProfileDisabled] = useState(false); // Disable Profile tab after submission
   const [isAgreed, setIsAgreed] = useState(false);
   const { toast } = useToast();
+  const [showPassword, setShowPassword] = useState(false);
 
   // Access register function from context
   const { register, isLoading } = useUser(); // Assuming register is part of the context
@@ -109,13 +110,11 @@ const ParishionerRegister = () => {
   return (
     <Dialog onOpenChange={handleDialogClose}>
       <DialogTrigger asChild>
-        <Button variant="landingsecondary">
-          Create New Profile
-        </Button>
+        <Button variant="landingsecondary">Create New Profile</Button>
       </DialogTrigger>
       <DialogContent
         className={cn(
-          "h-[45rem] overflow-scroll sm:max-w-2xl md:h-auto no-scrollbar",
+          "no-scrollbar h-[45rem] overflow-scroll sm:max-w-2xl md:h-auto",
           activeTab === "family" &&
             "no-scrollbar h-[38rem] overflow-scroll md:h-auto"
         )}
@@ -219,7 +218,7 @@ const ParishionerRegister = () => {
                           <FormLabel>Password</FormLabel>
                           <FormControl>
                             <Input
-                              type="password"
+                              type={showPassword ? "text" : "password"}
                               placeholder="Enter Password"
                               {...field}
                             />
@@ -238,7 +237,7 @@ const ParishionerRegister = () => {
                           <FormLabel>Confirm Password</FormLabel>
                           <FormControl>
                             <Input
-                              type="password"
+                              type={showPassword ? "text" : "password"}
                               placeholder="Confirm Password"
                               {...field}
                             />
@@ -248,6 +247,13 @@ const ParishionerRegister = () => {
                       )}
                     />
                   </div>
+                </div>
+                <div className="flex items-center justify-end gap-1 text-xs text-primary-text">
+                  <Checkbox
+                    checked={showPassword}
+                    onCheckedChange={(checked) => setShowPassword(checked)}
+                  />
+                  <p>Show Password</p>
                 </div>
                 <div className="text-gray-500 mt-2 flex gap-1 text-xs text-primary-text">
                   <Checkbox
@@ -270,7 +276,14 @@ const ParishionerRegister = () => {
                   >
                     Terms and Conditions.
                   </a> */}
-                  I confirm that St Laurence’s Parish may store the personal information provided here and may use this data to contact me (including by email) about Parish support, news, and activities. This data may be shared with Parish staff and volunteers administering the Parish database, and with volunteers who organise support or activities in which I expressed an interest. I understand that I can withdraw this consent any time by contacting the Parish Office.
+                  I confirm that St Laurence’s Parish may store the personal
+                  information provided here and may use this data to contact me
+                  (including by email) about Parish support, news, and
+                  activities. This data may be shared with Parish staff and
+                  volunteers administering the Parish database, and with
+                  volunteers who organise support or activities in which I
+                  expressed an interest. I understand that I can withdraw this
+                  consent any time by contacting the Parish Office.
                 </div>
                 <DialogFooter>
                   <DialogClose asChild>
@@ -285,7 +298,7 @@ const ParishionerRegister = () => {
                       form.formState.isSubmitting || isLoading || !isAgreed
                     }
                   >
-                    {isLoading ? "Submitting..." : "Register"}
+                    {isLoading ? "Registering..." : "Register"}
                   </Button>
                 </DialogFooter>
               </form>

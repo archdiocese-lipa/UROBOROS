@@ -39,9 +39,9 @@ import { useToast } from "@/hooks/use-toast";
 import { editRegistrationSchema } from "@/zodSchema/EditRegistrationSchema";
 
 import { fetchAttendeesByTicketCode } from "@/services/attendanceService";
-import { useGetWalkInEvents } from "@/hooks/useGetWalkInEvents";
 import { handleWalkInData } from "@/services/walkInService";
 import { EditSchema } from "@/zodSchema/EditSchema";
+import useEvent from "@/hooks/useEvent";
 
 // Attendance Coming from the database
 
@@ -256,7 +256,7 @@ const EditRegistration = () => {
     }).format(new Date(dateTime));
   };
 
-  const { data: walkInEvents } = useGetWalkInEvents();
+  const { walkInEvents } = useEvent();
 
   // Filter events
   const upcomingEvents = Array.isArray(walkInEvents)
