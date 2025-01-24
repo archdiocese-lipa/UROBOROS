@@ -32,15 +32,15 @@ import { Label } from "@/components/ui/label";
 import { walkInRegisterSchema } from "@/zodSchema/WalkInRegisterSchema";
 
 import useWalkInAttendance from "@/hooks/useWalkInAttendance";
-import { useGetWalkInEvents } from "@/hooks/useGetWalkInEvents";
 import { useToast } from "@/hooks/use-toast";
+import useEvent from "@/hooks/useEvent";
 
 const WalkInRegistration = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [randomSixDigit, setRandomSixDigit] = useState(null);
 
-  const { data: walkInEvents } = useGetWalkInEvents();
+  const { walkInEvents } = useEvent();
 
   const { mutate: registerAttendance, isLoading } = useWalkInAttendance(); // Initialize the mutation hook
   const { toast } = useToast();
@@ -185,7 +185,7 @@ const WalkInRegistration = () => {
     <>
       <Dialog open={openDialog} onOpenChange={handleDialogChange}>
         <DialogTrigger asChild>
-          <Button variant="landingsecondary" disabled={true}>
+          <Button variant="landingsecondary" disabled={false}>
             Walk - In Register
           </Button>
         </DialogTrigger>

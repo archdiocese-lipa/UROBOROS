@@ -13,8 +13,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import AssignMembers from "./AssignMembers";
 import { NegativeIcon } from "@/assets/icons/icons";
-import useRemoveMinistryVolunteer from "@/hooks/useRemoveMinistryVolunteer";
 import { useState } from "react";
+import useMinistry from "@/hooks/useMinistry";
 
 // Utility function to get initials from a name
 const getInitials = (firstName, lastName) => {
@@ -46,11 +46,11 @@ const ViewMembers = ({
 
   const formattedCreatedDate = formatDateToUK(createdDate);
 
-  const { removeVolunteer, isLoading } = useRemoveMinistryVolunteer();
+  const {removeMinistryVolunteerMutation} = useMinistry({});
 
   const handleRemoveMember = (id) => {
     // Trigger the mutation to remove the volunteer
-    removeVolunteer({ ministryId, memberId: id });
+    removeMinistryVolunteerMutation.mutate({ ministryId, memberId: id });
     setOpenDialog(false);
   };
 
@@ -77,11 +77,11 @@ const ViewMembers = ({
             />
           </div>
           <div className="no-scrollbar mt-2 overflow-scroll">
-            {members.length === 0 ? (
+            {members?.length === 0 ? (
               <p className="text-gray-500">No members</p>
             ) : (
               <ul className="flex h-64 flex-col gap-y-2 text-primary-text">
-                {members.map((member, index) => {
+                {members?.map((member, index) => {
                   // Extract name from the users object
                   const firstName = member.users?.first_name || "";
                   const lastName = member.users?.last_name || "";
@@ -127,9 +127,9 @@ const ViewMembers = ({
                             </DialogClose>
                             <Button
                               onClick={() => handleRemoveMember(memberId)} // Use the safely extracted ID
-                              disabled={isLoading} // Disable the button while loading
+                              disabled={removeMinistryVolunteerMutation.isPending} // Disable the button while loading
                             >
-                              {isLoading ? "Removing..." : "Yes"}
+                              {removeMinistryVolunteerMutation.isPending ? "Removing..." : "Yes"}
                             </Button>
                           </DialogFooter>
                         </DialogContent>
