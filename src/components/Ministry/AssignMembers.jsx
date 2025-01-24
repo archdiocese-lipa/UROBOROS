@@ -24,15 +24,22 @@ import Select from "react-select";
 import { assignMinistryMemberSchema } from "@/zodSchema/AssignMinistryMemberSchema";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import useFetchAvailableVolunteers from "@/hooks/useFetchAvailableVolunteers";
-import useAssignNewVolunteers from "@/hooks/useAssignNewVolunteers";
+import { fetchAvailableVolunteers } from "@/services/ministryService";
+import { useQuery } from "@tanstack/react-query";
+import useMinistry from "@/hooks/useMinistry";
 
 const AssignMembers = ({ ministryId, title }) => {
-  const { assignVolunteers } = useAssignNewVolunteers();
+  const { AssignMinistryVolunteerMutation } = useMinistry({});
 
-  const { availableVolunteers } = useFetchAvailableVolunteers(ministryId);
+  // const { availableVolunteers } = useFetchAvailableVolunteers(ministryId);
 
-  const options = availableVolunteers.map((volunteer) => ({
+  const { data } = useQuery({
+    queryKey: ["availableVolunteers", ministryId], // The query key includes the ministryId to make it unique
+    queryFn: () => fetchAvailableVolunteers(ministryId), // The fetch function with ministryId
+    enabled: !!ministryId, // Only run the query if ministryId is provided
+  });
+
+  const options = data?.map((volunteer) => ({
     value: volunteer.id, // Use the volunteer's ID as the value
     label: `${volunteer.first_name} ${volunteer.last_name}`, // Combine first and last names as the label
   }));
@@ -58,7 +65,7 @@ const AssignMembers = ({ ministryId, title }) => {
     // Log the form data
 
     // Pass formData to the mutation function
-    assignVolunteers(formData);
+    AssignMinistryVolunteerMutation.mutate(formData);
 
     setOpenDialog(false); // Close the dialog
     toast({

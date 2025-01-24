@@ -28,10 +28,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import ViewMembers from "./ViewMembers";
-import useMinistryMembers from "@/hooks/useMinistryMembers"; // Import the custom hook
-import { useDeleteMinistry } from "@/hooks/useDeleteMinistry"; // Import the delete hook
 import { useState } from "react";
 import EditMinistry from "./EditMinistry"; // Import the EditMinistry component
+import useMinistry from "@/hooks/useMinistry";
 
 // Utility function to get initials from a name
 const getInitials = (firstName, lastName) => {
@@ -55,23 +54,23 @@ const MinistryCard = ({ ministryId, title, description, createdDate }) => {
 
   const formattedCreatedDate = formatDateToUK(createdDate);
 
-  const { members, loading, error } = useMinistryMembers(ministryId);
-  const { mutate: deleteMinistry, isLoading: isDeleting } = useDeleteMinistry();
+  // const { members, loading, error } = useMinistryMembers(ministryId);
+  const { ministryMembers, membersLoading, deleteMutation, error } = useMinistry({ministryId})
+  // const { mutate: deleteMinistry, isLoading: isDeleting } = useDeleteMinistry();
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [isEditDialogOpen, setEditDialogOpen] = useState(false); // State to open the Edit Ministry card
-
+  const [isEditDialogOpen, setEditDialogOpen] = useState(false); 
   const handleDelete = () => {
-    deleteMinistry(ministryId);
+    deleteMutation.mutate(ministryId);
     setDeleteDialogOpen(false);
   };
 
   const handleEdit = () => {
     setEditDialogOpen(true); // Open the Edit Ministry dialog or form
   };
-
+                      
   const maxVisible = 4;
-  const visibleAvatars = members.slice(0, maxVisible);
-  const remainingCount = Math.max(members.length - maxVisible, 0);
+  const visibleAvatars = ministryMembers?.slice(0, maxVisible);
+  const remainingCount = Math.max(ministryMembers?.length - maxVisible, 0);
 
   return (
     <Card className="max-h-96 rounded-2xl border text-primary-text">
@@ -118,8 +117,8 @@ const MinistryCard = ({ ministryId, title, description, createdDate }) => {
                       <DialogClose asChild>
                         <Button variant="outline">Cancel</Button>
                       </DialogClose>
-                      <Button onClick={handleDelete} disabled={isDeleting}>
-                        {isDeleting ? "Deleting..." : "Delete"}
+                      <Button onClick={handleDelete} disabled={deleteMutation.isPending}>
+                        {deleteMutation.isPending ? "Deleting..." : "Delete"}
                       </Button>
                     </DialogFooter>
                   </DialogContent>
@@ -136,14 +135,14 @@ const MinistryCard = ({ ministryId, title, description, createdDate }) => {
       </CardHeader>
       <CardContent>
         <div className="flex flex-col gap-y-3 rounded-2xl bg-primary px-5 py-3">
-          {loading && <p>Loading members...</p>}
+          {membersLoading && <p>Loading members...</p>}
           {error && <p className="text-red-500">{error}</p>}
-          {!loading && !error && members.length === 0 && (
+          {!membersLoading && !error && ministryMembers?.length === 0 && (
             <p className="text-gray-500">No members</p>
           )}
           <div className="flex items-center gap-x-6">
             <div className="flex flex-wrap items-center justify-center -space-x-4">
-              {visibleAvatars.map((member, index) => {
+              {visibleAvatars?.map((member, index) => {
                 const initials = getInitials(
                   member.users?.first_name,
                   member.users?.last_name
@@ -171,7 +170,7 @@ const MinistryCard = ({ ministryId, title, description, createdDate }) => {
               ministryId={ministryId}
               description={description}
               createdDate={createdDate}
-              members={members}
+              members={ministryMembers}
             />
           </div>
         </div>

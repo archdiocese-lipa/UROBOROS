@@ -37,10 +37,9 @@ import AssignVolunteerComboBox from "./AssignVolunteerComboBox";
 
 import { useUser } from "@/context/useUser";
 
-import useUpdateEvent from "@/hooks/useUpdateEvent";
-import useQuickAccessEvents from "@/hooks/useQuickAccessEvents";
 import useUsersByRole from "@/hooks/useUsersByRole";
 import useGetAllMinistries from "@/hooks/useGetAllMinistries";
+import useEvent from "@/hooks/useEvent";
 
 // import { updateEvent } from "@/services/eventService";
 
@@ -59,8 +58,7 @@ const EditEvent = ({
 
   const { toast } = useToast();
 
-  const { mutate: updateEvent, _isLoading } = useUpdateEvent();
-  const { events } = useQuickAccessEvents();
+  const { updateEventMutation,quickAccessEvents } = useEvent();
   const { data: volunteers } = useUsersByRole("volunteer");
 
   const eventForm = useForm({
@@ -143,7 +141,7 @@ const EditEvent = ({
       eventId,
     };
 
-    updateEvent(eventPayload); // Call the updateEvent mutation
+    updateEventMutation.mutate(eventPayload); // Call the updateEvent mutation
     setDialogOpen(false); // Close the dialog if success
   };
 
@@ -172,7 +170,7 @@ const EditEvent = ({
                       </button>
                     </PopoverTrigger>
                     <PopoverContent className="p-2">
-                      {events?.map((eventItem, index) => (
+                      {quickAccessEvents?.map((eventItem, index) => (
                         <button
                           key={index}
                           onClick={() => handleEventSelect(eventItem)}
