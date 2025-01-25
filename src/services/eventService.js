@@ -136,7 +136,8 @@ export const getEvents = async ({
   page = 1,
   pageSize,
   query,
-  user,
+  role,
+  userId,
   selectedYear,
   selectedMonth,
 } = {}) => {
@@ -172,13 +173,13 @@ export const getEvents = async ({
     let nonAdminEventIds = [];
 
     // Check if user is a volunteer and apply filters
-    if (user && user.role !== ROLES[0]) {
+    if (role === ROLES[1]) {
       // Assuming ROLES[0] is admin
 
       const { data: volunteerEvents } = await supabase
         .from("event_volunteers")
         .select("*")
-        .eq("volunteer_id", user.id);
+        .eq("volunteer_id", userId);
       nonAdminEventIds = volunteerEvents.map((event) => event.event_id);
 
       if (nonAdminEventIds.length > 0) {
@@ -486,14 +487,14 @@ export const replaceVolunteer = async ({
   }
 };
 
-export const removeAssignedVolunteer = async (volunteerId) => {
+export const removeAssignedVolunteer = async (volunteerId,eventId) => {
   if (!volunteerId) {
     throw new Error("Volunteer ID is required");
   }
   const { data, error: getError } = await supabase
     .from("event_volunteers")
     .select("*")
-    .eq("volunteer_id", volunteerId);
+    .eq("volunteer_id", volunteerId).eq("event_id",eventId);
   if (getError) {
     throw new Error(error.message);
   }
@@ -505,7 +506,7 @@ export const removeAssignedVolunteer = async (volunteerId) => {
   const { error } = await supabase
     .from("event_volunteers")
     .delete()
-    .eq("volunteer_id", volunteerId);
+    .eq("volunteer_id", volunteerId).eq("event_id",eventId);
 
   if (error) {
     throw new Error(error.message);

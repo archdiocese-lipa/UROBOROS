@@ -30,23 +30,28 @@ const VolunteerSelect = ({
   const queryClient = useQueryClient();
 
   const previousVolunteerIds = new Set(
+    // Create a set of volunteer IDs that have already been replaced
     assignedVolunteers
-      .filter((volunteer) => volunteer.replaced)
-      .map((volunteer) => volunteer.volunteer_id)
+      .filter((volunteer) => volunteer.replaced) // Filter for volunteers that have been replaced
+      .map((volunteer) => volunteer.volunteer_id) // Extract the volunteer_id for those replaced volunteers
   );
-
+  
   const replacementVolunteerIds = new Set(
+    // Create a set of volunteer IDs that are replacements (i.e., volunteers who replaced someone)
     assignedVolunteers
-      .filter((volunteer) => volunteer.replaced)
-      .map((volunteer) => volunteer.replacedby_id)
+      .filter((volunteer) => volunteer.replaced) // Filter for volunteers that have been replaced
+      .map((volunteer) => volunteer.replacedby_id) // Extract the replacedby_id (the ID of the replacement volunteer)
   );
-
+  
+  // Filter the volunteers list to exclude already assigned or replaced volunteers
   const filteredVolunteers = volunteers?.filter(
     (volunteer) =>
+      // Include volunteers that are either not yet assigned or are previous replacements
       (!assignedVolunteers.some(
         (assignedVolunteer) => assignedVolunteer.volunteer_id === volunteer.id
       ) ||
         previousVolunteerIds.has(volunteer.id)) &&
+      // Exclude volunteers who are currently replacements
       !replacementVolunteerIds.has(volunteer.id)
   );
 

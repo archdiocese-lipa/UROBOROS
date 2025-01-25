@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery,  } from "@tanstack/react-query";
 Sheet;
 
 import { Title, Description } from "@/components/Title";
@@ -36,6 +36,7 @@ import VolunteerDialogCalendar from "@/components/Schedule/VolunteerDialogCalend
 import { useDebounce } from "@/hooks/useDebounce";
 import ScheduleCards from "@/components/Schedule/ScheduleCards";
 import MeetingCards from "@/components/Schedule/MeetingCards";
+import useRoleSwitcher from "@/hooks/useRoleSwitcher";
 
 const Schedule = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -43,9 +44,15 @@ const Schedule = () => {
     useState(false);
   const [editDialogOpenIndex, setEditDialogOpenIndex] = useState(null);
   const [urlPrms, setUrlPrms] = useSearchParams();
-  const [filter, setFilter] = useState(urlPrms.get("filter")?.toString() || "events");
+
+  const { temporaryRole } = useRoleSwitcher();
+  const [filter, setFilter] = useState(
+    urlPrms.get("filter")?.toString() || "events"
+  );
 
   const { userData } = useUser();
+
+
 
   const { data, isLoading, hasNextPage, fetchNextPage } = useInfiniteQuery({
     queryKey: [
@@ -53,6 +60,7 @@ const Schedule = () => {
       filter,
       urlPrms.get("query")?.toString() || "",
       userData,
+      temporaryRole,
       urlPrms.get("year")?.toString(),
       urlPrms.get("month")?.toString(),
     ],
@@ -63,7 +71,8 @@ const Schedule = () => {
           page: pageParam,
           query: urlPrms.get("query")?.toString() || "",
           pageSize: 10,
-          user: userData,
+          role: temporaryRole,
+          userId: userData.id,
           selectedYear: Number(urlPrms.get("year")),
           selectedMonth: Number(urlPrms.get("month")?.toString()),
         });
@@ -93,6 +102,7 @@ const Schedule = () => {
     setQuery(e.target.value);
   }, []);
 
+
   useEffect(() => {
     if (!urlPrms.get("filter")) {
       urlPrms.set("filter", "events");
@@ -104,7 +114,6 @@ const Schedule = () => {
       urlPrms.set("month", new Date().getMonth() + 1);
     }
     if (query === "") {
-     
       urlPrms.delete("query");
     } else {
       urlPrms.set("query", debouncedSearch);
@@ -187,7 +196,7 @@ const Schedule = () => {
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 transform text-2xl text-accent" />
             <Input
-            value={query}
+              value={query}
               defaultValue={urlPrms.get("query")?.toString()}
               onChange={onQuery}
               className="border-none pl-12"

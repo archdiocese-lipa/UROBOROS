@@ -92,7 +92,6 @@ const ScheduleDetails = () => {
   const { data: admins } = useUsersByRole("admin");
 
   // Fetch volunteers and admins for assigning volunteers
-  const assignedUsers = [...(volunteers || []), ...(admins || [])];
 
   const { data: event, isLoading } = useQuery({
     queryKey: ["event", eventId],
@@ -123,6 +122,7 @@ const ScheduleDetails = () => {
         "schedules",
         "events",
         userData,
+        temporaryRole,
         urlPrms.get("month")?.toString(),
         urlPrms.get("year")?.toString(),
         urlPrms.get("query")?.toString() || "",
@@ -140,6 +140,38 @@ const ScheduleDetails = () => {
     },
     enabled: !!eventId,
   });
+
+  const assignedUsers = [...(volunteers || []), ...(admins || [])];
+
+  const previousVolunteerIds = new Set(
+    // Create a set of volunteer IDs that have already been replaced
+    eventvolunteers
+      ?.filter((volunteer) => volunteer.replaced) // Filter for volunteers that have been replaced
+      .map((volunteer) => volunteer.volunteer_id) // Extract the volunteer_id for those replaced volunteers
+  );
+
+  const replacementVolunteerIds = new Set(
+    // Create a set of volunteer IDs that are replacements (i.e., volunteers who replaced someone)
+    eventvolunteers
+      ?.filter((volunteer) => volunteer.replaced) // Filter for volunteers that have been replaced
+      .map((volunteer) => volunteer.replacedby_id) // Extract the replacedby_id (the ID of the replacement volunteer)
+  );
+
+  const filteredVolunteers = assignedUsers?.filter(
+    (volunteer) =>
+      // Include volunteers that are either not yet assigned or are previous replacements
+      (!eventvolunteers?.some(
+        (assignedVolunteer) => assignedVolunteer.volunteer_id === volunteer.id
+      ) ||
+        previousVolunteerIds.has(volunteer.id)) &&
+      // Exclude volunteers who are currently replacements
+      !replacementVolunteerIds.has(volunteer.id)
+  );
+
+  const volunteerOptions = filteredVolunteers?.map((volunteer) => ({
+    value: volunteer.id,
+    label: `${volunteer.first_name} ${volunteer.last_name}`,
+  }));
 
   const { data: attendance, isLoading: attendanceLoading } = useQuery({
     queryKey: ["attendance", eventId],
@@ -163,6 +195,7 @@ const ScheduleDetails = () => {
   const handleSearch = (e) => {
     setSearch(e.target.value);
   };
+
 
   useEffect(() => {
     const allAttendance = attendance?.data?.flatMap((family) => [
@@ -266,7 +299,7 @@ const ScheduleDetails = () => {
 
   const removeAssignedVolunteerMutation = useMutation({
     mutationFn: async (volunteerId) =>
-      await removeAssignedVolunteer(volunteerId),
+      await removeAssignedVolunteer(volunteerId, eventId),
     onSuccess: () => {
       toast({
         title: "Volunteer removed successfully",
@@ -508,14 +541,7 @@ const ScheduleDetails = () => {
                         <FormControl>
                           <ReactSelect
                             isMulti
-                            options={
-                              assignedUsers?.map((user) => ({
-                                value: user?.id || "", // Fallback for undefined id
-                                label: `${user?.first_name || "Unknown"} ${
-                                  user?.last_name || "Unknown"
-                                }`, // Fallback for undefined name
-                              })) || [] // Default to an empty array if volunteers is undefined
-                            }
+                            options={volunteerOptions}
                             value={
                               field.value?.map((selectedId) => {
                                 const user = assignedUsers?.find(
