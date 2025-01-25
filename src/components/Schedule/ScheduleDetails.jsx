@@ -542,21 +542,6 @@ const ScheduleDetails = () => {
                           <ReactSelect
                             isMulti
                             options={volunteerOptions}
-                            value={
-                              field.value?.map((selectedId) => {
-                                const user = assignedUsers?.find(
-                                  (v) => v.id === selectedId
-                                );
-                                return user
-                                  ? {
-                                      value: user.id,
-                                      label: `${user.first_name || "Unknown"} ${
-                                        user.last_name || "Unknown"
-                                      }`,
-                                    }
-                                  : null;
-                              }) || []
-                            } // Map selected IDs to matching options
                             onChange={(selectedOptions) => {
                               field.onChange(
                                 selectedOptions.map((option) => option.value)

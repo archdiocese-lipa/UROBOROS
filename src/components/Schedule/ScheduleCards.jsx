@@ -18,6 +18,7 @@ import { Button } from "../ui/button";
 import CreateEvent from "./CreateEvent";
 import { memo, useEffect, useState } from "react";
 import PropTypes from "prop-types";
+import useRoleSwitcher from "@/hooks/useRoleSwitcher";
 
 const ScheduleCards = ({
   editDialogOpenIndex,
@@ -32,6 +33,7 @@ const ScheduleCards = ({
   j,
 }) => {
   const { userData } = useUser();
+  const {temporaryRole} = useRoleSwitcher();
   const [disableEdit, setDisabledEdit] = useState(false);
 
 
@@ -98,7 +100,7 @@ const ScheduleCards = ({
               setEditDialogOpenIndex(isOpen ? `${i}-${j}` : null)
             }
           >
-            {!disableEdit && (
+            {!disableEdit && temporaryRole === ROLES[0] &&  (
               <DialogTrigger asChild>
                 <Button
                   variant="ghost"
@@ -194,14 +196,14 @@ const ScheduleCards = ({
             setSheetEditDialogOpenIndex(isOpen ? `${i}-${j}` : null)
           }
         >
-          <DialogTrigger asChild>
+          {temporaryRole === ROLES[0] && !disableEdit  && <DialogTrigger asChild>
             <Button
               variant="ghost"
               className="-mt-3 p-0 font-semibold text-accent hover:underline"
             >
               Edit
             </Button>
-          </DialogTrigger>
+          </DialogTrigger>}
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Edit Events</DialogTitle>
