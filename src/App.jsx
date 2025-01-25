@@ -31,7 +31,7 @@ const App = () => {
           {/* Only Admin can access the routes below */}
           <Route element={<RequireRole roles={[ROLES[0]]} />}>
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/groups" element={<Ministries />} />
+            <Route path="/ministries" element={<Ministries />} />
             <Route path="/requests" element={<Requests />} />
           </Route>
           {/* ========================================================= */}

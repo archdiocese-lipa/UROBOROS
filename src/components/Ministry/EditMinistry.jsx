@@ -53,9 +53,9 @@ const EditMinistry = ({
     <Dialog open={isOpen} onOpenChange={closeDialog}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit Ministry</DialogTitle>
+          <DialogTitle>Edit Group</DialogTitle>
           <DialogDescription>
-            Update the details of your ministry. Changes will be saved
+            Update the details of your group. Changes will be saved
             immediately.
           </DialogDescription>
           <Form {...form}>
@@ -70,10 +70,10 @@ const EditMinistry = ({
                   <FormItem>
                     <FormLabel>Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="Ministry Name" {...field} />
+                      <Input placeholder="Group Name" {...field} />
                     </FormControl>
                     <FormDescription>
-                      This is the public name of the ministry.
+                      This is the public name of the group.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>

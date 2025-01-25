@@ -14,8 +14,8 @@ const Ministries = () => {
       </div>
 
       <div>
-        <Title>Group Management</Title>
-        <Description>Manage your groups.</Description>
+        <Title>Ministry Management</Title>
+        <Description>Manage groups within your ministry.</Description>
       </div>
 
       {/* Render MinistryCard components if data exists */}

@@ -196,7 +196,6 @@ const ScheduleDetails = () => {
     setSearch(e.target.value);
   };
 
-
   useEffect(() => {
     const allAttendance = attendance?.data?.flatMap((family) => [
       ...family.parents.map((parent) => parent),
@@ -406,7 +405,8 @@ const ScheduleDetails = () => {
               .replace(" ", "")
               .toLowerCase()}`}
           </Title>
-          <Label className="text-lg text-primary-text">
+          <Label className="text-2xl text-primary-text">
+            Date:{" "}
             {new Date(event?.event_date).toLocaleDateString("en-GB", {
               day: "numeric",
               month: "short",
