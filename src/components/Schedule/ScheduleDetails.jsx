@@ -583,6 +583,7 @@ const ScheduleDetails = () => {
                   // setVolunteerDialogOpen={setVolunteerDialogOpen}
                   currentVolunteer={volunteer}
                   assignedVolunteers={eventvolunteers}
+                  admins={admins}
                   oldVolunteerId={volunteer.volunteer_id}
                   eventId={eventId}
                   volunteers={volunteers}

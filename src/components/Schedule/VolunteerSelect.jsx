@@ -21,6 +21,7 @@ const VolunteerSelect = ({
   oldVolunteerId,
   volunteers,
   eventId,
+  admins,
   replaced,
   newreplacement_id,
 }) => {
@@ -28,6 +29,8 @@ const VolunteerSelect = ({
   const [selectedVolunteer, setSelectedVolunteer] = useState(null);
   const [error, setError] = useState("");
   const queryClient = useQueryClient();
+
+  const volunteersWithAdmin = [...admins,...volunteers]
 
   const previousVolunteerIds = new Set(
     // Create a set of volunteer IDs that have already been replaced
@@ -44,7 +47,7 @@ const VolunteerSelect = ({
   );
   
   // Filter the volunteers list to exclude already assigned or replaced volunteers
-  const filteredVolunteers = volunteers?.filter(
+  const filteredVolunteers = volunteersWithAdmin?.filter(
     (volunteer) =>
       // Include volunteers that are either not yet assigned or are previous replacements
       (!assignedVolunteers.some(
@@ -150,6 +153,13 @@ VolunteerSelect.propTypes = {
   ),
   oldVolunteerId: PropTypes.string.isRequired,
   volunteers: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      first_name: PropTypes.string.isRequired,
+      last_name: PropTypes.string.isRequired,
+    })
+  ).isRequired,
+  admins:PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.string.isRequired,
       first_name: PropTypes.string.isRequired,
