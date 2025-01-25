@@ -46,7 +46,7 @@ const ViewMembers = ({
 
   const formattedCreatedDate = formatDateToUK(createdDate);
 
-  const {removeMinistryVolunteerMutation} = useMinistry({});
+  const { removeMinistryVolunteerMutation } = useMinistry({});
 
   const handleRemoveMember = (id) => {
     // Trigger the mutation to remove the volunteer
@@ -127,9 +127,13 @@ const ViewMembers = ({
                             </DialogClose>
                             <Button
                               onClick={() => handleRemoveMember(memberId)} // Use the safely extracted ID
-                              disabled={removeMinistryVolunteerMutation.isPending} // Disable the button while loading
+                              disabled={
+                                removeMinistryVolunteerMutation.isPending
+                              } // Disable the button while loading
                             >
-                              {removeMinistryVolunteerMutation.isPending ? "Removing..." : "Yes"}
+                              {removeMinistryVolunteerMutation.isPending
+                                ? "Removing..."
+                                : "Yes"}
                             </Button>
                           </DialogFooter>
                         </DialogContent>
@@ -160,7 +164,7 @@ ViewMembers.propTypes = {
       src: PropTypes.string, // Optional image source
       alt: PropTypes.string, // Optional alternative text
     })
-  ).isRequired,
+  ),
 };
 
 export default ViewMembers;

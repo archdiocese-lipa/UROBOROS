@@ -14,8 +14,8 @@ const Ministries = () => {
       </div>
 
       <div>
-        <Title>Ministry Management</Title>
-        <Description>Manage your ministry.</Description>
+        <Title>Group Management</Title>
+        <Description>Manage your groups.</Description>
       </div>
 
       {/* Render MinistryCard components if data exists */}
@@ -24,7 +24,7 @@ const Ministries = () => {
       ) : (
         <div className="no-scrollbar grid h-full w-full gap-4 overflow-scroll p-2 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-4">
           {ministries?.data?.length < 1 ? (
-            <p>No ministries yet.</p>
+            <p>No groups have been created yet.</p>
           ) : (
             ministries?.data?.map((ministry) => (
               <MinistryCard

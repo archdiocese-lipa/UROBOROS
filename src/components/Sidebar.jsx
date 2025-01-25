@@ -43,7 +43,7 @@ const Sidebar = () => {
   return (
     <div className="flex lg:my-9 lg:w-64 lg:flex-col">
       <Title className="mb-12 ml-9 hidden max-w-[201px] lg:block">
-        {temporaryRole === ROLES[0] && "Admin Management Centre"}
+        {temporaryRole === ROLES[0] && "Children's Liturgy Management Centre"}
         {temporaryRole === ROLES[1] && "Volunteer Management Centre"}
         {temporaryRole === ROLES[2] &&
           `Welcome, ${userData?.first_name ?? ""} ${userData?.last_name ?? ""}`}
