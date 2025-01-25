@@ -59,14 +59,14 @@ const CreateMinistry = () => {
       <DialogTrigger asChild>
         <Button className="h-14 gap-x-1 rounded-2xl">
           <PuzzleIcon className="text-white" />
-          <span>Create Ministry</span>
+          <span>Create Group</span>
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create Ministry</DialogTitle>
+          <DialogTitle>Create Group</DialogTitle>
           <DialogDescription>
-            Add details about your ministry. This can be edited later.
+            Add details about your group. This can be edited later.
           </DialogDescription>
           <Form {...form}>
             <form
@@ -80,10 +80,10 @@ const CreateMinistry = () => {
                   <FormItem>
                     <FormLabel>Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="Ministry Name" {...field} />
+                      <Input placeholder="Group Name" {...field} />
                     </FormControl>
                     <FormDescription>
-                      This is the public name of the ministry.
+                      This is the name of the group.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>

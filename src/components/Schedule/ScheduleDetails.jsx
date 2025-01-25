@@ -89,6 +89,10 @@ const ScheduleDetails = () => {
   const { temporaryRole } = useRoleSwitcher();
 
   const { data: volunteers } = useUsersByRole("volunteer");
+  const { data: admins } = useUsersByRole("admin");
+
+  // Fetch volunteers and admins for assigning volunteers
+  const assignedUsers = [...(volunteers || []), ...(admins || [])];
 
   const { data: event, isLoading } = useQuery({
     queryKey: ["event", eventId],
@@ -352,24 +356,22 @@ const ScheduleDetails = () => {
     return <p>No Events.</p>;
   }
 
-  console.log(event);
-
   return (
     <div className="no-scrollbar flex h-full grow flex-col gap-2 overflow-y-scroll px-3 py-2 md:px-9 md:py-6">
       <div className="flex flex-wrap justify-between">
         <div>
           <Title>
             {`${event.event_name}, ${new Date(
-                `${event.event_date}T${event.event_time}`
-              )
-                .toLocaleTimeString("en-US", {
-                  hour: "numeric",
-                  minute: "numeric",
-                  hour12: true,
-                })
-                .replace(":", ".")
-                .replace(" ", "")
-                .toLowerCase()}`}
+              `${event.event_date}T${event.event_time}`
+            )
+              .toLocaleTimeString("en-US", {
+                hour: "numeric",
+                minute: "numeric",
+                hour12: true,
+              })
+              .replace(":", ".")
+              .replace(" ", "")
+              .toLowerCase()}`}
           </Title>
           <Label className="text-lg text-primary-text">
             {new Date(event?.event_date).toLocaleDateString("en-GB", {
@@ -507,23 +509,23 @@ const ScheduleDetails = () => {
                           <ReactSelect
                             isMulti
                             options={
-                              volunteers?.map((volunteer) => ({
-                                value: volunteer?.id || "", // Fallback for undefined id
-                                label: `${volunteer?.first_name || "Unknown"} ${
-                                  volunteer?.last_name || "Unknown"
+                              assignedUsers?.map((user) => ({
+                                value: user?.id || "", // Fallback for undefined id
+                                label: `${user?.first_name || "Unknown"} ${
+                                  user?.last_name || "Unknown"
                                 }`, // Fallback for undefined name
                               })) || [] // Default to an empty array if volunteers is undefined
                             }
                             value={
                               field.value?.map((selectedId) => {
-                                const volunteer = volunteers?.find(
+                                const user = assignedUsers?.find(
                                   (v) => v.id === selectedId
                                 );
-                                return volunteer
+                                return user
                                   ? {
-                                      value: volunteer.id,
-                                      label: `${volunteer.first_name || "Unknown"} ${
-                                        volunteer.last_name || "Unknown"
+                                      value: user.id,
+                                      label: `${user.first_name || "Unknown"} ${
+                                        user.last_name || "Unknown"
                                       }`,
                                     }
                                   : null;
@@ -758,6 +760,5 @@ const ScheduleDetails = () => {
     </div>
   );
 };
-
 
 export default memo(ScheduleDetails);

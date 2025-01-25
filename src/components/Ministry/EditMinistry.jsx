@@ -39,7 +39,6 @@ const EditMinistry = ({
       ministryDescription: currentDescription,
     },
   });
-  console.log("testing deployment")
   const { editMutation } = useMinistry(); // Use the hook
 
   const onSubmit = (values) => {
@@ -109,7 +108,8 @@ const EditMinistry = ({
               </div>
               {editMutation.isError && (
                 <p className="text-red-500">
-                  Error: {editMutation.isError?.message || "Something went wrong"}
+                  Error:{" "}
+                  {editMutation.isError?.message || "Something went wrong"}
                 </p>
               )}
             </form>

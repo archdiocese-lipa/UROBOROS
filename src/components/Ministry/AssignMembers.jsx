@@ -69,7 +69,7 @@ const AssignMembers = ({ ministryId, title }) => {
 
     setOpenDialog(false); // Close the dialog
     toast({
-      description: "Successfully added new member(s) to the ministry.",
+      description: "New member(s) have been successfully added to the group.",
     });
   };
 

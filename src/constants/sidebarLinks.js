@@ -13,8 +13,8 @@ export const SIDEBAR_LINKS = Object.freeze({
       selectedIcon: "mingcute:announcement-fill",
     },
     {
-      label: "Ministries",
-      link: "/ministries",
+      label: "Groups",
+      link: "/groups",
       icon: "mingcute:group-3-line",
       selectedIcon: "mingcute:group-3-fill",
     },

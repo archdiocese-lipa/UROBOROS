@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import ViewMembers from "./ViewMembers";
 import { useState } from "react";
-import EditMinistry from "./EditMinistry"; // Import the EditMinistry component
+import EditMinistry from "./EditMinistry";
 import useMinistry from "@/hooks/useMinistry";
 
 // Utility function to get initials from a name
@@ -55,10 +55,11 @@ const MinistryCard = ({ ministryId, title, description, createdDate }) => {
   const formattedCreatedDate = formatDateToUK(createdDate);
 
   // const { members, loading, error } = useMinistryMembers(ministryId);
-  const { ministryMembers, membersLoading, deleteMutation, error } = useMinistry({ministryId})
+  const { ministryMembers, membersLoading, deleteMutation, error } =
+    useMinistry({ ministryId });
   // const { mutate: deleteMinistry, isLoading: isDeleting } = useDeleteMinistry();
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [isEditDialogOpen, setEditDialogOpen] = useState(false); 
+  const [isEditDialogOpen, setEditDialogOpen] = useState(false);
   const handleDelete = () => {
     deleteMutation.mutate(ministryId);
     setDeleteDialogOpen(false);
@@ -67,7 +68,7 @@ const MinistryCard = ({ ministryId, title, description, createdDate }) => {
   const handleEdit = () => {
     setEditDialogOpen(true); // Open the Edit Ministry dialog or form
   };
-                      
+
   const maxVisible = 4;
   const visibleAvatars = ministryMembers?.slice(0, maxVisible);
   const remainingCount = Math.max(ministryMembers?.length - maxVisible, 0);
@@ -117,7 +118,10 @@ const MinistryCard = ({ ministryId, title, description, createdDate }) => {
                       <DialogClose asChild>
                         <Button variant="outline">Cancel</Button>
                       </DialogClose>
-                      <Button onClick={handleDelete} disabled={deleteMutation.isPending}>
+                      <Button
+                        onClick={handleDelete}
+                        disabled={deleteMutation.isPending}
+                      >
                         {deleteMutation.isPending ? "Deleting..." : "Delete"}
                       </Button>
                     </DialogFooter>
