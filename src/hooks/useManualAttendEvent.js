@@ -9,26 +9,6 @@ import {
 
 import { useToast } from "@/hooks/use-toast";
 
-// const useMainApplicantAttendEvent = () => {
-//   const { toast } = useToast();
-//   const _queryClient = useQueryClient();
-
-//   // React Query mutation for creating an event
-//   const mutation = useMutation({
-//     mutationFn: insertMainApplicant, // Use the createEvent function from eventServices
-//     onMutate: () => {},
-//     onError: (error) => {
-//       toast({
-//         title: "Error Registering Event",
-//         description: error.message || "Something went wrong. Please try again.",
-//         variant: "destructive",
-//       });
-//     },
-//   });
-
-//   return mutation;
-// };
-
 const useGuardianManualAttendEvent = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -39,18 +19,28 @@ const useGuardianManualAttendEvent = () => {
     onMutate: () => {
       toast({
         title: "Registering...",
+        duration: 3000, // 3 seconds
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Successfully registered for event",
       });
       queryClient.invalidateQueries(["attendance"]);
+      queryClient.invalidateQueries(["alreadyRegistered"]);
     },
     onError: (error) => {
       toast({
         title: "Error Registering Event",
-        description: error.message || "Something went wrong. Please try again.",
+        description:
+          error?.message || "Something went wrong. Please try again.",
         variant: "destructive",
       });
     },
     onSettled: () => {
-      queryClient.invalidateQueries(["attendance"]); // Ensure the query is invalidated on success or error
+      // Always invalidate after completion
+      queryClient.invalidateQueries(["attendance"]);
     },
   });
 
@@ -67,6 +57,7 @@ const useChildrenManualAttendance = () => {
     onMutate: () => {
       toast({
         title: "Registering...",
+        duration: 3000, // 3 seconds
       });
     },
     onSuccess: () => {
@@ -78,12 +69,10 @@ const useChildrenManualAttendance = () => {
     onError: (error) => {
       toast({
         title: "Error Registering Event",
-        description: error.message || "Something went wrong. Please try again.",
+        description:
+          error?.message || "Something went wrong. Please try again.",
         variant: "destructive",
       });
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries(["attendance"]); // Ensure the query is invalidated on success or error
     },
   });
 
@@ -92,9 +81,9 @@ const useChildrenManualAttendance = () => {
 
 const useFetchAlreadyRegistered = (eventId, attendeeIds) => {
   return useQuery({
-    queryKey: ["attendance", eventId, attendeeIds],
-    queryFn: () => fetchAlreadyRegistered(eventId, attendeeIds), // Pass eventId and attendeeIds explicitly
-    enabled: !!eventId && !!attendeeIds?.length, // Only run the query if eventId and attendeeIds are provided
+    queryKey: ["alreadyRegistered", eventId, attendeeIds],
+    queryFn: () => fetchAlreadyRegistered(eventId, attendeeIds),
+    enabled: !!eventId && !!attendeeIds?.length,
   });
 };
 

@@ -58,7 +58,7 @@ const Home = () => {
         <p className="absolute top-[12rem] w-screen max-w-[80dvw] whitespace-pre text-[9.4dvw] font-black leading-[10dvw] text-accent sm:top-[20dvh] sm:max-w-xl sm:text-[4.4rem] sm:leading-[5.4rem] lg:bottom-[50dvh] lg:top-auto lg:ml-[24dvw] lg:max-w-full lg:text-[8dvh] lg:leading-[9dvh]">
           {"Growing in Faith\nTogether"}
         </p>
-        <p className="absolute top-[calc(12rem_+_24dvw)] w-screen max-w-[80dvw] whitespace-pre text-[5.8dvw] font-medium text-accent sm:top-[calc(20dvh_+_12rem)] sm:max-w-xl sm:text-[2.6rem] lg:bottom-[calc(50dvh_-_14dvh)] lg:top-auto lg:ml-[24.2dvw] lg:max-w-full lg:text-[4.6dvh]">
+        <p className="absolute top-[calc(12rem_+_24dvw)] text-balance lg:text-nowrap w-screen max-w-[80dvw] whitespace-pre text-[5.8dvw] font-medium text-accent sm:top-[calc(20dvh_+_12rem)] sm:max-w-xl sm:text-[2.6rem] lg:bottom-[calc(50dvh_-_14dvh)] lg:top-auto lg:ml-[24.2dvw] lg:max-w-full lg:text-[4.6dvh]">
           {"Engaging our Parishioners in the \nJoy of the Gospel"}
         </p>
         {/* <div className="z-99 absolute bottom-0 left-1 h-32 w-64 md:bottom-48 md:left-12 md:h-60 md:w-96 lg:bottom-10 lg:left-72 lg:w-[30rem] lg:h-64">
