@@ -179,7 +179,9 @@ export const getGuardian = async (familyId) => {
       .from("parents")
       .select("*")
       .eq("family_id", familyId)
-      .or(`parishioner_id.neq.${loggedInUserId},parishioner_id.is.null`);
+      .or(`parishioner_id.neq.${loggedInUserId},parishioner_id.is.null`)
+      .order("first_name", { ascending: true })
+      .order("last_name", { ascending: true });
 
     if (otherParentsError) {
       throw new Error(otherParentsError.message);
@@ -199,7 +201,9 @@ export const getChildren = async (familyId) => {
     const { data, error } = await supabase
       .from("children")
       .select("*")
-      .eq("family_id", familyId); // Equal to family group
+      .eq("family_id", familyId)
+      .order("first_name", { ascending: true })
+      .order("last_name", { ascending: true });
 
     if (error) {
       throw new Error(error.message);

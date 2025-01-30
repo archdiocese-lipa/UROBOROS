@@ -128,10 +128,10 @@ RegisteredAttendees.defaultProps = {
 };
 
 const FamilyData = ({ userId, selectedEvent }) => {
-  const [availableParents, setAvailableParents] = useState([]);
-  const [availableChildren, setAvailableChildren] = useState([]);
-  const [selectedParentId, setSelectedParentId] = useState(null);
-  const [selectedChildId, setSelectedChildId] = useState(null);
+  const [availableParents, setAvailableParents] = useState([]); // Available parents
+  const [availableChildren, setAvailableChildren] = useState([]); // Available children
+  const [selectedParentId, setSelectedParentId] = useState(null); // Selected parent
+  const [selectedChildId, setSelectedChildId] = useState(null); // Selected child
 
   const {
     parentData,
@@ -141,7 +141,7 @@ const FamilyData = ({ userId, selectedEvent }) => {
   } = useFamilyData(); // Fetch family
 
   const { mutate: removeAttendee, isPending: isRemovingAttendee } =
-    useRemoveAttendee();
+    useRemoveAttendee(); // Remove attendee
   const { mutate: guardianManualAttend, isPending: isParentSubmitting } =
     useGuardianManualAttendEvent(); // Parent attend event
   const { mutate: childManualAttend, isPending: isChildSubmitting } =
@@ -182,10 +182,10 @@ const FamilyData = ({ userId, selectedEvent }) => {
   }, [childData, registeredAttendees]);
 
   const isLoading = familyLoading || registerLoading;
-
   if (isLoading) return <Loading />;
   if (error) return <div>Error: {error.message}</div>;
 
+  // Function parent attend event
   const handleParentAttend = (parentId) => {
     try {
       // Prevent double submission
@@ -225,7 +225,7 @@ const FamilyData = ({ userId, selectedEvent }) => {
       console.error("Error attending parent:", error.message);
     }
   };
-
+  // Function child attend event
   const handleChildAttend = (childId) => {
     try {
       setSelectedChildId(childId);
@@ -260,6 +260,7 @@ const FamilyData = ({ userId, selectedEvent }) => {
     }
   };
 
+  // Function to cancel attendance
   const handleCancelAttendance = (attendeeId) => {
     removeAttendee(attendeeId);
   };

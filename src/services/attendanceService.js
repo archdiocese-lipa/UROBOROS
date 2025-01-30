@@ -601,9 +601,10 @@ const fetchAlreadyRegistered = async (eventId, attendeeIds) => {
   const { data, error } = await supabase
     .from("attendance")
     .select("attendee_id, first_name, last_name, attendee_type")
+    .order("first_name", { ascending: true })
+    .order("last_name", { ascending: true })
     .eq("event_id", eventId)
     .in("attendee_id", attendeeIds);
-
   if (error) {
     throw new Error(error.message);
   }
