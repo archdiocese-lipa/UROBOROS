@@ -14,13 +14,17 @@ const AcceptInvite = () => {
       }
 
       try {
-        const response = await fetch(`${import.meta.env.VITE_UROBOROS_API_URL}/accept-invite`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ token }),
-        });
+        const response = await fetch(
+          `${import.meta.env.VITE_UROBOROS_API_URL}/accept-invite`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ token }),
+            credentials: true,
+          }
+        );
 
         const data = await response.json();
 
