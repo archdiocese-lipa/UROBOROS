@@ -278,12 +278,56 @@ export const insertGuardians = async (parentData) => {
     .select();
 
   if (error) throw error;
+
+    // Fetch event data to get event name and other event-related details
+    const { data: eventData, error: eventError } = await supabase
+    .from("events")
+    .select("*")
+    .eq("id", parentData.event_id)
+    .single();
+
+  // Handle any errors when fetching the event data
+  if (eventError) {
+    console.error("Error fetching event data:", eventError.message);
+    throw new Error(`Error fetching event data: ${eventError.message}`);
+  }
+
+  // Check if this child has attended this event before
+  const { data: existingHistoryAttendees } =
+    await supabase
+      .from("previous_attendees")
+      .select("first_name, last_name")
+      .eq("event_name", eventData.event_name)
+      .eq("first_name", parentData.first_name)
+      .eq("last_name", parentData.last_name)
+      .single();
+
+  // If no previous attendance record is found, insert a new history record
+  if (!existingHistoryAttendees) {
+    const { error: insertHistoryError } = await supabase
+      .from("previous_attendees")
+      .insert([
+        {
+          first_name: parentData.first_name,
+          last_name: parentData.last_name,
+          event_name: eventData.event_name,
+          family_type: parentData.attendee_type,
+          registered_by: parentData.registered_by,
+        },
+      ]);
+
+    // Handle any errors while inserting the history record
+    if (insertHistoryError) {
+      throw new Error(insertHistoryError.message);
+    }
+  }
+
   return data;
 };
 
 // Parishioner insert children
 export const insertChildren = async (childData) => {
-  // Insert guardians
+  // Insert or update the child's attendance data in the attendance table
   const { data, error } = await supabase
     .from("attendance")
     .upsert([
@@ -302,8 +346,52 @@ export const insertChildren = async (childData) => {
     ])
     .select();
 
-  // If there was an error inserting children, throw it
+  // If there's an error inserting the attendance data, throw an error
   if (error) throw new Error(error.message);
+
+  // Fetch event data to get event name and other event-related details
+  const { data: eventData, error: eventError } = await supabase
+    .from("events")
+    .select("*")
+    .eq("id", childData.event_id)
+    .single();
+
+  // Handle any errors when fetching the event data
+  if (eventError) {
+    console.error("Error fetching event data:", eventError.message);
+    throw new Error(`Error fetching event data: ${eventError.message}`);
+  }
+
+  // Check if this child has attended this event before
+  const { data: existingHistoryAttendees } =
+    await supabase
+      .from("previous_attendees")
+      .select("first_name, last_name")
+      .eq("event_name", eventData.event_name)
+      .eq("first_name", childData.first_name)
+      .eq("last_name", childData.last_name)
+      .single();
+
+  // If no previous attendance record is found, insert a new history record
+  if (!existingHistoryAttendees) {
+    console.log("adding to history")
+    const { error: insertHistoryError } = await supabase
+      .from("previous_attendees")
+      .insert([
+        {
+          first_name: childData.first_name,
+          last_name: childData.last_name,
+          event_name: eventData.event_name,
+          family_type: childData.attendee_type,
+          registered_by: childData.registered_by,
+        },
+      ]);
+
+    // Handle any errors while inserting the history record
+    if (insertHistoryError) {
+      throw new Error(insertHistoryError.message);
+    }
+  }
 
   return data;
 };
@@ -489,21 +577,21 @@ const insertNewRecord = async (submittedData) => {
     .from("events")
     .select("*")
     .eq("id", event)
-    .single(); // Expecting a single event objectad
+    .single();
 
   if (eventError) {
     console.error("Error fetching event data:", eventError.message);
     throw new Error(`Error fetching event data:   ${eventError.message}`);
   }
 
-  // 1. Generate filter conditions for existing attendees check
+  // Generate filter conditions for existing attendees check
   const orConditions = attendeesData
     .map(
       (attendee) =>
         `and(event_name.eq.${eventData.event_name},first_name.eq.${attendee.first_name},last_name.eq.${attendee.last_name})`
     )
     .join(",");
-  // 2. Check for existing matches using event_id, first_name, and last_name
+  // Check for existing matches using event_id, first_name, and last_name
   const { data: existingAttendees, error: existingError } = await supabase
     .from("previous_attendees")
     .select("first_name, last_name")
@@ -514,27 +602,27 @@ const insertNewRecord = async (submittedData) => {
     return;
   }
 
-  // 3. Create unique key combining first_name and last_name
+  // Create unique key combining first_name and last_name
   const existingKeys = new Set(
     existingAttendees.map(
       (attendee) => `${attendee.first_name}:${attendee.last_name}`
     )
   );
 
-  // 4. Filter out any matching entries
+  // Filter out any matching entries
   const newAttendeesData = attendeesData.filter(
     (attendee) =>
       !existingKeys.has(`${attendee.first_name}:${attendee.last_name}`)
   );
 
-  // 5. Insert remaining entries
+  // Insert remaining entries
   if (newAttendeesData.length > 0) {
     const { error: insertError } = await supabase
       .from("previous_attendees")
       .insert(
         newAttendeesData.map((attendee) => ({
           event_name: eventData.event_name,
-          family_type: eventData.type,
+          family_type: attendee.type,
           first_name: attendee.first_name,
           last_name: attendee.last_name,
           registered_by,

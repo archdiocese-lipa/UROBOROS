@@ -42,7 +42,7 @@ const AddRecord = ({ eventId }) => {
       locationIsSchedule ? addRecordByAdmin : addRecordSchema
     ),
     defaultValues: {
-      parents: [
+      parents: locationIsSchedule ? [] : [
         {
           parentFirstName: "",
           parentLastName: "",
