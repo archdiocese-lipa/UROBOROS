@@ -17,7 +17,6 @@ import PropTypes from "prop-types";
 }) => {
   const { userData } = useUser();
   const { register, reset, handleSubmit, setValue } = useForm();
-  // const { handleAddReply } = useReply(comment_id,null);
 
   useEffect(() => {
     if (replyTo) {

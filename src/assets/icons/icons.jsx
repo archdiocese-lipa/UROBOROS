@@ -133,14 +133,14 @@ const LoadingIcon = ({className="text-black"}) => {
         fill="currentColor"
         d="M20 12h2A10 10 0 0 0 12 2V4A8 8 0 0 1 20 12Z"
       >
-        <animateTransform
+        {/* <animateTransform
           attributeName="transform"
           dur="1s"
           from="0 12 12"
           repeatCount="indefinite"
           to="360 12 12"
           type="rotate"
-        />
+        /> */}
       </path>
     </svg>
   );

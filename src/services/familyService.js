@@ -165,7 +165,7 @@ export const getGuardian = async (familyId) => {
     // Fetch the logged-in user first
     const { data: loggedInUser, error: loggedInUserError } = await supabase
       .from("parents")
-      .select("*")
+      .select("id,first_name, last_name, contact_number,family_id")
       .eq("family_id", familyId)
       .eq("parishioner_id", loggedInUserId)
       .single();
@@ -177,11 +177,9 @@ export const getGuardian = async (familyId) => {
     // Fetch the rest of the parents excluding the logged-in user
     const { data: otherParents, error: otherParentsError } = await supabase
       .from("parents")
-      .select("*")
+      .select("id,first_name, last_name, contact_number,family_id")
       .eq("family_id", familyId)
-      .or(`parishioner_id.neq.${loggedInUserId},parishioner_id.is.null`)
-      .order("first_name", { ascending: true })
-      .order("last_name", { ascending: true });
+      .or(`parishioner_id.neq.${loggedInUserId},parishioner_id.is.null`);
 
     if (otherParentsError) {
       throw new Error(otherParentsError.message);
@@ -189,10 +187,24 @@ export const getGuardian = async (familyId) => {
 
     // Combine the results, ensuring the logged-in user is first
     const parents = [loggedInUser, ...otherParents];
+
+    console.log("parents fetched", parents);
     return parents;
   } catch (error) {
     return { success: false, error: error.message };
   }
+};
+
+export const fetchParents = async (familyId) => {
+  const { data, error } = await supabase
+    .from("parents")
+    .select("id,first_name, last_name, contact_number,family_id")
+    .eq("family_id", familyId);
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
 };
 
 // Fetchchildren
@@ -200,10 +212,8 @@ export const getChildren = async (familyId) => {
   try {
     const { data, error } = await supabase
       .from("children")
-      .select("*")
-      .eq("family_id", familyId)
-      .order("first_name", { ascending: true })
-      .order("last_name", { ascending: true });
+      .select("id,first_name, last_name,family_id")
+      .eq("family_id", familyId); // Equal to family group
 
     if (error) {
       throw new Error(error.message);
@@ -364,12 +374,44 @@ export const deleteChild = async (childId) => {
   return data; // Return the deleted data if successful
 };
 
-export const fetchFamilies = async ({ page, pageSize }) => {
-  const select =
-    "id,users(first_name,last_name,contact_number), parents(first_name,last_name,contact_number), children(first_name,last_name)";
+export const fetchFamilies = async ({ page, pageSize, search }) => {
+
+  
+
+  const select = `
+    id,
+    users(id, first_name, last_name, contact_number),
+    parents(first_name, last_name, contact_number),
+    children(first_name, last_name)
+  `;
+
+  // Base filter to exclude null user_id AND apply search
   const filters = {
     not: { column: "user_id", filter: "is", value: null },
   };
+
+  // Add search filter using the JOINED users table
+  if (search) {
+    const { data: users, error: usersError } = await supabase
+  .from("users")
+  .select("id")
+  .or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%`);
+
+if (usersError) {
+  console.error("Error fetching users:", usersError.message);
+  return null;
+}
+
+if (!users || users.length === 0) {
+  return [];
+}
+
+const userIds = users.map(user => user.id);
+
+    filters.in = { column: "user_id", value: userIds };
+    
+  }
+
   const paginatedData = await paginate({
     key: "family_group",
     page,
@@ -377,6 +419,7 @@ export const fetchFamilies = async ({ page, pageSize }) => {
     select,
     filters,
   });
+
 
   return paginatedData;
 };

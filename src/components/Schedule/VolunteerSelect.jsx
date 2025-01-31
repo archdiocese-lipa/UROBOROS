@@ -30,7 +30,7 @@ const VolunteerSelect = ({
   const [error, setError] = useState("");
   const queryClient = useQueryClient();
 
-  const volunteersWithAdmin = [...admins,...volunteers]
+  const volunteersWithAdmin = [...admins || [],...volunteers || []]
 
   const previousVolunteerIds = new Set(
     // Create a set of volunteer IDs that have already been replaced

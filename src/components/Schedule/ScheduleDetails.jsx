@@ -72,6 +72,9 @@ import { Search } from "@/assets/icons/icons";
 import { useDebounce } from "@/hooks/useDebounce";
 import AttendanceTable from "./AttendanceTable";
 import useRoleSwitcher from "@/hooks/useRoleSwitcher";
+import { ROLES } from "@/constants/roles";
+import AddExistingRecord from "./AddExistingRecord";
+import AddFromRecord from "./AddFromRecord";
 
 const ScheduleDetails = () => {
   const [qrCode, setQRCode] = useState(null);
@@ -419,7 +422,9 @@ const ScheduleDetails = () => {
           <div className="flex flex-wrap gap-1">
             {!disableSchedule && temporaryRole === "admin" && (
               <div className="flex gap-1">
+                <AddExistingRecord eventId={eventId} />
                 <AddRecord eventId={eventId} />
+                <AddFromRecord eventId={eventId} event_name={event.event_name} />
                 <Dialog onOpenChange={generateQRCode}>
                   <DialogTrigger asChild>
                     <Button>
@@ -566,11 +571,22 @@ const ScheduleDetails = () => {
         </div>
         {eventvolunteers?.map((volunteer, i) => (
           <div key={i} className="flex gap-2">
-            <p
-              className={cn("text-primary-text", {
-                "line-through": volunteer.replaced === true,
-              })}
-            >{`${i + 1}. ${volunteer.users.first_name.toFirstUpperCase()} ${volunteer.users.last_name.toFirstUpperCase()} `}</p>
+            <p>{`${i + 1}.`}</p>
+            {temporaryRole === ROLES[0] && (
+              <p
+                className={cn("text-primary-text", {
+                  "line-through": volunteer.replaced === true,
+                })}
+              >{`${volunteer.users.first_name.toFirstUpperCase()} ${volunteer.users.last_name.toFirstUpperCase()} `}</p>
+            )}
+
+            {temporaryRole !== ROLES[0] && volunteer.replaced === false && (
+              <p
+                className={cn("text-primary-text", {
+                  "line-through": volunteer.replaced === true,
+                })}
+              >{`${volunteer.users.first_name.toFirstUpperCase()} ${volunteer.users.last_name.toFirstUpperCase()} `}</p>
+            )}
             {volunteer?.volunteer_replacement && (
               <p
                 className={"text-primary-text"}
@@ -707,7 +723,7 @@ const ScheduleDetails = () => {
             ? `${mainApplicant.first_name} ${mainApplicant.last_name} Family`
             : walkInMainApplicant
               ? `${walkInMainApplicant.first_name} ${walkInMainApplicant.last_name} Family`
-              : "Unknown Family";
+              : "Unknown ";
 
           return (
             <Card className="p-2" key={i}>
