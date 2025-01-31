@@ -52,7 +52,7 @@ const InviteFamily = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          credentials: "include",     
+          withCredentials: true,   
         }
       );
 
