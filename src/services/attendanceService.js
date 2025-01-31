@@ -438,7 +438,7 @@ const countEventAttendance = async (eventId) => {
 };
 // Function to submit add new record in schedule
 const insertNewRecord = async (submittedData) => {
-  const { event, parents, children } = submittedData;
+  const { event, parents, children, registered_by } = submittedData;
 
   const familyId = uuidv4();
   // get main applicant parent.
@@ -481,17 +481,79 @@ const insertNewRecord = async (submittedData) => {
         contact_number: attendee.contact_number,
         family_id: attendee.family_id,
         registration_code: attendee.registration_code,
+        registered_by,
       }))
     );
 
-  if (attendanceError) {
-    console.error(
-      "Error inserting attendance records:",
-      attendanceError.message
-    );
-    return { success: false, error: attendanceError };
+  const { data: eventData, error: eventError } = await supabase
+    .from("events")
+    .select("*")
+    .eq("id", event)
+    .single(); // Expecting a single event objectad
+
+  if (eventError) {
+    console.error("Error fetching event data:", eventError.message);
+    throw new Error(`Error fetching event data:   ${eventError.message}`);
   }
-  return { success: true, attendanceData };
+
+  // 1. Generate filter conditions for existing attendees check
+  const orConditions = attendeesData
+    .map(
+      (attendee) =>
+        `and(event_name.eq.${eventData.event_name},first_name.eq.${attendee.first_name},last_name.eq.${attendee.last_name})`
+    )
+    .join(",");
+  // 2. Check for existing matches using event_id, first_name, and last_name
+  const { data: existingAttendees, error: existingError } = await supabase
+    .from("previous_attendees")
+    .select("first_name, last_name")
+    .or(orConditions);
+
+  if (existingError) {
+    console.error("Error checking existing attendees:", existingError);
+    return;
+  }
+
+  // 3. Create unique key combining first_name and last_name
+  const existingKeys = new Set(
+    existingAttendees.map(
+      (attendee) => `${attendee.first_name}:${attendee.last_name}`
+    )
+  );
+
+  // 4. Filter out any matching entries
+  const newAttendeesData = attendeesData.filter(
+    (attendee) =>
+      !existingKeys.has(`${attendee.first_name}:${attendee.last_name}`)
+  );
+
+  // 5. Insert remaining entries
+  if (newAttendeesData.length > 0) {
+    const { error: insertError } = await supabase
+      .from("previous_attendees")
+      .insert(
+        newAttendeesData.map((attendee) => ({
+          event_name: eventData.event_name,
+          family_type: eventData.type,
+          first_name: attendee.first_name,
+          last_name: attendee.last_name,
+          registered_by,
+        }))
+      );
+
+    if (insertError) {
+      console.error("Error inserting new attendees:", insertError);
+    }
+
+    if (attendanceError) {
+      console.error(
+        "Error inserting attendance records:",
+        attendanceError.message
+      );
+      return { success: false, error: attendanceError };
+    }
+    return { success: true, attendanceData };
+  }
 };
 
 const editAttendee = async ({
@@ -624,7 +686,34 @@ const removeAttendee = async (attendeeId) => {
   return data;
 };
 
+const fetchParentAttendanceHistory = async (event_name) => {
+  const { data, error } = await supabase
+    .from("previous_attendees")
+    .select("*")
+    .eq("family_type", "parents")
+    .eq("event_name", event_name);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+};
+const fetchChildrenAttendanceHistory = async (event_name) => {
+  const { data, error } = await supabase
+    .from("previous_attendees")
+    .select("*")
+    .eq("family_type", "children")
+    .eq("event_name", event_name);
+  if (error) {
+    throw new Error(error.message);
+  }
+  return data;
+};
+
 export {
+  fetchChildrenAttendanceHistory,
+  fetchParentAttendanceHistory,
   editAttendee,
   getEventAttendance,
   fetchAttendeesByTicketCode,

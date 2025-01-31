@@ -26,12 +26,21 @@ import { Button } from "../ui/button";
 import { Icon } from "@iconify/react";
 import { addRecordSchema } from "@/zodSchema/Schedule/AddRecordSchema";
 import useAddRecord from "@/hooks/Schedule/useAddRecord";
+import { useLocation } from "react-router-dom";
+import { useUser } from "@/context/useUser";
 
 const AddRecord = ({ eventId }) => {
   const [openDialog, setOpenDialog] = useState(false);
-
+  const location = useLocation();
+  const {userData} = useUser();
+  const locationIsSchedule = location.pathname === "/schedule";
+  const addRecordByAdmin = addRecordSchema.pick({
+    children: true,
+  });
   const form = useForm({
-    resolver: zodResolver(addRecordSchema),
+    resolver: zodResolver(
+      locationIsSchedule ? addRecordByAdmin : addRecordSchema
+    ),
     defaultValues: {
       parents: [
         {
@@ -50,7 +59,7 @@ const AddRecord = ({ eventId }) => {
     },
   });
 
-  const { mutate: registerAttendance, isLoading } = useAddRecord({eventId}); // Initialize the mutation hook
+  const { mutate: registerAttendance, isLoading } = useAddRecord({ eventId }); // Initialize the mutation hook
 
   const onSubmit = (values) => {
     // Proceed with submission
@@ -58,16 +67,17 @@ const AddRecord = ({ eventId }) => {
 
     const submitData = {
       event: eventId,
-      parents: parents.map((parent) => ({
+      parents: parents?.map((parent) => ({
         parentFirstName: parent.parentFirstName,
         parentLastName: parent.parentLastName,
         parentContactNumber: parent.parentContactNumber,
         isMainApplicant: parent.isMainApplicant,
-      })),
+      })) || [],
       children: children.map((child) => ({
         childFirstName: child.childFirstName,
         childLastName: child.childLastName,
       })),
+      registered_by: userData?.id
     };
 
     registerAttendance(submitData);
@@ -115,12 +125,14 @@ const AddRecord = ({ eventId }) => {
     });
   };
 
+  console.log(userData?.id)
+
   return (
     <Dialog open={openDialog} onOpenChange={setOpenDialog}>
       <DialogTrigger asChild>
         <Button onClick={handleReset}>
           <Icon icon={"mingcute:classify-add-2-fill"} />
-          <p>Add Record</p>
+          <p>Add Record Manually</p>
         </Button>
       </DialogTrigger>
       <DialogContent>
@@ -132,7 +144,12 @@ const AddRecord = ({ eventId }) => {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
               {/* Parent Guardian Field */}
-              <Label className="text-lg">Parent/Guardian Information</Label>
+              <Label className="text-lg">
+                Parent/Guardian Information{" "}
+                {locationIsSchedule && (
+                  <span className="text-xs text-zinc-400">(Optional)</span>
+                )}
+              </Label>
               <span className="hidden text-sm italic text-zinc-400 md:block">
                 (Check the box on the left to choose the main applicant).
               </span>

@@ -18,8 +18,22 @@ import {
   TableRow,
 } from "../ui/table";
 import { cn } from "@/lib/utils";
+import { Input } from "../ui/input";
+import { useEffect,useState } from "react";
+import { useDebounce } from "@/hooks/useDebounce";
+import { Search } from "@/assets/icons/icons";
 
 const FamilyCards = () => {
+  const [search, setSearch] = useState("");
+
+  const handleSearch = (e) => {
+    setSearch(e.target.value);
+  };
+
+  const debouncedSearch = useDebounce(search, 500);
+
+  useEffect(() => {}, []);
+
   const {
     data,
     isLoading,
@@ -29,11 +43,12 @@ const FamilyCards = () => {
     isFetchingNextPage,
     error,
   } = useInfiniteQuery({
-    queryKey: ["family-list"],
+    queryKey: ["family-list", debouncedSearch],
     queryFn: async ({ pageParam = 1 }) => {
       const response = await fetchFamilies({
         page: pageParam,
         pageSize: 10,
+        search
       });
 
       return response;
@@ -49,22 +64,36 @@ const FamilyCards = () => {
 
   const { ref } = useInterObserver(fetchNextPage);
 
-  if (isLoading) {
-    return <Loading />;
-  }
+  // if (isLoading) {
+  //   return <Loading />;
+  // }
 
   if (error) {
     return <div>Error loading families.</div>;
   }
 
+
+
   return (
     <div className="flex flex-col gap-2">
-      {data?.pages?.flatMap((page) =>
+      <div className=" w-full flex justify-center items-center">
+      <div className="  relative w-8/12">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 transform text-2xl text-accent" />
+        <Input
+          value={search}
+          onChange={handleSearch}
+          className="border-none pl-12"
+          placeholder="Search family"
+        />
+      </div>
+      </div>
+
+      { isLoading ? <Loading/> :data?.pages?.flatMap((page) =>
         page?.items?.map((family) => (
           <Card key={family.id} className="p-2">
             <CardHeader className="p-2">
               <CardTitle className="font-montserrat font-bold text-accent">
-                {family?.users?.last_name} Family
+              {family?.users?.first_name} {family?.users?.last_name} Family
               </CardTitle>
               <CardDescription className="sr-only">
                 Family Details

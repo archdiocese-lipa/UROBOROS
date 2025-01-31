@@ -30,6 +30,7 @@ const useAddRecord = ({eventId}) => {
       });
     },
     onSettled: () => {
+      console.log("revalidating")
       queryClient.invalidateQueries({
         queryKey: ["attendance", eventId],
       });

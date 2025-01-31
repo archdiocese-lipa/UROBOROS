@@ -117,9 +117,17 @@ const paginate = async ({
     if (filters.id) {
       supabaseQuery = supabaseQuery.in("id", filters.id);
     }
+    if (filters.in) {
+      const { column, value } = filters.in;
+      supabaseQuery = supabaseQuery.in(column, value);
+    }
     if (filters.not) {
       const { column, filter, value } = filters.not;
       supabaseQuery = supabaseQuery.not(column, filter, value);
+    }
+    if (filters.or) {
+      const orFilters = filters.or.map(({ column, filter, value }) => `${column}.${filter}.${value}`).join(",");
+      supabaseQuery = supabaseQuery.or(orFilters);
     }
 
     // Fetch the total count of items, applying eq filters here as well
