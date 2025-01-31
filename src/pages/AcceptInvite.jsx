@@ -17,7 +17,6 @@ const AcceptInvite = () => {
         const response = await axios.post(
           `${import.meta.env.VITE_UROBOROS_API_URL}/accept-invite`,
           {
-            method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
