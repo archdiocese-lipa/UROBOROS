@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-
+import axios from "axios";
 const AcceptInvite = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -14,14 +14,15 @@ const AcceptInvite = () => {
       }
 
       try {
-        const response = await fetch(
+        const response = await axios.post(
           `${import.meta.env.VITE_UROBOROS_API_URL}/accept-invite`,
           {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
-            credentials: "include",
+            body: { token },
+            credentials: true,
           }
         );
 
