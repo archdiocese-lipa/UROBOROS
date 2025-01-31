@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
+
 const AcceptInvite = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -16,36 +17,33 @@ const AcceptInvite = () => {
       try {
         const response = await axios.post(
           `${import.meta.env.VITE_UROBOROS_API_URL}/accept-invite`,
+
           {
             token,
           }
         );
+        console.log(token);
 
-        const data = await response.json();
-
-        if (response.ok) {
+        if (response.status === 200) {
           // Invitation accepted successfully
           alert("Invitation accepted successfully!");
           navigate("/"); // Redirect to dashboard
         } else {
           // Handle errors
-          alert(data.error || "Failed to accept invitation");
+          alert(response.data.error || "Failed to accept invitation");
           navigate("/");
         }
       } catch (error) {
         console.error("Error accepting invite:", error);
         alert("Failed to accept invitation");
+        navigate("/");
       }
     };
 
     acceptInvitation();
   }, [token, navigate]);
 
-  return (
-    <div>
-      <h1>Processing Invitation...</h1>
-    </div>
-  );
+  return null;
 };
 
 export default AcceptInvite;
