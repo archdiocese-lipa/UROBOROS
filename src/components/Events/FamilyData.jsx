@@ -140,6 +140,8 @@ const FamilyData = ({ userId, selectedEvent }) => {
     error,
   } = useFamilyData(); // Fetch family
 
+  console.log("selectedEvent",selectedEvent)
+
   const { mutate: removeAttendee, isPending: isRemovingAttendee } =
     useRemoveAttendee(); // Remove attendee
   const { mutate: guardianManualAttend, isPending: isParentSubmitting } =
