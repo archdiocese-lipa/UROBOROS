@@ -16,13 +16,12 @@ const AcceptInvite = () => {
 
       try {
         const response = await axios.post(
-          `${import.meta.env.VITE_UROBOROS_API_URL}/accept-invite`,
-
+          // `${import.meta.env.VITE_UROBOROS_API_URL}/accept-invite`,
+          "https://uroboros-api.onrender.com/accept-invite",
           {
             token,
           }
         );
-        console.log(token);
 
         if (response.status === 200) {
           // Invitation accepted successfully
