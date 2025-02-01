@@ -42,17 +42,30 @@ const InviteFamily = () => {
       data: { session },
     } = await supabase.auth.getSession();
     const token = session?.access_token;
-
     try {
+      // Get user name
+      const { data: user, error } = await supabase
+        .from("users")
+        .select("first_name, last_name")
+        .eq("id", session.user.id)
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      const inviterName = `${user?.first_name} ${user?.last_name}`;
+
       const response = await axios.post(
-        `${import.meta.env.VITE_UROBOROS_API_URL}/invite/send-invite`,
-        { email: data.email },
+        // `${import.meta.env.VITE_UROBOROS_API_URL}/invite/send-invite`,
+        "http://localhost:3000/invite/send-invite",
+        { email: data.email, inviterName },
         {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          credentials: "include",
+          withCredentials: true,
         }
       );
 
