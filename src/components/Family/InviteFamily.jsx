@@ -82,13 +82,13 @@ const InviteFamily = () => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline">Invite User</Button>
+        <Button variant="outline">Invite Member</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Invite a New User</DialogTitle>
+          <DialogTitle>Invite a New Family Member</DialogTitle>
           <DialogDescription>
-            Please make sure to invite a user who is not yet a member of any
+            Please make sure to invite a family who is not yet a member of any
             family.
           </DialogDescription>
         </DialogHeader>
