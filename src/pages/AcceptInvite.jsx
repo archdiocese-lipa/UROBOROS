@@ -20,6 +20,11 @@ const AcceptInvite = () => {
           "https://uroboros-api.onrender.com/accept-invite",
           {
             token,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
           }
         );
 
