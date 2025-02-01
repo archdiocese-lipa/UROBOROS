@@ -15,6 +15,7 @@ import RequireRole from "@/components/RequireRole";
 
 import { ROLES } from "@/constants/roles";
 import ResetPassword from "./pages/ResetPassword";
+import AcceptInvite from "./pages/AcceptInvite";
 
 const App = () => {
   return (
@@ -23,7 +24,8 @@ const App = () => {
       <Routes>
         {/* Auth Routes */}
         <Route path="/" element={<Home />} />
-        <Route path="/privacy-policy" element={<PrivacyPolicy />} />{" "}
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/accept-invite" element={<AcceptInvite />} />
         {/* Privacy Policy Route */}
         {/* Protected Routes */}
         <Route element={<MainLayout />}>

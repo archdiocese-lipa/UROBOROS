@@ -33,7 +33,7 @@ import { getUsers } from "@/services/userService";
 
 import { cn } from "@/lib/utils";
 import FamilyCards from "@/components/Request/FamilyCards";
-
+import Loading from "@/components/Loading";
 
 const Requests = () => {
   const [tab, setTab] = useState("parishioner");
@@ -139,7 +139,8 @@ const Requests = () => {
           </Dialog>
         </div>
       </div>
-      {!isLoading && tab !== "family" ? (
+      {isLoading && tab !== "family" &&  <Loading />}
+      {!isLoading && tab !== "family" &&
         <Table>
           <TableHeader className="bg-primary">
             <TableRow>
@@ -181,19 +182,22 @@ const Requests = () => {
                 </TableRow>
               ))
             )}
-            {hasNextPage &&  (
+            {hasNextPage && (
               <TableRow ref={ref}>
                 <TableCell colSpan={4}>
-                  {isFetchingNextPage &&  <Skeleton className="h-10 w-full rounded-xl" />}
+                  {isFetchingNextPage && (
+                    <Skeleton className="h-10 w-full rounded-xl" />
+                  )}
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
-        </Table>
-      ) : hasNextPage  && (
-        <Skeleton className="h-96 w-full rounded-xl" />
-      )}
-      {tab === "family" && <FamilyCards/>}
+        </Table>}
+       
+        {/* {hasNextPage && tab !== "family" &&<Skeleton className="h-32 w-full rounded-xl" />} */}
+         
+      
+      {tab === "family" && <FamilyCards />}
     </div>
   );
 };

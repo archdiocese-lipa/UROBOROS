@@ -44,7 +44,15 @@ const Home = () => {
 
   return (
     <>
-      <div className="relative flex h-[calc(100dvh_-_10rem)] items-center justify-center overflow-hidden bg-[#FFDECE] bg-[url('@/assets/svg/backdrop.svg')] bg-right-bottom bg-no-repeat sm:h-[calc(100dvh_-_1.8rem)] md:bg-bottom lg:bg-cover">
+      <div className="relative flex h-[calc(100dvh_-_10rem)] items-center justify-center overflow-hidden bg-[#FFDECE] bg-[url('@/assets/svg/backdrop_clean.svg')] bg-right-bottom bg-no-repeat sm:h-[calc(100dvh_-_1.8rem)] md:bg-bottom lg:bg-cover">
+        <div className="absolute bottom-[5dvw] right-[8dvw] z-20 h-[30dvw] w-[12dvw] bg-[url('@/assets/svg/st_laurence.svg')] bg-contain bg-center bg-no-repeat transition-all duration-500 hover:scale-105">
+          <a
+            href="https://www.saintlaurence.org.uk/"
+            className="absolute z-10 h-full w-full"
+            target="_blank"
+          ></a>
+        </div>
+        <div className="absolute bottom-[2.5dvw] right-[8.4dvw] z-30 h-[6dvw] w-[12dvw] bg-[url('@/assets/svg/mud.svg')] bg-contain bg-center bg-no-repeat"></div>
         <div className="rtop-[calc(10rem_+_40dvw)] absolute top-10 z-50">
           <div className="order-2 mx-auto max-w-xl justify-center rounded-[1.8rem] bg-white/60 backdrop-blur-sm sm:flex sm:space-x-3 sm:rounded-full md:order-1 md:col-span-2">
             <div className="grid grid-cols-2 gap-2 p-2 sm:grid-cols-4">
@@ -59,7 +67,7 @@ const Home = () => {
           {"Growing in Faith\nTogether"}
         </p>
         <p className="absolute top-[calc(12rem_+_24dvw)] w-screen max-w-[80dvw] whitespace-pre text-[5.8dvw] font-medium text-accent sm:top-[calc(20dvh_+_12rem)] sm:max-w-xl sm:text-[2.6rem] lg:bottom-[calc(50dvh_-_14dvh)] lg:top-auto lg:ml-[24.2dvw] lg:max-w-full lg:text-[4.6dvh]">
-          {"Engaging our Parishioners in the \nJoy of the Gospel"}
+          {"Engaging our Parishioners \nin the Joy of the Gospel"}
         </p>
         {/* <div className="z-99 absolute bottom-0 left-1 h-32 w-64 md:bottom-48 md:left-12 md:h-60 md:w-96 lg:bottom-10 lg:left-72 lg:w-[30rem] lg:h-64">
           <iframe
@@ -85,7 +93,7 @@ const Home = () => {
           </a>
         </p>
       </div>
-      <div className="fixed bottom-12 left-[calc(50%_-_10rem)] z-20 flex h-[11rem] w-[20rem] origin-bottom scale-[85%] flex-col items-center gap-4 rounded-[1rem] bg-[#FBCCC0] px-[2rem] py-[0.8rem] text-[1.05rem] font-medium text-accent shadow-xl shadow-black/20 transition-all duration-200 sm:bottom-[-8rem] sm:z-0 sm:h-[13rem] sm:scale-100 sm:shadow-2xl sm:shadow-black sm:hover:bottom-[-1.6rem] sm:hover:scale-[150%]">
+      <div className="fixed bottom-12 left-[calc(50%_-_10.5rem)] z-40 flex h-[11rem] w-[21rem] origin-bottom scale-[85%] flex-col items-center gap-4 rounded-[1rem] bg-[#FBCCC0] px-[2rem] py-[0.8rem] text-[1.05rem] font-medium text-accent shadow-xl shadow-black/20 transition-all duration-200 sm:bottom-[-8rem] sm:z-0 sm:h-[13rem] sm:scale-100 sm:shadow-2xl sm:shadow-black sm:hover:bottom-[-1.6rem] sm:hover:scale-[150%]">
         <p className="whitespace-nowrap">
           Need <span className="font-bold">help</span> creating an account?
         </p>

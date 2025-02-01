@@ -27,6 +27,7 @@ import EditParent from "@/components/Family/EditParent";
 import NewCoParent from "@/components/Family/NewCoParent";
 import { useUser } from "@/context/useUser";
 import DeleteParent from "@/components/Family/DeleteParent";
+import InviteFamily from "@/components/Family/InviteFamily";
 
 const Family = () => {
   const [editParentForm, setEditParentForm] = useState(null);
@@ -69,8 +70,9 @@ const Family = () => {
       <Title>Family information</Title>
       {/* Hide the New family form if the user is coparent */}
       {userRole !== "coparent" && (
-        <div className="mt-5">
+        <div className="mt-5 flex gap-2">
           <NewFamilyForm />
+          <InviteFamily />
         </div>
       )}
 

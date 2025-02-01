@@ -69,14 +69,21 @@ const registerUser = async ({
 // Update user's contact number
 const updateContact = async (userId, newContactNumber) => {
   try {
-    const { data, error } = await supabase
+    const { data: userData, error: userError } = await supabase
       .from("users")
       .update({ contact_number: newContactNumber })
       .eq("id", userId);
 
-    if (error) throw error;
+    if (userError) throw userError;
 
-    return data;
+    const { data: parentData, error: parentError } = await supabase
+      .from("parents")
+      .update({ contact_number: newContactNumber })
+      .eq("parishioner_id", userId);
+
+    if (parentError) throw parentError;
+
+    return { userData, parentData };
   } catch (error) {
     console.error("Error updating contact:", error);
   }

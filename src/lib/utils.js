@@ -117,9 +117,17 @@ const paginate = async ({
     if (filters.id) {
       supabaseQuery = supabaseQuery.in("id", filters.id);
     }
+    if (filters.in) {
+      const { column, value } = filters.in;
+      supabaseQuery = supabaseQuery.in(column, value);
+    }
     if (filters.not) {
-      const { column,filter, value } = filters.not;
+      const { column, filter, value } = filters.not;
       supabaseQuery = supabaseQuery.not(column, filter, value);
+    }
+    if (filters.or) {
+      const orFilters = filters.or.map(({ column, filter, value }) => `${column}.${filter}.${value}`).join(",");
+      supabaseQuery = supabaseQuery.or(orFilters);
     }
 
     // Fetch the total count of items, applying eq filters here as well
@@ -363,4 +371,27 @@ const exportAttendanceList = (
   doc.save(`${event.event_name}-${formattedDate}.pdf`);
 };
 
-export { cn, paginate, getInitial, downloadExcel,exportAttendanceList };
+const formatEventDate = (date) => {
+  return new Date(date).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+};
+
+const formatEventTime = (time) => {
+  return new Date(`2000-01-01T${time}`).toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
+export {
+  cn,
+  paginate,
+  getInitial,
+  downloadExcel,
+  exportAttendanceList,
+  formatEventDate,
+  formatEventTime,
+};
