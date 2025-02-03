@@ -1,0 +1,13 @@
+.bg-light-brown {
+  background-color: #d2b48c !important;
+}
+
+.react-datepicker__day--selected {
+  background-color: #d2b48c !important;
+  border-color: #d2b48c !important;
+}
+
+.react-datepicker__day--keyboard-selected {
+  background-color: #d2b48c !important;
+  border-color: #d2b48c !important;
+}

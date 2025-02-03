@@ -30,6 +30,12 @@ export const SIDEBAR_LINKS = Object.freeze({
       icon: "mingcute:inventory-line",
       selectedIcon: "mingcute:inventory-fill",
     },
+    {
+      label: "Polls",
+      link: "/polls",
+      icon: "mdi:poll",
+      selectedIcon: "mdi:poll",
+    },
   ],
   volunteer: [
     {
@@ -43,6 +49,12 @@ export const SIDEBAR_LINKS = Object.freeze({
       link: "/schedule",
       icon: "mingcute:calendar-time-add-line",
       selectedIcon: "mingcute:calendar-time-add-fill",
+    },
+    {
+      label: "Polls",
+      link: "/polls",
+      icon: "mdi:poll",
+      selectedIcon: "mdi:poll",
     },
   ],
   parishioner: [

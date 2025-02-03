@@ -10,6 +10,7 @@ import Family from "@/pages/Family";
 import Events from "@/pages/Events";
 import Profile from "@/pages/Profile";
 import PrivacyPolicy from "@/pages/Privacy-Policy";
+import Polls from "@/pages/Polls";
 
 import RequireRole from "@/components/RequireRole";
 
@@ -39,6 +40,7 @@ const App = () => {
           <Route element={<RequireRole roles={[ROLES[0], ROLES[1]]} />}>
             {/* Add Route for OrganizedEvents */}
             <Route path="/schedule" element={<Schedule />} />
+            <Route path="/polls" element={<Polls />} />
           </Route>
           {/* ========================================================= */}
           {/* Roles of Admin and Parishioner can access the routes below */}
