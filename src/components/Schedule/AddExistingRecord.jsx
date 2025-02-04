@@ -1,3 +1,6 @@
+import { useState, useMemo } from "react";
+import PropTypes from "prop-types";
+import { Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -5,283 +8,205 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogClose,
-  DialogFooter,
 } from "@/components/ui/dialog";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { fetchFamilies, fetchParents } from "@/services/familyService";
-import Loading from "../Loading";
-import { ChevronsUpDown, Check } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Input } from "../ui/input";
+import { getAttendee, searchAttendee } from "@/services/attendanceService";
+import { useDebounce } from "@/hooks/useDebounce";
+import { Label } from "../ui/label";
 import useInterObserver from "@/hooks/useInterObserver";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import AssignVolunteerComboBox from "./AssignVolunteerComboBox";
-import { useFetchChildren } from "@/hooks/useFamily";
-import { useEffect, useState,useMemo } from "react";
-import useAddRecord from "@/hooks/Schedule/useAddRecord";
-import { existingRecordSchema } from "@/zodSchema/AddFamilySchema";
-import PropTypes from "prop-types";
-
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { cn } from "@/lib/utils";
 
 const AddExistingRecord = ({ eventId }) => {
-  const [selectedFamilyId, setSelectedFamilyId] = useState("");
-  const [open,setOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const debounceSearchTerm = useDebounce(searchTerm, 500);
 
-  const form = useForm({
-    resolver: zodResolver(existingRecordSchema),
-    defaultValues: {
-      family: { userid: "", id: "", value: "" },
-      parents: [],
-      children: [],
-    },
+  // Fetch existing attendees
+  const { data: attendanceData } = useQuery({
+    queryKey: ["event-attendance", eventId],
+    queryFn: () => getAttendee(eventId),
+    enabled: !!eventId,
   });
 
-  const { data, isLoading, fetchNextPage, isFetchingNextPage, hasNextPage } =
+  // Track existing attendees
+  const existingAttendees = useMemo(() => {
+    if (!attendanceData) return new Set();
+    return new Set(attendanceData.map((a) => a.attendee_id));
+  }, [attendanceData]);
+
+  // Update infinite query configuration with debug logs
+  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
     useInfiniteQuery({
-      queryKey: ["family-list"],
+      queryKey: ["search-attendees", debounceSearchTerm],
       queryFn: async ({ pageParam = 1 }) => {
-        return await fetchFamilies({
+        const response = await searchAttendee({
+          searchTerm: debounceSearchTerm,
           page: pageParam,
-          pageSize: 100,
+          pageSize: 2,
         });
+        return response;
+      },
+      getNextPageParam: (lastPage) => {
+        if (lastPage.hasMore) {
+          return lastPage.page + 1;
+        }
+        return undefined;
       },
       initialPageParam: 1,
-      getNextPageParam: (lastPage) =>
-        lastPage.nextPage ? lastPage.currentPage + 1 : undefined,
     });
 
-  const {data:parentData, isLoading:isParentLoading, isFetching:isParentFetching} = useQuery({
-    queryKey: ["parent", selectedFamilyId],
-    queryFn: async () => fetchParents(selectedFamilyId),
-    enabled: !!selectedFamilyId
-  })
-  const {
-    data: childData,
-    isLoading: isChildLoading,
-    isFetching: isChildFetching,
-  } = useFetchChildren(selectedFamilyId);
+  // Combine all families from all pages
+  const allFamilies = useMemo(() => {
+    return data?.pages?.flatMap((page) => page.families) ?? [];
+  }, [data?.pages]);
 
-  const familyOptions = useMemo(() => {
-    return data?.pages
-      ?.flatMap((page) => page.items)
-      ?.map((family) => ({
-        userid: family.users.id,
-        id: family.id,
-        value: `${family.users.first_name} ${family.users.last_name}`,
-      })) || [];
-  }, [data]);
-
-  const parentOptions = useMemo(() => {
-    return Array.isArray(parentData)
-      ? parentData.map((parent) => ({
-          id: parent.id,
-          value: parent,
-          label: `${parent.first_name} ${parent.last_name}`,
-        }))
-      : [];
-  }, [parentData]);
-
-  const childOptions = useMemo(() => {
-    return Array.isArray(childData)
-      ? childData?.map((child) => ({
-          id: child.id,
-          value: child,
-          label: `${child.first_name} ${child.last_name}`,
-        }))
-      : [];
-  }, [childData]);
-  const { ref } = useInterObserver(fetchNextPage);
-
-
-  const mutation = useAddRecord({eventId});
-  const onSubmit = (values) => {
-    mutation.mutate({
-      event: eventId,
-      parents: values.parents.map((parent) => ({
-        parentFirstName: parent.first_name,
-        parentLastName: parent.last_name,
-        parentContactNumber: parent.contact_number,
-      })),
-      children: values.children.map((child) => ({
-        childFirstName: child.first_name,
-        childLastName: child.last_name,
-      })),
-      registered_by: form.getValues().family.userid,
-    });
-    form.reset();
-    setOpen(false);
-  };
-useEffect(() => {
-  if(selectedFamilyId){
-    form.setValue("parents", []);
-    form.setValue("children", []);
-  }
-
-},[selectedFamilyId,open])
-
+  // intersection observer for infinite scroll
+  const { ref } = useInterObserver(hasNextPage ? fetchNextPage : null);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog>
       <DialogTrigger asChild>
-        <Button>Add From Family Record</Button>
+        <Button>Add from Record</Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="no-scrollbar h-[35rem] overflow-y-scroll sm:max-w-[625px]">
         <DialogHeader>
-          <DialogTitle className="text-accent">Add From Existing Family Record</DialogTitle>
+          <DialogTitle>Add from Existing Record</DialogTitle>
           <DialogDescription>
-            Add a new record from the existing family in the database.
+            Add a new record from the existing in the database.
           </DialogDescription>
+          <div className="flex h-10 items-center rounded-full bg-primary px-2">
+            <SearchIcon className="h-4 w-4" />
+            <Input
+              type="search"
+              placeholder="Search..."
+              className="w-full border-0 bg-transparent"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit((values) => onSubmit(values))}>
-            <FormField
-              control={form.control}
-              name="family"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Family</FormLabel>
-                  <FormControl>
-                    <Popover modal={true}>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className="w-full justify-between"
-                        >
-                          {field.value.id
-                            ? `${field?.value?.value}`
-                            : "Select family..."}
-                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent
-                        className="h-40 p-0 sm:w-[29rem]"
-                        align="start"
-                      >
-                        <Command shouldFilter={true}>
-                          <CommandInput placeholder="Search families..." />
-                          <CommandList>
-                            <CommandEmpty>
-                              {isLoading ? "Loading..." : "No families found"}
-                            </CommandEmpty>
-                            <CommandGroup>
-                              {familyOptions.map((family) => (
-                                <CommandItem
-                                  key={family.id}
-                                  value={family.value}
-                                  onSelect={() => {
-                                    setSelectedFamilyId(family.id),
-                                    field.onChange(family);
-                                  }}
-                                >
-                                  {family.value}
-                                  <Check
-                                    className={cn(
-                                      "ml-auto h-4 w-4",
-                                      field.value.id === family.id
-                                        ? "opacity-100"
-                                        : "opacity-0"
-                                    )}
-                                  />
-                                </CommandItem>
-                              ))}
-                              {hasNextPage && <div ref={ref} className="h-2" />}
-                              {isFetchingNextPage && (
-                                <Loading className="p-4" />
-                              )}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+
+        <div className="mt-4 space-y-4">
+          {isLoading ? (
+            <div className="flex justify-center">
+              <Loader2 className="h-6 w-6 animate-spin" />
+            </div>
+          ) : (
+            <>
+              {allFamilies.map((family) => (
+                <div
+                  key={family.familyId}
+                  className="rounded-lg bg-primary p-4"
+                >
+                  {/* Parents Section */}
+                  {family.parents?.length > 0 && (
+                    <div className="space-y-2">
+                      <Label className="text-primary-text">
+                        Parents/Guardians
+                      </Label>
+                      <ul className="space-y-2">
+                        {family.parents.map((parent) => (
+                          <li
+                            key={parent.id}
+                            className="rounded-lg bg-white px-5 py-3 text-primary-text"
+                          >
+                            <div className="flex items-center justify-between">
+                              <Label>
+                                {parent.first_name} {parent.last_name}
+                              </Label>
+                              <Button
+                                className={cn(
+                                  "rounded-xl text-[12px]",
+                                  existingAttendees.has(parent.id)
+                                    ? "bg-red-100 text-red-600"
+                                    : "bg-[#EFDED6] text-primary-text"
+                                )}
+                              >
+                                {existingAttendees.has(parent.id)
+                                  ? "Remove"
+                                  : "Add"}
+                              </Button>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {/* Children Section */}
+                  {family.children?.length > 0 && (
+                    <div className="space-y-2">
+                      <Label className="text-primary-text">Children</Label>
+                      <ul className="space-y-2">
+                        {family.children.map((child) => (
+                          <li
+                            key={child.id}
+                            className="rounded-lg bg-white px-5 py-3 text-primary-text"
+                          >
+                            <div className="flex items-center justify-between">
+                              <Label>
+                                {child.first_name} {child.last_name}
+                              </Label>
+                              <Button
+                                className={cn(
+                                  "rounded-xl text-[12px]",
+                                  existingAttendees.has(child.id)
+                                    ? "bg-red-100 text-red-600"
+                                    : "bg-[#EFDED6] text-primary-text"
+                                )}
+                              >
+                                {existingAttendees.has(child.id)
+                                  ? "Remove"
+                                  : "Add"}
+                              </Button>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              ))}
+              {/* div for intersection observer */}
+              {hasNextPage && (
+                <div ref={ref} className="h-4">
+                  {isFetchingNextPage && (
+                    <div className="flex justify-center">
+                      <Loader2 className="h-6 w-6 animate-spin" />
+                    </div>
+                  )}
+                </div>
               )}
-            />
-            <FormField
-              control={form.control}
-              name="parents"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Parents<span className=" text-xs text-zinc-400">(Optional)</span></FormLabel>
-                  <FormControl>
-                
-                      <AssignVolunteerComboBox
-                        isLoading={isParentLoading || isParentFetching}
-                        options={parentOptions || []}
-                        value={field.value}
-                        onChange={field.onChange}
-                        placeholder="Select Parents"
-                        disabled={form.getValues().family.id === ""}
-                      />
-         
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="children"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Children</FormLabel>
-                  <FormControl>
-              
-                      <AssignVolunteerComboBox
-                        isLoading={isChildLoading || isChildFetching}
-                        options={childOptions || []}
-                        value={field.value}
-                        onChange={field.onChange}
-                        placeholder="Select Children"
-                        disabled={form.getValues().family.id === ""}
-                      />
-               
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button onClick={() => form.reset()} type="button">Cancel</Button>
-              </DialogClose>
-              <Button type="submit" variant="outline">
-                Save
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+            </>
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );
 };
 
+const SearchIcon = (props) => {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="11" cy="11" r="8" />
+      <path d="m21 21-4.3-4.3" />
+    </svg>
+  );
+};
+
 AddExistingRecord.propTypes = {
-  eventId: PropTypes.string.isRequired, 
+  eventId: PropTypes.string.isRequired,
 };
 
 export default AddExistingRecord;

@@ -32,7 +32,7 @@ import { useUser } from "@/context/useUser";
 const AddRecord = ({ eventId }) => {
   const [openDialog, setOpenDialog] = useState(false);
   const location = useLocation();
-  const {userData} = useUser();
+  const { userData } = useUser();
   const locationIsSchedule = location.pathname === "/schedule";
   const addRecordByAdmin = addRecordSchema.pick({
     children: true,
@@ -42,14 +42,16 @@ const AddRecord = ({ eventId }) => {
       locationIsSchedule ? addRecordByAdmin : addRecordSchema
     ),
     defaultValues: {
-      parents: locationIsSchedule ? [] : [
-        {
-          parentFirstName: "",
-          parentLastName: "",
-          parentContactNumber: "",
-          isMainApplicant: true,
-        },
-      ],
+      parents: locationIsSchedule
+        ? []
+        : [
+            {
+              parentFirstName: "",
+              parentLastName: "",
+              parentContactNumber: "",
+              isMainApplicant: true,
+            },
+          ],
       children: [
         {
           childFirstName: "",
@@ -67,17 +69,18 @@ const AddRecord = ({ eventId }) => {
 
     const submitData = {
       event: eventId,
-      parents: parents?.map((parent) => ({
-        parentFirstName: parent.parentFirstName,
-        parentLastName: parent.parentLastName,
-        parentContactNumber: parent.parentContactNumber,
-        isMainApplicant: parent.isMainApplicant,
-      })) || [],
+      parents:
+        parents?.map((parent) => ({
+          parentFirstName: parent.parentFirstName,
+          parentLastName: parent.parentLastName,
+          parentContactNumber: parent.parentContactNumber,
+          isMainApplicant: parent.isMainApplicant,
+        })) || [],
       children: children.map((child) => ({
         childFirstName: child.childFirstName,
         childLastName: child.childLastName,
       })),
-      registered_by: userData?.id
+      registered_by: userData?.id,
     };
 
     registerAttendance(submitData);
@@ -124,8 +127,6 @@ const AddRecord = ({ eventId }) => {
       childLastName: "",
     });
   };
-
-  console.log(userData?.id)
 
   return (
     <Dialog open={openDialog} onOpenChange={setOpenDialog}>

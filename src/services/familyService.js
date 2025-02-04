@@ -375,9 +375,6 @@ export const deleteChild = async (childId) => {
 };
 
 export const fetchFamilies = async ({ page, pageSize, search }) => {
-
-  
-
   const select = `
     id,
     users(id, first_name, last_name, contact_number),
@@ -393,23 +390,22 @@ export const fetchFamilies = async ({ page, pageSize, search }) => {
   // Add search filter using the JOINED users table
   if (search) {
     const { data: users, error: usersError } = await supabase
-  .from("users")
-  .select("id")
-  .or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%`);
+      .from("users")
+      .select("id")
+      .or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%`);
 
-if (usersError) {
-  console.error("Error fetching users:", usersError.message);
-  return null;
-}
+    if (usersError) {
+      console.error("Error fetching users:", usersError.message);
+      return null;
+    }
 
-if (!users || users.length === 0) {
-  return [];
-}
+    if (!users || users.length === 0) {
+      return [];
+    }
 
-const userIds = users.map(user => user.id);
+    const userIds = users.map((user) => user.id);
 
     filters.in = { column: "user_id", value: userIds };
-    
   }
 
   const paginatedData = await paginate({
@@ -419,7 +415,6 @@ const userIds = users.map(user => user.id);
     select,
     filters,
   });
-
 
   return paginatedData;
 };

@@ -44,7 +44,7 @@ const ParentMemberCard = ({ name, id, onAttend, isPending }) => (
   <div className="mb-2 flex items-center justify-between rounded-xl bg-primary px-3 py-2">
     <Label>{name}</Label>
     <AttendeeButton onClick={() => onAttend(id)} isPending={isPending}>
-      Add to Attendees
+      Add
     </AttendeeButton>
   </div>
 );
@@ -67,7 +67,7 @@ const ChildMemberCard = ({ name, id, onAttend, isPending }) => (
       <Label>{name}</Label>
     </div>
     <AttendeeButton onClick={() => onAttend(id)} isPending={isPending}>
-      Add to Attendees
+      Add
     </AttendeeButton>
   </div>
 );
@@ -102,7 +102,7 @@ const RegisteredAttendees = ({ attendees, onCancelAttendance, isPending }) => (
           onClick={() => onCancelAttendance(attendee.attendee_id)}
           disabled={isPending}
         >
-          Cancel Attendance
+          Remove
           <Icon icon="mingcute:minus-circle-fill" width="20" height="20" />
         </Button>
       </div>
@@ -139,8 +139,6 @@ const FamilyData = ({ userId, selectedEvent }) => {
     isLoading: familyLoading,
     error,
   } = useFamilyData(); // Fetch family
-
-  console.log("selectedEvent",selectedEvent)
 
   const { mutate: removeAttendee, isPending: isRemovingAttendee } =
     useRemoveAttendee(); // Remove attendee
