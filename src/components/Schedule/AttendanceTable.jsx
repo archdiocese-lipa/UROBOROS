@@ -25,9 +25,12 @@ const AttendanceTable = ({
   onSubmit,
   attendeeType,
   onRowAttend,
+  updateTimeOut
 }) => {
+
   return (
-    <Table>
+    <div>
+     { attendance.length > 0  && <Table>
       <TableHeader className="bg-primary">
         <TableRow>
           <TableHead className="rounded-l-lg">
@@ -41,8 +44,8 @@ const AttendanceTable = ({
             </Popover>
           </TableHead>
           <TableHead>Name</TableHead>
-          <TableHead>Time</TableHead>
-
+          <TableHead>Time In</TableHead>
+          <TableHead>Time Out</TableHead>
           {attendeeType === "parents" && <TableHead>Contact</TableHead>}
 
           <TableHead>Action</TableHead>
@@ -70,7 +73,7 @@ const AttendanceTable = ({
             <TableCell className="py-1 md:p-4">
               <Switch
                 defaultChecked={attendee.attended}
-                disabled={disableSchedule}
+                disabled={disableSchedule ||  attendee.time_out}
                 onCheckedChange={(state) => onRowAttend(attendee?.id, state)}
               />
             </TableCell>
@@ -86,7 +89,25 @@ const AttendanceTable = ({
                     minute: "2-digit",
                     hour12: true,
                   })
-                : "--/--"}
+                : "--:--"}
+            </TableCell>
+
+            <TableCell className="text-nowrap p-1 md:p-4">
+              {attendee.time_out
+                ? new Date(attendee.time_out).toLocaleTimeString("en-GB", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: true,
+                  })
+                : attendee.time_attended ? (
+                    <Icon
+                      onClick={() =>
+                        updateTimeOut(attendee?.id)
+                      }
+                      className="h-5 w-5 hover:cursor-pointer"
+                      icon="mingcute:exit-line"
+                    />
+                  ): <p>--:--</p>}
             </TableCell>
 
             {attendee.attendee_type === "parents" && (
@@ -107,7 +128,8 @@ const AttendanceTable = ({
           </TableRow>
         ))}
       </TableBody>
-    </Table>
+    </Table>}
+    </div>
   );
 };
 
@@ -126,6 +148,7 @@ AttendanceTable.propTypes = {
   onSubmit: PropTypes.func.isRequired,
   onRowAttend: PropTypes.func.isRequired,
   attendeeType: PropTypes.string,
+  updateTimeOut: PropTypes.func.isRequired
 };
 
 export default memo(AttendanceTable);

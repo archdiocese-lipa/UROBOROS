@@ -43,11 +43,11 @@ const useRoleSwitcher = () => {
     if (userData?.role === ROLES[1]) {
       if (temporaryRole === ROLES[1]) {
         // Exclude volunteer and show parishioner
-        return role.value !== ROLES[1] && role.value !== ROLES[0];
+        return role.value !== ROLES[1] && role.value !== ROLES[0] && role.value !== ROLES[4];
       }
       if (temporaryRole === ROLES[2]) {
         // Exclude parishioner and show volunteer
-        return role.value !== ROLES[2] && role.value !== ROLES[0];
+        return role.value !== ROLES[2] && role.value !== ROLES[0] && role.value !== ROLES[4];
       }
     } else if (userData?.role === ROLES[2]) {
       // Do not return any role

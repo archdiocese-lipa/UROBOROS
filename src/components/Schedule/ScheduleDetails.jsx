@@ -44,6 +44,7 @@ import {
   updateAttendeeStatus,
   countEventAttendance,
   editAttendee,
+  updateTimeOut,
 } from "@/services/attendanceService";
 
 import { useUser } from "@/context/useUser";
@@ -74,7 +75,6 @@ import AttendanceTable from "./AttendanceTable";
 import useRoleSwitcher from "@/hooks/useRoleSwitcher";
 import { ROLES } from "@/constants/roles";
 import AddExistingRecord from "./AddExistingRecord";
-import AddFromRecord from "./AddFromRecord";
 
 const ScheduleDetails = () => {
   const [qrCode, setQRCode] = useState(null);
@@ -246,10 +246,16 @@ const ScheduleDetails = () => {
       await updateAttendeeStatus(attendeeId, state);
 
       // Invalidate the related query to refetch fresh data
-      queryClient.invalidateQueries(["attendance"]);
+      queryClient.invalidateQueries(["attendance", eventId]);
     } catch (error) {
       console.error("Error updating attendee status:", error);
     }
+  };
+
+  const onTimeOut = async (attendeeId) => {
+    await updateTimeOut(attendeeId);
+
+    queryClient.invalidateQueries(["attendance", eventId]);
   };
 
   const handleDownloadExcel = () => {
@@ -391,7 +397,6 @@ const ScheduleDetails = () => {
     return <p>No Events.</p>;
   }
 
-
   return (
     <div className="no-scrollbar flex h-full grow flex-col gap-2 overflow-y-scroll px-3 py-2 md:px-9 md:py-6">
       <div className="flex flex-wrap justify-between">
@@ -421,14 +426,17 @@ const ScheduleDetails = () => {
         </div>
         <div className="flex">
           <div className="flex flex-wrap gap-1">
-            {!disableSchedule && temporaryRole === "admin" && (
+            {!disableSchedule && (
               <div className="flex gap-1">
-                <AddExistingRecord eventId={eventId} />
-                <AddRecord eventId={eventId} />
-                <AddFromRecord
-                  eventId={eventId}
-                  event_name={event.event_name}
-                />
+                {(temporaryRole === "admin" ||
+                  temporaryRole === "volunteer") && (
+                  <AddExistingRecord eventId={eventId} />
+                )}
+                {(temporaryRole === "admin" ||
+                  temporaryRole === "volunteer") && (
+                  <AddRecord eventId={eventId} />
+                )}
+
                 <Dialog onOpenChange={generateQRCode}>
                   <DialogTrigger asChild>
                     <Button>
@@ -698,6 +706,7 @@ const ScheduleDetails = () => {
               </div>
             </div>
             <AttendanceTable
+              updateTimeOut={onTimeOut}
               onSubmit={onSubmit}
               attendeeType={"parents"}
               disableSchedule={disableSchedule}
@@ -709,6 +718,7 @@ const ScheduleDetails = () => {
               <h3 className="text-xl font-semibold text-accent">Children</h3>
             </div>
             <AttendanceTable
+               updateTimeOut={onTimeOut}
               onSubmit={onSubmit}
               disableSchedule={disableSchedule}
               attendance={filteredChildAttendance}
@@ -755,6 +765,7 @@ const ScheduleDetails = () => {
                   <ParentAddLogs family_id={family.family_id} />
                 </div>
                 <AttendanceTable
+                  updateTimeOut={onTimeOut}
                   onSubmit={onSubmit}
                   attendeeType="parents"
                   disableSchedule={disableSchedule}
@@ -777,6 +788,7 @@ const ScheduleDetails = () => {
                 </div>
 
                 <AttendanceTable
+                   updateTimeOut={onTimeOut}
                   onSubmit={onSubmit}
                   disableSchedule={disableSchedule}
                   attendance={family.children}

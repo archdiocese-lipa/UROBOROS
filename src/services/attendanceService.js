@@ -496,6 +496,32 @@ const updateAttendeeStatus = async (attendeeID, state) => {
   }
 };
 
+export const updateTimeOut = async (attendeeID) => {
+  try {
+  
+      const time_out = new Date().toISOString() 
+
+
+    const { data, error } = await supabase
+      .from("attendance")
+      .update({time_out})
+      .eq("id", attendeeID)
+      .select()
+      .single();
+
+    if (error) {
+      console.error(error);
+      throw new Error(error);
+    }
+
+    return data;
+  } catch (error) {
+    console.error(error);
+    throw new Error(error);
+  }
+};
+
+
 const countEventAttendance = async (eventId) => {
   try {
     const { count: totalCount, error } = await supabase
@@ -568,6 +594,8 @@ const insertNewRecord = async (submittedData) => {
           attendee.type === "parents" ? attendee.main_applicant : false,
         first_name: attendee.first_name,
         last_name: attendee.last_name,
+        time_attended: new Date().toISOString(),
+        attended: true,
         contact_number: attendee.contact_number,
         family_id: attendee.family_id,
         registration_code: attendee.registration_code,
