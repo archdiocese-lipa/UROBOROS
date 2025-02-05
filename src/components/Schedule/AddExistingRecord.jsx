@@ -11,16 +11,26 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "../ui/input";
-import { getAttendee, searchAttendee } from "@/services/attendanceService";
+import {
+  getAttendee,
+  searchAttendee,
+  updateAttendeeStatus,
+} from "@/services/attendanceService";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Label } from "../ui/label";
 import useInterObserver from "@/hooks/useInterObserver";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
+import { Switch } from "../ui/switch";
 
 const AddExistingRecord = ({ eventId }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const debounceSearchTerm = useDebounce(searchTerm, 500);
+  const queryClient = useQueryClient();
 
   // Fetch existing attendees
   const { data: attendanceData } = useQuery({
@@ -55,7 +65,6 @@ const AddExistingRecord = ({ eventId }) => {
       },
       initialPageParam: 1,
     });
-
   // Combine all families from all pages
   const allFamilies = useMemo(() => {
     return data?.pages?.flatMap((page) => page.families) ?? [];
@@ -64,12 +73,24 @@ const AddExistingRecord = ({ eventId }) => {
   // intersection observer for infinite scroll
   const { ref } = useInterObserver(hasNextPage ? fetchNextPage : null);
 
+  const onAttend = async (id, state) => {
+    try {
+      // Update attendee status in your database
+      await updateAttendeeStatus(id, state);
+
+      // Invalidate the related query to refetch fresh data
+      queryClient.invalidateQueries(["attendance"]);
+    } catch (error) {
+      console.error("Error updating attendee status:", error);
+    }
+  };
+
   return (
     <Dialog>
       <DialogTrigger asChild>
         <Button>Add from Record</Button>
       </DialogTrigger>
-      <DialogContent className="no-scrollbar h-[35rem] overflow-y-scroll sm:max-w-[625px]">
+      <DialogContent className="no-scrollbar block h-[35rem] overflow-y-scroll sm:max-w-[625px]">
         <DialogHeader>
           <DialogTitle>Add from Existing Record</DialogTitle>
           <DialogDescription>
@@ -94,79 +115,94 @@ const AddExistingRecord = ({ eventId }) => {
             </div>
           ) : (
             <>
-              {allFamilies.map((family) => (
-                <div
-                  key={family.familyId}
-                  className="rounded-lg bg-primary p-4"
-                >
-                  {/* Parents Section */}
-                  {family.parents?.length > 0 && (
-                    <div className="space-y-2">
-                      <Label className="text-primary-text">
-                        Parents/Guardians
-                      </Label>
-                      <ul className="space-y-2">
-                        {family.parents.map((parent) => (
-                          <li
-                            key={parent.id}
-                            className="rounded-lg bg-white px-5 py-3 text-primary-text"
-                          >
-                            <div className="flex items-center justify-between">
-                              <Label>
-                                {parent.first_name} {parent.last_name}
-                              </Label>
-                              <Button
-                                className={cn(
-                                  "rounded-xl text-[12px]",
-                                  existingAttendees.has(parent.id)
-                                    ? "bg-red-100 text-red-600"
-                                    : "bg-[#EFDED6] text-primary-text"
+              {allFamilies.length === 0 ? (
+                <Label className="flex items-center justify-center">
+                  No data found
+                </Label>
+              ) : (
+                allFamilies.map((family) => (
+                  <div
+                    key={family.familyId}
+                    className="rounded-lg bg-primary p-4"
+                  >
+                    {/* Parents Section */}
+                    {family.parents?.length > 0 && (
+                      <div className="space-y-2">
+                        <Label className="text-primary-text">
+                          Parents/Guardians
+                        </Label>
+                        <ul className="space-y-2">
+                          {family.parents.map((parent) => (
+                            <li
+                              key={parent.id}
+                              className="rounded-lg bg-white px-5 py-3 text-primary-text"
+                            >
+                              <div className="flex items-center justify-between">
+                                {existingAttendees.has(parent.id) && <Switch />}
+                                <Label>
+                                  {parent.first_name} {parent.last_name}
+                                </Label>
+                                <Button
+                                  className={cn(
+                                    "rounded-xl text-[12px]",
+                                    existingAttendees.has(parent.id)
+                                      ? "bg-red-100 text-red-600"
+                                      : "bg-[#EFDED6] text-primary-text"
+                                  )}
+                                >
+                                  {existingAttendees.has(parent.id)
+                                    ? "Remove"
+                                    : "Add"}
+                                </Button>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {/* Children Section */}
+                    {family.children?.length > 0 && (
+                      <div className="space-y-2">
+                        <Label className="text-primary-text">Children</Label>
+                        <ul className="space-y-2">
+                          {family.children.map((child) => (
+                            <li
+                              key={child.id}
+                              className="rounded-lg bg-white px-5 py-3 text-primary-text"
+                            >
+                              <div className="flex items-center justify-between">
+                                {existingAttendees.has(child.id) && (
+                                  <Switch
+                                    defaultChecked={child.attended}
+                                    onCheckedChange={(state) =>
+                                      onAttend(child?.id, state)
+                                    }
+                                  />
                                 )}
-                              >
-                                {existingAttendees.has(parent.id)
-                                  ? "Remove"
-                                  : "Add"}
-                              </Button>
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  {/* Children Section */}
-                  {family.children?.length > 0 && (
-                    <div className="space-y-2">
-                      <Label className="text-primary-text">Children</Label>
-                      <ul className="space-y-2">
-                        {family.children.map((child) => (
-                          <li
-                            key={child.id}
-                            className="rounded-lg bg-white px-5 py-3 text-primary-text"
-                          >
-                            <div className="flex items-center justify-between">
-                              <Label>
-                                {child.first_name} {child.last_name}
-                              </Label>
-                              <Button
-                                className={cn(
-                                  "rounded-xl text-[12px]",
-                                  existingAttendees.has(child.id)
-                                    ? "bg-red-100 text-red-600"
-                                    : "bg-[#EFDED6] text-primary-text"
-                                )}
-                              >
-                                {existingAttendees.has(child.id)
-                                  ? "Remove"
-                                  : "Add"}
-                              </Button>
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              ))}
+                                <Label>
+                                  {child.first_name} {child.last_name}
+                                </Label>
+                                <Button
+                                  className={cn(
+                                    "rounded-xl text-[12px]",
+                                    existingAttendees.has(child.id)
+                                      ? "bg-red-100 text-red-600"
+                                      : "bg-[#EFDED6] text-primary-text"
+                                  )}
+                                >
+                                  {existingAttendees.has(child.id)
+                                    ? "Remove"
+                                    : "Add"}
+                                </Button>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
               {/* div for intersection observer */}
               {hasNextPage && (
                 <div ref={ref} className="h-4">
