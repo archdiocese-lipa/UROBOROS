@@ -164,12 +164,11 @@ const getEventAttendance = async (eventId) => {
 
     // Group attendance data by family_id
     const groupedData = attendanceData.reduce((acc, record) => {
-      const { family_id, attendee_type,main_applicant,last_name } = record;
-     
+      const { family_id, attendee_type, main_applicant, last_name } = record;
+
       // Find or create a family group
       let familyGroup = acc.find((group) => group.family_id === family_id);
       if (!familyGroup) {
-       
         familyGroup = {
           family_id,
           family_surname: null,
@@ -376,7 +375,6 @@ export const insertChildren = async (childData) => {
 
   // If no previous attendance record is found, insert a new history record
   if (!existingHistoryAttendees) {
-    console.log("adding to history");
     const { error: insertHistoryError } = await supabase
       .from("previous_attendees")
       .insert([
@@ -498,13 +496,11 @@ const updateAttendeeStatus = async (attendeeID, state) => {
 
 export const updateTimeOut = async (attendeeID) => {
   try {
-  
-      const time_out = new Date().toISOString() 
-
+    const time_out = new Date().toISOString();
 
     const { data, error } = await supabase
       .from("attendance")
-      .update({time_out})
+      .update({ time_out })
       .eq("id", attendeeID)
       .select()
       .single();
@@ -520,7 +516,6 @@ export const updateTimeOut = async (attendeeID) => {
     throw new Error(error);
   }
 };
-
 
 const countEventAttendance = async (eventId) => {
   try {
@@ -743,8 +738,6 @@ const addSingleAttendee = async ({
   attendee_type,
   event_id,
 }) => {
-  // console.log("backend",attendeeData,family_id, editedby_id)
-
   const { data, error } = await supabase
     .from("attendance")
     .insert([{ ...attendeeData, family_id, attendee_type, event_id }])
@@ -961,6 +954,87 @@ const getAttendee = async (eventId) => {
   }
 };
 
+const removeAttendeeFromRecord = async (attendeeId, eventId) => {
+  try {
+    const { data, error } = await supabase
+      .from("attendance")
+      .delete()
+      .eq("attendee_id", attendeeId)
+      .eq("event_id", eventId);
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error in removeAttendee:", error);
+    throw new Error(error.message || "Failed to remove attendee");
+  }
+};
+
+const addSingleAttendeeFromRecord = async (attendeeDetails) => {
+  try {
+    const { data, error } = await supabase
+      .from("attendance")
+      .insert([
+        {
+          attendee_id: attendeeDetails.attendee.id,
+          first_name: attendeeDetails.attendee.first_name,
+          last_name: attendeeDetails.attendee.last_name,
+          event_id: attendeeDetails.event.id,
+          family_id: attendeeDetails.family.id,
+          contact_number: attendeeDetails.attendee.contact,
+          attendee_type: attendeeDetails.attendee.type,
+          attended: attendeeDetails.attended,
+          time_attended: attendeeDetails.time_attended,
+          registered_by: attendeeDetails.registered_by,
+        },
+      ])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error("Error in addSingleAttendee:", error);
+    throw error;
+  }
+};
+
+const updateAttendee = async (attendeeId, eventId, state) => {
+  try {
+    // Validate parameters
+    if (!attendeeId || !eventId) {
+      throw new Error("Missing required parameters");
+    }
+
+    const update = {
+      attended: state,
+      time_attended: state ? new Date().toISOString() : null,
+    };
+
+    const { data, error } = await supabase
+      .from("attendance")
+      .update(update)
+      .match({
+        attendee_id: attendeeId,
+        event_id: eventId,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error in updateAttendee:", error);
+    throw new Error(error.message || "Failed to update attendance");
+  }
+};
+
 export {
   fetchChildrenAttendanceHistory,
   fetchParentAttendanceHistory,
@@ -977,4 +1051,7 @@ export {
   removeAttendee,
   searchAttendee,
   getAttendee,
+  updateAttendee,
+  removeAttendeeFromRecord,
+  addSingleAttendeeFromRecord,
 };

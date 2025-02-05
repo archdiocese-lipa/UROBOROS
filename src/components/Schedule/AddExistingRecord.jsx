@@ -12,9 +12,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "../ui/input";
 import {
+  addSingleAttendeeFromRecord,
   getAttendee,
+  removeAttendeeFromRecord,
   searchAttendee,
-  updateAttendeeStatus,
+  updateAttendee,
 } from "@/services/attendanceService";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Label } from "../ui/label";
@@ -24,13 +26,15 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { cn } from "@/lib/utils";
 import { Switch } from "../ui/switch";
+import { useUser } from "@/context/useUser";
 
 const AddExistingRecord = ({ eventId }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const debounceSearchTerm = useDebounce(searchTerm, 500);
   const queryClient = useQueryClient();
+  const userData = useUser();
+  const userId = userData?.userData?.id;
 
   // Fetch existing attendees
   const { data: attendanceData } = useQuery({
@@ -40,12 +44,21 @@ const AddExistingRecord = ({ eventId }) => {
   });
 
   // Track existing attendees
-  const existingAttendees = useMemo(() => {
-    if (!attendanceData) return new Set();
-    return new Set(attendanceData.map((a) => a.attendee_id));
+  const { existingAttendees, attendanceStatus } = useMemo(() => {
+    if (!attendanceData) {
+      return {
+        existingAttendees: new Set(),
+        attendanceStatus: new Map(),
+      };
+    }
+    return {
+      existingAttendees: new Set(attendanceData.map((a) => a.attendee_id)),
+      attendanceStatus: new Map(
+        attendanceData.map((a) => [a.attendee_id, a.attended])
+      ),
+    };
   }, [attendanceData]);
-
-  // Update infinite query configuration with debug logs
+  // Update infinite query configuration
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
     useInfiniteQuery({
       queryKey: ["search-attendees", debounceSearchTerm],
@@ -70,20 +83,71 @@ const AddExistingRecord = ({ eventId }) => {
     return data?.pages?.flatMap((page) => page.families) ?? [];
   }, [data?.pages]);
 
-  // intersection observer for infinite scroll
-  const { ref } = useInterObserver(hasNextPage ? fetchNextPage : null);
-
-  const onAttend = async (id, state) => {
+  const addAttendee = async (
+    attendeeId,
+    firstName,
+    lastName,
+    eventId,
+    familyId,
+    contactNumber,
+    attendeeType
+  ) => {
     try {
-      // Update attendee status in your database
-      await updateAttendeeStatus(id, state);
+      const attendeeDetails = {
+        attendee: {
+          id: attendeeId,
+          first_name: firstName,
+          last_name: lastName,
+          contact: contactNumber,
+          type: attendeeType,
+        },
+        event: {
+          id: eventId,
+        },
+        family: {
+          id: familyId,
+        },
+        time_attended: new Date().toISOString(),
+        attended: true,
+        registered_by: userId,
+      };
+      await addSingleAttendeeFromRecord(attendeeDetails);
+      await queryClient.invalidateQueries(["event-attendance", eventId]);
+      await queryClient.invalidateQueries(["search-attendees"]);
+    } catch (error) {
+      console.error("Error adding attendee:", error);
+    }
+  };
 
-      // Invalidate the related query to refetch fresh data
-      queryClient.invalidateQueries(["attendance"]);
+  const removeAttendance = async (attendeeId) => {
+    try {
+      await removeAttendeeFromRecord(attendeeId, eventId);
+
+      // Refresh queries
+      await queryClient.invalidateQueries(["event-attendance", eventId]);
+      await queryClient.invalidateQueries(["search-attendees"]);
+    } catch (error) {
+      console.error("Error removing attendee:", error);
+    }
+  };
+
+  const onAttend = async (attendeeId, state) => {
+    try {
+      // Fix parameter order - eventId first, then state
+      await updateAttendee(attendeeId, eventId, state);
+
+      // Update query key to match the one used in useQuery
+      await queryClient.invalidateQueries(["attendance", eventId]);
+      await queryClient.invalidateQueries({
+        queryKey: ["search-attendees"],
+      });
     } catch (error) {
       console.error("Error updating attendee status:", error);
     }
   };
+
+  // intersection observer for infinite scroll
+  const { ref } = useInterObserver(hasNextPage ? fetchNextPage : null);
 
   return (
     <Dialog>
@@ -107,7 +171,6 @@ const AddExistingRecord = ({ eventId }) => {
             />
           </div>
         </DialogHeader>
-
         <div className="mt-4 space-y-4">
           {isLoading ? (
             <div className="flex justify-center">
@@ -138,22 +201,46 @@ const AddExistingRecord = ({ eventId }) => {
                               className="rounded-lg bg-white px-5 py-3 text-primary-text"
                             >
                               <div className="flex items-center justify-between">
-                                {existingAttendees.has(parent.id) && <Switch />}
+                                {existingAttendees.has(parent.id) && (
+                                  <Switch
+                                    checked={attendanceStatus.get(parent.id)}
+                                    onCheckedChange={(checked) =>
+                                      onAttend(parent.id, checked)
+                                    }
+                                  />
+                                )}
                                 <Label>
                                   {parent.first_name} {parent.last_name}
                                 </Label>
-                                <Button
-                                  className={cn(
-                                    "rounded-xl text-[12px]",
-                                    existingAttendees.has(parent.id)
-                                      ? "bg-red-100 text-red-600"
-                                      : "bg-[#EFDED6] text-primary-text"
+                                <div>
+                                  {existingAttendees.has(parent.id) ? (
+                                    <Button
+                                      onClick={() =>
+                                        removeAttendance(parent.id)
+                                      }
+                                      className="rounded-xl bg-red-100 text-[12px] text-red-600"
+                                    >
+                                      Remove
+                                    </Button>
+                                  ) : (
+                                    <Button
+                                      onClick={() =>
+                                        addAttendee(
+                                          parent.id,
+                                          parent.first_name,
+                                          parent.last_name,
+                                          eventId,
+                                          parent.family_id,
+                                          parent.contact_number,
+                                          (parent.attendee_type = "parents")
+                                        )
+                                      }
+                                      className="rounded-xl bg-[#EFDED6] text-[12px] text-primary-text"
+                                    >
+                                      Add
+                                    </Button>
                                   )}
-                                >
-                                  {existingAttendees.has(parent.id)
-                                    ? "Remove"
-                                    : "Add"}
-                                </Button>
+                                </div>
                               </div>
                             </li>
                           ))}
@@ -173,27 +260,42 @@ const AddExistingRecord = ({ eventId }) => {
                               <div className="flex items-center justify-between">
                                 {existingAttendees.has(child.id) && (
                                   <Switch
-                                    defaultChecked={child.attended}
-                                    onCheckedChange={(state) =>
-                                      onAttend(child?.id, state)
+                                    checked={attendanceStatus.get(child.id)}
+                                    onCheckedChange={(checked) =>
+                                      onAttend(child.id, checked)
                                     }
                                   />
                                 )}
                                 <Label>
                                   {child.first_name} {child.last_name}
                                 </Label>
-                                <Button
-                                  className={cn(
-                                    "rounded-xl text-[12px]",
-                                    existingAttendees.has(child.id)
-                                      ? "bg-red-100 text-red-600"
-                                      : "bg-[#EFDED6] text-primary-text"
+                                <div>
+                                  {existingAttendees.has(child.id) ? (
+                                    <Button
+                                      onClick={() => removeAttendance(child.id)}
+                                      className="rounded-xl bg-red-100 text-[12px] text-red-600"
+                                    >
+                                      Remove
+                                    </Button>
+                                  ) : (
+                                    <Button
+                                      onClick={() =>
+                                        addAttendee(
+                                          child.id,
+                                          child.first_name,
+                                          child.last_name,
+                                          eventId,
+                                          child.family_id,
+                                          child.contact_number,
+                                          (parent.attendee_type = "children")
+                                        )
+                                      }
+                                      className="rounded-xl bg-[#EFDED6] text-[12px] text-primary-text"
+                                    >
+                                      Add
+                                    </Button>
                                   )}
-                                >
-                                  {existingAttendees.has(child.id)
-                                    ? "Remove"
-                                    : "Add"}
-                                </Button>
+                                </div>
                               </div>
                             </li>
                           ))}
