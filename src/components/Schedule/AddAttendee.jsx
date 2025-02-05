@@ -54,9 +54,19 @@ const AddAttendee = ({
     },
   });
 
+  const addParentSchema = parentSchema.omit({
+    time_attended:true,
+    time_out: true
+  })
+
+  const addChild = childSchema.omit({
+    time_attended:true,
+    time_out: true
+  })
+
   const form = useForm({
     resolver: zodResolver(
-      attendee_type === "parents" ? parentSchema : childSchema
+      attendee_type === "parents" ? addParentSchema : addChild
     ),
     defaultValues: {
       first_name: "",
@@ -66,6 +76,7 @@ const AddAttendee = ({
   });
 
   const onSubmit = (attendeeData) => {
+
     addAttendeeMutation.mutate({
       attendeeData,
       family_id,

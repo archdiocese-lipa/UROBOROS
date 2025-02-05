@@ -6,6 +6,12 @@ import * as z from "zod";
   contact_number: z.string().regex(/^[0-9]{11}$/, {
     message: "Contact number must be exactly 11 digits.",
   }),
+  time_attended: z.string().regex(/^\d{2}:\d{2}$/, {
+    message: "Time must be in HH:mm format",
+  }),
+  time_out: z.string().regex(/^\d{2}:\d{2}$/, {
+    message: "Time must be in HH:mm format",
+  }),
 });
  const childSchema = parentSchema.omit({ contact_number: true });
 
