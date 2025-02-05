@@ -807,11 +807,11 @@ const searchAttendee = async ({ searchTerm, page = 1, pageSize = 4 }) => {
     const [parentsResult, childrenResult] = await Promise.all([
       supabase
         .from("parents")
-        .select("*")
+        .select("first_name, last_name, family_id")
         .or(`first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%`),
       supabase
         .from("children")
-        .select("*")
+        .select("first_name, last_name, family_id")
         .or(`first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%`),
     ]);
 
