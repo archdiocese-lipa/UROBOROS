@@ -30,10 +30,18 @@ const App = () => {
         {/* Protected Routes */}
         <Route element={<MainLayout />}>
           {/* ========================================================= */}
-          {/* Only Admin can access the routes below */}
-          <Route element={<RequireRole roles={[ROLES[0]]} />}>
+          {/* Only Admin and Super Admin can access the routes below */}
+          <Route element={<RequireRole roles={[ROLES[0], ROLES[4]]} />}>
             <Route path="/dashboard" element={<Dashboard />} />
+          </Route>
+          {/* ========================================================= */}
+          {/* Admin and superadmin can access the routes below */}
+          <Route element={<RequireRole roles={[ROLES[4],ROLES[0]]} />}>
             <Route path="/ministries" element={<Ministries />} />
+          </Route>
+            {/* ========================================================= */}
+           {/* Only superadmin can access the routes below */}
+          <Route element={<RequireRole roles={[ROLES[0],ROLES[4]]} />}>
             <Route path="/requests" element={<Requests />} />
           </Route>
           {/* ========================================================= */}

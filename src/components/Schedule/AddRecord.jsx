@@ -28,28 +28,68 @@ import { addRecordSchema } from "@/zodSchema/Schedule/AddRecordSchema";
 import useAddRecord from "@/hooks/Schedule/useAddRecord";
 import { useLocation } from "react-router-dom";
 import { useUser } from "@/context/useUser";
+import { z } from "zod";
 
 const AddRecord = ({ eventId }) => {
   const [openDialog, setOpenDialog] = useState(false);
   const location = useLocation();
-  const {userData} = useUser();
+  const { userData } = useUser();
   const locationIsSchedule = location.pathname === "/schedule";
-  const addRecordByAdmin = addRecordSchema.pick({
-    children: true,
+  const addRecordByAdmin = z.object({
+    parents: z
+      .array(
+        z.object({
+          parentFirstName: z.string().min(1, "Parent's first name is required"),
+          parentLastName: z.string().min(1, "Parent's last name is required"),
+          parentContactNumber: z
+            .string()
+            .min(1, "Parent's contact number is required")
+            .regex(/^[0-9]{11}$/, "Contact number must be exactly 11 digits."),
+          isMainApplicant: z.boolean(),
+        })
+      )
+      .optional()
+    .refine(
+      (parents) => {
+        // Skip validation if no parents or empty array
+        if (!parents || parents.length === 0) return true;
+
+        // Validate that there is exactly one main applicant
+        const mainApplicants = parents.filter((parent) => parent.isMainApplicant);
+        return mainApplicants.length === 1;
+      },
+      {
+        message: "There must be exactly one main applicant",
+        path: ["parents"],
+      }
+    ),
+    children: z
+      .array(
+        z.object({
+          childFirstName: z.string().min(1, "Child's first name is required"), // Child first name is required
+          childLastName: z.string().min(1, "Child's last name is required"), // Child last name is required
+        })
+      )
+      .min(1, "At least one child is required"),
   });
+
+
+
   const form = useForm({
     resolver: zodResolver(
       locationIsSchedule ? addRecordByAdmin : addRecordSchema
     ),
     defaultValues: {
-      parents: locationIsSchedule ? [] : [
-        {
-          parentFirstName: "",
-          parentLastName: "",
-          parentContactNumber: "",
-          isMainApplicant: true,
-        },
-      ],
+      parents: locationIsSchedule
+        ? []
+        : [
+            {
+              parentFirstName: "",
+              parentLastName: "",
+              parentContactNumber: "",
+              isMainApplicant: true,
+            },
+          ],
       children: [
         {
           childFirstName: "",
@@ -67,18 +107,21 @@ const AddRecord = ({ eventId }) => {
 
     const submitData = {
       event: eventId,
-      parents: parents?.map((parent) => ({
-        parentFirstName: parent.parentFirstName,
-        parentLastName: parent.parentLastName,
-        parentContactNumber: parent.parentContactNumber,
-        isMainApplicant: parent.isMainApplicant,
-      })) || [],
+      parents:
+        parents?.map((parent) => ({
+          parentFirstName: parent.parentFirstName,
+          parentLastName: parent.parentLastName,
+          parentContactNumber: parent.parentContactNumber,
+          isMainApplicant: parent.isMainApplicant,
+        })) || [],
       children: children.map((child) => ({
         childFirstName: child.childFirstName,
         childLastName: child.childLastName,
       })),
-      registered_by: userData?.id
+      registered_by: userData?.id,
     };
+
+
 
     registerAttendance(submitData);
 
@@ -124,8 +167,6 @@ const AddRecord = ({ eventId }) => {
       childLastName: "",
     });
   };
-
-  console.log(userData?.id)
 
   return (
     <Dialog open={openDialog} onOpenChange={setOpenDialog}>
@@ -232,18 +273,22 @@ const AddRecord = ({ eventId }) => {
                   />
 
                   {/* Remove Button for each parent field */}
-                  {parentFields.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => removeParent(index)}
-                    >
-                      Remove
-                    </Button>
-                  )}
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => removeParent(index)}
+                  >
+                    Remove
+                  </Button>
                 </div>
               ))}
               {/* Button to add another parent/guardian */}
+              {form?.formState.errors?.parents?.parents && (
+                <p className="text-red-600">
+                  {form?.formState.errors?.parents?.parents?.message}
+                </p>
+              )}
               <div className="flex justify-end gap-2">
                 <Button type="button" size="sm" onClick={addParentField}>
                   Add

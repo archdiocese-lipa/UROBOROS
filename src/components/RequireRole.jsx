@@ -1,12 +1,10 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
 import { useUser } from "@/context/useUser";
-
 import { getUser } from "@/services/userService";
-import { ROLES } from "@/constants/roles";
 import { supabase } from "@/services/supabaseClient";
 
 const BASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -18,6 +16,7 @@ const RequireRole = ({ roles }) => {
   const nav = useNavigate();
   const loc = useLocation();
   const { setUserData, logout } = useUser();
+  const [isAuthorized, setIsAuthorized] = useState(null); 
 
   const { data, isSuccess } = useQuery({
     queryKey: ["user"],
@@ -32,16 +31,13 @@ const RequireRole = ({ roles }) => {
     const handleAuthStateChange = async () => {
       supabase.auth.onAuthStateChange((event) => {
         if (event === "PASSWORD_RECOVERY") {
-          // Redirect to reset password screen
           nav("/reset-password");
           return;
         }
       });
 
       const { data: sessionData } = await supabase.auth.getSession();
-
       if (!sessionData.session && !auth) {
-        // No session or auth token, redirect to login
         nav("/", {
           replace: true,
           state: { from: loc.pathname || "/announcements" },
@@ -52,28 +48,26 @@ const RequireRole = ({ roles }) => {
     handleAuthStateChange();
 
     if (isSuccess) {
-      const tempRole = sessionStorage.getItem("temp-role");
-
-      if (tempRole && data.role === ROLES[0]) {
-        if (!roles.includes(tempRole)) {
-          nav("/announcements", { replace: true });
-        }
-
-        if (tempRole === ROLES[0]) {
-          sessionStorage.removeItem("temp-role");
-          logout();
-        }
-        data.role = tempRole;
-      }
+      const temporaryRole = localStorage.getItem("temporaryRole");
 
       setUserData(data);
 
-      if (!roles.includes(data.role)) {
-        // Authenticated but lacks required role
-        nav("/announcements", { replace: true });
+      if (!roles.includes(temporaryRole)) {
+        setIsAuthorized(false);
+      } else {
+        setIsAuthorized(true); 
       }
     }
   }, [auth, data, isSuccess, loc.pathname, logout, nav, roles, setUserData]);
+
+
+  if (isAuthorized === null) {
+    return <p>Loading...</p>; 
+  }
+
+  if (!isAuthorized) {
+    return <p>Not authorized!</p>; 
+  }
 
   return <Outlet />;
 };

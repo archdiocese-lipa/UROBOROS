@@ -1,5 +1,6 @@
 import { supabase } from "@/services/supabaseClient"; // Adjust the import to match the final location of supabaseClient
 import { v4 as uuidv4 } from "uuid";
+
 const insertEventAttendance = async (submittedData) => {
   const { randomSixDigit, event, parents, children } = submittedData;
 
@@ -152,7 +153,6 @@ const getEventAttendance = async (eventId) => {
       .order("created_at", { ascending: true })
       .order("first_name", { ascending: true })
       .order("id", { ascending: true });
-
     if (attendanceError) {
       console.error("Error fetching attendance data:", attendanceError);
       return { success: false, error: attendanceError.message };
@@ -164,14 +164,15 @@ const getEventAttendance = async (eventId) => {
 
     // Group attendance data by family_id
     const groupedData = attendanceData.reduce((acc, record) => {
-      const { family_id, attendee_type } = record;
-
+      const { family_id, attendee_type,main_applicant,last_name } = record;
+     
       // Find or create a family group
       let familyGroup = acc.find((group) => group.family_id === family_id);
       if (!familyGroup) {
+       
         familyGroup = {
           family_id,
-          family_surname: record.last_name || "Unknown",
+          family_surname: null,
           parents: [],
           children: [],
           registered_by: record.registered_by,
@@ -181,6 +182,9 @@ const getEventAttendance = async (eventId) => {
       // Categorize attendees by type
       if (attendee_type === "parents") {
         familyGroup.parents.push(record);
+        if (main_applicant) {
+          familyGroup.family_surname = last_name;
+        }
       } else if (attendee_type === "children") {
         familyGroup.children.push(record);
       }
@@ -279,8 +283,8 @@ export const insertGuardians = async (parentData) => {
 
   if (error) throw error;
 
-    // Fetch event data to get event name and other event-related details
-    const { data: eventData, error: eventError } = await supabase
+  // Fetch event data to get event name and other event-related details
+  const { data: eventData, error: eventError } = await supabase
     .from("events")
     .select("*")
     .eq("id", parentData.event_id)
@@ -293,14 +297,13 @@ export const insertGuardians = async (parentData) => {
   }
 
   // Check if this child has attended this event before
-  const { data: existingHistoryAttendees } =
-    await supabase
-      .from("previous_attendees")
-      .select("first_name, last_name")
-      .eq("event_name", eventData.event_name)
-      .eq("first_name", parentData.first_name)
-      .eq("last_name", parentData.last_name)
-      .single();
+  const { data: existingHistoryAttendees } = await supabase
+    .from("previous_attendees")
+    .select("first_name, last_name")
+    .eq("event_name", eventData.event_name)
+    .eq("first_name", parentData.first_name)
+    .eq("last_name", parentData.last_name)
+    .single();
 
   // If no previous attendance record is found, insert a new history record
   if (!existingHistoryAttendees) {
@@ -363,18 +366,16 @@ export const insertChildren = async (childData) => {
   }
 
   // Check if this child has attended this event before
-  const { data: existingHistoryAttendees } =
-    await supabase
-      .from("previous_attendees")
-      .select("first_name, last_name")
-      .eq("event_name", eventData.event_name)
-      .eq("first_name", childData.first_name)
-      .eq("last_name", childData.last_name)
-      .single();
+  const { data: existingHistoryAttendees } = await supabase
+    .from("previous_attendees")
+    .select("first_name, last_name")
+    .eq("event_name", eventData.event_name)
+    .eq("first_name", childData.first_name)
+    .eq("last_name", childData.last_name)
+    .single();
 
   // If no previous attendance record is found, insert a new history record
   if (!existingHistoryAttendees) {
-    console.log("adding to history")
     const { error: insertHistoryError } = await supabase
       .from("previous_attendees")
       .insert([
@@ -799,6 +800,138 @@ const fetchChildrenAttendanceHistory = async (event_name) => {
   return data;
 };
 
+const searchAttendee = async ({ searchTerm, page = 1, pageSize = 4 }) => {
+  try {
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize - 1;
+
+    // Step 1: Search for matching parents or children
+    const [parentsResult, childrenResult] = await Promise.all([
+      supabase
+        .from("parents")
+        .select("*")
+        .or(`first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%`),
+      supabase
+        .from("children")
+        .select("*")
+        .or(`first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%`),
+    ]);
+
+    if (parentsResult.error || childrenResult.error) {
+      throw parentsResult.error || childrenResult.error;
+    }
+
+    // Combine results and get unique family IDs
+    const familyIds = [
+      ...new Set([
+        ...parentsResult.data.map((parent) => parent.family_id),
+        ...childrenResult.data.map((child) => child.family_id),
+      ]),
+    ];
+
+    if (!familyIds.length) {
+      return { families: [], hasMore: false, page, total: 0 };
+    }
+
+    // Step 2: Fetch family groups for the matching family IDs (paginated)
+    const {
+      data: familyGroups,
+      error: groupError,
+      count,
+    } = await supabase
+      .from("family_group")
+      .select("*", { count: "exact" })
+      .in("id", familyIds)
+      .range(start, end);
+
+    if (groupError) throw groupError;
+
+    if (!familyGroups?.length) {
+      return { families: [], hasMore: false, page, total: 0 };
+    }
+
+    // Step 3: Fetch all parents and children for these family groups
+    const [parents, children] = await Promise.all([
+      supabase
+        .from("parents")
+        .select("*")
+        .in(
+          "family_id",
+          familyGroups.map((fg) => fg.id)
+        ),
+      supabase
+        .from("children")
+        .select("*")
+        .in(
+          "family_id",
+          familyGroups.map((fg) => fg.id)
+        ),
+    ]);
+
+    if (parents.error || children.error) {
+      throw parents.error || children.error;
+    }
+
+    // Step 4: Group by family_id
+    const families = familyGroups.map((fg) => ({
+      familyId: fg.id,
+      parents: parents.data?.filter((p) => p.family_id === fg.id) || [],
+      children: children.data?.filter((c) => c.family_id === fg.id) || [],
+    }));
+
+    return {
+      families,
+      hasMore: page * pageSize < count,
+      page,
+      total: count,
+    };
+  } catch (error) {
+    console.error("Error in searchAttendee:", error);
+    return { families: [], hasMore: false, page, total: 0 };
+  }
+};
+const getAttendee = async (eventId) => {
+  try {
+    // Fetch attendance records
+    const { data: attendanceData, error: attendanceError } = await supabase
+      .from("attendance")
+      .select("*")
+      .eq("event_id", eventId);
+
+    if (attendanceError) throw attendanceError;
+
+    // Extract attendee IDs and filter out null or undefined values
+    const attendeeIds = attendanceData
+      ?.map((a) => a.attendee_id)
+      .filter((id) => id !== null && id !== undefined);
+
+    if (attendeeIds.length === 0) return [];
+
+    // Fetch parents and children only if there are valid attendee IDs
+    const [parentData, childData] = await Promise.all([
+      supabase.from("parents").select("*").in("id", attendeeIds),
+      supabase.from("children").select("*").in("id", attendeeIds),
+    ]);
+
+    // Map attendance with details
+    return attendanceData.map((attendance) => {
+      const isParent = parentData.data?.find(
+        (p) => p.id === attendance.attendee_id
+      );
+      return {
+        ...attendance,
+        attendee:
+          isParent ||
+          childData.data?.find((c) => c.id === attendance.attendee_id),
+        type: isParent ? "parent" : "child",
+      };
+    });
+  } catch (error) {
+    console.error("Error in getAttendee:", error);
+    throw error;
+  }
+};
+
 export {
   fetchChildrenAttendanceHistory,
   fetchParentAttendanceHistory,
@@ -813,4 +946,6 @@ export {
   fetchAttendanceEditLogs,
   fetchAlreadyRegistered,
   removeAttendee,
+  searchAttendee,
+  getAttendee,
 };

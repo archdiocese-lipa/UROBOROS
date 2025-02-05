@@ -391,6 +391,7 @@ const ScheduleDetails = () => {
     return <p>No Events.</p>;
   }
 
+
   return (
     <div className="no-scrollbar flex h-full grow flex-col gap-2 overflow-y-scroll px-3 py-2 md:px-9 md:py-6">
       <div className="flex flex-wrap justify-between">
@@ -424,7 +425,10 @@ const ScheduleDetails = () => {
               <div className="flex gap-1">
                 <AddExistingRecord eventId={eventId} />
                 <AddRecord eventId={eventId} />
-                <AddFromRecord eventId={eventId} event_name={event.event_name} />
+                <AddFromRecord
+                  eventId={eventId}
+                  event_name={event.event_name}
+                />
                 <Dialog onOpenChange={generateQRCode}>
                   <DialogTrigger asChild>
                     <Button>
@@ -673,7 +677,7 @@ const ScheduleDetails = () => {
         </div>
       </div>
 
-      {attendance.data.length < 1 && (
+      {attendance?.data?.length < 1 && (
         <div className="flex items-center justify-center">
           <p>No Family registered yet.</p>
         </div>
@@ -719,11 +723,9 @@ const ScheduleDetails = () => {
             (parent) => parent.main_applicant
           );
 
-          const applicantName = mainApplicant
-            ? `${mainApplicant.first_name} ${mainApplicant.last_name} Family`
-            : walkInMainApplicant
-              ? `${walkInMainApplicant.first_name} ${walkInMainApplicant.last_name} Family`
-              : "Unknown ";
+          const applicantName = walkInMainApplicant
+            ? `${walkInMainApplicant.first_name} ${walkInMainApplicant.last_name} Family`
+            : `Added by ${mainApplicant.first_name} ${mainApplicant.last_name} `;
 
           return (
             <Card className="p-2" key={i}>

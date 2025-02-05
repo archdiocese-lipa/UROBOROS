@@ -45,10 +45,10 @@ const Sidebar = () => {
       <Title className="mb-12 ml-9 hidden max-w-[201px] lg:block">
         {temporaryRole === ROLES[0] && "Children's Liturgy Management Centre"}
         {temporaryRole === ROLES[1] && "Volunteer Management Centre"}
-        {temporaryRole === ROLES[2] &&
+        {(temporaryRole === ROLES[2] || temporaryRole === ROLES[3]) &&
           `Welcome, ${userData?.first_name ?? ""} ${userData?.last_name ?? ""}`}
-        {temporaryRole === "coparent" &&
-          `Welcome, ${userData?.first_name ?? ""} ${userData?.last_name ?? ""}`}
+        {temporaryRole === ROLES[4] &&
+          `Parish Management Centre`}
       </Title>
       <div className="mb-2 flex flex-1 justify-between lg:mb-0 lg:flex-col">
         <ul className="flex w-full items-center justify-evenly gap-0 sm:gap-2 lg:ml-4 lg:mr-8 lg:flex-col lg:items-start">
@@ -123,6 +123,8 @@ const SidebarProfile = ({ availableRoles, onSwitchRole }) => {
       console.error("Logout failed:", error.message);
     }
   };
+
+
 
   if (!userData) {
     return (

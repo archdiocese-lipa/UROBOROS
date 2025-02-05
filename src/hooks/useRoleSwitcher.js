@@ -11,8 +11,6 @@ const useRoleSwitcher = () => {
     localStorage.getItem("temporaryRole")
   );
 
- 
-
    useEffect(() => {
     if (userData?.role && !temporaryRole) {
       setTemporaryRole(userData.role);
@@ -23,13 +21,22 @@ const useRoleSwitcher = () => {
     if (!userData) return;
     setTemporaryRole(role);
     localStorage.setItem("temporaryRole", role);
-    navigate("/announcements");
+
+    if (role === ROLES[4]){
+      navigate("/ministries");
+    }else{
+      navigate("/announcements");
+    }
+  
   };
+
+
 
   const roles = [
     { label: "Switch to Parishioner", value: ROLES[2] },
     { label: "Switch to Volunteer", value: ROLES[1] },
-    { label: "Switch to Admin", value: ROLES[0] },
+    { label: "Switch to Coordinator", value: ROLES[0] },
+    { label: "Switch to Administrator", value: ROLES[4] },
   ];
 
   const availableRoles = roles.filter((role) => {
@@ -46,8 +53,11 @@ const useRoleSwitcher = () => {
       // Do not return any role
       return null;
     } else if (userData?.role === ROLES[0]) {
-      // Returns all role except the current temporary role
-      return role.value !== temporaryRole;
+      // Returns all role except the current temporary role and superadmin
+      return role.value !== temporaryRole && role?.value !== ROLES[4];
+    }else{
+          // Returns all role except the current temporary role
+      return role.value !== temporaryRole
     }
   });
   return { availableRoles, onSwitchRole, temporaryRole };
