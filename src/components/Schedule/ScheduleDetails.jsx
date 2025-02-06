@@ -722,7 +722,6 @@ const ScheduleDetails = () => {
                       <AddAttendee
                         attendee_type={"parents"}
                         family_id={family.family_id}
-                        family_surname={family.family_surname}
                         event_id={eventId}
                       />
                     )}
@@ -746,7 +745,6 @@ const ScheduleDetails = () => {
                     <AddAttendee
                       attendee_type={"children"}
                       family_id={family.family_id}
-                      family_surname={family.family_surname}
                       event_id={eventId}
                     />
                   )}
