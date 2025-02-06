@@ -43,7 +43,6 @@ import {
   getEventAttendance,
   updateAttendeeStatus,
   countEventAttendance,
-  editAttendee,
   updateTimeOut,
 } from "@/services/attendanceService";
 
@@ -284,26 +283,7 @@ const ScheduleDetails = () => {
     }
   }, [event, userData, disableSchedule]);
 
-  const updateMutation = useMutation({
-    mutationFn: async (data) => await editAttendee(data),
-    onSuccess: () => {
-      toast({
-        title: "Edit Successful",
-      });
-      setDeleteDialogOpen(false);
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: `${error.message}`,
-      });
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["attendance", eventId],
-      });
-    },
-  });
+  
 
   const removeAssignedVolunteerMutation = useMutation({
     mutationFn: async (volunteerId) =>
@@ -367,22 +347,7 @@ const ScheduleDetails = () => {
     });
   };
 
-  const onSubmit = (data, attendeeId) => {
-    updateMutation.mutate(
-      {
-        update_id: userData.id,
-        ...data,
-        attendeeId,
-      },
-      {
-        onSettled: () => {
-          queryClient.invalidateQueries({
-            queryKey: ["update_logs", attendeeId],
-          });
-        },
-      }
-    );
-  };
+ 
 
   if (isLoading || attendanceLoading) return <Loading />;
 
@@ -425,9 +390,9 @@ const ScheduleDetails = () => {
           <Description>{event?.event_description}</Description>
         </div>
         <div className="flex">
-          <div className="flex flex-wrap gap-1">
+          <div className="flex gap-1">
             {!disableSchedule && (
-              <div className="flex gap-1">
+              <div className="flex flex-wrap gap-1">
                 {(temporaryRole === "admin" ||
                   temporaryRole === "volunteer") && (
                   <AddExistingRecord eventId={eventId} />
@@ -457,7 +422,7 @@ const ScheduleDetails = () => {
                 </Dialog>
               </div>
             )}
-            <div className="flex">
+            <div className="flex flex-wrap">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button className="rounded-xl px-3 py-3">
@@ -707,7 +672,7 @@ const ScheduleDetails = () => {
             </div>
             <AttendanceTable
               updateTimeOut={onTimeOut}
-              onSubmit={onSubmit}
+              // onSubmit={onSubmit}
               attendeeType={"parents"}
               disableSchedule={disableSchedule}
               attendance={filteredParentAttendance}
@@ -719,7 +684,7 @@ const ScheduleDetails = () => {
             </div>
             <AttendanceTable
                updateTimeOut={onTimeOut}
-              onSubmit={onSubmit}
+              // onSubmit={onSubmit}
               disableSchedule={disableSchedule}
               attendance={filteredChildAttendance}
               onRowAttend={onRowAttend}
@@ -757,7 +722,6 @@ const ScheduleDetails = () => {
                       <AddAttendee
                         attendee_type={"parents"}
                         family_id={family.family_id}
-                        family_surname={family.family_surname}
                         event_id={eventId}
                       />
                     )}
@@ -766,7 +730,7 @@ const ScheduleDetails = () => {
                 </div>
                 <AttendanceTable
                   updateTimeOut={onTimeOut}
-                  onSubmit={onSubmit}
+                  // onSubmit={onSubmit}
                   attendeeType="parents"
                   disableSchedule={disableSchedule}
                   attendance={family.parents}
@@ -781,7 +745,6 @@ const ScheduleDetails = () => {
                     <AddAttendee
                       attendee_type={"children"}
                       family_id={family.family_id}
-                      family_surname={family.family_surname}
                       event_id={eventId}
                     />
                   )}
@@ -789,7 +752,7 @@ const ScheduleDetails = () => {
 
                 <AttendanceTable
                    updateTimeOut={onTimeOut}
-                  onSubmit={onSubmit}
+                  // onSubmit={onSubmit}
                   disableSchedule={disableSchedule}
                   attendance={family.children}
                   onRowAttend={onRowAttend}

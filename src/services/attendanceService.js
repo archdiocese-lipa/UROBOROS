@@ -673,14 +673,39 @@ const editAttendee = async ({
   update_id,
   first_name,
   last_name,
+  time_attended,
+  time_out,
   contact_number,
   attendeeId,
 }) => {
+  const convertToISOString = (time) => {
+    //extract hours and minutes
+    const [hours, minutes] = time.split(":");
+    
+
+  
+    // Create a Date object (use the current date as a reference)
+    const date = new Date();
+    date.setHours(hours);
+    date.setMinutes(minutes);
+
+  
+    // Return the ISO string representation
+    return date.toISOString();
+  };
+  
+
+  
+
+  console.log("edittting", time_attended,time_out)
+
   const { error } = await supabase
     .from("attendance")
     .update({
       first_name,
       last_name,
+      time_attended: convertToISOString(time_attended),
+      time_out: convertToISOString(time_out) ,
       contact_number: contact_number ?? null,
     })
     .select("id")

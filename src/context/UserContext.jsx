@@ -1,6 +1,6 @@
 import { createContext, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/services/supabaseClient"; // Ensure correct import for supabase
+import { supabase } from "@/services/supabaseClient"; 
 import PropTypes from "prop-types";
 
 const UserContext = createContext();
@@ -9,7 +9,7 @@ export const UserProvider = ({ children }) => {
   const [userData, setUserData] = useState(null);
   const [regData, setRegData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const queryClient = useQueryClient(); // Access query client
+  const queryClient = useQueryClient(); 
 
   // Login function
   const login = async (credentials) => {

@@ -29,8 +29,8 @@ const AttendanceTable = ({
 }) => {
 
   return (
-    <div>
-     { attendance.length > 0  && <Table>
+    <div >
+     { <Table>
       <TableHeader className="bg-primary">
         <TableRow>
           <TableHead className="rounded-l-lg">
@@ -100,7 +100,7 @@ const AttendanceTable = ({
                     hour12: true,
                   })
                 : attendee.time_attended ? (
-                    <Icon
+                    !disableSchedule && <Icon
                       onClick={() =>
                         updateTimeOut(attendee?.id)
                       }
@@ -140,7 +140,7 @@ AttendanceTable.propTypes = {
       first_name: PropTypes.string.isRequired,
       last_name: PropTypes.string.isRequired,
       attended: PropTypes.bool,
-      time_attended: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      time_attended: PropTypes.instanceOf(Date),
       contact_number: PropTypes.string,
     })
   ).isRequired,
