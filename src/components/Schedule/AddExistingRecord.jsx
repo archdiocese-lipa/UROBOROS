@@ -17,6 +17,9 @@ import {
   removeAttendeeFromRecord,
   searchAttendee,
   updateAttendee,
+  attendWalkInAttendee,
+  removeWalkInAttendee,
+  updateWalkInAttendee,
 } from "@/services/attendanceService";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Label } from "../ui/label";
@@ -44,20 +47,40 @@ const AddExistingRecord = ({ eventId }) => {
   });
 
   // Track existing attendees
-  const { existingAttendees, attendanceStatus } = useMemo(() => {
-    if (!attendanceData) {
+  const {
+    existingAttendees,
+    attendanceStatus,
+    existingWalkInAttendees,
+    walkInAttendanceStatus,
+  } = useMemo(() => {
+    if (!attendanceData || attendanceData.length === 0) {
       return {
         existingAttendees: new Set(),
         attendanceStatus: new Map(),
+        existingWalkInAttendees: new Set(),
+        walkInAttendanceStatus: new Map(),
       };
     }
+
     return {
       existingAttendees: new Set(attendanceData.map((a) => a.attendee_id)),
       attendanceStatus: new Map(
         attendanceData.map((a) => [a.attendee_id, a.attended])
       ),
+      existingWalkInAttendees: new Set(
+        attendanceData.map(
+          (a) => `${a.first_name.trim()} ${a.last_name.trim()}`
+        )
+      ),
+      walkInAttendanceStatus: new Map(
+        attendanceData.map((a) => [
+          `${a.first_name} ${a.last_name}`,
+          a.attended,
+        ])
+      ),
     };
   }, [attendanceData]);
+
   // Update infinite query configuration
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
     useInfiniteQuery({
@@ -66,7 +89,7 @@ const AddExistingRecord = ({ eventId }) => {
         const response = await searchAttendee({
           searchTerm: debounceSearchTerm,
           page: pageParam,
-          pageSize: 2,
+          pageSize: 10,
         });
         return response;
       },
@@ -81,6 +104,19 @@ const AddExistingRecord = ({ eventId }) => {
   // Combine all families from all pages
   const allFamilies = useMemo(() => {
     return data?.pages?.flatMap((page) => page.families) ?? [];
+  }, [data?.pages]);
+
+  const allWalkInAttendees = useMemo(() => {
+    const uniqueAttendees = new Set();
+    return (data?.pages ?? []).flatMap((page) => {
+      return page.walkInAttendees.filter((attendee) => {
+        if (!uniqueAttendees.has(attendee.id)) {
+          uniqueAttendees.add(attendee.id);
+          return true; // Include this attendee
+        }
+        return false; // Skip this attendee
+      });
+    });
   }, [data?.pages]);
 
   const addAttendee = async (
@@ -146,6 +182,67 @@ const AddExistingRecord = ({ eventId }) => {
     }
   };
 
+  const walkInattend = async (
+    firstName,
+    lastName,
+    eventId,
+    familyId,
+    contactNumber,
+    attendeeType
+  ) => {
+    try {
+      const attendeeDetails = {
+        attendee: {
+          first_name: firstName,
+          last_name: lastName,
+          contact: contactNumber,
+          type: attendeeType,
+        },
+        event: {
+          id: eventId,
+        },
+        family: {
+          id: familyId,
+        },
+        time_attended: new Date().toISOString(),
+        attended: true,
+        registered_by: userId,
+      };
+      await attendWalkInAttendee(attendeeDetails);
+      await queryClient.invalidateQueries(["attendance", eventId]);
+      await queryClient.invalidateQueries(["search-attendees"]);
+    } catch (error) {
+      console.error("Error adding attendee:", error);
+    }
+  };
+
+  const removeWalkIn = async (first_name, last_name) => {
+    try {
+      await removeWalkInAttendee(first_name, last_name, eventId);
+
+      // Refresh queries
+      await queryClient.invalidateQueries(["event-attendance", eventId]);
+      await queryClient.invalidateQueries(["search-attendees"]);
+    } catch (error) {
+      console.error("Error removing attendee:", error);
+    }
+  };
+
+  const onAttendWalkIn = async (first_name, last_name, state) => {
+    try {
+      // Call the function to update the attendance status of the walk-in attendee
+      await updateWalkInAttendee(first_name, last_name, eventId, state);
+
+      // Invalidate the relevant query keys to refresh the data
+      await queryClient.invalidateQueries(["attendance", eventId]);
+      await queryClient.invalidateQueries({
+        queryKey: ["search-attendees"],
+      });
+    } catch (error) {
+      console.error("Error updating attendee status:", error);
+    }
+  };
+
   // intersection observer for infinite scroll
   const { ref } = useInterObserver(hasNextPage ? fetchNextPage : null);
 
@@ -154,7 +251,7 @@ const AddExistingRecord = ({ eventId }) => {
       <DialogTrigger asChild>
         <Button>Add from Record</Button>
       </DialogTrigger>
-      <DialogContent className="no-scrollbar block h-[35rem] overflow-y-scroll sm:max-w-[625px]">
+      <DialogContent className="no-scrollbar block h-[42rem] overflow-y-scroll sm:max-w-[625px]">
         <DialogHeader>
           <DialogTitle>Add from Existing Record</DialogTitle>
           <DialogDescription>
@@ -183,10 +280,10 @@ const AddExistingRecord = ({ eventId }) => {
                   No data found
                 </Label>
               ) : (
-                allFamilies.map((family) => (
+                allFamilies?.map((family) => (
                   <div
-                    key={family.familyId}
-                    className="rounded-lg bg-primary p-4"
+                    key={family?.familyId}
+                    className="rounded-lg bg-primary p-2"
                   >
                     {/* Parents Section */}
                     {family.parents?.length > 0 && (
@@ -195,15 +292,15 @@ const AddExistingRecord = ({ eventId }) => {
                           Parents/Guardians
                         </Label>
                         <ul className="space-y-2">
-                          {family.parents.map((parent) => (
+                          {family.parents?.map((parent) => (
                             <li
-                              key={parent.id}
-                              className="rounded-lg bg-white px-5 py-3 text-primary-text"
+                              key={parent?.id}
+                              className="rounded-lg bg-white px-5 py-1 text-primary-text"
                             >
                               <div className="flex items-center justify-between">
-                                {existingAttendees.has(parent.id) && (
+                                {existingAttendees?.has(parent.id) && (
                                   <Switch
-                                    checked={attendanceStatus.get(parent.id)}
+                                    checked={attendanceStatus?.get(parent.id)}
                                     onCheckedChange={(checked) =>
                                       onAttend(parent.id, checked)
                                     }
@@ -213,7 +310,7 @@ const AddExistingRecord = ({ eventId }) => {
                                   {parent.first_name} {parent.last_name}
                                 </Label>
                                 <div>
-                                  {existingAttendees.has(parent.id) ? (
+                                  {existingAttendees?.has(parent.id) ? (
                                     <Button
                                       onClick={() =>
                                         removeAttendance(parent.id)
@@ -255,7 +352,7 @@ const AddExistingRecord = ({ eventId }) => {
                           {family.children.map((child) => (
                             <li
                               key={child.id}
-                              className="rounded-lg bg-white px-5 py-3 text-primary-text"
+                              className="rounded-lg bg-white px-5 py-1 text-primary-text"
                             >
                               <div className="flex items-center justify-between">
                                 {existingAttendees.has(child.id) && (
@@ -304,6 +401,86 @@ const AddExistingRecord = ({ eventId }) => {
                     )}
                   </div>
                 ))
+              )}
+              {/* Walk-in Attendees Section */}
+              {allWalkInAttendees.length > 0 && (
+                <div className="rounded-lg bg-primary py-2">
+                  <div className="text-center">
+                    <Label className="text-md text-center text-primary-text md:text-lg">
+                      Manual Record (from Walk-in and Volunteers input)
+                    </Label>
+                  </div>
+                  <ul className="space-y-2">
+                    {allWalkInAttendees?.map((attendee) => (
+                      <li key={attendee?.id} className="px-3 text-primary-text">
+                        <div className="flex items-center justify-between rounded-lg bg-white px-2 py-1">
+                          <div className="flex items-center gap-2">
+                            {existingWalkInAttendees?.has(
+                              `${attendee?.first_name.trim()} ${attendee?.last_name.trim()}`
+                            ) && (
+                              <Switch
+                                checked={walkInAttendanceStatus.get(
+                                  `${attendee?.first_name} ${attendee?.last_name}`
+                                )}
+                                onCheckedChange={(checked) =>
+                                  onAttendWalkIn(
+                                    attendee?.first_name,
+                                    attendee?.last_name,
+                                    checked
+                                  )
+                                }
+                              />
+                            )}
+                            <Label>
+                              {attendee?.first_name} {attendee?.last_name}
+                              <span className="text-muted text-[12px]">
+                                {" "}
+                                {attendee?.attendee_type === "parents"
+                                  ? "(Parent)"
+                                  : "(Child)"}
+                              </span>
+                            </Label>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            {existingWalkInAttendees?.has(
+                              `${attendee.first_name} ${attendee.last_name}`
+                            ) ? (
+                              <Button
+                                onClick={() =>
+                                  removeWalkIn(
+                                    attendee?.first_name,
+                                    attendee?.last_name,
+                                    eventId
+                                  )
+                                }
+                                className="rounded-xl bg-red-100 text-[12px] text-red-600"
+                              >
+                                Remove
+                              </Button>
+                            ) : (
+                              <Button
+                                onClick={() =>
+                                  walkInattend(
+                                    attendee?.first_name,
+                                    attendee?.last_name,
+                                    eventId,
+                                    attendee?.family_id,
+                                    attendee?.contact_number,
+                                    attendee?.attendee_type
+                                  )
+                                }
+                                className="rounded-xl bg-[#EFDED6] text-[12px] text-primary-text"
+                              >
+                                Add
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               )}
               {/* div for intersection observer */}
               {hasNextPage && (

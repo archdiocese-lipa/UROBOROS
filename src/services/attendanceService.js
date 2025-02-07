@@ -681,23 +681,15 @@ const editAttendee = async ({
   const convertToISOString = (time) => {
     //extract hours and minutes
     const [hours, minutes] = time.split(":");
-    
 
-  
     // Create a Date object (use the current date as a reference)
     const date = new Date();
     date.setHours(hours);
     date.setMinutes(minutes);
 
-  
     // Return the ISO string representation
     return date.toISOString();
   };
-  
-
-  
-
-  console.log("edittting", time_attended,time_out)
 
   const { error } = await supabase
     .from("attendance")
@@ -705,7 +697,7 @@ const editAttendee = async ({
       first_name,
       last_name,
       time_attended: convertToISOString(time_attended),
-      time_out: convertToISOString(time_out) ,
+      time_out: convertToISOString(time_out),
       contact_number: contact_number ?? null,
     })
     .select("id")
@@ -847,12 +839,37 @@ const fetchChildrenAttendanceHistory = async (event_name) => {
   return data;
 };
 
-const searchAttendee = async ({ searchTerm, page = 1, pageSize = 4 }) => {
+const searchAttendee = async ({ searchTerm, page = 1, pageSize = 10 }) => {
   try {
     const start = (page - 1) * pageSize;
     const end = start + pageSize - 1;
 
-    // Step 1: Search for matching parents or children
+    //Get walk in users from attendance
+
+    const { data: walkInAttendees, error: walkInError } = await supabase
+      .from("attendance")
+      .select(
+        "id, first_name, last_name, family_id, contact_number, attendee_type",
+        { distinct: true }
+      )
+      .is("attendee_id", null)
+      .or(`first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%`);
+
+    // Remove duplicates based on first_name and last_name
+    const uniqueWalkInAttendees = walkInAttendees
+      ? Array.from(
+          new Map(
+            walkInAttendees.map((attendee) => [
+              `${attendee.first_name} ${attendee.last_name}`,
+              attendee,
+            ])
+          ).values()
+        )
+      : [];
+
+    if (walkInError) throw walkInError;
+
+    // Search for matching parents or children
     const [parentsResult, childrenResult] = await Promise.all([
       supabase
         .from("parents")
@@ -871,13 +888,20 @@ const searchAttendee = async ({ searchTerm, page = 1, pageSize = 4 }) => {
     // Combine results and get unique family IDs
     const familyIds = [
       ...new Set([
+        ...uniqueWalkInAttendees.map((walkIn) => walkIn.family_id),
         ...parentsResult.data.map((parent) => parent.family_id),
         ...childrenResult.data.map((child) => child.family_id),
       ]),
     ];
 
     if (!familyIds.length) {
-      return { families: [], hasMore: false, page, total: 0 };
+      return {
+        families: [],
+        walkInAttendees: uniqueWalkInAttendees,
+        hasMore: false,
+        page,
+        total: 0,
+      };
     }
 
     // Step 2: Fetch family groups for the matching family IDs (paginated)
@@ -928,13 +952,20 @@ const searchAttendee = async ({ searchTerm, page = 1, pageSize = 4 }) => {
 
     return {
       families,
+      walkInAttendees: uniqueWalkInAttendees,
       hasMore: page * pageSize < count,
       page,
       total: count,
     };
   } catch (error) {
     console.error("Error in searchAttendee:", error);
-    return { families: [], hasMore: false, page, total: 0 };
+    return {
+      families: [],
+      walkInAttendees: [],
+      hasMore: false,
+      page,
+      total: 0,
+    };
   }
 };
 const getAttendee = async (eventId) => {
@@ -1060,6 +1091,88 @@ const updateAttendee = async (attendeeId, eventId, state) => {
   }
 };
 
+const attendWalkInAttendee = async (attendeeDetails) => {
+  try {
+    const { data, error } = await supabase
+      .from("attendance")
+      .insert([
+        {
+          first_name: attendeeDetails.attendee.first_name,
+          last_name: attendeeDetails.attendee.last_name,
+          event_id: attendeeDetails.event.id,
+          family_id: attendeeDetails.family.id,
+          contact_number: attendeeDetails.attendee.contact,
+          attendee_type: attendeeDetails.attendee.type,
+          attended: attendeeDetails.attended,
+          time_attended: attendeeDetails.time_attended,
+          registered_by: attendeeDetails.registered_by,
+        },
+      ])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error("Error in addSingleAttendee:", error);
+    throw error;
+  }
+};
+
+const removeWalkInAttendee = async (first_name, last_name, eventId) => {
+  try {
+    const { data, error } = await supabase
+      .from("attendance")
+      .delete()
+      .eq("first_name", first_name)
+      .eq("last_name", last_name)
+      .eq("event_id", eventId);
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error in removeAttendee:", error);
+    throw new Error(error.message || "Failed to remove attendee");
+  }
+};
+
+const updateWalkInAttendee = async (first_name, last_name, eventId, state) => {
+  try {
+    // Validate parameters
+    if (!first_name || !last_name || !eventId) {
+      throw new Error("Missing required parameters");
+    }
+
+    const update = {
+      attended: state,
+      time_attended: state ? new Date().toISOString() : null,
+    };
+
+    const { data, error } = await supabase
+      .from("attendance")
+      .update(update)
+      .match({
+        first_name,
+        last_name,
+        event_id: eventId,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error in updateAttendee:", error);
+    throw new Error(error.message || "Failed to update attendance");
+  }
+};
+
 export {
   fetchChildrenAttendanceHistory,
   fetchParentAttendanceHistory,
@@ -1079,4 +1192,7 @@ export {
   updateAttendee,
   removeAttendeeFromRecord,
   addSingleAttendeeFromRecord,
+  attendWalkInAttendee,
+  removeWalkInAttendee,
+  updateWalkInAttendee,
 };
