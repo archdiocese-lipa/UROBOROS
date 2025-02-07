@@ -30,18 +30,22 @@ const AssignVolunteerComboBox = ({
 }) => {
   const [open, setOpen] = useState(false);
 
-  // Helper function to toggle selection
+  // Helper function to toggle selection for multiple values (IDs)
   const toggleSelection = (selectedValue) => {
-    if (value?.some((v) => v.id === selectedValue.id)) {
-      // If the value is already selected, remove it
-      onChange(value?.filter((v) => v.id !== selectedValue.id));
-    } else {
-      // If the value is not selected, add it
-      onChange([...value, selectedValue]);
-    }
+    // Check if the value already exists in the selected values
+    const isSelected = value.includes(selectedValue);
+    const updatedValue = isSelected
+      ? value.filter((v) => v !== selectedValue) // Remove if already selected
+      : [...value, selectedValue]; // Add if not selected
+
+    onChange(updatedValue); // Update parent component's state with the new value array
   };
 
   const { ref } = useInterObserver(fetchNextPage);
+
+  // Get labels for the selected values (IDs)
+  const selectedLabels = options?.filter((opt) => value.includes(opt.value)) // Filter to get labels for the selected values (IDs)
+    .map((opt) => opt.label); // Extract the labels
 
   return (
     <Popover modal={true} open={open} onOpenChange={setOpen}>
@@ -53,13 +57,9 @@ const AssignVolunteerComboBox = ({
           disabled={disabled}
           className="h-full w-full max-w-full justify-between text-wrap bg-primary text-start hover:bg-primary"
         >
-          {value?.length > 0
-            ? options
-                ?.filter((opt) => value?.some((v) => v.id === opt.value.id))
-                .map((opt) => opt.label)
-                .join(", ") // Display selected labels
+          {selectedLabels?.length > 0
+            ? selectedLabels.join(", ") // Show selected labels
             : placeholder}{" "}
-          {/* Show placeholder if no value is selected */}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -83,16 +83,14 @@ const AssignVolunteerComboBox = ({
           >
             {options?.map((opt) => (
               <CommandItem
-                key={opt.id}
-                onSelect={() => toggleSelection(opt.value)}
+                key={opt.value}
+                onSelect={() => toggleSelection(opt.value)} // Toggle selected ID
                 disabled={disabled}
               >
                 {opt.label}
                 <Check
                   className={`ml-auto h-4 w-4 ${
-                    value?.some((v) => v.id === opt.value.id)
-                      ? "opacity-100"
-                      : "opacity-0"
+                    value.includes(opt.value) ? "opacity-100" : "opacity-0"
                   }`}
                 />
               </CommandItem>
@@ -109,27 +107,18 @@ const AssignVolunteerComboBox = ({
 AssignVolunteerComboBox.propTypes = {
   options: PropTypes.arrayOf(
     PropTypes.shape({
-      id: PropTypes.string.isRequired, // Assuming each option has an 'id' field
+      value: PropTypes.string.isRequired,
       label: PropTypes.string.isRequired,
-      value: PropTypes.shape({
-        id: PropTypes.string.isRequired, // Assuming value contains an 'id'
-        // Add other fields if needed, e.g., name, role, etc.
-      }).isRequired,
     })
   ).isRequired,
-  value: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired, // Assuming 'id' is always present
-      // Add other fields if needed (e.g., label, name)
-    })
-  ).isRequired, // 'value' should be an array of objects with 'id' and other necessary fields
-  onChange: PropTypes.func.isRequired, // onChange should always be a function
-  placeholder: PropTypes.string, // placeholder is an optional string
-  disabled: PropTypes.bool, // disabled is an optional boolean
-  isLoading: PropTypes.bool, // isLoading is an optional boolean
-  fetchNextPage: PropTypes.func.isRequired, // fetchNextPage is a required function
-  hasNextPage: PropTypes.bool.isRequired, // hasNextPage is a required boolean
-  isFetchingNextPage: PropTypes.bool.isRequired, // isFetchingNextPage is a required boolean
+  value: PropTypes.arrayOf(PropTypes.string).isRequired, // The value should be an array of IDs
+  onChange: PropTypes.func.isRequired,
+  placeholder: PropTypes.string,
+  disabled: PropTypes.bool,
+  isLoading: PropTypes.bool,
+  fetchNextPage: PropTypes.func.isRequired,
+  hasNextPage: PropTypes.bool.isRequired,
+  isFetchingNextPage: PropTypes.bool.isRequired,
 };
 
 export default AssignVolunteerComboBox;

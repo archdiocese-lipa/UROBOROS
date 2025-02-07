@@ -16,8 +16,8 @@ const AcceptInvite = () => {
 
       try {
         const response = await axios.post(
-          // `${import.meta.env.VITE_UROBOROS_API_URL}/accept-invite`,
           "https://uroboros-api.onrender.com/accept-invite",
+          // `${import.meta.env.VITE_UROBOROS_API_URL}/accept-invite`,
           {
             token,
           },

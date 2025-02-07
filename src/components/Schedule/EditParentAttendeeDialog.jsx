@@ -57,7 +57,7 @@ const EditParentAttendeeDialog = ({
       )}
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit Parent Attendee</DialogTitle>
+          <DialogTitle>Edit Attendee</DialogTitle>
           <DialogDescription>Edit attendee information</DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -129,19 +129,20 @@ const EditParentAttendeeDialog = ({
       </DialogContent>
     </Dialog>
   );
-}
+};
 
 EditParentAttendeeDialog.propTypes = {
-  form: PropTypes.object.isRequired, 
+  form: PropTypes.object.isRequired,
   attendee: PropTypes.shape({
-    id: PropTypes.string.isRequired, 
+    id: PropTypes.string.isRequired,
     first_name: PropTypes.string.isRequired,
     last_name: PropTypes.string.isRequired,
-    contact_number:
-      PropTypes.string.isRequired
+    time_attended: PropTypes.instanceOf(Date),
+    time_out: PropTypes.instanceOf(Date),
+    contact_number: PropTypes.string.isRequired,
   }).isRequired,
   onSubmit: PropTypes.func.isRequired,
-  disableSchedule: PropTypes.bool.isRequired, 
+  disableSchedule: PropTypes.bool.isRequired,
 };
 
 export default EditParentAttendeeDialog;

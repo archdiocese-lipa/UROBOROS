@@ -8,9 +8,11 @@ import {
   removeMinistryVolunteer,
   fetchMinistryAssignedUsers,
   assignNewVolunteers,
+  getAssignedMinistries,
 } from "@/services/ministryService";
+import { ROLES } from "@/constants/roles";
 
-const useMinistry = ({ ministryId } = {}) => {
+const useMinistry = ({ ministryId, temporaryRole, userId }) => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -25,11 +27,21 @@ const useMinistry = ({ ministryId } = {}) => {
     enabled: !!ministryId,
   });
 
-  // Fetch all ministries
-  const { data: ministries, isLoading: ministryLoading } = useQuery({
-    queryKey: ["ministries"],
-    queryFn: getAllMinistries,
+   // Fetch all ministries or assigned ministries depending on role and user
+   const { data: ministries, isLoading: ministryLoading } = useQuery({
+    queryKey: ["ministries", userId, temporaryRole],
+    queryFn: async () => {
+      if (temporaryRole === ROLES[4]) {
+        // Admin or higher role, fetch all ministries
+        return getAllMinistries();
+      } else {
+        // Other roles, fetch only assigned ministries for the user
+        return getAssignedMinistries(userId);
+      }
+    },
+    enabled: !!userId,
   });
+
 
   // Mutation for creating a ministry
   const createMutation = useMutation({
@@ -37,8 +49,8 @@ const useMinistry = ({ ministryId } = {}) => {
     onSuccess: () => {
       queryClient.invalidateQueries(["ministries"]);
       toast({
-        title: "Group Created",
-        description: "The group has been created successfully!",
+        title: "Ministry Created",
+        description: "The ministry has been created successfully!",
       });
     },
     onError: (error) => {
@@ -53,17 +65,17 @@ const useMinistry = ({ ministryId } = {}) => {
 
   // Mutation for editing a ministry
   const editMutation = useMutation({
-    mutationFn: (values) => editMinistry(values),
+    mutationFn: async (values) => editMinistry(values),
     onSuccess: () => {
       queryClient.invalidateQueries(["ministries"]);
       toast({
-        title: "Group Updated",
-        description: "The group has been updated successfully!",
+        title: "Ministry Updated",
+        description: "The ministry has been updated successfully!",
       });
     },
     onError: (error) => {
       toast({
-        title: "Error Updating Group",
+        title: "Error Updating Ministry",
         description:
           error?.message || "Something went wrong. Please try again.",
         variant: "destructive",
@@ -77,13 +89,13 @@ const useMinistry = ({ ministryId } = {}) => {
     onSuccess: () => {
       queryClient.invalidateQueries(["ministries"]);
       toast({
-        title: "Group Deleted",
-        description: "The group has been deleted successfully!",
+        title: "Ministry Deleted",
+        description: "The ministry has been deleted successfully!",
       });
     },
     onError: (error) => {
       toast({
-        title: "Error Deleting Group",
+        title: "Error Deleting Ministry",
         description:
           error?.message || "Something went wrong. Please try again.",
         variant: "destructive",

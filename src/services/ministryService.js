@@ -5,10 +5,30 @@ import { supabase } from "./supabaseClient";
  * @returns {Promise<Object>} Response containing data or error.
  */
 export const getAllMinistries = async () => {
-  return await supabase
+  const { data, error } = await supabase
     .from("ministries")
-    .select("*")
+    .select("*, ministry_coordinators(users(id, first_name, last_name))")
     .order("created_at", { ascending: false });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+};
+
+export const getAssignedMinistries = async (userId) => {
+  const { data, error } = await supabase
+    .from("ministry_coordinators")
+    .select("ministries(*)")
+    .eq("coordinator_id", userId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+  const arrangedData = data.map((data) => data.ministries)
+
+  return arrangedData;
 };
 
 /**
@@ -26,7 +46,33 @@ export const getMinistryById = async (id) => {
  * @returns {Promise<Object>} Response containing data or error.
  */
 export const createMinistry = async (ministry) => {
-  return await supabase.from("ministries").insert([ministry]);
+  const { data, error } = await supabase
+    .from("ministries")
+    .insert([
+      {
+        ministry_name: ministry.ministry_name,
+        ministry_description: ministry.ministry_description,
+      },
+    ])
+    .select("id")
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const coordinators = ministry.coordinators.map((coordinator) => ({
+    ministry_id: data.id,
+    coordinator_id: coordinator,
+  }));
+
+  const { error: coordinatorError } = await supabase
+    .from("ministry_coordinators")
+    .insert(coordinators);
+
+  if (coordinatorError) {
+    throw new Error("Error assigning coordinators", coordinatorError.message);
+  }
 };
 
 /**
@@ -37,8 +83,7 @@ export const createMinistry = async (ministry) => {
  */
 export const editMinistry = async (updatedValues) => {
   // Destructure the updatedValues object to extract necessary fields
-  const { ministryId, ministryName, ministryDescription } = updatedValues;
-
+  const { coordinators,ministryId, ministryName, ministryDescription } = updatedValues;
   // Perform the update query using destructured values
   const { data, error } = await supabase
     .from("ministries")
@@ -51,6 +96,29 @@ export const editMinistry = async (updatedValues) => {
   if (error) {
     console.error("Error updating ministry:", error.message);
     throw new Error(error.message); // Handle the error appropriately
+  }
+
+  const { error: deleteCoordinatorError } = await supabase
+    .from("ministry_coordinators")
+    .delete()
+    .eq("ministry_id", ministryId);
+  
+    if(deleteCoordinatorError){
+      throw new Error("Error deleting coordinators!", deleteCoordinatorError.message)
+    }
+    const coordinatorInsert = coordinators.map((coordinator) => ({
+      ministry_id: ministryId,
+      coordinator_id: coordinator,
+    }));
+
+  
+
+    const { error: coordinatorError } = await supabase
+    .from("ministry_coordinators")
+    .insert(coordinatorInsert);
+
+  if (coordinatorError) {
+    throw new Error(coordinatorError.message);
   }
 
   return data; // Return the updated data
@@ -88,7 +156,6 @@ export const fetchMinistryAssignedUsers = async (ministryId) => {
 export const fetchUserMinistries = async (user_id) => {
   // Accept userData as argument
 
-
   try {
     const { data, error } = await supabase
       .from("ministry_assignments")
@@ -106,8 +173,6 @@ export const fetchUserMinistries = async (user_id) => {
 
     // Dynamically extract all ministries from the data array
     const ministries = data.map((item) => item.ministries);
-
-  
 
     return ministries; // Return the array of ministries
   } catch (err) {

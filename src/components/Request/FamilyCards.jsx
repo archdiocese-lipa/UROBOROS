@@ -74,7 +74,7 @@ const FamilyCards = () => {
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex w-[30rem] items-center justify-start">
+      <div className="flex md:w-[30rem] items-center justify-start">
         <div className="relative w-8/12">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 transform text-2xl text-accent" />
           <Input

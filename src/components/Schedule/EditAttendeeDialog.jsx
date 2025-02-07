@@ -19,23 +19,82 @@ import {
 import { useState } from "react";
 import { Input } from "../ui/input";
 import PropTypes from "prop-types";
-import { useForm } from "react-hook-form"; 
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { parentSchema } from "@/zodSchema/AddFamilySchema";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { editAttendee } from "@/services/attendanceService";
+import { toast } from "@/hooks/use-toast";
+import { useUser } from "@/context/useUser";
+import { useSearchParams } from "react-router-dom";
 
-
-const EditAttendeeDialog = ({ attendee, onSubmit, disableSchedule }) => {
+const EditAttendeeDialog = ({ attendee, disableSchedule }) => {
   const [attendeeEdit, setAttendeeEdit] = useState(false);
+  const [urlPrms] = useSearchParams();
+  const queryClient = useQueryClient();
+  const { userData } = useUser();
 
+  const updateMutation = useMutation({
+    mutationFn: async (data) => await editAttendee(data),
+    onSuccess: () => {
+      toast({
+        title: "Edit Successful",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `${error.message}`,
+      });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["attendance", urlPrms.get("event")],
+      });
+    },
+  });
 
-  // Conditionally omit 'contact_number' field if attendee is a children
-  const schema = attendee.attendee_type === "children"
-    ? parentSchema.omit({ contact_number: true }) 
-    : parentSchema;
+  const onSubmit = (data, attendeeId) => {
+    updateMutation.mutate(
+      {
+        update_id: userData.id,
+        ...data,
+        attendeeId,
+      },
+      {
+        onSettled: () => {
+          queryClient.invalidateQueries({
+            queryKey: ["update_logs", attendeeId],
+          });
+        },
+      }
+    );
+  };
+
+  const formatTime = (isoString) => {
+    if (!isoString) return "";
+
+    const date = new Date(isoString);
+    if (isNaN(date)) {
+      console.error("Invalid date string:", isoString);
+      return "";
+    }
+
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    return `${hours}:${minutes}`;
+  };
+
+  const schema =
+    attendee.attendee_type === "children"
+      ? parentSchema.omit({ contact_number: true })
+      : parentSchema;
 
   const form = useForm({
     resolver: zodResolver(schema),
     defaultValues: {
+      time_out: formatTime(attendee.time_out),
+      time_attended: formatTime(attendee.time_attended),
       first_name: "",
       last_name: "",
       contact_number: "",
@@ -69,7 +128,7 @@ const EditAttendeeDialog = ({ attendee, onSubmit, disableSchedule }) => {
       )}
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit Parent Attendee</DialogTitle>
+          <DialogTitle>{`Edit ${attendee.attendee_type === "children" ? "Children" : "Parent"} Attendee`}</DialogTitle>
           <DialogDescription>Edit attendee information</DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -135,6 +194,44 @@ const EditAttendeeDialog = ({ attendee, onSubmit, disableSchedule }) => {
                 )}
               />
             )}
+            <div className="flex gap-2">
+              <FormField
+                control={form.control}
+                name="time_attended"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Time In</FormLabel>
+                    <FormControl>
+                      <Input
+                        className="text-accent"
+                        placeholder="Time In"
+                        type="time"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="time_out"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Time Out</FormLabel>
+                    <FormControl>
+                      <Input
+                        className="text-accent"
+                        placeholder="Time Out"
+                        type="time"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             <div className="mt-2 flex justify-end">
               <Button type="submit">Submit</Button>
             </div>
@@ -151,7 +248,9 @@ EditAttendeeDialog.propTypes = {
     first_name: PropTypes.string.isRequired,
     last_name: PropTypes.string.isRequired,
     contact_number: PropTypes.string,
-    attendee_type: PropTypes.oneOf(["parent", "children"]).isRequired,
+    attendee_type: PropTypes.string.isRequired,
+    time_out: PropTypes.instanceOf(Date),
+    time_attended: PropTypes.instanceOf(Date),
   }).isRequired,
   onSubmit: PropTypes.func.isRequired,
   disableSchedule: PropTypes.bool.isRequired,

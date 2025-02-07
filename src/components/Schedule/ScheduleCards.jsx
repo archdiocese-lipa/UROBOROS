@@ -240,7 +240,7 @@ const ScheduleCards = ({
   );
 };
 ScheduleCards.propTypes = {
-  editDialogOpenIndex: PropTypes.bool.isRequired,
+  editDialogOpenIndex: PropTypes.bool,
   setEditDialogOpenIndex: PropTypes.func.isRequired,
   event: PropTypes.shape({
     id: PropTypes.string.isRequired,

@@ -31,6 +31,8 @@ import ViewMembers from "./ViewMembers";
 import { useState } from "react";
 import EditMinistry from "./EditMinistry";
 import useMinistry from "@/hooks/useMinistry";
+import useRoleSwitcher from "@/hooks/useRoleSwitcher";
+import { ROLES } from "@/constants/roles";
 
 // Utility function to get initials from a name
 const getInitials = (firstName, lastName) => {
@@ -39,7 +41,8 @@ const getInitials = (firstName, lastName) => {
   return `${firstInitial}${lastInitial}`;
 };
 
-const MinistryCard = ({ ministryId, title, description, createdDate }) => {
+const MinistryCard = ({ ministryId, title, description,coordinators, createdDate }) => {
+  const {temporaryRole} = useRoleSwitcher();
   const formatDateToUK = (dateString) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat("en-GB", {
@@ -73,13 +76,14 @@ const MinistryCard = ({ ministryId, title, description, createdDate }) => {
   const visibleAvatars = ministryMembers?.slice(0, maxVisible);
   const remainingCount = Math.max(ministryMembers?.length - maxVisible, 0);
 
+
   return (
     <Card className="max-h-96 rounded-2xl border text-primary-text">
       <CardHeader className="text-pretty">
         <div className="flex items-center justify-between">
           <CardTitle className="font-bold">{title}</CardTitle>
           <div>
-            <DropdownMenu>
+            {temporaryRole === ROLES[4] && <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="transparent" className="h-5 w-5">
                   <ThreeDotsIcon className="text-black" />
@@ -128,7 +132,7 @@ const MinistryCard = ({ ministryId, title, description, createdDate }) => {
                   </DialogContent>
                 </Dialog>
               </DropdownMenuContent>
-            </DropdownMenu>
+            </DropdownMenu>}
           </div>
         </div>
         <CardDescription className="break-words">{description}</CardDescription>
@@ -185,6 +189,7 @@ const MinistryCard = ({ ministryId, title, description, createdDate }) => {
         <EditMinistry
           ministryId={ministryId}
           currentName={title}
+          coordinators={coordinators}
           currentDescription={description}
           isOpen={isEditDialogOpen} // Pass the state here
           closeDialog={() => setEditDialogOpen(false)} // Pass the function to close the dialog
@@ -199,6 +204,14 @@ MinistryCard.propTypes = {
   description: PropTypes.string.isRequired,
   createdDate: PropTypes.string.isRequired,
   ministryId: PropTypes.string.isRequired,
+  coordinators: PropTypes.arrayOf(
+    PropTypes.shape({
+      users: PropTypes.shape({
+        id: PropTypes.string.isRequired,
+      }).isRequired,
+    })
+  ).isRequired,
 };
+
 
 export default MinistryCard;

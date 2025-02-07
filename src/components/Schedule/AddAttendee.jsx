@@ -30,7 +30,6 @@ import { childSchema, parentSchema } from "@/zodSchema/AddFamilySchema";
 const AddAttendee = ({
   attendee_type,
   family_id,
-  family_surname,
   event_id,
 }) => {
   const { userData } = useUser();
@@ -54,9 +53,19 @@ const AddAttendee = ({
     },
   });
 
+  const addParentSchema = parentSchema.omit({
+    time_attended:true,
+    time_out: true
+  })
+
+  const addChild = childSchema.omit({
+    time_attended:true,
+    time_out: true
+  })
+
   const form = useForm({
     resolver: zodResolver(
-      attendee_type === "parents" ? parentSchema : childSchema
+      attendee_type === "parents" ? addParentSchema : addChild
     ),
     defaultValues: {
       first_name: "",
@@ -66,6 +75,7 @@ const AddAttendee = ({
   });
 
   const onSubmit = (attendeeData) => {
+
     addAttendeeMutation.mutate({
       attendeeData,
       family_id,
@@ -95,7 +105,7 @@ const AddAttendee = ({
           </DialogTitle>
           <DialogDescription>
             Add a {attendee_type === "parents" ? "Parent/Guardian" : "child"} to{" "}
-            {`${family_surname}`}.
+            this record.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -155,7 +165,6 @@ const AddAttendee = ({
 AddAttendee.propTypes = {
   attendee_type: PropTypes.string.isRequired,
   family_id: PropTypes.string.isRequired,
-  family_surname: PropTypes.string.isRequired,
   event_id: PropTypes.string.isRequired,
 };
 

@@ -1,5 +1,6 @@
 import { supabase } from "@/services/supabaseClient"; // Adjust the import to match the final location of supabaseClient
 import { v4 as uuidv4 } from "uuid";
+
 const insertEventAttendance = async (submittedData) => {
   const { randomSixDigit, event, parents, children } = submittedData;
 
@@ -152,7 +153,6 @@ const getEventAttendance = async (eventId) => {
       .order("created_at", { ascending: true })
       .order("first_name", { ascending: true })
       .order("id", { ascending: true });
-
     if (attendanceError) {
       console.error("Error fetching attendance data:", attendanceError);
       return { success: false, error: attendanceError.message };
@@ -164,14 +164,14 @@ const getEventAttendance = async (eventId) => {
 
     // Group attendance data by family_id
     const groupedData = attendanceData.reduce((acc, record) => {
-      const { family_id, attendee_type } = record;
+      const { family_id, attendee_type, main_applicant, last_name } = record;
 
       // Find or create a family group
       let familyGroup = acc.find((group) => group.family_id === family_id);
       if (!familyGroup) {
         familyGroup = {
           family_id,
-          family_surname: record.last_name || "Unknown",
+          family_surname: null,
           parents: [],
           children: [],
           registered_by: record.registered_by,
@@ -181,6 +181,9 @@ const getEventAttendance = async (eventId) => {
       // Categorize attendees by type
       if (attendee_type === "parents") {
         familyGroup.parents.push(record);
+        if (main_applicant) {
+          familyGroup.family_surname = last_name;
+        }
       } else if (attendee_type === "children") {
         familyGroup.children.push(record);
       }
@@ -279,8 +282,8 @@ export const insertGuardians = async (parentData) => {
 
   if (error) throw error;
 
-    // Fetch event data to get event name and other event-related details
-    const { data: eventData, error: eventError } = await supabase
+  // Fetch event data to get event name and other event-related details
+  const { data: eventData, error: eventError } = await supabase
     .from("events")
     .select("*")
     .eq("id", parentData.event_id)
@@ -293,14 +296,13 @@ export const insertGuardians = async (parentData) => {
   }
 
   // Check if this child has attended this event before
-  const { data: existingHistoryAttendees } =
-    await supabase
-      .from("previous_attendees")
-      .select("first_name, last_name")
-      .eq("event_name", eventData.event_name)
-      .eq("first_name", parentData.first_name)
-      .eq("last_name", parentData.last_name)
-      .single();
+  const { data: existingHistoryAttendees } = await supabase
+    .from("previous_attendees")
+    .select("first_name, last_name")
+    .eq("event_name", eventData.event_name)
+    .eq("first_name", parentData.first_name)
+    .eq("last_name", parentData.last_name)
+    .single();
 
   // If no previous attendance record is found, insert a new history record
   if (!existingHistoryAttendees) {
@@ -363,18 +365,16 @@ export const insertChildren = async (childData) => {
   }
 
   // Check if this child has attended this event before
-  const { data: existingHistoryAttendees } =
-    await supabase
-      .from("previous_attendees")
-      .select("first_name, last_name")
-      .eq("event_name", eventData.event_name)
-      .eq("first_name", childData.first_name)
-      .eq("last_name", childData.last_name)
-      .single();
+  const { data: existingHistoryAttendees } = await supabase
+    .from("previous_attendees")
+    .select("first_name, last_name")
+    .eq("event_name", eventData.event_name)
+    .eq("first_name", childData.first_name)
+    .eq("last_name", childData.last_name)
+    .single();
 
   // If no previous attendance record is found, insert a new history record
   if (!existingHistoryAttendees) {
-    console.log("adding to history")
     const { error: insertHistoryError } = await supabase
       .from("previous_attendees")
       .insert([
@@ -494,6 +494,29 @@ const updateAttendeeStatus = async (attendeeID, state) => {
   }
 };
 
+export const updateTimeOut = async (attendeeID) => {
+  try {
+    const time_out = new Date().toISOString();
+
+    const { data, error } = await supabase
+      .from("attendance")
+      .update({ time_out })
+      .eq("id", attendeeID)
+      .select()
+      .single();
+
+    if (error) {
+      console.error(error);
+      throw new Error(error);
+    }
+
+    return data;
+  } catch (error) {
+    console.error(error);
+    throw new Error(error);
+  }
+};
+
 const countEventAttendance = async (eventId) => {
   try {
     const { count: totalCount, error } = await supabase
@@ -566,6 +589,8 @@ const insertNewRecord = async (submittedData) => {
           attendee.type === "parents" ? attendee.main_applicant : false,
         first_name: attendee.first_name,
         last_name: attendee.last_name,
+        time_attended: new Date().toISOString(),
+        attended: true,
         contact_number: attendee.contact_number,
         family_id: attendee.family_id,
         registration_code: attendee.registration_code,
@@ -648,14 +673,39 @@ const editAttendee = async ({
   update_id,
   first_name,
   last_name,
+  time_attended,
+  time_out,
   contact_number,
   attendeeId,
 }) => {
+  const convertToISOString = (time) => {
+    //extract hours and minutes
+    const [hours, minutes] = time.split(":");
+    
+
+  
+    // Create a Date object (use the current date as a reference)
+    const date = new Date();
+    date.setHours(hours);
+    date.setMinutes(minutes);
+
+  
+    // Return the ISO string representation
+    return date.toISOString();
+  };
+  
+
+  
+
+  console.log("edittting", time_attended,time_out)
+
   const { error } = await supabase
     .from("attendance")
     .update({
       first_name,
       last_name,
+      time_attended: convertToISOString(time_attended),
+      time_out: convertToISOString(time_out) ,
       contact_number: contact_number ?? null,
     })
     .select("id")
@@ -713,8 +763,6 @@ const addSingleAttendee = async ({
   attendee_type,
   event_id,
 }) => {
-  // console.log("backend",attendeeData,family_id, editedby_id)
-
   const { data, error } = await supabase
     .from("attendance")
     .insert([{ ...attendeeData, family_id, attendee_type, event_id }])
@@ -799,6 +847,219 @@ const fetchChildrenAttendanceHistory = async (event_name) => {
   return data;
 };
 
+const searchAttendee = async ({ searchTerm, page = 1, pageSize = 4 }) => {
+  try {
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize - 1;
+
+    // Step 1: Search for matching parents or children
+    const [parentsResult, childrenResult] = await Promise.all([
+      supabase
+        .from("parents")
+        .select("first_name, last_name, family_id")
+        .or(`first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%`),
+      supabase
+        .from("children")
+        .select("first_name, last_name, family_id")
+        .or(`first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%`),
+    ]);
+
+    if (parentsResult.error || childrenResult.error) {
+      throw parentsResult.error || childrenResult.error;
+    }
+
+    // Combine results and get unique family IDs
+    const familyIds = [
+      ...new Set([
+        ...parentsResult.data.map((parent) => parent.family_id),
+        ...childrenResult.data.map((child) => child.family_id),
+      ]),
+    ];
+
+    if (!familyIds.length) {
+      return { families: [], hasMore: false, page, total: 0 };
+    }
+
+    // Step 2: Fetch family groups for the matching family IDs (paginated)
+    const {
+      data: familyGroups,
+      error: groupError,
+      count,
+    } = await supabase
+      .from("family_group")
+      .select("*", { count: "exact" })
+      .in("id", familyIds)
+      .range(start, end);
+
+    if (groupError) throw groupError;
+
+    if (!familyGroups?.length) {
+      return { families: [], hasMore: false, page, total: 0 };
+    }
+
+    // Step 3: Fetch all parents and children for these family groups
+    const [parents, children] = await Promise.all([
+      supabase
+        .from("parents")
+        .select("*")
+        .in(
+          "family_id",
+          familyGroups.map((fg) => fg.id)
+        ),
+      supabase
+        .from("children")
+        .select("*")
+        .in(
+          "family_id",
+          familyGroups.map((fg) => fg.id)
+        ),
+    ]);
+
+    if (parents.error || children.error) {
+      throw parents.error || children.error;
+    }
+
+    // Step 4: Group by family_id
+    const families = familyGroups.map((fg) => ({
+      familyId: fg.id,
+      parents: parents.data?.filter((p) => p.family_id === fg.id) || [],
+      children: children.data?.filter((c) => c.family_id === fg.id) || [],
+    }));
+
+    return {
+      families,
+      hasMore: page * pageSize < count,
+      page,
+      total: count,
+    };
+  } catch (error) {
+    console.error("Error in searchAttendee:", error);
+    return { families: [], hasMore: false, page, total: 0 };
+  }
+};
+const getAttendee = async (eventId) => {
+  try {
+    // Fetch attendance records
+    const { data: attendanceData, error: attendanceError } = await supabase
+      .from("attendance")
+      .select("*")
+      .eq("event_id", eventId);
+
+    if (attendanceError) throw attendanceError;
+
+    // Extract attendee IDs and filter out null or undefined values
+    const attendeeIds = attendanceData
+      ?.map((a) => a.attendee_id)
+      .filter((id) => id !== null && id !== undefined);
+
+    if (attendeeIds.length === 0) return [];
+
+    // Fetch parents and children only if there are valid attendee IDs
+    const [parentData, childData] = await Promise.all([
+      supabase.from("parents").select("*").in("id", attendeeIds),
+      supabase.from("children").select("*").in("id", attendeeIds),
+    ]);
+
+    // Map attendance with details
+    return attendanceData.map((attendance) => {
+      const isParent = parentData.data?.find(
+        (p) => p.id === attendance.attendee_id
+      );
+      return {
+        ...attendance,
+        attendee:
+          isParent ||
+          childData.data?.find((c) => c.id === attendance.attendee_id),
+        type: isParent ? "parent" : "child",
+      };
+    });
+  } catch (error) {
+    console.error("Error in getAttendee:", error);
+    throw error;
+  }
+};
+
+const removeAttendeeFromRecord = async (attendeeId, eventId) => {
+  try {
+    const { data, error } = await supabase
+      .from("attendance")
+      .delete()
+      .eq("attendee_id", attendeeId)
+      .eq("event_id", eventId);
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error in removeAttendee:", error);
+    throw new Error(error.message || "Failed to remove attendee");
+  }
+};
+
+const addSingleAttendeeFromRecord = async (attendeeDetails) => {
+  try {
+    const { data, error } = await supabase
+      .from("attendance")
+      .insert([
+        {
+          attendee_id: attendeeDetails.attendee.id,
+          first_name: attendeeDetails.attendee.first_name,
+          last_name: attendeeDetails.attendee.last_name,
+          event_id: attendeeDetails.event.id,
+          family_id: attendeeDetails.family.id,
+          contact_number: attendeeDetails.attendee.contact,
+          attendee_type: attendeeDetails.attendee.type,
+          attended: attendeeDetails.attended,
+          time_attended: attendeeDetails.time_attended,
+          registered_by: attendeeDetails.registered_by,
+        },
+      ])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error("Error in addSingleAttendee:", error);
+    throw error;
+  }
+};
+
+const updateAttendee = async (attendeeId, eventId, state) => {
+  try {
+    // Validate parameters
+    if (!attendeeId || !eventId) {
+      throw new Error("Missing required parameters");
+    }
+
+    const update = {
+      attended: state,
+      time_attended: state ? new Date().toISOString() : null,
+    };
+
+    const { data, error } = await supabase
+      .from("attendance")
+      .update(update)
+      .match({
+        attendee_id: attendeeId,
+        event_id: eventId,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error in updateAttendee:", error);
+    throw new Error(error.message || "Failed to update attendance");
+  }
+};
+
 export {
   fetchChildrenAttendanceHistory,
   fetchParentAttendanceHistory,
@@ -813,4 +1074,9 @@ export {
   fetchAttendanceEditLogs,
   fetchAlreadyRegistered,
   removeAttendee,
+  searchAttendee,
+  getAttendee,
+  updateAttendee,
+  removeAttendeeFromRecord,
+  addSingleAttendeeFromRecord,
 };

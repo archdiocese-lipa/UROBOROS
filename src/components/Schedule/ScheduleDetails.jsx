@@ -43,7 +43,7 @@ import {
   getEventAttendance,
   updateAttendeeStatus,
   countEventAttendance,
-  editAttendee,
+  updateTimeOut,
 } from "@/services/attendanceService";
 
 import { useUser } from "@/context/useUser";
@@ -74,7 +74,6 @@ import AttendanceTable from "./AttendanceTable";
 import useRoleSwitcher from "@/hooks/useRoleSwitcher";
 import { ROLES } from "@/constants/roles";
 import AddExistingRecord from "./AddExistingRecord";
-import AddFromRecord from "./AddFromRecord";
 
 const ScheduleDetails = () => {
   const [qrCode, setQRCode] = useState(null);
@@ -246,10 +245,16 @@ const ScheduleDetails = () => {
       await updateAttendeeStatus(attendeeId, state);
 
       // Invalidate the related query to refetch fresh data
-      queryClient.invalidateQueries(["attendance"]);
+      queryClient.invalidateQueries(["attendance", eventId]);
     } catch (error) {
       console.error("Error updating attendee status:", error);
     }
+  };
+
+  const onTimeOut = async (attendeeId) => {
+    await updateTimeOut(attendeeId);
+
+    queryClient.invalidateQueries(["attendance", eventId]);
   };
 
   const handleDownloadExcel = () => {
@@ -278,26 +283,7 @@ const ScheduleDetails = () => {
     }
   }, [event, userData, disableSchedule]);
 
-  const updateMutation = useMutation({
-    mutationFn: async (data) => await editAttendee(data),
-    onSuccess: () => {
-      toast({
-        title: "Edit Successful",
-      });
-      setDeleteDialogOpen(false);
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: `${error.message}`,
-      });
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["attendance", eventId],
-      });
-    },
-  });
+  
 
   const removeAssignedVolunteerMutation = useMutation({
     mutationFn: async (volunteerId) =>
@@ -361,22 +347,7 @@ const ScheduleDetails = () => {
     });
   };
 
-  const onSubmit = (data, attendeeId) => {
-    updateMutation.mutate(
-      {
-        update_id: userData.id,
-        ...data,
-        attendeeId,
-      },
-      {
-        onSettled: () => {
-          queryClient.invalidateQueries({
-            queryKey: ["update_logs", attendeeId],
-          });
-        },
-      }
-    );
-  };
+ 
 
   if (isLoading || attendanceLoading) return <Loading />;
 
@@ -419,12 +390,18 @@ const ScheduleDetails = () => {
           <Description>{event?.event_description}</Description>
         </div>
         <div className="flex">
-          <div className="flex flex-wrap gap-1">
-            {!disableSchedule && temporaryRole === "admin" && (
-              <div className="flex gap-1">
-                <AddExistingRecord eventId={eventId} />
-                <AddRecord eventId={eventId} />
-                <AddFromRecord eventId={eventId} event_name={event.event_name} />
+          <div className="flex gap-1">
+            {!disableSchedule && (
+              <div className="flex flex-wrap gap-1">
+                {(temporaryRole === "admin" ||
+                  temporaryRole === "volunteer") && (
+                  <AddExistingRecord eventId={eventId} />
+                )}
+                {(temporaryRole === "admin" ||
+                  temporaryRole === "volunteer") && (
+                  <AddRecord eventId={eventId} />
+                )}
+
                 <Dialog onOpenChange={generateQRCode}>
                   <DialogTrigger asChild>
                     <Button>
@@ -445,7 +422,7 @@ const ScheduleDetails = () => {
                 </Dialog>
               </div>
             )}
-            <div className="flex">
+            <div className="flex flex-wrap">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button className="rounded-xl px-3 py-3">
@@ -673,7 +650,7 @@ const ScheduleDetails = () => {
         </div>
       </div>
 
-      {attendance.data.length < 1 && (
+      {attendance?.data?.length < 1 && (
         <div className="flex items-center justify-center">
           <p>No Family registered yet.</p>
         </div>
@@ -694,7 +671,8 @@ const ScheduleDetails = () => {
               </div>
             </div>
             <AttendanceTable
-              onSubmit={onSubmit}
+              updateTimeOut={onTimeOut}
+              // onSubmit={onSubmit}
               attendeeType={"parents"}
               disableSchedule={disableSchedule}
               attendance={filteredParentAttendance}
@@ -705,7 +683,8 @@ const ScheduleDetails = () => {
               <h3 className="text-xl font-semibold text-accent">Children</h3>
             </div>
             <AttendanceTable
-              onSubmit={onSubmit}
+               updateTimeOut={onTimeOut}
+              // onSubmit={onSubmit}
               disableSchedule={disableSchedule}
               attendance={filteredChildAttendance}
               onRowAttend={onRowAttend}
@@ -719,11 +698,9 @@ const ScheduleDetails = () => {
             (parent) => parent.main_applicant
           );
 
-          const applicantName = mainApplicant
-            ? `${mainApplicant.first_name} ${mainApplicant.last_name} Family`
-            : walkInMainApplicant
-              ? `${walkInMainApplicant.first_name} ${walkInMainApplicant.last_name} Family`
-              : "Unknown ";
+          const applicantName = walkInMainApplicant
+            ? `${walkInMainApplicant.first_name} ${walkInMainApplicant.last_name} Family`
+            : `Added by ${mainApplicant.first_name} ${mainApplicant.last_name} `;
 
           return (
             <Card className="p-2" key={i}>
@@ -745,7 +722,6 @@ const ScheduleDetails = () => {
                       <AddAttendee
                         attendee_type={"parents"}
                         family_id={family.family_id}
-                        family_surname={family.family_surname}
                         event_id={eventId}
                       />
                     )}
@@ -753,7 +729,8 @@ const ScheduleDetails = () => {
                   <ParentAddLogs family_id={family.family_id} />
                 </div>
                 <AttendanceTable
-                  onSubmit={onSubmit}
+                  updateTimeOut={onTimeOut}
+                  // onSubmit={onSubmit}
                   attendeeType="parents"
                   disableSchedule={disableSchedule}
                   attendance={family.parents}
@@ -768,14 +745,14 @@ const ScheduleDetails = () => {
                     <AddAttendee
                       attendee_type={"children"}
                       family_id={family.family_id}
-                      family_surname={family.family_surname}
                       event_id={eventId}
                     />
                   )}
                 </div>
 
                 <AttendanceTable
-                  onSubmit={onSubmit}
+                   updateTimeOut={onTimeOut}
+                  // onSubmit={onSubmit}
                   disableSchedule={disableSchedule}
                   attendance={family.children}
                   onRowAttend={onRowAttend}

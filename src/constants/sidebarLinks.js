@@ -1,88 +1,71 @@
+const COMMON_LINKS = {
+  announcements: {
+    label: "Announcements",
+    link: "/announcements",
+    icon: "mingcute:announcement-line",
+    selectedIcon: "mingcute:announcement-fill",
+  },
+  schedule: {
+    label: "Schedule",
+    link: "/schedule",
+    icon: "mingcute:calendar-time-add-line",
+    selectedIcon: "mingcute:calendar-time-add-fill",
+  },
+  events: {
+    label: "Events",
+    link: "/events",
+    icon: "mingcute:calendar-time-add-line",
+    selectedIcon: "mingcute:calendar-time-add-fill",
+  },
+  family: {
+    label: "Family",
+    link: "/family",
+    icon: "mingcute:group-3-line",
+    selectedIcon: "mingcute:group-3-fill",
+  },
+  ministries: {
+    label: "Ministries",
+    link: "/ministries",
+    icon: "mingcute:group-3-line",
+    selectedIcon: "mingcute:group-3-fill",
+  },
+  dashboard: {
+    label: "Dashboard",
+    link: "/dashboard",
+    icon: "mingcute:classify-2-line",
+    selectedIcon: "mingcute:classify-2-fill",
+  },
+  requests: {
+    label: "Requests",
+    link: "/requests",
+    icon: "mingcute:inventory-line",
+    selectedIcon: "mingcute:inventory-fill",
+  },
+};
+
 export const SIDEBAR_LINKS = Object.freeze({
   admin: [
-    {
-      label: "Dashboard",
-      link: "/dashboard",
-      icon: "mingcute:classify-2-line",
-      selectedIcon: "mingcute:classify-2-fill",
-    },
-    {
-      label: "Announcements",
-      link: "/announcements",
-      icon: "mingcute:announcement-line",
-      selectedIcon: "mingcute:announcement-fill",
-    },
-    {
-      label: "Ministries",
-      link: "/ministries",
-      icon: "mingcute:group-3-line",
-      selectedIcon: "mingcute:group-3-fill",
-    },
-    {
-      label: "Schedule",
-      link: "/schedule",
-      icon: "mingcute:calendar-time-add-line",
-      selectedIcon: "mingcute:calendar-time-add-fill",
-    },
-    {
-      label: "Requests",
-      link: "/requests",
-      icon: "mingcute:inventory-line",
-      selectedIcon: "mingcute:inventory-fill",
-    },
+    COMMON_LINKS.dashboard,
+    COMMON_LINKS.announcements,
+    COMMON_LINKS.ministries,
+    COMMON_LINKS.schedule,
+    COMMON_LINKS.requests,
   ],
-  volunteer: [
-    {
-      label: "Announcements",
-      link: "/announcements",
-      icon: "mingcute:announcement-line",
-      selectedIcon: "mingcute:announcement-fill",
-    },
-    {
-      label: "Assigned Events",
-      link: "/schedule",
-      icon: "mingcute:calendar-time-add-line",
-      selectedIcon: "mingcute:calendar-time-add-fill",
-    },
-  ],
+  volunteer: [COMMON_LINKS.announcements, COMMON_LINKS.schedule],
   parishioner: [
-    {
-      label: "Announcements",
-      link: "/announcements",
-      icon: "mingcute:announcement-line",
-      selectedIcon: "mingcute:announcement-fill",
-    },
-    {
-      label: "Events",
-      link: "/events",
-      icon: "mingcute:calendar-time-add-line",
-      selectedIcon: "mingcute:calendar-time-add-fill",
-    },
-    {
-      label: "Family",
-      link: "/family",
-      icon: "mingcute:group-3-line",
-      selectedIcon: "mingcute:group-3-fill",
-    },
+    COMMON_LINKS.announcements,
+    COMMON_LINKS.events,
+    COMMON_LINKS.family,
   ],
   coparent: [
-    {
-      label: "Announcements",
-      link: "/announcements",
-      icon: "mingcute:announcement-line",
-      selectedIcon: "mingcute:announcement-fill",
-    },
-    {
-      label: "Events",
-      link: "/events",
-      icon: "mingcute:calendar-time-add-line",
-      selectedIcon: "mingcute:calendar-time-add-fill",
-    },
-    {
-      label: "Family",
-      link: "/family",
-      icon: "mingcute:group-3-line",
-      selectedIcon: "mingcute:group-3-fill",
-    },
+    COMMON_LINKS.announcements,
+    COMMON_LINKS.events,
+    COMMON_LINKS.family,
+  ],
+  superadmin: [
+    COMMON_LINKS.dashboard,
+    COMMON_LINKS.announcements,
+    COMMON_LINKS.ministries,
+    COMMON_LINKS.requests,
   ],
 });

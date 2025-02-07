@@ -126,7 +126,9 @@ const paginate = async ({
       supabaseQuery = supabaseQuery.not(column, filter, value);
     }
     if (filters.or) {
-      const orFilters = filters.or.map(({ column, filter, value }) => `${column}.${filter}.${value}`).join(",");
+      const orFilters = filters.or
+        .map(({ column, filter, value }) => `${column}.${filter}.${value}`)
+        .join(",");
       supabaseQuery = supabaseQuery.or(orFilters);
     }
 
@@ -219,7 +221,10 @@ const downloadExcel = (event, eventvolunteers, attendance, attendanceCount) => {
         );
 
         return [
-          ["Family Surname", family?.family_surname],
+          [
+            family?.family_surname ? `Family Surname:  ` : "Registered by: ",
+            family?.family_surname ?? `${family.registered_by.first_name} ${family.registered_by.last_name}`,
+          ],
           ...(attendedParents.length > 0
             ? [
                 ["Parents", "Name", "Contact", "Time In"],
@@ -328,7 +333,7 @@ const exportAttendanceList = (
 
     // Add Family Surname Header
     doc.setFontSize(14);
-    doc.text(`${family.family_surname} Family`, 10, currentY);
+    doc.text(family?.family_surname ? `Family Surname ${family?.family_surname}` : `Registered by ${family.registered_by.first_name} ${family.registered_by.last_name}` , 10, currentY);
 
     // Update currentY for the next element
     currentY += 10;
@@ -386,7 +391,16 @@ const formatEventTime = (time) => {
     hour12: true,
   });
 };
+
+const getCurrentTime =  () => {
+  const now = new Date();
+  const hours = String(now.getHours()).padStart(2, "0");
+  const minutes = String(now.getMinutes()).padStart(2, "0");
+  const seconds = String(now.getSeconds()).padStart(2, "0");
+  return `${hours}:${minutes}:${seconds}`;
+};
 export {
+  getCurrentTime,
   cn,
   paginate,
   getInitial,
