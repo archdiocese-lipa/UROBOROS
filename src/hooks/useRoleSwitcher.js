@@ -35,7 +35,7 @@ const useRoleSwitcher = () => {
   const roles = [
     { label: "Switch to Parishioner", value: ROLES[2] },
     { label: "Switch to Volunteer", value: ROLES[1] },
-    { label: "Switch to Coordinator", value: ROLES[0] },
+    { label: "Switch to Admin", value: ROLES[0] },
     { label: "Switch to Administrator", value: ROLES[4] },
   ];
 

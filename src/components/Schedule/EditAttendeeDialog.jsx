@@ -32,8 +32,7 @@ const EditAttendeeDialog = ({ attendee, disableSchedule }) => {
   const [attendeeEdit, setAttendeeEdit] = useState(false);
   const [urlPrms] = useSearchParams();
   const queryClient = useQueryClient();
-  const {userData} = useUser()
-
+  const { userData } = useUser();
 
   const updateMutation = useMutation({
     mutationFn: async (data) => await editAttendee(data),
@@ -56,7 +55,6 @@ const EditAttendeeDialog = ({ attendee, disableSchedule }) => {
   });
 
   const onSubmit = (data, attendeeId) => {
-    console.log("data",data)
     updateMutation.mutate(
       {
         update_id: userData.id,
@@ -74,16 +72,16 @@ const EditAttendeeDialog = ({ attendee, disableSchedule }) => {
   };
 
   const formatTime = (isoString) => {
-    if (!isoString) return ''; 
-  
+    if (!isoString) return "";
+
     const date = new Date(isoString);
     if (isNaN(date)) {
-      console.error("Invalid date string:", isoString); 
-      return ''; 
+      console.error("Invalid date string:", isoString);
+      return "";
     }
-  
-    const hours = String(date.getHours()).padStart(2, '0');  
-    const minutes = String(date.getMinutes()).padStart(2, '0'); 
+
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
     return `${hours}:${minutes}`;
   };
 
@@ -103,7 +101,6 @@ const EditAttendeeDialog = ({ attendee, disableSchedule }) => {
     },
   });
 
-  console.log(form.formState.errors)
   return (
     <Dialog open={attendeeEdit} onOpenChange={setAttendeeEdit}>
       {!disableSchedule && (
@@ -253,7 +250,7 @@ EditAttendeeDialog.propTypes = {
     contact_number: PropTypes.string,
     attendee_type: PropTypes.string.isRequired,
     time_out: PropTypes.instanceOf(Date),
-    time_attended:PropTypes.instanceOf(Date),
+    time_attended: PropTypes.instanceOf(Date),
   }).isRequired,
   onSubmit: PropTypes.func.isRequired,
   disableSchedule: PropTypes.bool.isRequired,

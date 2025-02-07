@@ -15,18 +15,17 @@ const Ministries = () => {
     temporaryRole,
   });
 
-
   return (
     <div className="relative flex h-full flex-col gap-y-5">
       <div className="fixed bottom-20 right-7 z-10 md:bottom-10">
-        {temporaryRole === ROLES[4] && <CreateMinistry />}
+        <CreateMinistry />
       </div>
-  
+
       <div>
         <Title>Ministry Management</Title>
-        <Description>Manage Ministries within St. Laurence Catholic Church.</Description>
+        <Description>Manage groups within your ministry.</Description>{" "}
       </div>
-  
+
       {/* Render loading state while fetching data */}
       {ministryLoading ? (
         <Loading />
@@ -42,10 +41,10 @@ const Ministries = () => {
           ) : (
             ministries?.map((ministry) => (
               <MinistryCard
-                key={ministry.id} 
+                key={ministry.id}
                 coordinators={ministry.ministry_coordinators}
                 ministryId={ministry.id}
-                title={ministry.ministry_name} 
+                title={ministry.ministry_name}
                 description={ministry.ministry_description}
                 createdDate={ministry.created_at}
               />
@@ -55,7 +54,6 @@ const Ministries = () => {
       )}
     </div>
   );
-  
 };
 
 export default Ministries;
