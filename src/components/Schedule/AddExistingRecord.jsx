@@ -106,18 +106,21 @@ const AddExistingRecord = ({ eventId }) => {
     return data?.pages?.flatMap((page) => page.families) ?? [];
   }, [data?.pages]);
 
-  const allWalkInAttendees = useMemo(() => {
-    const uniqueAttendees = new Set();
-    return (data?.pages ?? []).flatMap((page) => {
-      return page.walkInAttendees.filter((attendee) => {
+const allWalkInAttendees = useMemo(() => {
+  const uniqueAttendees = new Set();
+  return (data?.pages ?? []).flatMap((page) => {
+    return (page?.walkInAttendees ?? []).filter((attendee) => {
+      // Check if attendee is defined and has the necessary properties
+      if (attendee && attendee.id && attendee.first_name && attendee.last_name) {
         if (!uniqueAttendees.has(attendee.id)) {
           uniqueAttendees.add(attendee.id);
           return true; // Include this attendee
         }
-        return false; // Skip this attendee
-      });
+      }
+      return false; // Skip if attendee is invalid or already included
     });
-  }, [data?.pages]);
+  });
+}, [data?.pages]);
 
   const addAttendee = async (
     attendeeId,
@@ -403,7 +406,7 @@ const AddExistingRecord = ({ eventId }) => {
                 ))
               )}
               {/* Walk-in Attendees Section */}
-              {allWalkInAttendees.length > 0 && (
+              {allWalkInAttendees?.length > 0 && (
                 <div className="rounded-lg bg-primary py-2">
                   <div className="text-center">
                     <Label className="text-md text-center text-primary-text md:text-lg">
@@ -416,7 +419,7 @@ const AddExistingRecord = ({ eventId }) => {
                         <div className="flex items-center justify-between rounded-lg bg-white px-2 py-1">
                           <div className="flex items-center gap-2">
                             {existingWalkInAttendees?.has(
-                              `${attendee?.first_name.trim()} ${attendee?.last_name.trim()}`
+                              `${attendee?.first_name} ${attendee?.last_name}`
                             ) && (
                               <Switch
                                 checked={walkInAttendanceStatus.get(

@@ -849,8 +849,7 @@ const searchAttendee = async ({ searchTerm, page = 1, pageSize = 10 }) => {
     const { data: walkInAttendees, error: walkInError } = await supabase
       .from("attendance")
       .select(
-        "id, first_name, last_name, family_id, contact_number, attendee_type",
-        { distinct: true }
+        "id, first_name, last_name, family_id, contact_number, attendee_type"
       )
       .is("attendee_id", null)
       .or(`first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%`);
@@ -952,7 +951,7 @@ const searchAttendee = async ({ searchTerm, page = 1, pageSize = 10 }) => {
 
     return {
       families,
-      walkInAttendees: uniqueWalkInAttendees,
+      walkInAttendees: uniqueWalkInAttendees || [],
       hasMore: page * pageSize < count,
       page,
       total: count,
