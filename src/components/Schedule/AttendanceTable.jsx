@@ -30,103 +30,105 @@ const AttendanceTable = ({
   return (
     <>
       {attendance.length > 0 && (
-        <Table>
-          <TableHeader className="bg-primary">
-            <TableRow>
-              <TableHead className="rounded-l-lg">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Icon className="h-5 w-5" icon="mingcute:question-line" />
-                  </PopoverTrigger>
-                  <PopoverContent>
-                    <p>Click the switch to attend</p>
-                  </PopoverContent>
-                </Popover>
-              </TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Time In</TableHead>
-              <TableHead>Time Out</TableHead>
-              {attendeeType === "parents" && <TableHead>Contact</TableHead>}
+        <>
+          <Table>
+            <TableHeader className="bg-primary">
+              <TableRow>
+                <TableHead className="rounded-l-lg">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Icon className="h-5 w-5" icon="mingcute:question-line" />
+                    </PopoverTrigger>
+                    <PopoverContent>
+                      <p>Click the switch to attend</p>
+                    </PopoverContent>
+                  </Popover>
+                </TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Time In</TableHead>
+                <TableHead>Time Out</TableHead>
+                {attendeeType === "parents" && <TableHead>Contact</TableHead>}
 
-              <TableHead>Action</TableHead>
-              <TableHead className="rounded-r-lg"></TableHead>
-            </TableRow>
-          </TableHeader>
-
-          <TableBody>
-            {attendance?.map((attendee, i) => (
-              <TableRow
-                key={i}
-                className={cn(
-                  i % 2 !== 0 ? "bg-primary bg-opacity-35" : "bg-white"
-                )}
-              >
-                <TableCell className="py-1 md:p-4">
-                  <Switch
-                    defaultChecked={attendee.attended}
-                    disabled={disableSchedule || attendee.time_out}
-                    onCheckedChange={(state) =>
-                      onRowAttend(attendee?.id, state)
-                    }
-                  />
-                </TableCell>
-
-                <TableCell className="text-nowrap py-1 md:p-4">
-                  <p>{`${attendee.first_name} ${attendee.last_name}`}</p>
-                </TableCell>
-
-                <TableCell className="text-nowrap p-1 md:p-4">
-                  {attendee.time_attended
-                    ? new Date(attendee.time_attended).toLocaleTimeString(
-                        "en-GB",
-                        {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: true,
-                        }
-                      )
-                    : "--:--"}
-                </TableCell>
-
-                <TableCell className="text-nowrap p-1 md:p-4">
-                  {attendee.time_out ? (
-                    new Date(attendee.time_out).toLocaleTimeString("en-GB", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: true,
-                    })
-                  ) : attendee.time_attended ? (
-                    !disableSchedule && (
-                      <Icon
-                        onClick={() => updateTimeOut(attendee?.id)}
-                        className="h-5 w-5 hover:cursor-pointer"
-                        icon="mingcute:exit-line"
-                      />
-                    )
-                  ) : (
-                    <p>--:--</p>
-                  )}
-                </TableCell>
-
-                {attendee.attendee_type === "parents" && (
-                  <TableCell className="py-1 md:p-4">
-                    <p>{attendee.contact_number ?? "N/A"}</p>
-                  </TableCell>
-                )}
-                <TableCell className="flex gap-2 py-1">
-                  <EditParentAttendeeDialog
-                    attendee={attendee}
-                    onSubmit={onSubmit}
-                    disableSchedule={disableSchedule}
-                  />
-                </TableCell>
-                <TableCell className="py-1 md:p-4">
-                  <AttendeeEditLogs attendance_id={attendee.id} />
-                </TableCell>
+                <TableHead>Action</TableHead>
+                <TableHead className="rounded-r-lg"></TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+
+            <TableBody>
+              {attendance.map((attendee, i) => (
+                <TableRow
+                  key={i}
+                  className={cn(
+                    i % 2 !== 0 ? "bg-primary bg-opacity-35" : "bg-white"
+                  )}
+                >
+                  <TableCell className="py-1 md:p-4">
+                    <Switch
+                      defaultChecked={attendee.attended}
+                      disabled={disableSchedule || attendee.time_out}
+                      onCheckedChange={(state) =>
+                        onRowAttend(attendee?.id, state)
+                      }
+                    />
+                  </TableCell>
+
+                  <TableCell className="text-nowrap py-1 md:p-4">
+                    <p>{`${attendee.first_name} ${attendee.last_name}`}</p>
+                  </TableCell>
+
+                  <TableCell className="text-nowrap p-1 md:p-4">
+                    {attendee.time_attended
+                      ? new Date(attendee.time_attended).toLocaleTimeString(
+                          "en-GB",
+                          {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true,
+                          }
+                        )
+                      : "--:--"}
+                  </TableCell>
+
+                  <TableCell className="text-nowrap p-1 md:p-4">
+                    {attendee.time_out ? (
+                      new Date(attendee.time_out).toLocaleTimeString("en-GB", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: true,
+                      })
+                    ) : attendee.time_attended ? (
+                      !disableSchedule && (
+                        <Icon
+                          onClick={() => updateTimeOut(attendee?.id)}
+                          className="h-5 w-5 hover:cursor-pointer"
+                          icon="mingcute:exit-line"
+                        />
+                      )
+                    ) : (
+                      <p>--:--</p>
+                    )}
+                  </TableCell>
+
+                  {attendee.attendee_type === "parents" && (
+                    <TableCell className="py-1 md:p-4">
+                      <p>{attendee.contact_number ?? "N/A"}</p>
+                    </TableCell>
+                  )}
+                  <TableCell className="flex gap-2 py-1">
+                    <EditParentAttendeeDialog
+                      attendee={attendee}
+                      onSubmit={onSubmit}
+                      disableSchedule={disableSchedule}
+                    />
+                  </TableCell>
+                  <TableCell className="py-1 md:p-4">
+                    <AttendeeEditLogs attendance_id={attendee.id} />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </>
       )}
     </>
   );
