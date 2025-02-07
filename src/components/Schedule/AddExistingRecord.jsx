@@ -38,7 +38,7 @@ const AddExistingRecord = ({ eventId }) => {
 
   // Fetch existing attendees
   const { data: attendanceData } = useQuery({
-    queryKey: ["event-attendance", eventId],
+    queryKey: ["attendee-attendance", eventId],
     queryFn: () => getAttendee(eventId),
     enabled: !!eventId,
   });
@@ -112,7 +112,7 @@ const AddExistingRecord = ({ eventId }) => {
         registered_by: userId,
       };
       await addSingleAttendeeFromRecord(attendeeDetails);
-      await queryClient.invalidateQueries(["event-attendance", eventId]);
+      await queryClient.invalidateQueries(["attendance", eventId]);
       await queryClient.invalidateQueries(["search-attendees"]);
     } catch (error) {
       console.error("Error adding attendee:", error);
