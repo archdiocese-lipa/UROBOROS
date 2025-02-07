@@ -20,6 +20,11 @@ const AcceptInvite = () => {
           // `${import.meta.env.VITE_UROBOROS_API_URL}/accept-invite`,
           {
             token,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
           }
         );
 

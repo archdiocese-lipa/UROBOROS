@@ -165,7 +165,7 @@ export const getGuardian = async (familyId) => {
     // Fetch the logged-in user first
     const { data: loggedInUser, error: loggedInUserError } = await supabase
       .from("parents")
-      .select("id,first_name, last_name, contact_number,family_id")
+      .select("id,first_name, last_name, contact_number,family_id, parishioner_id")
       .eq("family_id", familyId)
       .eq("parishioner_id", loggedInUserId)
       .single();

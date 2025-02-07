@@ -86,7 +86,7 @@ const InviteFamily = () => {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Invite a New Family Member</DialogTitle>
+          <DialogTitle>Invite a new Family Member</DialogTitle>
           <DialogDescription>
             Please make sure to invite a family who is not yet a member of any
             family.
