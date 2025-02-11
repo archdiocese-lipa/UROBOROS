@@ -246,6 +246,7 @@ const ScheduleDetails = () => {
 
       // Invalidate the related query to refetch fresh data
       queryClient.invalidateQueries(["attendance", eventId]);
+      queryClient.invalidateQueries(["event-attendance", eventId]);
     } catch (error) {
       console.error("Error updating attendee status:", error);
     }
@@ -282,8 +283,6 @@ const ScheduleDetails = () => {
       setDisableSchedule(false);
     }
   }, [event, userData, disableSchedule]);
-
-  
 
   const removeAssignedVolunteerMutation = useMutation({
     mutationFn: async (volunteerId) =>
@@ -346,8 +345,6 @@ const ScheduleDetails = () => {
       eventId,
     });
   };
-
- 
 
   if (isLoading || attendanceLoading) return <Loading />;
 
@@ -683,7 +680,7 @@ const ScheduleDetails = () => {
               <h3 className="text-xl font-semibold text-accent">Children</h3>
             </div>
             <AttendanceTable
-               updateTimeOut={onTimeOut}
+              updateTimeOut={onTimeOut}
               // onSubmit={onSubmit}
               disableSchedule={disableSchedule}
               attendance={filteredChildAttendance}
@@ -751,7 +748,7 @@ const ScheduleDetails = () => {
                 </div>
 
                 <AttendanceTable
-                   updateTimeOut={onTimeOut}
+                  updateTimeOut={onTimeOut}
                   // onSubmit={onSubmit}
                   disableSchedule={disableSchedule}
                   attendance={family.children}
