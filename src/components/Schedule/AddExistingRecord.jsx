@@ -33,6 +33,8 @@ import {
   useRemoveWalkInAttendee,
   useUpdateWalkInAttendee,
 } from "@/hooks/Schedule/useAddRecord";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { Icon } from "@iconify/react";
 
 const AddExistingRecord = ({ eventId }) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -448,92 +450,110 @@ const AddExistingRecord = ({ eventId }) => {
                     </div>
                   ))}
                   <div className="space-y-2 rounded-lg bg-primary p-2">
-                    <div className="text-center">
-                      <Label className="text-xs font-semibold text-primary-text md:text-sm">
-                        Manual Record (from Walk-in and Volunteers input)
-                      </Label>
-                    </div>
-                    {/* Walk-ins Section */}
-                    {allWalkIns.map((walkIn) => (
-                      <div
-                        key={walkIn.id}
-                        className="rounded-lg bg-white px-5 py-1 text-primary-text"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-x-2">
-                            {existingWalkInAttendees?.has(
-                              `${walkIn.first_name} ${walkIn.last_name}`
-                            ) && (
-                              <Switch
-                                checked={walkInAtendeeStatus?.get(
-                                  `${walkIn.first_name} ${walkIn.last_name}`
-                                )}
-                                onCheckedChange={(checked) =>
-                                  handleUpdateWalkInAttendee(
-                                    walkIn.first_name,
-                                    walkIn.last_name,
-                                    checked
-                                  )
-                                }
+                    {allWalkIns.length > 0 && (
+                      <>
+                        <div className="flex items-center justify-center gap-x-2 text-center text-primary-text">
+                          <Label className="text-xs font-semibold text-primary-text md:text-sm">
+                            Manual Record (from Walk-in and Volunteers input)
+                          </Label>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Icon
+                                className="h-5 w-5"
+                                icon="mingcute:question-line"
                               />
-                            )}
-                            <Label>
-                              {walkIn.first_name} {walkIn.last_name}
-                            </Label>
-                          </div>
-                          <div>
-                            {existingWalkInAttendees?.has(
-                              `${walkIn.first_name} ${walkIn.last_name}`
-                            ) ? (
-                              <Button
-                                disabled={
-                                  loadingRemoveAttendeeId ===
-                                  `${walkIn.first_name} ${walkIn.last_name}`
-                                }
-                                onClick={() =>
-                                  handleRemoveWalkInAttendee(
-                                    walkIn.first_name,
-                                    walkIn.last_name
-                                  )
-                                }
-                                className="rounded-xl bg-red-100 text-[12px] text-red-600"
-                              >
-                                {loadingRemoveAttendeeId ===
-                                `${walkIn.first_name} ${walkIn.last_name}` ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  "Remove"
-                                )}
-                              </Button>
-                            ) : (
-                              <Button
-                                disabled={
-                                  loadingAddAttendeeId ===
-                                  `${walkIn.first_name} ${walkIn.last_name}`
-                                }
-                                onClick={() =>
-                                  handleWalkInAddAttendee(
-                                    walkIn.first_name,
-                                    walkIn.last_name,
-                                    walkIn.family_id,
-                                    walkIn.contact_number,
-                                    walkIn.attendee_type
-                                  )
-                                }
-                                className="rounded-xl bg-[#EFDED6] text-[12px] text-primary-text"
-                              >
-                                {loadingAddAttendeeId ===
-                                `${walkIn.first_name} ${walkIn.last_name}` ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  "Add"
-                                )}
-                              </Button>
-                            )}
-                          </div>
+                            </PopoverTrigger>
+                            <PopoverContent>
+                              <p>
+                                This section displays attendance records added
+                                from walk-ins and volunteers.
+                              </p>
+                            </PopoverContent>
+                          </Popover>
                         </div>
-                      </div>
-                    ))}
+                        {/* Walk-ins Section */}
+                        {allWalkIns.map((walkIn) => (
+                          <div
+                            key={walkIn.id}
+                            className="rounded-lg bg-white px-5 py-1 text-primary-text"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-x-2">
+                                {existingWalkInAttendees?.has(
+                                  `${walkIn.first_name} ${walkIn.last_name}`
+                                ) && (
+                                  <Switch
+                                    checked={walkInAtendeeStatus?.get(
+                                      `${walkIn.first_name} ${walkIn.last_name}`
+                                    )}
+                                    onCheckedChange={(checked) =>
+                                      handleUpdateWalkInAttendee(
+                                        walkIn.first_name,
+                                        walkIn.last_name,
+                                        checked
+                                      )
+                                    }
+                                  />
+                                )}
+                                <Label>
+                                  {walkIn.first_name} {walkIn.last_name}
+                                </Label>
+                              </div>
+                              <div>
+                                {existingWalkInAttendees?.has(
+                                  `${walkIn.first_name} ${walkIn.last_name}`
+                                ) ? (
+                                  <Button
+                                    disabled={
+                                      loadingRemoveAttendeeId ===
+                                      `${walkIn.first_name} ${walkIn.last_name}`
+                                    }
+                                    onClick={() =>
+                                      handleRemoveWalkInAttendee(
+                                        walkIn.first_name,
+                                        walkIn.last_name
+                                      )
+                                    }
+                                    className="rounded-xl bg-red-100 text-[12px] text-red-600"
+                                  >
+                                    {loadingRemoveAttendeeId ===
+                                    `${walkIn.first_name} ${walkIn.last_name}` ? (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      "Remove"
+                                    )}
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    disabled={
+                                      loadingAddAttendeeId ===
+                                      `${walkIn.first_name} ${walkIn.last_name}`
+                                    }
+                                    onClick={() =>
+                                      handleWalkInAddAttendee(
+                                        walkIn.first_name,
+                                        walkIn.last_name,
+                                        walkIn.family_id,
+                                        walkIn.contact_number,
+                                        walkIn.attendee_type
+                                      )
+                                    }
+                                    className="rounded-xl bg-[#EFDED6] text-[12px] text-primary-text"
+                                  >
+                                    {loadingAddAttendeeId ===
+                                    `${walkIn.first_name} ${walkIn.last_name}` ? (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      "Add"
+                                    )}
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </>
+                    )}
                   </div>
                 </>
               )}

@@ -1072,6 +1072,24 @@ const removeAttendeeFromRecord = async (attendeeId, eventId) => {
 
 const addSingleAttendeeFromRecord = async (attendeeDetails) => {
   try {
+    // First check if an attendee with the same name exists in this event
+    const { data: existingAttendee, error: checkError } = await supabase
+      .from("attendance")
+      .select("*")
+      .eq("event_id", attendeeDetails.event.id)
+      .eq("first_name", attendeeDetails.attendee.first_name)
+      .eq("last_name", attendeeDetails.attendee.last_name)
+      .maybeSingle();
+
+    if (checkError) throw checkError;
+
+    // If attendee already exists, throw error
+    if (existingAttendee) {
+      throw new Error(
+        `Attendee ${attendeeDetails.attendee.first_name} ${attendeeDetails.attendee.last_name} is already registered for this event.`
+      );
+    }
+
     const { data, error } = await supabase
       .from("attendance")
       .insert([
