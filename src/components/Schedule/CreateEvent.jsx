@@ -53,17 +53,23 @@ const CreateEvent = ({
 
   const [selectedMinistry, setSelectedMinistry] = useState(null);
 
-  const { ministryMembers, ministries } = useMinistry({ selectedMinistry });
+  const { ministryMembers, ministries } = useMinistry({ ministryId:selectedMinistry });
 
   const { userData } = useUser(); // Get userData from the context
-
+  
   const userId = userData?.id; // Extract the userId, safely checking if userData exists
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { createEventMutation,quickAccessEvents } = useEvent();
   const { data: volunteers } = useUsersByRole("volunteer");
+  const { data: admins } = useUsersByRole("admin");
 
+  
+const publicVolunteers = [
+  ...(volunteers || []),
+  ...(admins || []), 
+];
 
   const editMutation = useMutation({
     mutationFn: async ({ eventId, updatedData }) =>
@@ -308,9 +314,9 @@ const CreateEvent = ({
                       </SelectTrigger>
                       <SelectContent>
                         {/* Ensure ministries.data is an array before mapping */}
-                        {Array.isArray(ministries?.data) &&
-                        ministries?.data.length > 0 ? (
-                          ministries?.data.map((ministry) => (
+                        {Array.isArray(ministries) &&
+                        ministries?.length > 0 ? (
+                          ministries?.map((ministry) => (
                             <SelectItem key={ministry.id} value={ministry.id}>
                               {ministry.ministry_name}
                             </SelectItem>
@@ -331,56 +337,52 @@ const CreateEvent = ({
         </div>
         {!eventData && (
           <FormField
-            control={control}
-            name="assignVolunteer"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Assigns Volunteer</FormLabel>
-                <FormControl>
-                  <ReactSelect
-                    isMulti
-                    options={
-                      selectedMinistry && ministryMembers?.data?.length > 0
-                        ? ministryMembers?.data?.map((member) => ({
-                            value: member?.user_id || "", // Ensure fallback for undefined user_id
-                            label: `${member?.users?.first_name || "Unknown"} ${
-                              member?.users?.last_name || "Unknown"
-                            }`, // Safely access nested properties
-                          }))
-                        : volunteers?.map((volunteer) => ({
-                            value: volunteer?.id || "", // Ensure fallback for undefined id
-                            label: `${volunteer?.first_name || "Unknown"} ${
-                              volunteer?.last_name || "Unknown"
-                            }`, // Safely access properties
-                          }))
-                    }
-                    value={
-                      Array.isArray(field.value)
-                        ? field.value.map((value) => ({
-                            value,
-                            label:
-                              ministryMembers?.data?.find(
-                                (m) => m.user_id === value
-                              )?.users?.first_name ||
-                              volunteers?.find((v) => v.id === value)
-                                ?.first_name ||
-                              "Unknown",
-                          }))
-                        : []
-                    } // Ensure the value matches the format used in options
-                    onChange={(selected) =>
-                      field.onChange(
-                        selected ? selected.map((option) => option.value) : []
-                      )
-                    }
-                    placeholder="Select Volunteer"
-                    classNamePrefix="react-select" // Add a prefix for styling if needed
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          control={control}
+          name="assignVolunteer"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Assign Volunteer</FormLabel>
+              <FormControl>
+                <ReactSelect
+                  isMulti
+                  options={
+                    // Check visibility to determine which volunteers to pass
+                    watchVisibility === "public"
+                      ? publicVolunteers?.map((volunteer) => ({
+                          value: volunteer?.id || "",
+                          label: `${volunteer?.first_name || "Unknown"} ${volunteer?.last_name || "Unknown"}`,
+                        }))
+                      : selectedMinistry && ministryMembers?.length > 0
+                      ? ministryMembers?.map((member) => ({
+                          value: member?.user_id || "",
+                          label: `${member?.users?.first_name || "Unknown"} ${member?.users?.last_name || "Unknown"}`,
+                        }))
+                      : selectedMinistry && ministryMembers?.length === 0
+                      ? [{ value: "", label: "Ministry has no assigned volunteer." }]
+                      : []
+                  }
+                  value={
+                    Array.isArray(field.value)
+                      ? field.value.map((value) => ({
+                          value,
+                          label:
+                            ministryMembers?.find((m) => m.user_id === value)?.users?.first_name ||
+                            volunteers?.find((v) => v.id === value)?.first_name ||
+                            "Unknown",
+                        }))
+                      : []
+                  }
+                  onChange={(selected) =>
+                    field.onChange(selected ? selected.map((option) => option.value) : [])
+                  }
+                  placeholder="Select Volunteer"
+                  classNamePrefix="react-select"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         )}
 
         {/* Event Date, Time */}

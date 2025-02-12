@@ -266,23 +266,36 @@ const ScheduleDetails = () => {
     exportAttendanceList(event, eventvolunteers, attendance, attendanceCount);
   };
 
+
+
+
   useEffect(() => {
-    if (!event && !userData) {
+    if (!event || !userData) {
       return;
     }
-
+  
     const eventDateTime = new Date(`${event?.event_date}T${event?.event_time}`);
     const currentDateTime = new Date();
-    const sevenDaysAhead = new Date(
-      eventDateTime.getTime() + 7 * 24 * 60 * 60 * 1000
-    );
-
-    if (currentDateTime > sevenDaysAhead) {
+  
+    let offset = 0;
+    if (userData.role === "volunteer") {
+      // 2 hours ahead for volunteer
+      offset = 2 * 60 * 60 * 1000;
+    } else if (userData.role === "admin") {
+      // 24 hours ahead for admin
+      offset = 24 * 60 * 60 * 1000;
+    }
+  
+    const adjustedEventDateTime = new Date(eventDateTime.getTime() + offset);
+  
+    if (currentDateTime > adjustedEventDateTime) {
       setDisableSchedule(true);
     } else {
       setDisableSchedule(false);
     }
-  }, [event, userData, disableSchedule]);
+  }, [event, userData]);
+  
+  
 
   const removeAssignedVolunteerMutation = useMutation({
     mutationFn: async (volunteerId) =>
