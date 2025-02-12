@@ -63,8 +63,8 @@ const EditAttendeeDialog = ({ attendee, disableSchedule }) => {
       time_attended: formatTime(attendee.time_attended),
       time_out: formatTime(attendee.time_out),
     };
-    if(attendee.attendee_type ==="parent"){
-      attendeeData.parent = attendee.contact_number
+    if(attendee.attendee_type ==="parents"){
+      attendeeData.contact_number = attendee.contact_number
     }
     console.log("attendedData",attendeeData,"data from the submit",data)
 
