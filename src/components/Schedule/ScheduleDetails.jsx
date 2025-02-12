@@ -246,6 +246,7 @@ const ScheduleDetails = () => {
 
       // Invalidate the related query to refetch fresh data
       queryClient.invalidateQueries(["attendance", eventId]);
+      queryClient.invalidateQueries(["event-attendance", eventId]);
     } catch (error) {
       console.error("Error updating attendee status:", error);
     }
@@ -265,24 +266,35 @@ const ScheduleDetails = () => {
     exportAttendanceList(event, eventvolunteers, attendance, attendanceCount);
   };
 
+
+
+
   useEffect(() => {
-    if (!event && !userData) {
+    if (!event || !userData) {
       return;
     }
-
+  
     const eventDateTime = new Date(`${event?.event_date}T${event?.event_time}`);
     const currentDateTime = new Date();
-    const sevenDaysAhead = new Date(
-      eventDateTime.getTime() + 7 * 24 * 60 * 60 * 1000
-    );
-
-    if (currentDateTime > sevenDaysAhead) {
+  
+    let offset = 0;
+    if (userData.role === "volunteer") {
+      // 2 hours ahead for volunteer
+      offset = 2 * 60 * 60 * 1000;
+    } else if (userData.role === "admin") {
+      // 24 hours ahead for admin
+      offset = 24 * 60 * 60 * 1000;
+    }
+  
+    const adjustedEventDateTime = new Date(eventDateTime.getTime() + offset);
+  
+    if (currentDateTime > adjustedEventDateTime) {
       setDisableSchedule(true);
     } else {
       setDisableSchedule(false);
     }
-  }, [event, userData, disableSchedule]);
-
+  }, [event, userData]);
+  
   
 
   const removeAssignedVolunteerMutation = useMutation({
@@ -346,8 +358,6 @@ const ScheduleDetails = () => {
       eventId,
     });
   };
-
- 
 
   if (isLoading || attendanceLoading) return <Loading />;
 
@@ -683,7 +693,7 @@ const ScheduleDetails = () => {
               <h3 className="text-xl font-semibold text-accent">Children</h3>
             </div>
             <AttendanceTable
-               updateTimeOut={onTimeOut}
+              updateTimeOut={onTimeOut}
               // onSubmit={onSubmit}
               disableSchedule={disableSchedule}
               attendance={filteredChildAttendance}
@@ -751,7 +761,7 @@ const ScheduleDetails = () => {
                 </div>
 
                 <AttendanceTable
-                   updateTimeOut={onTimeOut}
+                  updateTimeOut={onTimeOut}
                   // onSubmit={onSubmit}
                   disableSchedule={disableSchedule}
                   attendance={family.children}

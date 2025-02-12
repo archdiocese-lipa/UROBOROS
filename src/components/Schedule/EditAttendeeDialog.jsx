@@ -27,6 +27,7 @@ import { editAttendee } from "@/services/attendanceService";
 import { toast } from "@/hooks/use-toast";
 import { useUser } from "@/context/useUser";
 import { useSearchParams } from "react-router-dom";
+import { isEqual } from "lodash";
 
 const EditAttendeeDialog = ({ attendee, disableSchedule }) => {
   const [attendeeEdit, setAttendeeEdit] = useState(false);
@@ -55,6 +56,28 @@ const EditAttendeeDialog = ({ attendee, disableSchedule }) => {
   });
 
   const onSubmit = (data, attendeeId) => {
+    // Format the times for comparison
+    const attendeeData = {
+      first_name: attendee.first_name,
+      last_name: attendee.last_name,
+      time_attended: formatTime(attendee.time_attended),
+      time_out: formatTime(attendee.time_out),
+    };
+    if(attendee.attendee_type ==="parents"){
+      attendeeData.contact_number = attendee.contact_number
+    }
+    console.log("attendedData",attendeeData,"data from the submit",data)
+
+    // Compare submitted data with attendee data
+    if (isEqual(data, attendeeData)) {
+      console.log("equal")
+      // If the form data is the same as the attendee data, reset the form and close the dialog
+      form.reset();
+      setAttendeeEdit(false);
+      return;
+    }
+
+    // Otherwise, proceed with the mutation
     updateMutation.mutate(
       {
         update_id: userData.id,
@@ -95,9 +118,9 @@ const EditAttendeeDialog = ({ attendee, disableSchedule }) => {
     defaultValues: {
       time_out: formatTime(attendee.time_out),
       time_attended: formatTime(attendee.time_attended),
-      first_name: "",
-      last_name: "",
-      contact_number: "",
+      first_name: attendee.first_name,
+      last_name: attendee.last_name,
+      contact_number: attendee.contact_number,
     },
   });
 
@@ -108,11 +131,6 @@ const EditAttendeeDialog = ({ attendee, disableSchedule }) => {
           <Button
             type="button"
             onClick={() => {
-              form.setValue("first_name", attendee.first_name || "");
-              form.setValue("last_name", attendee.last_name || "");
-              if (attendee.attendee_type !== "children") {
-                form.setValue("contact_number", attendee.contact_number || "");
-              }
               setAttendeeEdit(true);
             }}
             variant="ghost"

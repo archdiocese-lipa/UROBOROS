@@ -22,6 +22,8 @@ import { Input } from "../ui/input";
 import { useEffect, useState } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Search } from "@/assets/icons/icons";
+import AddParent from "./AddParent";
+import AddChild from "./AddChild";
 
 const FamilyCards = () => {
   const [search, setSearch] = useState("");
@@ -74,7 +76,7 @@ const FamilyCards = () => {
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex md:w-[30rem] items-center justify-start">
+      <div className="flex items-center justify-start md:w-[30rem]">
         <div className="relative w-8/12">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 transform text-2xl text-accent" />
           <Input
@@ -107,13 +109,18 @@ const FamilyCards = () => {
                     <h3 className="text-xl font-semibold text-accent">
                       Parent(s)/ Guardian(s)
                     </h3>
+                    <AddParent
+                      familyId={family?.id}
+                      familyFirstName={family?.users?.first_name}
+                      familyLastName={family?.users?.last_name}
+                    />
                   </div>
                 </div>
                 {family.parents && (
                   <Table>
                     <TableHeader className="bg-primary">
                       <TableRow>
-                        <TableHead>Name</TableHead>
+                        <TableHead className="w-[200px]">Name</TableHead>
                         <TableHead>Contact</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -162,6 +169,11 @@ const FamilyCards = () => {
                   <h3 className="text-xl font-semibold text-accent">
                     Children
                   </h3>
+                  <AddChild
+                    familyId={family?.id}
+                    familyFirstName={family?.users?.first_name}
+                    familyLastName={family?.users?.last_name}
+                  />
                 </div>
                 {family?.children && (
                   <Table>

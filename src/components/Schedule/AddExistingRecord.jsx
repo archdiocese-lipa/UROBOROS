@@ -12,14 +12,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "../ui/input";
 import {
-  addSingleAttendeeFromRecord,
   getAttendee,
-  removeAttendeeFromRecord,
   searchAttendee,
   updateAttendee,
-  attendWalkInAttendee,
-  removeWalkInAttendee,
-  updateWalkInAttendee,
 } from "@/services/attendanceService";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Label } from "../ui/label";
@@ -31,17 +26,41 @@ import {
 } from "@tanstack/react-query";
 import { Switch } from "../ui/switch";
 import { useUser } from "@/context/useUser";
+import {
+  useAddAttendee,
+  useAddWalkInAttendee,
+  useRemoveAttendee,
+  useRemoveWalkInAttendee,
+  useUpdateWalkInAttendee,
+} from "@/hooks/Schedule/useAddRecord";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { Icon } from "@iconify/react";
 
 const AddExistingRecord = ({ eventId }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const debounceSearchTerm = useDebounce(searchTerm, 500);
+  const [loadingAddAttendeeId, setLoadingAddAttendeeId] = useState(null);
+  const [loadingRemoveAttendeeId, setLoadingRemoveAttendeeId] = useState(null);
+
   const queryClient = useQueryClient();
   const userData = useUser();
   const userId = userData?.userData?.id;
 
+  const { mutate: addAttendeeMutation } = useAddAttendee(eventId, userId);
+  const { mutate: removeAttendeeMutation } = useRemoveAttendee(eventId);
+  const { mutate: addWalkInAttendeeMutation } = useAddWalkInAttendee(
+    eventId,
+    userId
+  );
+  const { mutate: removeWalkInAttendeeMutation } =
+    useRemoveWalkInAttendee(eventId);
+
+  const { mutate: updateWalkInAttendeeMutation } =
+    useUpdateWalkInAttendee(eventId);
+
   // Fetch existing attendees
   const { data: attendanceData } = useQuery({
-    queryKey: ["attendee-attendance", eventId],
+    queryKey: ["event-attendance", eventId],
     queryFn: () => getAttendee(eventId),
     enabled: !!eventId,
   });
@@ -51,14 +70,14 @@ const AddExistingRecord = ({ eventId }) => {
     existingAttendees,
     attendanceStatus,
     existingWalkInAttendees,
-    walkInAttendanceStatus,
+    walkInAtendeeStatus,
   } = useMemo(() => {
     if (!attendanceData || attendanceData.length === 0) {
       return {
         existingAttendees: new Set(),
         attendanceStatus: new Map(),
         existingWalkInAttendees: new Set(),
-        walkInAttendanceStatus: new Map(),
+        walkInAtendeeStatus: new Map(),
       };
     }
 
@@ -72,9 +91,9 @@ const AddExistingRecord = ({ eventId }) => {
           (a) => `${a.first_name.trim()} ${a.last_name.trim()}`
         )
       ),
-      walkInAttendanceStatus: new Map(
+      walkInAtendeeStatus: new Map(
         attendanceData.map((a) => [
-          `${a.first_name} ${a.last_name}`,
+          `${a.first_name.trim()} ${a.last_name.trim()}`,
           a.attended,
         ])
       ),
@@ -106,70 +125,72 @@ const AddExistingRecord = ({ eventId }) => {
     return data?.pages?.flatMap((page) => page.families) ?? [];
   }, [data?.pages]);
 
-const allWalkInAttendees = useMemo(() => {
-  const uniqueAttendees = new Set();
-  return (data?.pages ?? []).flatMap((page) => {
-    return (page?.walkInAttendees ?? []).filter((attendee) => {
-      // Check if attendee is defined and has the necessary properties
-      if (attendee && attendee.id && attendee.first_name && attendee.last_name) {
-        if (!uniqueAttendees.has(attendee.id)) {
-          uniqueAttendees.add(attendee.id);
-          return true; // Include this attendee
-        }
-      }
-      return false; // Skip if attendee is invalid or already included
-    });
-  });
-}, [data?.pages]);
+  const allWalkIns = useMemo(() => {
+    if (!data?.pages) return [];
 
-  const addAttendee = async (
+    // Create a Map to track unique walk-ins by ID
+    const uniqueWalkIns = new Map();
+
+    // Process pages in order
+    data.pages.forEach((page) => {
+      page.walkInAttendees?.forEach((walkIn) => {
+        // Only add if we haven't seen this ID before
+        if (!uniqueWalkIns.has(walkIn.id)) {
+          uniqueWalkIns.set(walkIn.id, walkIn);
+        }
+      });
+    });
+
+    return Array.from(uniqueWalkIns.values());
+  }, [data?.pages]);
+
+  const handleAddAttendee = (
     attendeeId,
     firstName,
     lastName,
-    eventId,
     familyId,
     contactNumber,
     attendeeType
   ) => {
-    try {
-      const attendeeDetails = {
-        attendee: {
-          id: attendeeId,
-          first_name: firstName,
-          last_name: lastName,
-          contact: contactNumber,
-          type: attendeeType,
+    setLoadingAddAttendeeId(attendeeId);
+    addAttendeeMutation(
+      {
+        attendeeId,
+        firstName,
+        lastName,
+        familyId,
+        contactNumber,
+        attendeeType,
+      },
+      {
+        onSettled: () => {
+          setTimeout(() => {
+            setLoadingAddAttendeeId(null);
+          }, 500);
         },
-        event: {
-          id: eventId,
+        onError: () => {
+          setLoadingAddAttendeeId(null);
         },
-        family: {
-          id: familyId,
-        },
-        time_attended: new Date().toISOString(),
-        attended: true,
-        registered_by: userId,
-      };
-      await addSingleAttendeeFromRecord(attendeeDetails);
-      await queryClient.invalidateQueries(["attendance", eventId]);
-      await queryClient.invalidateQueries(["search-attendees"]);
-    } catch (error) {
-      console.error("Error adding attendee:", error);
-    }
+      }
+    );
   };
 
-  const removeAttendance = async (attendeeId) => {
-    try {
-      await removeAttendeeFromRecord(attendeeId, eventId);
-
-      // Refresh queries
-      await queryClient.invalidateQueries(["event-attendance", eventId]);
-      await queryClient.invalidateQueries(["search-attendees"]);
-    } catch (error) {
-      console.error("Error removing attendee:", error);
-    }
+  // Remove attendee from record
+  const handleRemoveAttendee = (attendeeId) => {
+    setLoadingRemoveAttendeeId(attendeeId);
+    removeAttendeeMutation(attendeeId, {
+      onSettled: () => {
+        setTimeout(() => {
+          setLoadingRemoveAttendeeId(null);
+        }, 500);
+      },
+      onError: () => {
+        setLoadingRemoveAttendeeId(null);
+      },
+    });
   };
 
+  // Update attendee status (NEED TO OPTIMIZE USING MUTATION)
   const onAttend = async (attendeeId, state) => {
     try {
       // Fix parameter order - eventId first, then state
@@ -177,6 +198,7 @@ const allWalkInAttendees = useMemo(() => {
 
       // Update query key to match the one used in useQuery
       await queryClient.invalidateQueries(["attendance", eventId]);
+      await queryClient.invalidateQueries(["event-attendance", eventId]);
       await queryClient.invalidateQueries({
         queryKey: ["search-attendees"],
       });
@@ -185,65 +207,51 @@ const allWalkInAttendees = useMemo(() => {
     }
   };
 
-  const walkInattend = async (
+  const handleWalkInAddAttendee = (
     firstName,
     lastName,
-    eventId,
     familyId,
     contactNumber,
     attendeeType
   ) => {
-    try {
-      const attendeeDetails = {
-        attendee: {
-          first_name: firstName,
-          last_name: lastName,
-          contact: contactNumber,
-          type: attendeeType,
+    setLoadingAddAttendeeId(`${firstName} ${lastName}`);
+    addWalkInAttendeeMutation(
+      {
+        firstName,
+        lastName,
+        familyId,
+        contactNumber,
+        attendeeType,
+      },
+      {
+        onSettled: () => {
+          setTimeout(() => {
+            setLoadingAddAttendeeId(null);
+          }, 500);
         },
-        event: {
-          id: eventId,
-        },
-        family: {
-          id: familyId,
-        },
-        time_attended: new Date().toISOString(),
-        attended: true,
-        registered_by: userId,
-      };
-      await attendWalkInAttendee(attendeeDetails);
-      await queryClient.invalidateQueries(["attendance", eventId]);
-      await queryClient.invalidateQueries(["search-attendees"]);
-    } catch (error) {
-      console.error("Error adding attendee:", error);
-    }
+      }
+    );
   };
 
-  const removeWalkIn = async (first_name, last_name) => {
-    try {
-      await removeWalkInAttendee(first_name, last_name, eventId);
-
-      // Refresh queries
-      await queryClient.invalidateQueries(["event-attendance", eventId]);
-      await queryClient.invalidateQueries(["search-attendees"]);
-    } catch (error) {
-      console.error("Error removing attendee:", error);
-    }
+  const handleRemoveWalkInAttendee = (firstName, lastName) => {
+    setLoadingRemoveAttendeeId(`${firstName} ${lastName}`);
+    removeWalkInAttendeeMutation(
+      { firstName, lastName },
+      {
+        onSettled: () => {
+          setTimeout(() => {
+            setLoadingRemoveAttendeeId(null);
+          }, 500);
+        },
+        onError: () => {
+          setLoadingRemoveAttendeeId(null);
+        },
+      }
+    );
   };
 
-  const onAttendWalkIn = async (first_name, last_name, state) => {
-    try {
-      // Call the function to update the attendance status of the walk-in attendee
-      await updateWalkInAttendee(first_name, last_name, eventId, state);
-
-      // Invalidate the relevant query keys to refresh the data
-      await queryClient.invalidateQueries(["attendance", eventId]);
-      await queryClient.invalidateQueries({
-        queryKey: ["search-attendees"],
-      });
-    } catch (error) {
-      console.error("Error updating attendee status:", error);
-    }
+  const handleUpdateWalkInAttendee = (firstName, lastName, state) => {
+    updateWalkInAttendeeMutation({ firstName, lastName, state });
   };
 
   // intersection observer for infinite scroll
@@ -278,212 +286,276 @@ const allWalkInAttendees = useMemo(() => {
             </div>
           ) : (
             <>
-              {allFamilies.length === 0 ? (
+              {(allFamilies.length === 0) & (allWalkIns.length === 0) ? (
                 <Label className="flex items-center justify-center">
                   No data found
                 </Label>
               ) : (
-                allFamilies?.map((family) => (
-                  <div
-                    key={family?.familyId}
-                    className="rounded-lg bg-primary p-2"
-                  >
-                    {/* Parents Section */}
-                    {family.parents?.length > 0 && (
-                      <div className="space-y-2">
-                        <Label className="text-primary-text">
-                          Parents/Guardians
-                        </Label>
-                        <ul className="space-y-2">
-                          {family.parents?.map((parent) => (
-                            <li
-                              key={parent?.id}
-                              className="rounded-lg bg-white px-5 py-1 text-primary-text"
-                            >
-                              <div className="flex items-center justify-between">
-                                {existingAttendees?.has(parent.id) && (
-                                  <Switch
-                                    checked={attendanceStatus?.get(parent.id)}
-                                    onCheckedChange={(checked) =>
-                                      onAttend(parent.id, checked)
-                                    }
-                                  />
-                                )}
-                                <Label>
-                                  {parent.first_name} {parent.last_name}
-                                </Label>
-                                <div>
-                                  {existingAttendees?.has(parent.id) ? (
-                                    <Button
-                                      onClick={() =>
-                                        removeAttendance(parent.id)
-                                      }
-                                      className="rounded-xl bg-red-100 text-[12px] text-red-600"
-                                    >
-                                      Remove
-                                    </Button>
-                                  ) : (
-                                    <Button
-                                      onClick={() =>
-                                        addAttendee(
-                                          parent.id,
-                                          parent.first_name,
-                                          parent.last_name,
-                                          eventId,
-                                          parent.family_id,
-                                          parent.contact_number,
-                                          (parent.attendee_type = "parents")
-                                        )
-                                      }
-                                      className="rounded-xl bg-[#EFDED6] text-[12px] text-primary-text"
-                                    >
-                                      Add
-                                    </Button>
-                                  )}
-                                </div>
-                              </div>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                    {/* Children Section */}
-                    {family.children?.length > 0 && (
-                      <div className="space-y-2">
-                        <Label className="text-primary-text">Children</Label>
-                        <ul className="space-y-2">
-                          {family.children.map((child) => (
-                            <li
-                              key={child.id}
-                              className="rounded-lg bg-white px-5 py-1 text-primary-text"
-                            >
-                              <div className="flex items-center justify-between">
-                                {existingAttendees.has(child.id) && (
-                                  <Switch
-                                    checked={attendanceStatus.get(child.id)}
-                                    onCheckedChange={(checked) =>
-                                      onAttend(child.id, checked)
-                                    }
-                                  />
-                                )}
-                                <Label>
-                                  {child.first_name} {child.last_name}
-                                </Label>
-                                <div>
-                                  {existingAttendees.has(child.id) ? (
-                                    <Button
-                                      onClick={() => removeAttendance(child.id)}
-                                      className="rounded-xl bg-red-100 text-[12px] text-red-600"
-                                    >
-                                      Remove
-                                    </Button>
-                                  ) : (
-                                    <Button
-                                      onClick={() =>
-                                        addAttendee(
-                                          child.id,
-                                          child.first_name,
-                                          child.last_name,
-                                          eventId,
-                                          child.family_id,
-                                          child.contact_number,
-                                          (parent.attendee_type = "children")
-                                        )
-                                      }
-                                      className="rounded-xl bg-[#EFDED6] text-[12px] text-primary-text"
-                                    >
-                                      Add
-                                    </Button>
-                                  )}
-                                </div>
-                              </div>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                ))
-              )}
-              {/* Walk-in Attendees Section */}
-              {allWalkInAttendees?.length > 0 && (
-                <div className="rounded-lg bg-primary py-2">
-                  <div className="text-center">
-                    <Label className="text-md text-center text-primary-text md:text-lg">
-                      Manual Record (from Walk-in and Volunteers input)
-                    </Label>
-                  </div>
-                  <ul className="space-y-2">
-                    {allWalkInAttendees?.map((attendee) => (
-                      <li key={attendee?.id} className="px-3 text-primary-text">
-                        <div className="flex items-center justify-between rounded-lg bg-white px-2 py-1">
-                          <div className="flex items-center gap-2">
-                            {existingWalkInAttendees?.has(
-                              `${attendee?.first_name} ${attendee?.last_name}`
-                            ) && (
-                              <Switch
-                                checked={walkInAttendanceStatus.get(
-                                  `${attendee?.first_name} ${attendee?.last_name}`
-                                )}
-                                onCheckedChange={(checked) =>
-                                  onAttendWalkIn(
-                                    attendee?.first_name,
-                                    attendee?.last_name,
-                                    checked
-                                  )
-                                }
-                              />
-                            )}
-                            <Label>
-                              {attendee?.first_name} {attendee?.last_name}
-                              <span className="text-muted text-[12px]">
-                                {" "}
-                                {attendee?.attendee_type === "parents"
-                                  ? "(Parent)"
-                                  : "(Child)"}
-                              </span>
-                            </Label>
-                          </div>
-
-                          <div className="flex items-center gap-2">
-                            {existingWalkInAttendees?.has(
-                              `${attendee.first_name} ${attendee.last_name}`
-                            ) ? (
-                              <Button
-                                onClick={() =>
-                                  removeWalkIn(
-                                    attendee?.first_name,
-                                    attendee?.last_name,
-                                    eventId
-                                  )
-                                }
-                                className="rounded-xl bg-red-100 text-[12px] text-red-600"
+                <>
+                  {allFamilies?.map((family) => (
+                    <div
+                      key={family?.familyId}
+                      className="rounded-lg bg-primary p-2"
+                    >
+                      {/* Parents Section */}
+                      {family.parents?.length > 0 && (
+                        <div className="space-y-2">
+                          <Label className="text-primary-text">
+                            Parents/Guardians
+                          </Label>
+                          <ul className="space-y-2">
+                            {family.parents?.map((parent) => (
+                              <li
+                                key={parent?.id}
+                                className="rounded-lg bg-white px-5 py-1 text-primary-text"
                               >
-                                Remove
-                              </Button>
-                            ) : (
-                              <Button
-                                onClick={() =>
-                                  walkInattend(
-                                    attendee?.first_name,
-                                    attendee?.last_name,
-                                    eventId,
-                                    attendee?.family_id,
-                                    attendee?.contact_number,
-                                    attendee?.attendee_type
-                                  )
-                                }
-                                className="rounded-xl bg-[#EFDED6] text-[12px] text-primary-text"
-                              >
-                                Add
-                              </Button>
-                            )}
-                          </div>
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-x-2">
+                                    {existingAttendees?.has(parent.id) && (
+                                      <Switch
+                                        checked={attendanceStatus?.get(
+                                          parent.id
+                                        )}
+                                        onCheckedChange={(checked) =>
+                                          onAttend(parent.id, checked)
+                                        }
+                                      />
+                                    )}
+                                    <Label>
+                                      {parent.first_name} {parent.last_name}
+                                    </Label>
+                                  </div>
+                                  <div>
+                                    {existingAttendees?.has(parent.id) ? (
+                                      <Button
+                                        disabled={
+                                          loadingRemoveAttendeeId == parent.id
+                                        }
+                                        onClick={() =>
+                                          handleRemoveAttendee(parent.id)
+                                        }
+                                        className="rounded-xl bg-red-100 text-[12px] text-red-600"
+                                      >
+                                        {loadingRemoveAttendeeId ===
+                                        parent.id ? (
+                                          <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                          "Remove"
+                                        )}
+                                      </Button>
+                                    ) : (
+                                      <Button
+                                        disabled={
+                                          loadingAddAttendeeId == parent.id
+                                        }
+                                        onClick={() =>
+                                          handleAddAttendee(
+                                            parent.id,
+                                            parent.first_name,
+                                            parent.last_name,
+                                            parent.family_id,
+                                            parent.contact_number,
+                                            "parents"
+                                          )
+                                        }
+                                        className="rounded-xl bg-[#EFDED6] text-[12px] text-primary-text"
+                                      >
+                                        {loadingAddAttendeeId === parent.id ? (
+                                          <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                          "Add"
+                                        )}
+                                      </Button>
+                                    )}
+                                  </div>
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
                         </div>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                      )}
+                      {/* Children Section */}
+                      {family.children?.length > 0 && (
+                        <div className="space-y-2">
+                          <Label className="text-primary-text">Children</Label>
+                          <ul className="space-y-2">
+                            {family.children.map((child) => (
+                              <li
+                                key={child.id}
+                                className="rounded-lg bg-white px-5 py-1 text-primary-text"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-x-2">
+                                    {existingAttendees.has(child.id) && (
+                                      <Switch
+                                        checked={attendanceStatus.get(child.id)}
+                                        onCheckedChange={(checked) =>
+                                          onAttend(child.id, checked)
+                                        }
+                                      />
+                                    )}
+                                    <Label>
+                                      {child.first_name} {child.last_name}
+                                    </Label>
+                                  </div>
+                                  <div>
+                                    {existingAttendees.has(child.id) ? (
+                                      <Button
+                                        disabled={
+                                          loadingRemoveAttendeeId === child.id
+                                        }
+                                        onClick={() =>
+                                          handleRemoveAttendee(child.id)
+                                        }
+                                        className="rounded-xl bg-red-100 text-[12px] text-red-600"
+                                      >
+                                        {loadingRemoveAttendeeId ===
+                                        child.id ? (
+                                          <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                          "Remove"
+                                        )}
+                                      </Button>
+                                    ) : (
+                                      <Button
+                                        disabled={
+                                          loadingAddAttendeeId === child.id
+                                        }
+                                        onClick={() =>
+                                          handleAddAttendee(
+                                            child.id,
+                                            child.first_name,
+                                            child.last_name,
+                                            child.family_id,
+                                            child.contact_number,
+                                            "children"
+                                          )
+                                        }
+                                        className="rounded-xl bg-[#EFDED6] text-[12px] text-primary-text"
+                                      >
+                                        {loadingAddAttendeeId === child.id ? (
+                                          <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                          "Add"
+                                        )}
+                                      </Button>
+                                    )}
+                                  </div>
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  <div className="space-y-2 rounded-lg bg-primary p-2">
+                    {allWalkIns.length > 0 && (
+                      <>
+                        <div className="flex items-center justify-center gap-x-2 text-center text-primary-text">
+                          <Label className="text-xs font-semibold text-primary-text md:text-sm">
+                            Manual Record (from Walk-in and Volunteers input)
+                          </Label>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Icon
+                                className="h-5 w-5"
+                                icon="mingcute:question-line"
+                              />
+                            </PopoverTrigger>
+                            <PopoverContent>
+                              <p>
+                                This section displays attendance records added
+                                from walk-ins and volunteers.
+                              </p>
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                        {/* Walk-ins Section */}
+                        {allWalkIns.map((walkIn) => (
+                          <div
+                            key={walkIn.id}
+                            className="rounded-lg bg-white px-5 py-1 text-primary-text"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-x-2">
+                                {existingWalkInAttendees?.has(
+                                  `${walkIn.first_name} ${walkIn.last_name}`
+                                ) && (
+                                  <Switch
+                                    checked={walkInAtendeeStatus?.get(
+                                      `${walkIn.first_name} ${walkIn.last_name}`
+                                    )}
+                                    onCheckedChange={(checked) =>
+                                      handleUpdateWalkInAttendee(
+                                        walkIn.first_name,
+                                        walkIn.last_name,
+                                        checked
+                                      )
+                                    }
+                                  />
+                                )}
+                                <Label>
+                                  {walkIn.first_name} {walkIn.last_name}
+                                </Label>
+                              </div>
+                              <div>
+                                {existingWalkInAttendees?.has(
+                                  `${walkIn.first_name} ${walkIn.last_name}`
+                                ) ? (
+                                  <Button
+                                    disabled={
+                                      loadingRemoveAttendeeId ===
+                                      `${walkIn.first_name} ${walkIn.last_name}`
+                                    }
+                                    onClick={() =>
+                                      handleRemoveWalkInAttendee(
+                                        walkIn.first_name,
+                                        walkIn.last_name
+                                      )
+                                    }
+                                    className="rounded-xl bg-red-100 text-[12px] text-red-600"
+                                  >
+                                    {loadingRemoveAttendeeId ===
+                                    `${walkIn.first_name} ${walkIn.last_name}` ? (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      "Remove"
+                                    )}
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    disabled={
+                                      loadingAddAttendeeId ===
+                                      `${walkIn.first_name} ${walkIn.last_name}`
+                                    }
+                                    onClick={() =>
+                                      handleWalkInAddAttendee(
+                                        walkIn.first_name,
+                                        walkIn.last_name,
+                                        walkIn.family_id,
+                                        walkIn.contact_number,
+                                        walkIn.attendee_type
+                                      )
+                                    }
+                                    className="rounded-xl bg-[#EFDED6] text-[12px] text-primary-text"
+                                  >
+                                    {loadingAddAttendeeId ===
+                                    `${walkIn.first_name} ${walkIn.last_name}` ? (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      "Add"
+                                    )}
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </>
+                    )}
+                  </div>
+                </>
               )}
               {/* div for intersection observer */}
               {hasNextPage && (

@@ -23,10 +23,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "../ui/input";
 import { addSingleAttendee } from "@/services/attendanceService";
 import { useUser } from "@/context/useUser";
-import { Toast } from "../ui/toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { childSchema, parentSchema } from "@/zodSchema/AddFamilySchema";
-
+import { toast } from "@/hooks/use-toast";
 const AddAttendee = ({
   attendee_type,
   family_id,
@@ -39,8 +38,19 @@ const AddAttendee = ({
   const addAttendeeMutation = useMutation({
     mutationFn: async (data) => addSingleAttendee(data),
     onSuccess: () => {
-      Toast({
+      toast({
         title: "Attendee added successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Attendee added successfully",
+      });
+      console.error(error.message); // Log the whole error object
+      toast({
+        title: "Error",
+        description: error.message || "Something went wrong. Please try again.",
+        variant:"destructive"
       });
     },
     onSettled: () => {

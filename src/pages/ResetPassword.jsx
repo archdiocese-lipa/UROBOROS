@@ -25,7 +25,6 @@ export const ResetPassword = () => {
   const { userData } = useUser();
   const [passwordVisible, setPasswordVisible] = useState(false);
 
-
   useEffect(() => {
     supabase.auth.onAuthStateChange(async (event) => {
       if (event === "PASSWORD_RECOVERY") {
@@ -36,7 +35,9 @@ export const ResetPassword = () => {
 
   const changePasswordSchema = z
     .object({
-      currentPassword: z.string().min(1, "you must input your current password."),
+      currentPassword: z
+        .string()
+        .min(1, "you must input your current password."),
       password: z.string().min(6, "Password must be 6 digits"),
       confirmPassword: z.string().min(1, "Retype your password"),
     })
@@ -98,7 +99,9 @@ export const ResetPassword = () => {
   return (
     <div className="flex h-full w-full items-center justify-center">
       <div className="w-3/6">
-        <Title>{mode === "PASSWORD_RECOVERY" ? "Reset Password" : "Change Password"}</Title>
+        <Title>
+          {mode === "PASSWORD_RECOVERY" ? "Reset Password" : "Change Password"}
+        </Title>
         <Description>
           {mode === "PASSWORD_RECOVERY"
             ? "Reset your password without your current password."

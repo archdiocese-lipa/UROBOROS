@@ -25,7 +25,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "../ui/button";
 import { Icon } from "@iconify/react";
 import { addRecordSchema } from "@/zodSchema/Schedule/AddRecordSchema";
-import useAddRecord from "@/hooks/Schedule/useAddRecord";
+import { useAddRecord } from "@/hooks/Schedule/useAddRecord";
 import { useLocation } from "react-router-dom";
 import { useUser } from "@/context/useUser";
 import { z } from "zod";
@@ -49,20 +49,22 @@ const AddRecord = ({ eventId }) => {
         })
       )
       .optional()
-    .refine(
-      (parents) => {
-        // Skip validation if no parents or empty array
-        if (!parents || parents.length === 0) return true;
+      .refine(
+        (parents) => {
+          // Skip validation if no parents or empty array
+          if (!parents || parents.length === 0) return true;
 
-        // Validate that there is exactly one main applicant
-        const mainApplicants = parents.filter((parent) => parent.isMainApplicant);
-        return mainApplicants.length === 1;
-      },
-      {
-        message: "There must be exactly one main applicant",
-        path: ["parents"],
-      }
-    ),
+          // Validate that there is exactly one main applicant
+          const mainApplicants = parents.filter(
+            (parent) => parent.isMainApplicant
+          );
+          return mainApplicants.length === 1;
+        },
+        {
+          message: "There must be exactly one main applicant",
+          path: ["parents"],
+        }
+      ),
     children: z
       .array(
         z.object({
@@ -72,8 +74,6 @@ const AddRecord = ({ eventId }) => {
       )
       .min(1, "At least one child is required"),
   });
-
-
 
   const form = useForm({
     resolver: zodResolver(
@@ -120,8 +120,6 @@ const AddRecord = ({ eventId }) => {
       })),
       registered_by: userData?.id,
     };
-
-
 
     registerAttendance(submitData);
 
