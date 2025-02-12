@@ -162,7 +162,7 @@ const Schedule = () => {
           {userData?.role === ROLES[1] && <VolunteerDialogCalendar />}
         </div>
         <div className="flex flex-col gap-3">
-          {(userData?.role === ROLES[0] || userData?.role === ROLES[4])  &&  (
+          {(temporaryRole === ROLES[0] || userData?.role === ROLES[4])  &&  (
             <div className="flex gap-1">
               <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <DialogTrigger asChild>
