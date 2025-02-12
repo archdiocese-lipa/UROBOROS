@@ -76,7 +76,7 @@ const AddExistingRecord = ({ eventId }) => {
       return {
         existingAttendees: new Set(),
         attendanceStatus: new Map(),
-        existinggWalkInAttendees: new Set(),
+        existingWalkInAttendees: new Set(),
         walkInAtendeeStatus: new Map(),
       };
     }

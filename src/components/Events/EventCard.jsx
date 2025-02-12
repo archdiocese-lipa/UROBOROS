@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/card";
 import { Description } from "../Title";
 import ManualAttendEvents from "./ManualAttendEvents";
+// import { AddToCalendarButton } from "add-to-calendar-button-react";
 
 const EventCard = ({
   eventId,
@@ -16,6 +17,18 @@ const EventCard = ({
   eventDate = "No description available",
   eventTime,
 }) => {
+  // Calculate end time (1 hour after start time)
+  // const calculateEndTime = (startTime) => {
+  //   const [hours, minutes] = startTime.split(":");
+  //   const date = new Date();
+  //   date.setHours(parseInt(hours));
+  //   date.setMinutes(parseInt(minutes));
+  //   date.setHours(date.getHours() + 1); // Add 1 hour
+  //   return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+  // };
+
+  // const endTime = calculateEndTime(eventTime);
+
   return (
     <Card className="border-primary text-primary-text">
       <CardHeader>
@@ -28,12 +41,26 @@ const EventCard = ({
         </Description>
       </CardContent>
       <CardFooter>
-        <ManualAttendEvents
-          eventId={eventId}
-          eventName={eventName}
-          eventTime={eventTime}
-          eventDate={eventDate}
-        />
+        <div>
+          <ManualAttendEvents
+            eventId={eventId}
+            eventName={eventName}
+            eventTime={eventTime}
+            eventDate={eventDate}
+          />
+          {/* <AddToCalendarButton
+            name={eventName}
+            startDate={eventDate}
+            startTime={eventTime}
+            endTime={endTime}
+            options={["Google", "Apple", "Yahoo"]}
+            timeZone="UTC"
+            trigger="click"
+            buttonStyle="3d"
+          >
+            Add to calendar
+          </AddToCalendarButton> */}
+        </div>
       </CardFooter>
     </Card>
   );
