@@ -657,8 +657,8 @@ const editAttendee = async ({
     .update({
       first_name,
       last_name,
-      time_attended: convertToISOString(time_attended),
-      time_out: convertToISOString(time_out),
+      time_attended: time_attended ? convertToISOString(time_attended): null,
+      time_out: time_out ?  convertToISOString(time_out) : null,
       contact_number: contact_number ?? null,
     })
     .select("id")
