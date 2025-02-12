@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import PropTypes from "prop-types";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -15,12 +15,14 @@ const RequireRole = ({ roles }) => {
 
   const nav = useNavigate();
   const loc = useLocation();
-  const { setUserData, logout } = useUser();
-  const [isAuthorized, setIsAuthorized] = useState(null); 
+  const { setUserData } = useUser();
 
+
+  // Fetch user data based on the auth token
   const { data, isSuccess } = useQuery({
     queryKey: ["user"],
     queryFn: async () => {
+      if (!auth?.user?.id) return null;
       const response = await getUser(auth?.user?.id);
       return response;
     },
@@ -28,47 +30,43 @@ const RequireRole = ({ roles }) => {
   });
 
   useEffect(() => {
-    const handleAuthStateChange = async () => {
+    const checkAuth = async () => {
+
       supabase.auth.onAuthStateChange((event) => {
         if (event === "PASSWORD_RECOVERY") {
+          // Redirect to reset password screen
           nav("/reset-password");
           return;
         }
       });
-
+      // Check session validity
       const { data: sessionData } = await supabase.auth.getSession();
       if (!sessionData.session && !auth) {
         nav("/", {
           replace: true,
           state: { from: loc.pathname || "/announcements" },
         });
+        return;
       }
     };
 
-    handleAuthStateChange();
+    checkAuth();
 
-    if (isSuccess) {
-      const temporaryRole = localStorage.getItem("temporaryRole");
-
+    if (isSuccess && data) {
       setUserData(data);
-
-      if (!roles.includes(temporaryRole)) {
-        setIsAuthorized(false);
-      } else {
-        setIsAuthorized(true); 
-      }
-    }
-  }, [auth, data, isSuccess, loc.pathname, logout, nav, roles, setUserData]);
+    
+      if (!roles.includes(data.role)) {
+        nav("/announcements", { replace: true });
+  
+      } 
+    } 
 
 
-  if (isAuthorized === null) {
-    return <p>Loading...</p>; 
-  }
+    // Ensure user is authorized based on their role
+  }, [auth, data, isSuccess, roles, setUserData, nav, loc.pathname]);
 
-  if (!isAuthorized) {
-    return <p>Not authorized!</p>; 
-  }
 
+  // If authorized, render child routes
   return <Outlet />;
 };
 

@@ -8,11 +8,11 @@ import {
   removeMinistryVolunteer,
   fetchMinistryAssignedUsers,
   assignNewVolunteers,
-  getAssignedMinistries,
+  // getAssignedMinistries,
 } from "@/services/ministryService";
-import { ROLES } from "@/constants/roles";
+// import { ROLES } from "@/constants/roles";
 
-const useMinistry = ({ ministryId, temporaryRole, userId }) => {
+const useMinistry = ({ ministryId }) => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -29,17 +29,18 @@ const useMinistry = ({ ministryId, temporaryRole, userId }) => {
 
    // Fetch all ministries or assigned ministries depending on role and user
    const { data: ministries, isLoading: ministryLoading } = useQuery({
-    queryKey: ["ministries", userId, temporaryRole],
+    queryKey: ["ministries"],
     queryFn: async () => {
-      if (temporaryRole === ROLES[4]) {
-        // Admin or higher role, fetch all ministries
-        return getAllMinistries();
-      } else {
-        // Other roles, fetch only assigned ministries for the user
-        return getAssignedMinistries(userId);
-      }
+      // if (temporaryRole === ROLES[4]) {
+      //   // Admin or higher role, fetch all ministries
+      //   return getAllMinistries();
+      // } else {
+      //   // Other roles, fetch only assigned ministries for the user
+      //   return getAssignedMinistries(userId);
+      // }
+      return getAllMinistries();
     },
-    enabled: !!userId,
+
   });
 
 

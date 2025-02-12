@@ -552,10 +552,8 @@ const insertNewRecord = async (submittedData) => {
   const { event, parents, children, registered_by } = submittedData;
 
   const familyId = uuidv4();
-  // get main applicant parent.
   const mainApplicant = parents.find((parent) => parent.isMainApplicant);
 
-  // Prepare parent records with ticket_code
   const parentRecords = parents.map((parent) => ({
     first_name: parent.parentFirstName,
     last_name: parent.parentLastName,
@@ -576,14 +574,41 @@ const insertNewRecord = async (submittedData) => {
     family_id: familyId,
   }));
 
-  // Combine the arrays into a single attendeesData array
   const attendeesData = [...parentRecords, ...childrenRecords];
+
+  // Check existence of each attendee before inserting
+  const existenceChecks = attendeesData.map(async (attendee) => {
+    const { data: checkExistence, error: checkError } = await supabase
+      .from("attendance")
+      .select("first_name, last_name")
+      .eq("first_name", attendee.first_name)
+      .eq("last_name", attendee.last_name).eq("event_id",event)
+
+    if (checkError) {
+      throw new Error(
+        `Error checking user registration: ${checkError.message}`
+      );
+    }
+
+    if (checkExistence[0]) {
+      throw new Error(
+        `${checkExistence[0].first_name} ${checkExistence[0].last_name} is already registered for this event.`
+      );
+    }
+  });
+
+  try {
+    await Promise.all(existenceChecks);
+  } catch (error) {
+    throw new Error(error.message);
+  }
+
+  // Insert only if all checks pass
   const { data: attendanceData, error: attendanceError } = await supabase
     .from("attendance")
     .insert(
       attendeesData.map((attendee) => ({
         event_id: event,
-        attendee_id: attendee.id,
         attendee_type: attendee.type,
         main_applicant:
           attendee.type === "parents" ? attendee.main_applicant : false,
@@ -591,82 +616,18 @@ const insertNewRecord = async (submittedData) => {
         last_name: attendee.last_name,
         time_attended: new Date().toISOString(),
         attended: true,
-        contact_number: attendee.contact_number,
+        contact_number: attendee.contact_number || null,
         family_id: attendee.family_id,
-        registration_code: attendee.registration_code,
+        registration_code: attendee.registration_code || null,
         registered_by,
       }))
     );
 
-  const { data: eventData, error: eventError } = await supabase
-    .from("events")
-    .select("*")
-    .eq("id", event)
-    .single();
-
-  if (eventError) {
-    console.error("Error fetching event data:", eventError.message);
-    throw new Error(`Error fetching event data:   ${eventError.message}`);
+  if (attendanceError) {
+    return { success: false, error: attendanceError.message };
   }
 
-  // Generate filter conditions for existing attendees check
-  const orConditions = attendeesData
-    .map(
-      (attendee) =>
-        `and(event_name.eq.${eventData.event_name},first_name.eq.${attendee.first_name},last_name.eq.${attendee.last_name})`
-    )
-    .join(",");
-  // Check for existing matches using event_id, first_name, and last_name
-  const { data: existingAttendees, error: existingError } = await supabase
-    .from("previous_attendees")
-    .select("first_name, last_name")
-    .or(orConditions);
-
-  if (existingError) {
-    console.error("Error checking existing attendees:", existingError);
-    return;
-  }
-
-  // Create unique key combining first_name and last_name
-  const existingKeys = new Set(
-    existingAttendees.map(
-      (attendee) => `${attendee.first_name}:${attendee.last_name}`
-    )
-  );
-
-  // Filter out any matching entries
-  const newAttendeesData = attendeesData.filter(
-    (attendee) =>
-      !existingKeys.has(`${attendee.first_name}:${attendee.last_name}`)
-  );
-
-  // Insert remaining entries
-  if (newAttendeesData.length > 0) {
-    const { error: insertError } = await supabase
-      .from("previous_attendees")
-      .insert(
-        newAttendeesData.map((attendee) => ({
-          event_name: eventData.event_name,
-          family_type: attendee.type,
-          first_name: attendee.first_name,
-          last_name: attendee.last_name,
-          registered_by,
-        }))
-      );
-
-    if (insertError) {
-      console.error("Error inserting new attendees:", insertError);
-    }
-
-    if (attendanceError) {
-      console.error(
-        "Error inserting attendance records:",
-        attendanceError.message
-      );
-      return { success: false, error: attendanceError };
-    }
-    return { success: true, attendanceData };
-  }
+  return { success: true, attendanceData };
 };
 
 const editAttendee = async ({
@@ -755,6 +716,25 @@ const addSingleAttendee = async ({
   attendee_type,
   event_id,
 }) => {
+  console.log(attendeeData)
+
+  const { data: checkExistence, error: checkError } = await supabase
+    .from("attendance")
+    .select("first_name, last_name")
+    .eq("first_name", attendeeData.first_name)
+    .eq("last_name", attendeeData.last_name).eq("event_id",event_id)
+
+  if (checkError) {
+    throw new Error(`Error checking user registration: ${checkError.message}`);
+  }
+
+  if (checkExistence[0]) {
+    throw new Error(
+      `${checkExistence[0].first_name} ${checkExistence[0].last_name} is already registered for this event.`
+    );
+  }
+  
+
   const { data, error } = await supabase
     .from("attendance")
     .insert([{ ...attendeeData, family_id, attendee_type, event_id }])

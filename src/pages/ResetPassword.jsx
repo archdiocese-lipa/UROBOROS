@@ -29,10 +29,13 @@ export const ResetPassword = () => {
   useEffect(() => {
     supabase.auth.onAuthStateChange(async (event) => {
       if (event === "PASSWORD_RECOVERY") {
+        console.log("event",event)
         setMode("PASSWORD_RECOVERY");
       }
     });
   }, []);
+
+  console.log("mode",mode)
 
   const changePasswordSchema = z
     .object({

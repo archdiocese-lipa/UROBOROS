@@ -15,18 +15,18 @@ export const UserProvider = ({ children }) => {
   const login = async (credentials) => {
     setLoading(true);
     try {
-      const { data: authUser, error: loginError } =
+      const { error: loginError } =
         await supabase.auth.signInWithPassword(credentials);
       if (loginError) throw loginError;
 
       // Fetch the full user data from the "users" table
-      const { data: fullUser, error: fetchError } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", authUser.user.id)
-        .single();
+      // const { data: fullUser, error: fetchError } = await supabase
+      //   .from("users")
+      //   .select("*")
+      //   .eq("id", authUser.user.id)
+      //   .single();
 
-      if (fetchError) throw fetchError;
+      // if (fetchError) throw fetchError;
 
       // Allow login if the user's role is "admin" or if their account is confirmed
       // if (!fullUser.is_confirmed && fullUser.role !== "admin") {
@@ -35,8 +35,8 @@ export const UserProvider = ({ children }) => {
       //   );
       // }
 
-      setUserData(fullUser); // Set the user data in your state
-      return fullUser; // Return the full user data
+      // setUserData(fullUser);
+      // return fullUser;
     } catch (error) {
       console.error("Login failed:", error.message);
       throw error; // Propagate the error to the caller
