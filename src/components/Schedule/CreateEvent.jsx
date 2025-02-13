@@ -68,7 +68,6 @@ const CreateEvent = ({
   const { data: admins } = useUsersByRole("admin");
 
   const publicVolunteers = [...(volunteers || []), ...(admins || [])];
-  console.log(publicVolunteers);
 
   const editMutation = useMutation({
     mutationFn: async ({ eventId, updatedData }) =>
