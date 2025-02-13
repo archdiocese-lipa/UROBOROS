@@ -174,7 +174,7 @@ const AddRecord = ({ eventId }) => {
           <p>Add Record Manually</p>
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="no-scrollbar max-h-[35rem] overflow-scroll">
         <DialogHeader>
           <DialogTitle>Add New Record</DialogTitle>
           <DialogDescription>Add new record for this event.</DialogDescription>

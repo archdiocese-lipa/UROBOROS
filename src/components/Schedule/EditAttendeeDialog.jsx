@@ -63,14 +63,12 @@ const EditAttendeeDialog = ({ attendee, disableSchedule }) => {
       time_attended: formatTime(attendee.time_attended),
       time_out: formatTime(attendee.time_out),
     };
-    if(attendee.attendee_type ==="parents"){
-      attendeeData.contact_number = attendee.contact_number
+    if (attendee.attendee_type === "parents") {
+      attendeeData.contact_number = attendee.contact_number;
     }
-    console.log("attendedData",attendeeData,"data from the submit",data)
 
     // Compare submitted data with attendee data
     if (isEqual(data, attendeeData)) {
-      console.log("equal")
       // If the form data is the same as the attendee data, reset the form and close the dialog
       form.reset();
       setAttendeeEdit(false);

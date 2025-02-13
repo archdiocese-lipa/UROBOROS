@@ -25,39 +25,39 @@ import { PuzzleIcon } from "@/assets/icons/icons";
 import { createMinistrySchema } from "@/zodSchema/CreateMinistrySchema";
 import { Textarea } from "../ui/textarea";
 import useMinistry from "@/hooks/useMinistry";
-import { ROLES } from "@/constants/roles";
-import { useQuery } from "@tanstack/react-query";
-import { getUsersByRole } from "@/services/userService";
-import AssignVolunteerComboBox from "../Schedule/AssignVolunteerComboBox";
+// import { ROLES } from "@/constants/roles";
+// import { useQuery } from "@tanstack/react-query";
+// import { getUsersByRole } from "@/services/userService";
+// import AssignVolunteerComboBox from "../Schedule/AssignVolunteerComboBox";
 
-const CreateMinistry = () => {
+const CreateGroup = () => {
   const [openDialog, setOpenDialog] = useState(false);
 
-  const { data } = useQuery({
-    queryKey: ["admins"],
-    queryFn: async () => getUsersByRole(ROLES[0]),
-  });
+  // const { data } = useQuery({
+  //   queryKey: ["admins"],
+  //   queryFn: async () => getUsersByRole(ROLES[0]),
+  // });
 
   const form = useForm({
     resolver: zodResolver(createMinistrySchema),
     defaultValues: {
-      coordinators: "",
+      // coordinators: "",
       ministryName: "",
       ministryDescription: "",
     },
   });
 
-  const adminOptions = data?.map((admin) => ({
-    value: admin.id,
-    label: `${admin.first_name} ${admin.last_name}`,
-  }));
+  // const adminOptions = data?.map((admin) => ({
+  //   value: admin.id,
+  //   label: `${admin.first_name} ${admin.last_name}`,
+  // }));
 
   const { createMutation } = useMinistry({});
 
   const onSubmit = (values) => {
     createMutation.mutate(
       {
-        coordinators: values.coordinators,
+        // coordinators: values.coordinators,
         ministry_name: values.ministryName,
         ministry_description: values.ministryDescription,
       },
@@ -70,20 +70,19 @@ const CreateMinistry = () => {
     form.reset();
   };
 
- 
   return (
     <Dialog open={openDialog} onOpenChange={setOpenDialog}>
       <DialogTrigger asChild>
         <Button className="h-14 gap-x-1 rounded-2xl">
           <PuzzleIcon className="text-white" />
-          <span>Create Ministry</span>
+          <span>Create Group</span>
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create Ministry</DialogTitle>
+          <DialogTitle>Create Group</DialogTitle>
           <DialogDescription>
-            Add details about this Ministry.{" "}
+            Add details about this Group.{" "}
             <span className="text-xs italic">
               {"(this can be edited later)"}
             </span>
@@ -93,7 +92,7 @@ const CreateMinistry = () => {
               onSubmit={form.handleSubmit(onSubmit)}
               className="space-y-2 text-start"
             >
-              <FormField
+              {/* <FormField
                 control={form.control}
                 name="coordinators"
                 render={({ field }) => (
@@ -110,19 +109,19 @@ const CreateMinistry = () => {
                     <FormMessage />
                   </FormItem>
                 )}
-              />
+              /> */}
 
               <FormField
                 control={form.control}
                 name="ministryName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Ministry Name</FormLabel>
+                    <FormLabel>Group Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="Ministry Name" {...field} />
+                      <Input placeholder="Group Name" {...field} />
                     </FormControl>
                     <FormDescription>
-                      This is the name of the ministry.
+                      This is the name of the group.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -171,4 +170,4 @@ const CreateMinistry = () => {
   );
 };
 
-export default CreateMinistry;
+export default CreateGroup;

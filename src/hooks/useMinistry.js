@@ -27,8 +27,8 @@ const useMinistry = ({ ministryId }) => {
     enabled: !!ministryId,
   });
 
-   // Fetch all ministries or assigned ministries depending on role and user
-   const { data: ministries, isLoading: ministryLoading } = useQuery({
+  // Fetch all ministries or assigned ministries depending on role and user
+  const { data: ministries, isLoading: ministryLoading } = useQuery({
     queryKey: ["ministries"],
     queryFn: async () => {
       // if (temporaryRole === ROLES[4]) {
@@ -40,9 +40,7 @@ const useMinistry = ({ ministryId }) => {
       // }
       return getAllMinistries();
     },
-
   });
-
 
   // Mutation for creating a ministry
   const createMutation = useMutation({
@@ -50,13 +48,13 @@ const useMinistry = ({ ministryId }) => {
     onSuccess: () => {
       queryClient.invalidateQueries(["ministries"]);
       toast({
-        title: "Ministry Created",
-        description: "The ministry has been created successfully!",
+        title: "Group Created",
+        description: "Group has been created successfully!",
       });
     },
     onError: (error) => {
       toast({
-        title: "Error Creating Ministry",
+        title: "Error Creating Group",
         description:
           error?.message || "Something went wrong. Please try again.",
         variant: "destructive",
@@ -70,13 +68,13 @@ const useMinistry = ({ ministryId }) => {
     onSuccess: () => {
       queryClient.invalidateQueries(["ministries"]);
       toast({
-        title: "Ministry Updated",
-        description: "The ministry has been updated successfully!",
+        title: "Group Updated",
+        description: "Group has been updated successfully!",
       });
     },
     onError: (error) => {
       toast({
-        title: "Error Updating Ministry",
+        title: "Error Updating Group",
         description:
           error?.message || "Something went wrong. Please try again.",
         variant: "destructive",
@@ -90,13 +88,13 @@ const useMinistry = ({ ministryId }) => {
     onSuccess: () => {
       queryClient.invalidateQueries(["ministries"]);
       toast({
-        title: "Ministry Deleted",
-        description: "The ministry has been deleted successfully!",
+        title: "Group Deleted",
+        description: "Group has been deleted successfully!",
       });
     },
     onError: (error) => {
       toast({
-        title: "Error Deleting Ministry",
+        title: "Error Deleting Group",
         description:
           error?.message || "Something went wrong. Please try again.",
         variant: "destructive",
