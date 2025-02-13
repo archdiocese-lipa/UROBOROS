@@ -26,7 +26,7 @@ export const getAssignedMinistries = async (userId) => {
   if (error) {
     throw new Error(error.message);
   }
-  const arrangedData = data.map((data) => data.ministries)
+  const arrangedData = data.map((data) => data.ministries);
 
   return arrangedData;
 };
@@ -60,19 +60,20 @@ export const createMinistry = async (ministry) => {
   if (error) {
     throw new Error(error.message);
   }
+  return data;
 
-  const coordinators = ministry.coordinators.map((coordinator) => ({
-    ministry_id: data.id,
-    coordinator_id: coordinator,
-  }));
+  // const coordinators = ministry.coordinators.map((coordinator) => ({
+  //   ministry_id: data.id,
+  //   coordinator_id: coordinator,
+  // }));
 
-  const { error: coordinatorError } = await supabase
-    .from("ministry_coordinators")
-    .insert(coordinators);
+  // const { error: coordinatorError } = await supabase
+  //   .from("ministry_coordinators")
+  //   .insert(coordinators);
 
-  if (coordinatorError) {
-    throw new Error("Error assigning coordinators", coordinatorError.message);
-  }
+  // if (coordinatorError) {
+  //   throw new Error("Error assigning coordinators", coordinatorError.message);
+  // }
 };
 
 /**
@@ -83,7 +84,8 @@ export const createMinistry = async (ministry) => {
  */
 export const editMinistry = async (updatedValues) => {
   // Destructure the updatedValues object to extract necessary fields
-  const { coordinators,ministryId, ministryName, ministryDescription } = updatedValues;
+  const { _coordinators, ministryId, ministryName, ministryDescription } =
+    updatedValues;
   // Perform the update query using destructured values
   const { data, error } = await supabase
     .from("ministries")
@@ -98,28 +100,29 @@ export const editMinistry = async (updatedValues) => {
     throw new Error(error.message); // Handle the error appropriately
   }
 
-  const { error: deleteCoordinatorError } = await supabase
-    .from("ministry_coordinators")
-    .delete()
-    .eq("ministry_id", ministryId);
-  
-    if(deleteCoordinatorError){
-      throw new Error("Error deleting coordinators!", deleteCoordinatorError.message)
-    }
-    const coordinatorInsert = coordinators.map((coordinator) => ({
-      ministry_id: ministryId,
-      coordinator_id: coordinator,
-    }));
+  // const { error: deleteCoordinatorError } = await supabase
+  //   .from("ministry_coordinators")
+  //   .delete()
+  //   .eq("ministry_id", ministryId);
 
-  
+  // if (deleteCoordinatorError) {
+  //   throw new Error(
+  //     "Error deleting coordinators!",
+  //     deleteCoordinatorError.message
+  //   );
+  // }
+  // const coordinatorInsert = coordinators.map((coordinator) => ({
+  //   ministry_id: ministryId,
+  //   coordinator_id: coordinator,
+  // }));
 
-    const { error: coordinatorError } = await supabase
-    .from("ministry_coordinators")
-    .insert(coordinatorInsert);
+  // const { error: coordinatorError } = await supabase
+  //   .from("ministry_coordinators")
+  //   .insert(coordinatorInsert);
 
-  if (coordinatorError) {
-    throw new Error(coordinatorError.message);
-  }
+  // if (coordinatorError) {
+  //   throw new Error(coordinatorError.message);
+  // }
 
   return data; // Return the updated data
 };
