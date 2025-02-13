@@ -41,7 +41,6 @@ const EditMinistry = ({
     resolver: zodResolver(editMinistrySchema),
     defaultValues: {
       // coordinators: currentCoordinators,
-      ministryId,
       ministryName: currentName,
       ministryDescription: currentDescription,
     },
