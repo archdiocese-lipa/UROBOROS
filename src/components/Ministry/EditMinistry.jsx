@@ -23,40 +23,40 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "../ui/textarea";
 import useMinistry from "@/hooks/useMinistry";
 import { createMinistrySchema } from "@/zodSchema/CreateMinistrySchema";
-import AssignVolunteerComboBox from "../Schedule/AssignVolunteerComboBox";
-import { useQuery } from "@tanstack/react-query";
-import { ROLES } from "@/constants/roles";
-import { getUsersByRole } from "@/services/userService";
+// import AssignVolunteerComboBox from "../Schedule/AssignVolunteerComboBox";
+// import { useQuery } from "@tanstack/react-query";
+// import { ROLES } from "@/constants/roles";
+// import { getUsersByRole } from "@/services/userService";
 
 const EditMinistry = ({
   ministryId,
-  coordinators,
+  // coordinators,
   currentName,
   currentDescription,
   isOpen, // Use the isOpen prop passed from MinistryCard
   closeDialog, // Use the closeDialog function passed from MinistryCard
 }) => {
 
-  const currentCoordinators =  coordinators.map((coordinator) => coordinator.users.id)
+  // const currentCoordinators =  coordinators.map((coordinator) => coordinator.users.id)
   const form = useForm({
     resolver: zodResolver(createMinistrySchema),
     defaultValues: {
-      coordinators: currentCoordinators,
+      // coordinators: currentCoordinators,
       ministryName: currentName,
       ministryDescription: currentDescription,
     },
   });
   const { editMutation } = useMinistry({ ministryId }); // Use the hook
 
-  const { data } = useQuery({
-    queryKey: ["admins"],
-    queryFn: async () => getUsersByRole(ROLES[0]),
-  });
+  // const { data } = useQuery({
+  //   queryKey: ["admins"],
+  //   queryFn: async () => getUsersByRole(ROLES[0]),
+  // });
 
-  const adminOptions = data?.map((admin) => ({
-    value: admin.id,
-    label: `${admin.first_name} ${admin.last_name}`,
-  }));
+  // const adminOptions = data?.map((admin) => ({
+  //   value: admin.id,
+  //   label: `${admin.first_name} ${admin.last_name}`,
+  // }));
 
   const onSubmit = (values) => {
     // Call the editMinistry service with the values directly
@@ -64,7 +64,7 @@ const EditMinistry = ({
     console.log(values)
     editMutation.mutate(  {
       ministryId,
-      coordinators: values.coordinators,
+      // coordinators: values.coordinators,
       ministry_name: values.ministryName,
       ministry_description: values.ministryDescription,
     },);
@@ -86,7 +86,7 @@ const EditMinistry = ({
               onSubmit={form.handleSubmit(onSubmit)}
               className="space-y-2 text-start"
             >
-              <FormField
+              {/* <FormField
                 control={form.control}
                 name="coordinators"
                 render={({ field }) => (
@@ -103,7 +103,7 @@ const EditMinistry = ({
                     <FormMessage />
                   </FormItem>
                 )}
-              />
+              /> */}
               <FormField
                 control={form.control}
                 name="ministryName"
@@ -168,13 +168,13 @@ EditMinistry.propTypes = {
   currentDescription: PropTypes.string.isRequired,
   isOpen: PropTypes.bool.isRequired,
   closeDialog: PropTypes.func.isRequired,
-  coordinators: PropTypes.arrayOf(
-    PropTypes.shape({
-      users: PropTypes.shape({
-        id: PropTypes.string.isRequired,
-      }).isRequired,
-    })
-  ).isRequired,
+  // coordinators: PropTypes.arrayOf(
+  //   PropTypes.shape({
+  //     users: PropTypes.shape({
+  //       id: PropTypes.string.isRequired,
+  //     }).isRequired,
+  //   })
+  // ).isRequired,
 };
 
 export default EditMinistry;
