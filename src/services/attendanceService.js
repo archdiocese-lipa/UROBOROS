@@ -717,8 +717,6 @@ const addSingleAttendee = async ({
   attendee_type,
   event_id,
 }) => {
-  console.log(attendeeData);
-
   const { data: checkExistence, error: checkError } = await supabase
     .from("attendance")
     .select("first_name, last_name")

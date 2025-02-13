@@ -68,6 +68,7 @@ const CreateEvent = ({
   const { data: admins } = useUsersByRole("admin");
 
   const publicVolunteers = [...(volunteers || []), ...(admins || [])];
+  console.log(publicVolunteers);
 
   const editMutation = useMutation({
     mutationFn: async ({ eventId, updatedData }) =>
@@ -344,7 +345,7 @@ const CreateEvent = ({
                     isMulti
                     options={
                       // Check visibility to determine which volunteers to pass
-                      watchVisibility === "public" || watchVisibility === ""
+                      watchVisibility === "public"
                         ? publicVolunteers?.map((volunteer) => ({
                             value: volunteer?.id || "",
                             label: `${volunteer?.first_name || "Unknown"} ${volunteer?.last_name || "Unknown"}`,

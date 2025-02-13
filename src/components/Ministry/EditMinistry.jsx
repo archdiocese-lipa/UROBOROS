@@ -60,6 +60,7 @@ const EditMinistry = ({
 
   const onSubmit = (values) => {
     // Call the editMinistry service with the values directly
+
     editMutation.mutate({
       ministryId,
       // coordinators: values.coordinators,
@@ -166,13 +167,13 @@ EditMinistry.propTypes = {
   currentDescription: PropTypes.string.isRequired,
   isOpen: PropTypes.bool.isRequired,
   closeDialog: PropTypes.func.isRequired,
-  coordinators: PropTypes.arrayOf(
-    PropTypes.shape({
-      users: PropTypes.shape({
-        id: PropTypes.string.isRequired,
-      }).isRequired,
-    })
-  ).isRequired,
+  // coordinators: PropTypes.arrayOf(
+  //   PropTypes.shape({
+  //     users: PropTypes.shape({
+  //       id: PropTypes.string.isRequired,
+  //     }).isRequired,
+  //   })
+  // ).isRequired,
 };
 
 export default EditMinistry;

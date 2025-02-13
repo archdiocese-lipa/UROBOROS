@@ -84,14 +84,13 @@ export const createMinistry = async (ministry) => {
  */
 export const editMinistry = async (updatedValues) => {
   // Destructure the updatedValues object to extract necessary fields
-  const { _coordinators, ministryId, ministryName, ministryDescription } =
-    updatedValues;
+  const { ministryId, ministry_name, ministry_description } = updatedValues;
   // Perform the update query using destructured values
   const { data, error } = await supabase
     .from("ministries")
     .update({
-      ministry_name: ministryName, // Update ministry_name field
-      ministry_description: ministryDescription, // Update ministry_description field
+      ministry_name, // Update ministry_name field
+      ministry_description, // Update ministry_description field
     })
     .eq("id", ministryId); // Use ministryId as the primary key for the update
 

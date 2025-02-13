@@ -116,12 +116,12 @@ const CreateGroup = () => {
                 name="ministryName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Ministry Name</FormLabel>
+                    <FormLabel>Group Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="Ministry Name" {...field} />
+                      <Input placeholder="Group Name" {...field} />
                     </FormControl>
                     <FormDescription>
-                      This is the name of the ministry.
+                      This is the name of the group.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>

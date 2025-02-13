@@ -31,8 +31,6 @@ import ViewMembers from "./ViewMembers";
 import { useState } from "react";
 import EditMinistry from "./EditMinistry";
 import useMinistry from "@/hooks/useMinistry";
-// import useRoleSwitcher from "@/hooks/useRoleSwitcher";
-// import { ROLES } from "@/constants/roles";
 
 // Utility function to get initials from a name
 const getInitials = (firstName, lastName) => {
@@ -45,10 +43,9 @@ const MinistryCard = ({
   ministryId,
   title,
   description,
-  coordinators,
+  // coordinators,
   createdDate,
 }) => {
-  // const {temporaryRole} = useRoleSwitcher();
   const formatDateToUK = (dateString) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat("en-GB", {
@@ -88,7 +85,6 @@ const MinistryCard = ({
         <div className="flex items-center justify-between">
           <CardTitle className="font-bold">{title}</CardTitle>
           <div>
-            {/* {temporaryRole === ROLES[4] && <DropdownMenu> */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="transparent" className="h-5 w-5">
@@ -195,7 +191,7 @@ const MinistryCard = ({
         <EditMinistry
           ministryId={ministryId}
           currentName={title}
-          coordinators={coordinators}
+          // coordinators={coordinators}
           currentDescription={description}
           isOpen={isEditDialogOpen} // Pass the state here
           closeDialog={() => setEditDialogOpen(false)} // Pass the function to close the dialog
@@ -210,13 +206,13 @@ MinistryCard.propTypes = {
   description: PropTypes.string.isRequired,
   createdDate: PropTypes.string.isRequired,
   ministryId: PropTypes.string.isRequired,
-  coordinators: PropTypes.arrayOf(
-    PropTypes.shape({
-      users: PropTypes.shape({
-        id: PropTypes.string.isRequired,
-      }).isRequired,
-    })
-  ).isRequired,
+  // coordinators: PropTypes.arrayOf(
+  //   PropTypes.shape({
+  //     users: PropTypes.shape({
+  //       id: PropTypes.string.isRequired,
+  //     }).isRequired,
+  //   })
+  // ).isRequired,
 };
 
 export default MinistryCard;
