@@ -60,6 +60,8 @@ const EditMinistry = ({
 
   const onSubmit = (values) => {
     // Call the editMinistry service with the values directly
+
+    console.log(values)
     editMutation.mutate(  {
       ministryId,
       coordinators: values.coordinators,

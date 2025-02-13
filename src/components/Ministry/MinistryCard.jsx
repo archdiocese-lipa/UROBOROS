@@ -31,8 +31,6 @@ import ViewMembers from "./ViewMembers";
 import { useState } from "react";
 import EditMinistry from "./EditMinistry";
 import useMinistry from "@/hooks/useMinistry";
-import useRoleSwitcher from "@/hooks/useRoleSwitcher";
-import { ROLES } from "@/constants/roles";
 
 // Utility function to get initials from a name
 const getInitials = (firstName, lastName) => {
@@ -42,7 +40,6 @@ const getInitials = (firstName, lastName) => {
 };
 
 const MinistryCard = ({ ministryId, title, description,coordinators, createdDate }) => {
-  const {temporaryRole} = useRoleSwitcher();
   const formatDateToUK = (dateString) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat("en-GB", {
@@ -69,7 +66,7 @@ const MinistryCard = ({ ministryId, title, description,coordinators, createdDate
   };
 
   const handleEdit = () => {
-    setEditDialogOpen(true); // Open the Edit Ministry dialog or form
+    setEditDialogOpen(true); 
   };
 
   const maxVisible = 4;
@@ -83,7 +80,7 @@ const MinistryCard = ({ ministryId, title, description,coordinators, createdDate
         <div className="flex items-center justify-between">
           <CardTitle className="font-bold">{title}</CardTitle>
           <div>
-            {temporaryRole === ROLES[4] && <DropdownMenu>
+            {<DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="transparent" className="h-5 w-5">
                   <ThreeDotsIcon className="text-black" />

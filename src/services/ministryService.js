@@ -82,14 +82,16 @@ export const createMinistry = async (ministry) => {
  * @returns {Promise<Object>} Response containing data or error.
  */
 export const editMinistry = async (updatedValues) => {
+
+  console.log("ministry value backend",updatedValues)
   // Destructure the updatedValues object to extract necessary fields
-  const { coordinators,ministryId, ministryName, ministryDescription } = updatedValues;
+  const { coordinators,ministryId, ministry_name, ministry_description } = updatedValues;
   // Perform the update query using destructured values
   const { data, error } = await supabase
     .from("ministries")
     .update({
-      ministry_name: ministryName, // Update ministry_name field
-      ministry_description: ministryDescription, // Update ministry_description field
+       ministry_name, // Update ministry_name field
+       ministry_description, // Update ministry_description field
     })
     .eq("id", ministryId); // Use ministryId as the primary key for the update
 

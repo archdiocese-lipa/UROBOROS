@@ -70,6 +70,7 @@ const publicVolunteers = [
   ...(volunteers || []),
   ...(admins || []), 
 ];
+console.log(publicVolunteers)
 
   const editMutation = useMutation({
     mutationFn: async ({ eventId, updatedData }) =>
@@ -367,7 +368,7 @@ const publicVolunteers = [
                           value,
                           label:
                             ministryMembers?.find((m) => m.user_id === value)?.users?.first_name ||
-                            volunteers?.find((v) => v.id === value)?.first_name ||
+                            publicVolunteers?.find((v) => v.id === value)?.first_name ||
                             "Unknown",
                         }))
                       : []
