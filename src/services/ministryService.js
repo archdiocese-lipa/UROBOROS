@@ -7,7 +7,7 @@ import { supabase } from "./supabaseClient";
 export const getAllMinistries = async () => {
   const { data, error } = await supabase
     .from("ministries")
-    .select("*, ministry_coordinators(users(id, first_name, last_name))")
+    .select("*")
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -115,7 +115,7 @@ export const editMinistry = async (updatedValues) => {
   //   coordinator_id: coordinator,
   // }));
 
-  // const { error: coordinatorError } = await supabase
+  //   const { error: coordinatorError } = await supabase
   //   .from("ministry_coordinators")
   //   .insert(coordinatorInsert);
 
