@@ -345,7 +345,7 @@ const CreateEvent = ({
                     isMulti
                     options={
                       // Check visibility to determine which volunteers to pass
-                      watchVisibility === "public"
+                      watchVisibility === "public" || watchVisibility === ""
                         ? publicVolunteers?.map((volunteer) => ({
                             value: volunteer?.id || "",
                             label: `${volunteer?.first_name || "Unknown"} ${volunteer?.last_name || "Unknown"}`,
