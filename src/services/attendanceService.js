@@ -717,6 +717,7 @@ const addSingleAttendee = async ({
   attendee_type,
   event_id,
 }) => {
+
   const { data: checkExistence, error: checkError } = await supabase
     .from("attendance")
     .select("first_name, last_name")
@@ -764,6 +765,7 @@ const addSingleAttendee = async ({
       throw new Error("failed Adding to edit logs!", addLogError.message);
     }
   }
+
 };
 
 const fetchAlreadyRegistered = async (eventId, attendeeIds) => {
