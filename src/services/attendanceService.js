@@ -1216,6 +1216,23 @@ const updateWalkInAttendee = async (first_name, last_name, eventId, state) => {
   }
 };
 
+const getAttendanceFromExistingRecord = async (eventId) => {
+  try {
+    // Fetch attendance records
+    const { data: attendanceData, error: attendanceError } = await supabase
+      .from("attendance")
+      .select("*")
+      .eq("event_id", eventId);
+
+    if (attendanceError) throw attendanceError;
+
+    return attendanceData;
+  } catch (error) {
+    console.error("Error in getAttendee:", error);
+    throw error;
+  }
+};
+
 export {
   fetchChildrenAttendanceHistory,
   fetchParentAttendanceHistory,
@@ -1238,4 +1255,5 @@ export {
   addSingleWalkInAttendeeFromRecord,
   removeWalkInAttendeeFromRecord,
   updateWalkInAttendee,
+  getAttendanceFromExistingRecord,
 };

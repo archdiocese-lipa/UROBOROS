@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "../ui/input";
 import {
-  getAttendee,
+  getAttendanceFromExistingRecord,
   searchAttendee,
   updateAttendee,
 } from "@/services/attendanceService";
@@ -61,7 +61,7 @@ const AddExistingRecord = ({ eventId }) => {
   // Fetch existing attendees
   const { data: attendanceData } = useQuery({
     queryKey: ["event-attendance", eventId],
-    queryFn: () => getAttendee(eventId),
+    queryFn: () => getAttendanceFromExistingRecord(eventId),
     enabled: !!eventId,
   });
 
@@ -228,6 +228,11 @@ const AddExistingRecord = ({ eventId }) => {
           setTimeout(() => {
             setLoadingAddAttendeeId(null);
           }, 500);
+          // Invalidate and refetch the query to update the UI
+          queryClient.invalidateQueries(["event-attendance", eventId]);
+        },
+        onError: () => {
+          setLoadingAddAttendeeId(null);
         },
       }
     );
@@ -242,6 +247,8 @@ const AddExistingRecord = ({ eventId }) => {
           setTimeout(() => {
             setLoadingRemoveAttendeeId(null);
           }, 500);
+          // Invalidate and refetch the query to update the UI
+          queryClient.invalidateQueries(["event-attendance", eventId]);
         },
         onError: () => {
           setLoadingRemoveAttendeeId(null);
