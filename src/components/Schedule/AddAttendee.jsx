@@ -26,6 +26,7 @@ import { useUser } from "@/context/useUser";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { childSchema, parentSchema } from "@/zodSchema/AddFamilySchema";
 import { toast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 const AddAttendee = ({
   attendee_type,
   family_id,
@@ -46,7 +47,7 @@ const AddAttendee = ({
       toast({
         title: "Attendee added successfully",
       });
-      console.error(error.message); // Log the whole error object
+      console.error(error.message); 
       toast({
         title: "Error",
         description: error.message || "Something went wrong. Please try again.",
@@ -150,6 +151,7 @@ const AddAttendee = ({
             {attendee_type === "parents" && (
               <FormField
                 control={form.control}
+                dis
                 name="contact_number"
                 render={({ field }) => (
                   <FormItem>
@@ -163,7 +165,7 @@ const AddAttendee = ({
               ></FormField>
             )}
             <div className="mt-2 flex justify-end">
-              <Button type="submit">Add</Button>
+              <Button disabled={addAttendeeMutation.isPending} type="submit">{addAttendeeMutation.isPending ? <Loader2/> :"Add" }</Button>
             </div>
           </form>
         </Form>
