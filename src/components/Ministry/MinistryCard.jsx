@@ -1,14 +1,14 @@
 import PropTypes from "prop-types";
-import { ThreeDotsIcon, Users } from "@/assets/icons/icons";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
+import { Users } from "@/assets/icons/icons";
+// import {
+//   DropdownMenu,
+//   DropdownMenuContent,
+//   DropdownMenuItem,
+//   DropdownMenuLabel,
+//   DropdownMenuSeparator,
+//   DropdownMenuTrigger,
+// } from "@/components/ui/dropdown-menu";
+// import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Card,
@@ -17,20 +17,22 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import ViewMembers from "./ViewMembers";
+// import {
+//   Dialog,
+//   DialogClose,
+//   DialogContent,
+//   DialogDescription,
+//   DialogFooter,
+//   DialogHeader,
+//   DialogTitle,
+//   DialogTrigger,
+// } from "@/components/ui/dialog";
+// import ViewMembers from "./ViewMembers";
 import { useState } from "react";
 import EditMinistry from "./EditMinistry";
 import useMinistry from "@/hooks/useMinistry";
+import { Label } from "../ui/label";
+import ConfigureMinistry from "./ConfigureMinistry";
 
 // Utility function to get initials from a name
 const getInitials = (firstName, lastName) => {
@@ -61,81 +63,33 @@ const MinistryCard = ({
   const formattedCreatedDate = formatDateToUK(createdDate);
 
   // const { members, loading, error } = useMinistryMembers(ministryId);
-  const { ministryMembers, membersLoading, deleteMutation, error } =
+  const { ministryMembers, membersLoading, _deleteMutation, error } =
     useMinistry({ ministryId });
   // const { mutate: deleteMinistry, isLoading: isDeleting } = useDeleteMinistry();
-  const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  // const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isEditDialogOpen, setEditDialogOpen] = useState(false);
-  const handleDelete = () => {
-    deleteMutation.mutate(ministryId);
-    setDeleteDialogOpen(false);
-  };
+  // const handleDelete = () => {
+  //   deleteMutation.mutate(ministryId);
+  //   setDeleteDialogOpen(false);
+  // };
 
-  const handleEdit = () => {
-    setEditDialogOpen(true); // Open the Edit Ministry dialog or form
-  };
+  // const handleEdit = () => {
+  //   setEditDialogOpen(true); // Open the Edit Ministry dialog or form
+  // };
 
   const maxVisible = 4;
   const visibleAvatars = ministryMembers?.slice(0, maxVisible);
   const remainingCount = Math.max(ministryMembers?.length - maxVisible, 0);
 
   return (
-    <Card className="max-h-96 rounded-2xl border text-primary-text">
+    <Card className="max-h-80 rounded-2xl border text-primary-text">
       <CardHeader className="text-pretty">
         <div className="flex items-center justify-between">
           <CardTitle className="font-bold">{title}</CardTitle>
-          <div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="transparent" className="h-5 w-5">
-                  <ThreeDotsIcon className="text-black" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleEdit}>
-                  Edit
-                </DropdownMenuItem>{" "}
-                {/* Trigger Edit */}
-                <Dialog
-                  open={isDeleteDialogOpen}
-                  onOpenChange={setDeleteDialogOpen}
-                >
-                  <DialogTrigger asChild>
-                    <DropdownMenuItem
-                      onSelect={(event) => {
-                        event.preventDefault(); // Prevent the dropdown from closing
-                        setDeleteDialogOpen(true); // Open the delete confirmation dialog
-                      }}
-                    >
-                      Delete
-                    </DropdownMenuItem>
-                  </DialogTrigger>
-                  <DialogContent className="rounded-xl p-6 text-primary-text">
-                    <DialogHeader>
-                      <DialogTitle>Confirm Delete</DialogTitle>
-                      <DialogDescription>
-                        Are you sure you want to delete this ministry? This
-                        action cannot be undone.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                      <DialogClose asChild>
-                        <Button variant="outline">Cancel</Button>
-                      </DialogClose>
-                      <Button
-                        onClick={handleDelete}
-                        disabled={deleteMutation.isPending}
-                      >
-                        {deleteMutation.isPending ? "Deleting..." : "Delete"}
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+          <ConfigureMinistry
+            ministryTitle={title}
+            ministryDescription={description}
+          />
         </div>
         <CardDescription className="break-words">{description}</CardDescription>
         <p>
@@ -175,13 +129,8 @@ const MinistryCard = ({
             )}
           </div>
           <div>
-            <ViewMembers
-              title={title}
-              ministryId={ministryId}
-              description={description}
-              createdDate={createdDate}
-              members={ministryMembers}
-            />
+            <Label className="font-semibold">Coordinators Preview:</Label>
+            {/* Fetch the Assigned Coordinator here */}
           </div>
         </div>
       </CardContent>

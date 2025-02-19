@@ -115,8 +115,8 @@ const DislikeIcon = ({ className = "text-white" }) => {
 DislikeIcon.propTypes = {
   className: PropTypes.string,
 };
-const LoadingIcon = ({className="text-black"}) => {
-  return(
+const LoadingIcon = ({ className = "text-black" }) => {
+  return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       width="24"
@@ -149,7 +149,6 @@ const LoadingIcon = ({className="text-black"}) => {
 LoadingIcon.propTypes = {
   className: PropTypes.string,
 };
-
 
 const EventIcon = ({ className = "text-black" }) => {
   return (
@@ -399,8 +398,8 @@ DownIcon.propTypes = {
 const ThreeDotsIcon = ({ className = "text-black" }) => {
   return (
     <svg
-      width="1em"
-      height="1em"
+      width="26px"
+      height="26px"
       viewBox="0 0 26 26"
       fill="none"
       className={cn(className)}
@@ -572,5 +571,5 @@ export {
   CloseIcon,
   ReplyIcon,
   EditIcon,
-  LoadingIcon
+  LoadingIcon,
 };

@@ -44,7 +44,7 @@ const COMMON_LINKS = {
 };
 
 export const SIDEBAR_LINKS = Object.freeze({
-  admin: [
+  coordinator: [
     COMMON_LINKS.dashboard,
     COMMON_LINKS.announcements,
     COMMON_LINKS.ministries,
@@ -62,10 +62,11 @@ export const SIDEBAR_LINKS = Object.freeze({
     COMMON_LINKS.events,
     COMMON_LINKS.family,
   ],
-  superadmin: [
+  admin: [
     COMMON_LINKS.dashboard,
     COMMON_LINKS.announcements,
     COMMON_LINKS.ministries,
+    COMMON_LINKS.schedule,
     COMMON_LINKS.requests,
   ],
 });

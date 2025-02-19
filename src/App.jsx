@@ -30,28 +30,30 @@ const App = () => {
         {/* Protected Routes */}
         <Route element={<MainLayout />}>
           {/* ========================================================= */}
-          {/* Only Admin and Super Admin can access the routes below */}
+          {/* Only Admin and Coordinator can access the routes below */}
           <Route element={<RequireRole roles={[ROLES[0], ROLES[4]]} />}>
             <Route path="/dashboard" element={<Dashboard />} />
           </Route>
           {/* ========================================================= */}
-          {/* Admin and superadmin can access the routes below */}
-          <Route element={<RequireRole roles={[ROLES[4],ROLES[0]]} />}>
+          {/*  Admin and Coordinator can access the routes below */}
+          <Route element={<RequireRole roles={[ROLES[4], ROLES[0]]} />}>
             <Route path="/ministries" element={<Ministries />} />
           </Route>
-            {/* ========================================================= */}
-           {/* Only superadmin can access the routes below */}
-          <Route element={<RequireRole roles={[ROLES[0],ROLES[4]]} />}>
+          {/* ========================================================= */}
+          {/* Only admin can access the routes below */}
+          <Route element={<RequireRole roles={[ROLES[0], ROLES[4]]} />}>
             <Route path="/requests" element={<Requests />} />
           </Route>
           {/* ========================================================= */}
-          {/* Roles of Admin and Volunteer can access the routes below */}
-          <Route element={<RequireRole roles={[ROLES[0], ROLES[1]]} />}>
+          {/* Roles of Coordinator and Volunteer can access the routes below */}
+          <Route
+            element={<RequireRole roles={[ROLES[0], ROLES[1], ROLES[4]]} />}
+          >
             {/* Add Route for OrganizedEvents */}
             <Route path="/schedule" element={<Schedule />} />
           </Route>
           {/* ========================================================= */}
-          {/* Roles of Admin and Parishioner can access the routes below */}
+          {/* Roles of Coordinator and Parishioner can access the routes below */}
           <Route element={<RequireRole roles={[...ROLES]} />}>
             {/* Add Route for Events */}
             <Route path="/events" element={<Events />} />
