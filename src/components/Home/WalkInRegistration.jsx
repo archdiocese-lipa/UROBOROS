@@ -185,7 +185,7 @@ const WalkInRegistration = () => {
     <>
       <Dialog open={openDialog} onOpenChange={handleDialogChange}>
         <DialogTrigger asChild>
-          <Button variant="landingsecondary" disabled={false}>
+          <Button variant="landingsecondary" disabled={true}>
             Walk - In Register
           </Button>
         </DialogTrigger>
