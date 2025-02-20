@@ -65,7 +65,7 @@ const MinistryCard = ({
 
   const {
     coordinators,
-    ministryMembers,
+    _ministryMembers,
     membersLoading,
     _deleteMutation,
     error,
@@ -82,10 +82,9 @@ const MinistryCard = ({
   // };
 
   const maxVisible = 4;
-  const visibleAvatars = ministryMembers?.slice(0, maxVisible);
-  const remainingCount = Math.max(ministryMembers?.length - maxVisible, 0);
+  const visibleAvatars = coordinators?.data.slice(0, maxVisible);
+  const remainingCount = Math.max(coordinators?.data.length - maxVisible, 0);
 
-  console.log(coordinators.data);
 
   return (
     <Card className="max-h-96 rounded-2xl border text-primary-text">
@@ -107,7 +106,7 @@ const MinistryCard = ({
         <div className="flex flex-col gap-y-3 rounded-2xl bg-primary px-5 py-3">
           {membersLoading && <p>Loading members...</p>}
           {error && <p className="text-red-500">{error}</p>}
-          {!membersLoading && !error && ministryMembers?.length === 0 && (
+          {!membersLoading && !error && coordinators?.data?.length === 0 && (
             <p className="text-gray-500">No members</p>
           )}
           <div className="flex items-center gap-x-6">

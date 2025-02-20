@@ -28,6 +28,7 @@ const useMinistry = ({ ministryId }) => {
     enabled: !!ministryId,
   });
 
+
   // Fetch all ministries or assigned ministries depending on role and user
   const { data: ministries, isLoading: ministryLoading } = useQuery({
     queryKey: ["ministries"],
