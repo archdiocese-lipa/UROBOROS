@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const createMinistrySchema = z.object({
-  // coordinators: z.array(z.string()),
+  coordinators: z.array(z.string()),
   ministryName: z.string().min(1, "Ministry name is required"),
   ministryDescription: z
     .string()

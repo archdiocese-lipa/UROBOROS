@@ -33,6 +33,7 @@ import EditMinistry from "./EditMinistry";
 import useMinistry from "@/hooks/useMinistry";
 import { Label } from "../ui/label";
 import ConfigureMinistry from "./ConfigureMinistry";
+import { cn } from "@/lib/utils";
 
 // Utility function to get initials from a name
 const getInitials = (firstName, lastName) => {
@@ -62,10 +63,13 @@ const MinistryCard = ({
 
   const formattedCreatedDate = formatDateToUK(createdDate);
 
-  // const { members, loading, error } = useMinistryMembers(ministryId);
-  const { ministryMembers, membersLoading, _deleteMutation, error } =
-    useMinistry({ ministryId });
-  // const { mutate: deleteMinistry, isLoading: isDeleting } = useDeleteMinistry();
+  const {
+    coordinators,
+    ministryMembers,
+    membersLoading,
+    _deleteMutation,
+    error,
+  } = useMinistry({ ministryId });
   // const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isEditDialogOpen, setEditDialogOpen] = useState(false);
   // const handleDelete = () => {
@@ -81,8 +85,10 @@ const MinistryCard = ({
   const visibleAvatars = ministryMembers?.slice(0, maxVisible);
   const remainingCount = Math.max(ministryMembers?.length - maxVisible, 0);
 
+  console.log(coordinators.data);
+
   return (
-    <Card className="max-h-80 rounded-2xl border text-primary-text">
+    <Card className="max-h-96 rounded-2xl border text-primary-text">
       <CardHeader className="text-pretty">
         <div className="flex items-center justify-between">
           <CardTitle className="font-bold">{title}</CardTitle>
@@ -130,7 +136,23 @@ const MinistryCard = ({
           </div>
           <div>
             <Label className="font-semibold">Coordinators Preview:</Label>
-            {/* Fetch the Assigned Coordinator here */}
+
+            <div className="flex w-full">
+              {coordinators?.data?.map((coordinator, index, arr) => (
+                <p
+                  key={coordinator.id}
+                  className={cn(
+                    "text-nowrap text-xs",
+                    index === arr.length - 1
+                      ? "flex-1 overflow-hidden text-ellipsis" // Only last item gets ellipsis
+                      : "flex-shrink-0" // Other items don't shrink
+                  )}
+                >
+                  { `${coordinator.users.first_name} ${coordinator.users.last_name}`}
+                  <span className="mr-1">,</span>
+                </p>
+              ))}
+            </div>
           </div>
         </div>
       </CardContent>
@@ -142,8 +164,8 @@ const MinistryCard = ({
           currentName={title}
           // coordinators={coordinators}
           currentDescription={description}
-          isOpen={isEditDialogOpen} // Pass the state here
-          closeDialog={() => setEditDialogOpen(false)} // Pass the function to close the dialog
+          isOpen={isEditDialogOpen}
+          closeDialog={() => setEditDialogOpen(false)}
         />
       )}
     </Card>

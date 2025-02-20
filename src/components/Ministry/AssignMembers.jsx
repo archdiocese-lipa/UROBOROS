@@ -20,13 +20,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import Select from "react-select";
 import { assignMinistryMemberSchema } from "@/zodSchema/AssignMinistryMemberSchema";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { fetchAvailableVolunteers } from "@/services/ministryService";
 import { useQuery } from "@tanstack/react-query";
 import useMinistry from "@/hooks/useMinistry";
+import CustomReactSelect from "../CustomReactSelect";
 
 const AssignMembers = ({ ministryId, title }) => {
   const { AssignMinistryVolunteerMutation } = useMinistry({});
@@ -97,8 +97,7 @@ const AssignMembers = ({ ministryId, title }) => {
                 <FormItem>
                   <FormLabel>Add new member</FormLabel>
                   <FormControl>
-                    <Select
-                      isMulti
+                    <CustomReactSelect
                       options={options}
                       value={options.filter((option) =>
                         field.value.includes(option.value)

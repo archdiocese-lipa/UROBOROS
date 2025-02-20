@@ -20,6 +20,7 @@ export default {
         montserrat: ["Montserrat", "sans-serif"],
       },
       fontSize: {
+        "2xs": "10px",
         heading: "26px",
       },
     },

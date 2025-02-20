@@ -23,7 +23,7 @@ const AdminViewMinistry = () => {
       {ministryLoading ? (
         <Loading />
       ) : (
-        <div className="no-scrollbar grid h-full w-full gap-4 overflow-scroll p-2 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-4">
+        <div className="no-scrollbar grid h-full w-full gap-4 overflow-scroll p-2 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
           {/* Check if ministries exist after loading */}
           {ministries?.length === 0 ? (
             <p>No ministry have been created yet.</p>

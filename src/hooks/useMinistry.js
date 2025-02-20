@@ -8,6 +8,7 @@ import {
   removeMinistryVolunteer,
   fetchMinistryAssignedUsers,
   assignNewVolunteers,
+  getMinistryCoordinators,
   // getAssignedMinistries,
 } from "@/services/ministryService";
 // import { ROLES } from "@/constants/roles";
@@ -40,6 +41,10 @@ const useMinistry = ({ ministryId }) => {
       // }
       return getAllMinistries();
     },
+  });
+  const coordinators = useQuery({
+    queryKey: ["ministryCoordinators",ministryId],
+    queryFn: async () => getMinistryCoordinators(ministryId),
   });
 
   // Mutation for creating a ministry
@@ -144,6 +149,7 @@ const useMinistry = ({ ministryId }) => {
     ministries,
     membersLoading,
     error,
+    coordinators,
     createMutation,
     editMutation,
     deleteMutation,

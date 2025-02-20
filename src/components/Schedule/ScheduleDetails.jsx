@@ -22,7 +22,6 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 
-import ReactSelect from "react-select";
 
 import {
   DropdownMenu,
@@ -74,6 +73,7 @@ import AttendanceTable from "./AttendanceTable";
 import useRoleSwitcher from "@/hooks/useRoleSwitcher";
 import { ROLES } from "@/constants/roles";
 import AddExistingRecord from "./AddExistingRecord";
+import CustomReactSelect from "../CustomReactSelect";
 
 const ScheduleDetails = () => {
   const [qrCode, setQRCode] = useState(null);
@@ -531,8 +531,7 @@ const ScheduleDetails = () => {
                       <FormItem>
                         <FormLabel>Assign Volunteer</FormLabel>
                         <FormControl>
-                          <ReactSelect
-                            isMulti
+                          <CustomReactSelect
                             options={volunteerOptions}
                             onChange={(selectedOptions) => {
                               field.onChange(

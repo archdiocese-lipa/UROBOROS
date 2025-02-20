@@ -23,19 +23,22 @@ import { Input } from "@/components/ui/input";
 import { createMinistrySchema } from "@/zodSchema/CreateMinistrySchema";
 import { Textarea } from "../ui/textarea";
 import useMinistry from "@/hooks/useMinistry";
-import ReactSelect from "react-select";
-// import { ROLES } from "@/constants/roles";
-// import { useQuery } from "@tanstack/react-query";
-// import { getUsersByRole } from "@/services/userService";
-// import AssignVolunteerComboBox from "../Schedule/AssignVolunteerComboBox";
+import CustomReactSelect from "../CustomReactSelect";
+import { ROLES } from "@/constants/roles";
+import { useQuery } from "@tanstack/react-query";
+import { getUsersByRole } from "@/services/userService";
 
 const CreateMinistry = () => {
   const [openDialog, setOpenDialog] = useState(false);
 
-  // const { data } = useQuery({
-  //   queryKey: ["admins"],
-  //   queryFn: async () => getUsersByRole(ROLES[0]),
-  // });
+  const { data: coordinators, isLoading:coordinatorLoading } = useQuery({
+    queryKey: ["coordinators"],
+    queryFn: async () => getUsersByRole(ROLES[0]),
+  });
+  const { data: admins,isLoading:adminLoading } = useQuery({
+    queryKey: ["admin"],
+    queryFn: async () => getUsersByRole(ROLES[4]),
+  });
 
   const form = useForm({
     resolver: zodResolver(createMinistrySchema),
@@ -45,18 +48,19 @@ const CreateMinistry = () => {
       ministryDescription: "",
     },
   });
+  const adminsCoordinators =  [...admins ?? [],...coordinators ?? []]
 
-  // const adminOptions = data?.map((admin) => ({
-  //   value: admin.id,
-  //   label: `${admin.first_name} ${admin.last_name}`,
-  // }));
+  const coordinatorOptions = adminsCoordinators?.map((coordinator) => ({
+    value: coordinator.id,
+    label: `${coordinator.first_name} ${coordinator.last_name}`,
+  }));
 
   const { createMutation } = useMinistry({});
 
   const onSubmit = (values) => {
     createMutation.mutate(
       {
-        // coordinators: values.coordinators,
+        coordinators: values.coordinators,
         ministry_name: values.ministryName,
         ministry_description: values.ministryDescription,
       },
@@ -69,6 +73,7 @@ const CreateMinistry = () => {
     form.reset();
   };
 
+  console.log(form.getValues());
   return (
     <AlertDialog open={openDialog} onOpenChange={setOpenDialog}>
       <AlertDialogTrigger asChild>
@@ -132,22 +137,30 @@ const CreateMinistry = () => {
               <FormField
                 control={form.control}
                 name="coordinators"
-                render={({ _field }) => (
+                render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="font-bold">Coordinators </FormLabel>
+                    <FormLabel className="font-bold">Coordinators</FormLabel>
                     <FormControl>
-                      <ReactSelect isMulti />
-                      {/* <AssignVolunteerComboBox
-                        placeholder="Select Coordinators"
-                        value={field.value || []}
-                        onChange={(value) => field.onChange(value)}
-                        options={adminOptions}
-                      /> */}
+                      <CustomReactSelect
+                        isLoading={coordinatorLoading || adminLoading}
+                        onChange={(selectedOptions) =>
+                          field.onChange(
+                            selectedOptions?.map((option) => option.value) || []
+                          )
+                        }
+                        options={coordinatorOptions}
+                        value={coordinatorOptions.filter((option) =>
+                          field.value?.includes(option.value)
+                        )}
+                        placeholder="Select Coordinators..."
+                        isMulti
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
               <div className="flex justify-end gap-x-2">
                 <AlertDialogCancel asChild>
                   <Button onClick={() => form.reset()} variant="outline">

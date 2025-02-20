@@ -4,7 +4,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { format } from "date-fns";
 import PropTypes from "prop-types";
-import ReactSelect from "react-select";
 
 import { createEventSchema } from "@/zodSchema/CreateEventSchema";
 import {
@@ -34,15 +33,15 @@ import { DownIcon } from "@/assets/icons/icons";
 import { CalendarIcon } from "lucide-react";
 import TimePicker from "./TimePicker";
 import { Textarea } from "../ui/textarea";
-
 import { useUser } from "@/context/useUser";
 import useUsersByRole from "@/hooks/useUsersByRole";
-// import useMinistryMembers from "@/hooks/useMinistryMembers"; // Import the custom hook
 
 import { updateEvent } from "@/services/eventService";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import useMinistry from "@/hooks/useMinistry";
 import useEvent from "@/hooks/useEvent";
+import CustomReactSelect from "../CustomReactSelect";
+
 const CreateEvent = ({
   id = "create-event",
   eventData = null,
@@ -57,9 +56,13 @@ const CreateEvent = ({
     ministryId: selectedMinistry,
   });
 
-  const { userData } = useUser(); // Get userData from the context
 
-  const userId = userData?.id; // Extract the userId, safely checking if userData exists
+
+
+
+  const { userData } = useUser(); 
+
+  const userId = userData?.id; 
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -340,8 +343,7 @@ const CreateEvent = ({
               <FormItem>
                 <FormLabel>Assign Volunteer</FormLabel>
                 <FormControl>
-                  <ReactSelect
-                    isMulti
+                  <CustomReactSelect
                     options={
                       // Check visibility to determine which volunteers to pass
                       watchVisibility === "public" || watchVisibility === ""
@@ -365,15 +367,23 @@ const CreateEvent = ({
                     }
                     value={
                       Array.isArray(field.value)
-                        ? field.value.map((value) => ({
-                            value,
-                            label:
-                              ministryMembers?.find((m) => m.user_id === value)
-                                ?.users?.first_name ||
-                              publicVolunteers?.find((v) => v.id === value)
-                                ?.first_name ||
-                              "Unknown",
-                          }))
+                        ? field.value.map((value) => {
+                            const member = ministryMembers?.find(
+                              (member) => member.user_id === value
+                            );
+                            const volunteer = publicVolunteers?.find(
+                              (volunteer) => volunteer.id === value
+                            );
+
+                            return {
+                              value,
+                              label: member
+                                ? `${member.users?.first_name} ${member.users?.last_name || ""}`.trim()
+                                : volunteer
+                                  ? `${volunteer.first_name} ${volunteer.last_name || ""}`.trim()
+                                  : "Unknown",
+                            };
+                          })
                         : []
                     }
                     onChange={(selected) =>
@@ -381,8 +391,7 @@ const CreateEvent = ({
                         selected ? selected.map((option) => option.value) : []
                       )
                     }
-                    placeholder="Select Volunteer"
-                    classNamePrefix="react-select"
+                    placeholder={"Select Volunteer"}
                   />
                 </FormControl>
                 <FormMessage />

@@ -7,7 +7,7 @@ import { supabase } from "./supabaseClient";
 export const getAllMinistries = async () => {
   const { data, error } = await supabase
     .from("ministries")
-    .select("*")
+    .select("*, ministry_coordinators(id)")
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -40,18 +40,35 @@ export const getMinistryById = async (id) => {
   return await supabase.from("ministries").select("*").eq("id", id).single();
 };
 
+export const getMinistryCoordinators = async (ministryId) => {
+  const { data, error } = await supabase
+    .from("ministry_coordinators")
+    .select("id,users(id, first_name,last_name)")
+    .eq("ministry_id", ministryId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+};
+
 /**
  * Create a new ministry.
  * @param {Object} ministry - The ministry object (name and description).
  * @returns {Promise<Object>} Response containing data or error.
  */
-export const createMinistry = async (ministry) => {
+export const createMinistry = async ({
+  coordinators,
+  ministry_name,
+  ministry_description,
+}) => {
   const { data, error } = await supabase
     .from("ministries")
     .insert([
       {
-        ministry_name: ministry.ministry_name,
-        ministry_description: ministry.ministry_description,
+        ministry_name,
+        ministry_description,
       },
     ])
     .select("id")
@@ -60,20 +77,20 @@ export const createMinistry = async (ministry) => {
   if (error) {
     throw new Error(error.message);
   }
-  return data;
+  // return data;
 
-  // const coordinators = ministry.coordinators.map((coordinator) => ({
-  //   ministry_id: data.id,
-  //   coordinator_id: coordinator,
-  // }));
+  const coordinatorsData = coordinators.map((coordinator) => ({
+    ministry_id: data.id,
+    coordinator_id: coordinator,
+  }));
 
-  // const { error: coordinatorError } = await supabase
-  //   .from("ministry_coordinators")
-  //   .insert(coordinators);
+  const { error: coordinatorError } = await supabase
+    .from("ministry_coordinators")
+    .insert(coordinatorsData);
 
-  // if (coordinatorError) {
-  //   throw new Error("Error assigning coordinators", coordinatorError.message);
-  // }
+  if (coordinatorError) {
+    throw new Error("Error assigning coordinators", coordinatorError.message);
+  }
 };
 
 /**
@@ -84,7 +101,8 @@ export const createMinistry = async (ministry) => {
  */
 export const editMinistry = async (updatedValues) => {
   // Destructure the updatedValues object to extract necessary fields
-  const { ministryId, ministry_name, ministry_description } = updatedValues;
+  const { coordinators, ministryId, ministry_name, ministry_description } =
+    updatedValues;
   // Perform the update query using destructured values
   const { data, error } = await supabase
     .from("ministries")
@@ -99,29 +117,29 @@ export const editMinistry = async (updatedValues) => {
     throw new Error(error.message); // Handle the error appropriately
   }
 
-  // const { error: deleteCoordinatorError } = await supabase
-  //   .from("ministry_coordinators")
-  //   .delete()
-  //   .eq("ministry_id", ministryId);
+  const { error: deleteCoordinatorError } = await supabase
+    .from("ministry_coordinators")
+    .delete()
+    .eq("ministry_id", ministryId);
 
-  // if (deleteCoordinatorError) {
-  //   throw new Error(
-  //     "Error deleting coordinators!",
-  //     deleteCoordinatorError.message
-  //   );
-  // }
-  // const coordinatorInsert = coordinators.map((coordinator) => ({
-  //   ministry_id: ministryId,
-  //   coordinator_id: coordinator,
-  // }));
+  if (deleteCoordinatorError) {
+    throw new Error(
+      "Error deleting coordinators!",
+      deleteCoordinatorError.message
+    );
+  }
+  const coordinatorInsert = coordinators.map((coordinator) => ({
+    ministry_id: ministryId,
+    coordinator_id: coordinator,
+  }));
 
-  //   const { error: coordinatorError } = await supabase
-  //   .from("ministry_coordinators")
-  //   .insert(coordinatorInsert);
+  const { error: coordinatorError } = await supabase
+    .from("ministry_coordinators")
+    .insert(coordinatorInsert);
 
-  // if (coordinatorError) {
-  //   throw new Error(coordinatorError.message);
-  // }
+  if (coordinatorError) {
+    throw new Error(coordinatorError.message);
+  }
 
   return data; // Return the updated data
 };

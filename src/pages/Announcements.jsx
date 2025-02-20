@@ -13,8 +13,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-import ReactSelect from "react-select";
-
 import {
   Select,
   SelectContent,
@@ -48,6 +46,7 @@ import { fetchUserMinistries } from "@/services/ministryService";
 import useInterObserver from "@/hooks/useInterObserver";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import Loading from "@/components/Loading";
+import CustomReactSelect from "@/components/CustomReactSelect";
 
 const Announcements = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -262,8 +261,7 @@ const Announcements = () => {
                       <FormItem>
                         <FormLabel>Ministry</FormLabel>
                         <FormControl>
-                          <ReactSelect
-                            isMulti
+                          <CustomReactSelect
                             options={ministries?.map((ministry) => ({
                               value: ministry.id,
                               label: `${ministry.ministry_name}`,
@@ -278,10 +276,9 @@ const Announcements = () => {
                             onChange={(selectedOptions) => {
                               field.onChange(
                                 selectedOptions.map((option) => option.value)
-                              ); // Update field value to an array of ids
+                              ); 
                             }}
                             placeholder="Select Ministry"
-                            // disabled={formVisibility !== "private"}
                           />
                         </FormControl>
                         <FormMessage />
