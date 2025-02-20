@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@iconify/react";
-import ReactSelect from "react-select";
+import CustomReactSelect from "../CustomReactSelect";
 
 const VolunteerSelect = ({
   disableSchedule,
@@ -119,7 +119,7 @@ const VolunteerSelect = ({
           </DialogDescription>
         </DialogHeader>
         <div>
-          <ReactSelect
+          <CustomReactSelect
             options={volunteerOptions}
             value={selectedVolunteer}
             onChange={setSelectedVolunteer}
