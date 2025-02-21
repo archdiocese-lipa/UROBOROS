@@ -24,7 +24,7 @@ const ConfigureMinistry = ({ ministryTitle, ministryDescription }) => {
           <DialogTitle className="font-bold">{ministryTitle}</DialogTitle>
           <DialogDescription>{ministryDescription}</DialogDescription>
         </DialogHeader>
-        <div className="border-y">
+        <div className="border-y border-primary/100">
           <div className="flex flex-col gap-y-4 px-6 py-4">
             <div className="flex items-center justify-between">
               <Label>Coordinators</Label>
@@ -37,7 +37,7 @@ const ConfigureMinistry = ({ ministryTitle, ministryDescription }) => {
             <div>
               <Label>Groups</Label>
             </div>
-            <div className="bg-g rounded-2xl bg-primary/50 p-4 hover:bg-primary">
+            <div className="rounded-2xl bg-primary/50 p-4 hover:bg-primary">
               <Label className="font-semibold">Group Name</Label>
             </div>
           </div>
