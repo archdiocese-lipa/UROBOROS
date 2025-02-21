@@ -31,11 +31,11 @@ import { getUsersByRole } from "@/services/userService";
 const CreateMinistry = () => {
   const [openDialog, setOpenDialog] = useState(false);
 
-  const { data: coordinators, isLoading:coordinatorLoading } = useQuery({
+  const { data: coordinators, isLoading: coordinatorLoading } = useQuery({
     queryKey: ["coordinators"],
     queryFn: async () => getUsersByRole(ROLES[0]),
   });
-  const { data: admins,isLoading:adminLoading } = useQuery({
+  const { data: admins, isLoading: adminLoading } = useQuery({
     queryKey: ["admin"],
     queryFn: async () => getUsersByRole(ROLES[4]),
   });
@@ -48,7 +48,7 @@ const CreateMinistry = () => {
       ministryDescription: "",
     },
   });
-  const adminsCoordinators =  [...admins ?? [],...coordinators ?? []]
+  const adminsCoordinators = [...(admins ?? []), ...(coordinators ?? [])];
 
   const coordinatorOptions = adminsCoordinators?.map((coordinator) => ({
     value: coordinator.id,
@@ -73,7 +73,6 @@ const CreateMinistry = () => {
     form.reset();
   };
 
-  console.log(form.getValues());
   return (
     <AlertDialog open={openDialog} onOpenChange={setOpenDialog}>
       <AlertDialogTrigger asChild>

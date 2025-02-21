@@ -1,14 +1,5 @@
 import PropTypes from "prop-types";
 import { Users } from "@/assets/icons/icons";
-// import {
-//   DropdownMenu,
-//   DropdownMenuContent,
-//   DropdownMenuItem,
-//   DropdownMenuLabel,
-//   DropdownMenuSeparator,
-//   DropdownMenuTrigger,
-// } from "@/components/ui/dropdown-menu";
-// import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Card,
@@ -17,17 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-// import {
-//   Dialog,
-//   DialogClose,
-//   DialogContent,
-//   DialogDescription,
-//   DialogFooter,
-//   DialogHeader,
-//   DialogTitle,
-//   DialogTrigger,
-// } from "@/components/ui/dialog";
-// import ViewMembers from "./ViewMembers";
 import { useState } from "react";
 import EditMinistry from "./EditMinistry";
 import useMinistry from "@/hooks/useMinistry";
@@ -42,13 +22,7 @@ const getInitials = (firstName, lastName) => {
   return `${firstInitial}${lastInitial}`;
 };
 
-const MinistryCard = ({
-  ministryId,
-  title,
-  description,
-  // coordinators,
-  createdDate,
-}) => {
+const MinistryCard = ({ ministryId, title, description, createdDate }) => {
   const formatDateToUK = (dateString) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat("en-GB", {
@@ -63,28 +37,12 @@ const MinistryCard = ({
 
   const formattedCreatedDate = formatDateToUK(createdDate);
 
-  const {
-    coordinators,
-    _ministryMembers,
-    membersLoading,
-    _deleteMutation,
-    error,
-  } = useMinistry({ ministryId });
-  // const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const { coordinators, membersLoading, error } = useMinistry({ ministryId });
   const [isEditDialogOpen, setEditDialogOpen] = useState(false);
-  // const handleDelete = () => {
-  //   deleteMutation.mutate(ministryId);
-  //   setDeleteDialogOpen(false);
-  // };
-
-  // const handleEdit = () => {
-  //   setEditDialogOpen(true); // Open the Edit Ministry dialog or form
-  // };
 
   const maxVisible = 4;
-  const visibleAvatars = coordinators?.data.slice(0, maxVisible);
-  const remainingCount = Math.max(coordinators?.data.length - maxVisible, 0);
-
+  const visibleAvatars = coordinators?.data?.slice(0, maxVisible);
+  const remainingCount = Math.max(coordinators?.data?.length - maxVisible, 0);
 
   return (
     <Card className="max-h-96 rounded-2xl border text-primary-text">
@@ -147,7 +105,7 @@ const MinistryCard = ({
                       : "flex-shrink-0" // Other items don't shrink
                   )}
                 >
-                  { `${coordinator.users.first_name} ${coordinator.users.last_name}`}
+                  {`${coordinator.users.first_name} ${coordinator.users.last_name}`}
                   <span className="mr-1">,</span>
                 </p>
               ))}

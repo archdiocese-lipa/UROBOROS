@@ -1,45 +1,54 @@
 import PropTypes from "prop-types";
 import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { ThreeDotsIcon, CloseIcon } from "@/assets/icons/icons";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { ThreeDotsIcon } from "@/assets/icons/icons";
 import { Button } from "../ui/button";
+import { Label } from "../ui/label";
+import AddCoordinators from "./AddCoordinators";
+import RemoveCoordinator from "./RemoveCoordinator";
 
 const ConfigureMinistry = ({ ministryTitle, ministryDescription }) => {
   return (
-    <AlertDialog>
-      <AlertDialogTrigger>
+    <Dialog>
+      <DialogTrigger>
         <ThreeDotsIcon />
-      </AlertDialogTrigger>
-      <AlertDialogContent className="rounded-2xl px-0 text-primary-text">
-        <AlertDialogHeader>
-          <div className="flex items-center justify-between">
-            <AlertDialogTitle className="font-bold">
-              {ministryTitle}
-            </AlertDialogTitle>
-            <AlertDialogCancel className="rounded-full border-none bg-primary hover:bg-primary">
-              <CloseIcon className="text-primary-text" />
-            </AlertDialogCancel>
-          </div>
-          <AlertDialogDescription className="font-medium">
-            {ministryDescription}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <div className="border-t-[1px] p-6">
-          <div className="flex">
-            <Button variant="destructive" className="grow rounded-xl">
-              Delete
-            </Button>
+      </DialogTrigger>
+      <DialogContent className="px-0 text-primary-text">
+        <DialogHeader className="px-6">
+          <DialogTitle className="font-bold">{ministryTitle}</DialogTitle>
+          <DialogDescription>{ministryDescription}</DialogDescription>
+        </DialogHeader>
+        <div className="border-y">
+          <div className="flex flex-col gap-y-4 px-6 py-4">
+            <div className="flex items-center justify-between">
+              <Label>Coordinators</Label>
+              <AddCoordinators />
+            </div>
+            <div className="flex items-center justify-between rounded-2xl bg-primary p-4">
+              <Label className="font-semibold">John Doe</Label>
+              <RemoveCoordinator />
+            </div>
+            <div>
+              <Label>Groups</Label>
+            </div>
+            <div className="bg-g rounded-2xl bg-primary/50 p-4 hover:bg-primary">
+              <Label className="font-semibold">Group Name</Label>
+            </div>
           </div>
         </div>
-      </AlertDialogContent>
-    </AlertDialog>
+        <div className="flex rounded-full p-4">
+          <Button variant="destructive" className="grow">
+            Delete
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
