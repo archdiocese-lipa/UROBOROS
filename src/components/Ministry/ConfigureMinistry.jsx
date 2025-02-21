@@ -19,7 +19,7 @@ const ConfigureMinistry = ({ ministryTitle, ministryDescription }) => {
       <DialogTrigger>
         <ThreeDotsIcon />
       </DialogTrigger>
-      <DialogContent className="px-0 text-primary-text">
+      <DialogContent className="max-w-md rounded-3xl px-0 text-primary-text">
         <DialogHeader className="px-6">
           <DialogTitle className="font-bold">{ministryTitle}</DialogTitle>
           <DialogDescription>{ministryDescription}</DialogDescription>
