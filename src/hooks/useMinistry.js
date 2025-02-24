@@ -46,6 +46,7 @@ const useMinistry = ({ ministryId }) => {
   const coordinators = useQuery({
     queryKey: ["ministryCoordinators",ministryId],
     queryFn: async () => getMinistryCoordinators(ministryId),
+    enabled: !!ministryId
   });
 
   // Mutation for creating a ministry
@@ -54,13 +55,13 @@ const useMinistry = ({ ministryId }) => {
     onSuccess: () => {
       queryClient.invalidateQueries(["ministries"]);
       toast({
-        title: "Group Created",
-        description: "Group has been created successfully!",
+        title: "Ministry Created",
+        description: "Ministry has been created successfully!",
       });
     },
     onError: (error) => {
       toast({
-        title: "Error Creating Group",
+        title: "Error Creating Ministry",
         description:
           error?.message || "Something went wrong. Please try again.",
         variant: "destructive",
@@ -74,13 +75,13 @@ const useMinistry = ({ ministryId }) => {
     onSuccess: () => {
       queryClient.invalidateQueries(["ministries"]);
       toast({
-        title: "Group Updated",
-        description: "Group has been updated successfully!",
+        title: "Ministry Updated",
+        description: "Ministry has been updated successfully!",
       });
     },
     onError: (error) => {
       toast({
-        title: "Error Updating Group",
+        title: "Error Updating Ministry",
         description:
           error?.message || "Something went wrong. Please try again.",
         variant: "destructive",
@@ -94,13 +95,13 @@ const useMinistry = ({ ministryId }) => {
     onSuccess: () => {
       queryClient.invalidateQueries(["ministries"]);
       toast({
-        title: "Group Deleted",
-        description: "Group has been deleted successfully!",
+        title: "Ministry Deleted",
+        description: "Ministry has been deleted successfully!",
       });
     },
     onError: (error) => {
       toast({
-        title: "Error Deleting Group",
+        title: "Error Deleting Ministry",
         description:
           error?.message || "Something went wrong. Please try again.",
         variant: "destructive",

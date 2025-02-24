@@ -9,7 +9,7 @@ const customStyles = {
     ...styles,
     borderRadius: "15px",
     backgroundColor: "#F6F0ED",
-    padding: "5px",
+    padding: "14px",
     boxShadow: "none",
     outline: "none",
     borderColor: "transparent",
@@ -17,11 +17,22 @@ const customStyles = {
       borderColor: "transparent",
     },
   }),
+  placeholder: (styles) => ({
+    ...styles,
+    color:"#663F30",
+    fontSize:"14px"
+
+  }),
+  
 
   multiValue: (styles) => ({
     ...styles,
     backgroundColor: "white",
-    padding: "3px",
+    paddingTop: "6px",
+    paddingBottom: "6px",
+    boxShadow: "0px 4px 5.5px 0px rgba(102, 63, 48, 0.06)",
+    paddingLeft:"10px",
+    paddingRight:"10px",
     borderRadius: "5px",
   }),
 
@@ -34,6 +45,7 @@ const customStyles = {
   multiValueRemove: (styles) => ({
     ...styles,
     color: "#663F30",
+    transform: "scale(1.5)",
     backgroundColor: "white",
     ":hover": {
       backgroundColor: "white",
@@ -49,9 +61,9 @@ const CustomMultiValue = (props) => {
 
   return (
     <components.MultiValue {...props} className="flex items-center gap-2">
-      <Avatar className="h-4 w-4">
+      <Avatar className="flex justify-center items-center h-4 w-4">
         <AvatarImage src={data.image || ""} alt={data.label} />
-        <AvatarFallback className="bg-accent text-2xs text-white">
+        <AvatarFallback className="bg-accent text-center text-2xs text-white">
           {initials}
         </AvatarFallback>
       </Avatar>

@@ -8,8 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useState } from "react";
-import EditMinistry from "./EditMinistry";
 import useMinistry from "@/hooks/useMinistry";
 import { Label } from "../ui/label";
 import ConfigureMinistry from "./ConfigureMinistry";
@@ -38,7 +36,6 @@ const MinistryCard = ({ ministryId, title, description, createdDate }) => {
   const formattedCreatedDate = formatDateToUK(createdDate);
 
   const { coordinators, membersLoading, error } = useMinistry({ ministryId });
-  const [isEditDialogOpen, setEditDialogOpen] = useState(false);
 
   const maxVisible = 4;
   const visibleAvatars = coordinators?.data?.slice(0, maxVisible);
@@ -50,6 +47,8 @@ const MinistryCard = ({ ministryId, title, description, createdDate }) => {
         <div className="flex items-center justify-between">
           <CardTitle className="font-bold">{title}</CardTitle>
           <ConfigureMinistry
+          coordinators ={coordinators?.data}
+          ministryId={ministryId}
             ministryTitle={title}
             ministryDescription={description}
           />
@@ -94,15 +93,15 @@ const MinistryCard = ({ ministryId, title, description, createdDate }) => {
           <div>
             <Label className="font-semibold">Coordinators Preview:</Label>
 
-            <div className="flex w-full">
-              {coordinators?.data?.map((coordinator, index, arr) => (
+            <div className="flex w-full overflow-hidden text-ellipsis">
+              {coordinators?.data?.map((coordinator) => (
                 <p
                   key={coordinator.id}
                   className={cn(
-                    "text-nowrap text-xs",
-                    index === arr.length - 1
-                      ? "flex-1 overflow-hidden text-ellipsis" // Only last item gets ellipsis
-                      : "flex-shrink-0" // Other items don't shrink
+                    "text-nowrap text-xs ",
+                    // index === arr.length - 1
+                    //   ? "flex-1 overflow-hidden text-ellipsis" 
+                    //   : "flex-shrink-0" 
                   )}
                 >
                   {`${coordinator.users.first_name} ${coordinator.users.last_name}`}
@@ -115,7 +114,7 @@ const MinistryCard = ({ ministryId, title, description, createdDate }) => {
       </CardContent>
 
       {/* Edit Ministry Modal or Component */}
-      {isEditDialogOpen && (
+      {/* {isEditDialogOpen && (
         <EditMinistry
           ministryId={ministryId}
           currentName={title}
@@ -124,7 +123,7 @@ const MinistryCard = ({ ministryId, title, description, createdDate }) => {
           isOpen={isEditDialogOpen}
           closeDialog={() => setEditDialogOpen(false)}
         />
-      )}
+      )} */}
     </Card>
   );
 };

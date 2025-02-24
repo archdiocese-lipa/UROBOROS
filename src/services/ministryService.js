@@ -53,11 +53,59 @@ export const getMinistryCoordinators = async (ministryId) => {
   return data;
 };
 
+export const addCoordinators = async ({ ministryId, coordinatorsData }) => {
+  // Extract ministry-coordinator pairs
+  const coordinatorIds = coordinatorsData?.map((c) => c.coordinator_id);
+
+  // Check if the combination of ministryId and coordinator_id already exists
+  const { data: existingCoordinators, error: checkError } = await supabase
+    .from("ministry_coordinators")
+    .select("coordinator_id, ministry_id")
+    .in("coordinator_id", coordinatorIds)
+    .eq("ministry_id", ministryId);
+
+  if (checkError) {
+    throw new Error(
+      "Error checking existing coordinators"
+    );
+  }
+
+  if (existingCoordinators?.length > 0) {
+    throw new Error("coordinators already exist in this ministry.");
+  }
+
+  // Insert new coordinators
+  const { error: insertError } = await supabase
+    .from("ministry_coordinators")
+    .insert(coordinatorsData);
+
+  if (insertError) {
+    throw new Error("Error assigning coordinators");
+  }
+
+};
+
+export const removeCoordinator = async ({ministryId, coordinator_id}) => {
+
+  const { error } = await supabase
+    .from("ministry_coordinators")
+    .delete()
+    .eq("id", coordinator_id)
+    .eq("ministry_id", ministryId);
+
+  if (error) {
+    console.error("Error deleting coordinator:", error.message);
+    throw new Error(error.message);
+  }
+
+};
+
 /**
  * Create a new ministry.
  * @param {Object} ministry - The ministry object (name and description).
  * @returns {Promise<Object>} Response containing data or error.
  */
+
 export const createMinistry = async ({
   coordinators,
   ministry_name,
@@ -79,18 +127,15 @@ export const createMinistry = async ({
   }
   // return data;
 
+ 
+
   const coordinatorsData = coordinators.map((coordinator) => ({
     ministry_id: data.id,
     coordinator_id: coordinator,
   }));
 
-  const { error: coordinatorError } = await supabase
-    .from("ministry_coordinators")
-    .insert(coordinatorsData);
 
-  if (coordinatorError) {
-    throw new Error("Error assigning coordinators", coordinatorError.message);
-  }
+  addCoordinators({ministryId:data.id,coordinatorsData});
 };
 
 /**
@@ -150,7 +195,11 @@ export const editMinistry = async (updatedValues) => {
  * @returns {Promise<Object>} Response containing data or error.
  */
 export const deleteMinistry = async (id) => {
-  return await supabase.from("ministries").delete().eq("id", id);
+  const { error } = await supabase.from("ministries").delete().eq("id", id);
+
+  if (error) {
+    throw new Error("Error Deleting Ministry", error);
+  }
 };
 
 export const fetchMinistryAssignedUsers = async (ministryId) => {
