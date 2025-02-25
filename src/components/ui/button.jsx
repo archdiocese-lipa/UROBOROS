@@ -25,8 +25,7 @@ const buttonVariants = cva(
           "bg-accent text-white font-semibold rounded-[10px] tracking-wide",
         transparent:
           "bg-transparent text-white font-semibold rounded-[10px] tracking-wide border-0",
-        login:
-          "bg-accent text-white font-semibold rounded-full tracking-wide",
+        login: "bg-accent text-white font-semibold rounded-full tracking-wide",
         landingsecondary:
           "bg-white/75 text-[#663F30] rounded-full hover:bg-white/50 dark:bg-white/75 dark:text-[#663F30] dark:hover:bg-white/50",
       },
@@ -34,6 +33,7 @@ const buttonVariants = cva(
       size: {
         default: "h-10 px-4 py-2",
         primary: "h-fit px-4 py-[5px]",
+        xs: "h-6 px-2 py-4",
         sm: "h-9 rounded-md px-3",
         lg: "h-11 rounded-md px-8",
         icon: "h-10 w-10",
@@ -64,7 +64,7 @@ Button.displayName = "Button";
 Button.propTypes = {
   className: PropTypes.string,
   variant: PropTypes.string,
-  
+
   size: PropTypes.string,
   asChild: PropTypes.bool,
 };

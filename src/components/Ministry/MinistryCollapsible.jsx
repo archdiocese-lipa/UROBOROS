@@ -5,29 +5,10 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChevronDown, ChevronRight } from "lucide-react";
-import { Icon } from "@iconify/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import SheetGroups from "./SheetGroups";
+import ConfigureGroup from "./ConfigureGroup";
 
 const MinistryCollapsible = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -61,57 +42,12 @@ const MinistryCollapsible = () => {
               </div>
             </div>
           </CollapsibleTrigger>
-          <AlertDialog>
-            <AlertDialogTrigger>
-              <Icon icon="mingcute:more-2-line" className="h-5 w-5" />
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete
-                  your account and remove your data from our servers.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction>Continue</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <ConfigureGroup />
         </div>
-
         <CollapsibleContent>
           <div className="mt-1 pl-16 pr-10">
-            <ul className="border-l-2 border-primary-outline pl-2">
-              <Sheet>
-                <SheetTrigger className="rounded-full p-2 font-medium hover:bg-primary-outline">
-                  Group 1
-                </SheetTrigger>
-                <SheetContent className="w-full">
-                  <SheetHeader>
-                    <div>
-                      <SheetTitle>Group 1</SheetTitle>
-                      <SheetDescription>Group 1 Description</SheetDescription>
-                    </div>
-                  </SheetHeader>
-                  <Tabs
-                    defaultValue="announcements"
-                    className="w-[400px] text-center"
-                  >
-                    <TabsList>
-                      <TabsTrigger value="announcements">
-                        Announcement
-                      </TabsTrigger>
-                      <TabsTrigger value="members">Members</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="announcements">
-                      Announcements
-                    </TabsContent>
-                    <TabsContent value="members">Members</TabsContent>
-                  </Tabs>
-                </SheetContent>
-              </Sheet>
+            <ul className="border-l-2 border-primary-outline pl-7">
+              <SheetGroups />
             </ul>
           </div>
         </CollapsibleContent>

@@ -7,7 +7,7 @@ import PropTypes from "prop-types";
 import { cn } from "@/lib/utils";
 
 const labelVariants = cva(
-  "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+  "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-primary-text"
 );
 
 const Label = React.forwardRef(({ className, ...props }, ref) => (
