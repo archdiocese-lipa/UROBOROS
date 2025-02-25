@@ -1,6 +1,5 @@
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -14,18 +13,19 @@ import { Icon } from "@iconify/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
 import PropTypes from "prop-types";
+import { Button } from "../ui/button";
 
-const RemoveCoordinator = ({coordinator_id,ministryId}) => {
-  const queryClient = useQueryClient()
-  const {mutate} = useMutation({
+const RemoveCoordinator = ({ coordinator_id, ministryId }) => {
+  const queryClient = useQueryClient();
+  const { mutate } = useMutation({
     mutationFn: removeCoordinator,
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["ministryCoordinators",ministryId],
+        queryKey: ["ministryCoordinators", ministryId],
       });
       toast({
         title: "Coordinator removed",
-        description: "coordinator has been deleted successfully!",
+        description: "Coordinator has been deleted successfully!",
       });
     },
     onError: (error) => {
@@ -36,8 +36,7 @@ const RemoveCoordinator = ({coordinator_id,ministryId}) => {
         variant: "destructive",
       });
     },
-
-  })
+  });
 
   return (
     <AlertDialog>
@@ -46,14 +45,21 @@ const RemoveCoordinator = ({coordinator_id,ministryId}) => {
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Are you sure you want to remove  this coordinator?</AlertDialogTitle>
+          <AlertDialogTitle>
+            Are you sure you want to remove this coordinator?
+          </AlertDialogTitle>
           <AlertDialogDescription>
             This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={() => mutate({ministryId,coordinator_id})}>Continue</AlertDialogAction>
+          <Button
+            variant="destructive"
+            onClick={() => mutate({ ministryId, coordinator_id })}
+          >
+            Continue
+          </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

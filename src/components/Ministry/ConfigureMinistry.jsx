@@ -13,6 +13,15 @@ import { Label } from "../ui/label";
 import AddCoordinators from "./AddCoordinators";
 import RemoveCoordinator from "./RemoveCoordinator";
 import useMinistry from "@/hooks/useMinistry";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "../ui/alert-dialog";
 
 const ConfigureMinistry = ({
   coordinators,
@@ -41,11 +50,21 @@ const ConfigureMinistry = ({
               <Label>Coordinators</Label>
               <AddCoordinators ministryId={ministryId} />
             </div>
-            <div className=" max-h-32 overflow-y-scroll space-y-2 no-scrollbar">
-            {coordinators?.map((coordinator) => (<div key={coordinator.id} className="flex items-center justify-between rounded-2xl bg-primary p-4">
-              <Label className="font-semibold">{ coordinator.users.first_name } {coordinator.users.last_name}</Label>
-              <RemoveCoordinator ministryId={ministryId} coordinator_id={coordinator.id} />
-            </div>))}
+            <div className="no-scrollbar max-h-32 space-y-2 overflow-y-scroll">
+              {coordinators?.map((coordinator) => (
+                <div
+                  key={coordinator.id}
+                  className="flex items-center justify-between rounded-2xl bg-primary p-4"
+                >
+                  <Label className="font-semibold">
+                    {coordinator.users.first_name} {coordinator.users.last_name}
+                  </Label>
+                  <RemoveCoordinator
+                    ministryId={ministryId}
+                    coordinator_id={coordinator.id}
+                  />
+                </div>
+              ))}
             </div>
             <div>
               <Label>Groups</Label>
@@ -56,29 +75,32 @@ const ConfigureMinistry = ({
           </div>
         </div>
         <div className="flex rounded-full p-4">
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button
-                // onClick={handleDeleteMinistry}
-                variant="destructive"
-                className="grow"
-              >
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" className="grow">
                 Delete Ministry
               </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Delete Ministry</DialogTitle>
-                <DialogDescription>
-                  Are you sure you want to delete this minstry? This action cannot be undone.
-                </DialogDescription>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Ministry</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete this minstry? This action
+                  cannot be undone.
+                </AlertDialogDescription>
 
-                <div className=" flex justify-end">
-                  <Button onClick={handleDeleteMinistry} variant={"destructive"}>Confirm</Button>
+                <div className="flex justify-end gap-x-2">
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <Button
+                    onClick={handleDeleteMinistry}
+                    variant={"destructive"}
+                  >
+                    Confirm
+                  </Button>
                 </div>
-              </DialogHeader>
-            </DialogContent>
-          </Dialog>
+              </AlertDialogHeader>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </DialogContent>
     </Dialog>
@@ -91,7 +113,7 @@ ConfigureMinistry.propTypes = {
   ministryId: PropTypes.string.isRequired,
   coordinators: PropTypes.arrayOf(
     PropTypes.shape({
-      id: PropTypes.string.isRequired, 
+      id: PropTypes.string.isRequired,
       users: PropTypes.shape({
         first_name: PropTypes.string.isRequired,
         last_name: PropTypes.string.isRequired,
