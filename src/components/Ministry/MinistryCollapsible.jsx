@@ -14,7 +14,7 @@ const MinistryCollapsible = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="px-5 py-2">
+    <div className="w-96 px-5 py-2">
       <Collapsible
         open={isOpen}
         onOpenChange={setIsOpen}
