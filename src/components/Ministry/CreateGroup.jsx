@@ -76,7 +76,7 @@ const CreateGroup = () => {
           Create New Group
         </Button>
       </AlertDialogTrigger>
-      <AlertDialogContent className="no-scrollbar max-w-[35rem] overflow-scroll text-primary-text">
+      <AlertDialogContent className="no-scrollbar max-h-[38rem] overflow-scroll text-primary-text">
         <AlertDialogHeader className="text-start">
           <AlertDialogTitle>Create New Group</AlertDialogTitle>
           <AlertDialogDescription className="sr-only">
