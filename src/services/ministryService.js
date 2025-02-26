@@ -65,9 +65,7 @@ export const addCoordinators = async ({ ministryId, coordinatorsData }) => {
     .eq("ministry_id", ministryId);
 
   if (checkError) {
-    throw new Error(
-      "Error checking existing coordinators"
-    );
+    throw new Error("Error checking existing coordinators");
   }
 
   if (existingCoordinators?.length > 0) {
@@ -82,11 +80,9 @@ export const addCoordinators = async ({ ministryId, coordinatorsData }) => {
   if (insertError) {
     throw new Error("Error assigning coordinators");
   }
-
 };
 
-export const removeCoordinator = async ({ministryId, coordinator_id}) => {
-
+export const removeCoordinator = async ({ ministryId, coordinator_id }) => {
   const { error } = await supabase
     .from("ministry_coordinators")
     .delete()
@@ -97,7 +93,6 @@ export const removeCoordinator = async ({ministryId, coordinator_id}) => {
     console.error("Error deleting coordinator:", error.message);
     throw new Error(error.message);
   }
-
 };
 
 /**
@@ -127,15 +122,12 @@ export const createMinistry = async ({
   }
   // return data;
 
- 
-
   const coordinatorsData = coordinators.map((coordinator) => ({
     ministry_id: data.id,
     coordinator_id: coordinator,
   }));
 
-
-  addCoordinators({ministryId:data.id,coordinatorsData});
+  addCoordinators({ ministryId: data.id, coordinatorsData });
 };
 
 /**

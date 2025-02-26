@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,22 +15,24 @@ import { Icon } from "@iconify/react";
 import { Label } from "../ui/label";
 import CreateGroup from "./CreateGroup";
 
-const ConfigureGroup = () => {
+const ConfigureGroup = ({ ministryId, ministryName, ministryDescription }) => {
   return (
     <AlertDialog>
-      <AlertDialogTrigger>
-        <Icon icon="mingcute:more-2-line" className="h-5 w-5" />
+      <AlertDialogTrigger asChild>
+        <Button variant="ghost">
+          <Icon icon="mingcute:more-2-line" className="h-5 w-5" />
+        </Button>
       </AlertDialogTrigger>
       <AlertDialogContent className="no-scrollbar max-h-[35rem] overflow-y-scroll rounded-3xl px-0 text-primary-text">
         <AlertDialogHeader className="flex-row items-center justify-between space-y-0 px-6 text-start leading-none">
           <div>
-            <AlertDialogTitle>Ministry A</AlertDialogTitle>
+            <AlertDialogTitle>{ministryName}</AlertDialogTitle>
             <AlertDialogDescription>
-              Ministry A Description
+              {ministryDescription}
             </AlertDialogDescription>
           </div>
           <div>
-            <CreateGroup />
+            <CreateGroup ministryId={ministryId} />
           </div>
         </AlertDialogHeader>
         <div className="border-y border-primary-outline/20 py-4">
@@ -66,6 +69,12 @@ const ConfigureGroup = () => {
       </AlertDialogContent>
     </AlertDialog>
   );
+};
+
+ConfigureGroup.propTypes = {
+  ministryId: PropTypes.string.isRequired,
+  ministryName: PropTypes.string.isRequired,
+  ministryDescription: PropTypes.string,
 };
 
 export default ConfigureGroup;

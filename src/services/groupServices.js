@@ -14,17 +14,17 @@ const fetchGroupMembers = async (groupId) => {
 };
 
 const fetchGroups = async (ministryId) => {
-    const { data, error } = supabase
-      .from("groups")
-      .select("*")
-      .eq("ministry_id", ministryId);
-  
-    if (error) {
-      throw new Error(`Error fetching groups${error.message}`);
-    }
-  
-    return data;
-  };
+  const { data, error } = supabase
+    .from("groups")
+    .select("*")
+    .eq("ministry_id", ministryId);
+
+  if (error) {
+    throw new Error(`Error fetching groups${error.message}`);
+  }
+
+  return data;
+};
 
 const createGroup = async ({ ministryId, name, description, members }) => {
   const { error } = supabase.from("groups").insert([
@@ -96,5 +96,5 @@ export {
   addMember,
   removeMember,
   fetchGroupMembers,
-  fetchGroups
+  fetchGroups,
 };

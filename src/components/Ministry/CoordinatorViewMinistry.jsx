@@ -15,7 +15,7 @@ const CoordinatorViewMinistry = () => {
           <MinistryCollapsible />
         </div>
       </aside>
-      <main className="w-full">
+      <main className="hidden w-full lg:block">
         <div className="flex justify-between px-8">
           <div>
             <Label className="text-lg font-bold">Group 1 </Label>

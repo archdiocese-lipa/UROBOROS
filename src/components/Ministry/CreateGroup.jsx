@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -22,23 +23,46 @@ import {
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
+import CustomReactSelect from "../CustomReactSelect";
+import { ROLES } from "@/constants/roles";
+import { useQuery } from "@tanstack/react-query";
+import { getUsersByRole } from "@/services/userService";
 
 const createGroupSchema = z.object({
   name: z.string().min(2, {
     message: "Name is required.",
   }),
+  description: z.string().optional(),
+  members: z.array(z.string()).optional(),
 });
 
+// const CreateGroup = ({ ministryId }) => { Lako me panga comment ini tan apin ini itang MinistryID
 const CreateGroup = () => {
+  const { data: parishioners, isLoading: parishionerLoading } = useQuery({
+    queryKey: ["parishioner"],
+    queryFn: async () => getUsersByRole(ROLES[2]),
+  });
+
+  const parishionerOption = parishioners?.map((parishioner) => ({
+    value: parishioner.id,
+    label: `${parishioner.first_name} ${parishioner.last_name}`,
+  }));
+
   const form = useForm({
     resolver: zodResolver(createGroupSchema),
     defaultValues: {
-      username: "",
+      name: "",
+      description: "",
+      members: [],
     },
   });
 
   const onSubmit = (data) => {
-    console.log(data);
+    console.log({
+      name: data.name,
+      description: data.description,
+      members: data.members,
+    });
   };
 
   return (
@@ -52,7 +76,7 @@ const CreateGroup = () => {
           Create New Group
         </Button>
       </AlertDialogTrigger>
-      <AlertDialogContent className="text-primary-text">
+      <AlertDialogContent className="no-scrollbar max-w-[35rem] overflow-scroll text-primary-text">
         <AlertDialogHeader className="text-start">
           <AlertDialogTitle>Create New Group</AlertDialogTitle>
           <AlertDialogDescription className="sr-only">
@@ -61,7 +85,7 @@ const CreateGroup = () => {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="name"
@@ -88,6 +112,32 @@ const CreateGroup = () => {
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="members"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="font-bold">Members</FormLabel>
+                  <FormControl>
+                    <CustomReactSelect
+                      isLoading={parishionerLoading}
+                      onChange={(selectedOptions) =>
+                        field.onChange(
+                          selectedOptions?.map((option) => option.value) || []
+                        )
+                      }
+                      options={parishionerOption}
+                      value={parishionerOption.filter((option) =>
+                        field.value?.includes(option.value)
+                      )}
+                      placeholder="Select Members..."
+                      isMulti
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <div className="flex items-center justify-end gap-x-2">
               <AlertDialogCancel className="m-0">Cancel</AlertDialogCancel>
               <Button type="submit">Done</Button>
@@ -97,6 +147,10 @@ const CreateGroup = () => {
       </AlertDialogContent>
     </AlertDialog>
   );
+};
+
+CreateGroup.propTypes = {
+  ministryId: PropTypes.string.isRequired,
 };
 
 export default CreateGroup;
