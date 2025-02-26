@@ -6,6 +6,20 @@ export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
+      keyframes: {
+        expand: {
+          from: { height: "0px", opacity: 0 },
+          to: { height: "var(--radix-collapsible-content-height)", opacity: 1 },
+        },
+        collapse: {
+          from: { height: "var(--radix-collapsible-content-height)", opacity: 1 },
+          to: { height: "0px", opacity: 0 },
+        },
+      },
+      animation: {
+        expand: "expand 0.3s ease-in-out",
+        collapse: "collapse 0.3s ease-in-out",
+      },
       colors: {
         primary: "#F6F0ED",
         "primary-text": "#663E2F",

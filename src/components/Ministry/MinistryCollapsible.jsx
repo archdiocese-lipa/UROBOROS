@@ -44,7 +44,7 @@ const MinistryCollapsible = () => {
           </CollapsibleTrigger>
           <ConfigureGroup />
         </div>
-        <CollapsibleContent>
+        <CollapsibleContent className="data-[state=open]:animate-expand data-[state=closed]:animate-collapse overflow-hidden">
           <div className="mt-1 pl-16 pr-10">
             <ul className="border-l-2 border-primary-outline pl-7">
               <SheetGroups />
