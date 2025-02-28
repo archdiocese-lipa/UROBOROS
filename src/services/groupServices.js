@@ -14,7 +14,7 @@ const fetchGroupMembers = async (groupId) => {
 };
 
 const fetchGroups = async (ministryId) => {
-  const { data, error } = supabase
+  const { data, error } = await supabase
     .from("groups")
     .select("*")
     .eq("ministry_id", ministryId);
@@ -26,24 +26,47 @@ const fetchGroups = async (ministryId) => {
   return data;
 };
 
-const createGroup = async ({ ministryId, name, description, members }) => {
-  const { error } = supabase.from("groups").insert([
-    {
-      ministry_id: ministryId,
-      name,
-      description,
-    },
-  ]);
+const createGroup = async ({
+  ministryId,
+  name,
+  description,
+  created_by,
+  members,
+}) => {
+  const { data: group, error } = await supabase
+    .from("groups")
+    .insert([
+      {
+        ministry_id: ministryId,
+        name,
+        description,
+        created_by,
+      },
+    ])
+    .select("id")
+    .single();
 
   if (error) {
-    throw new Error(`Error creating group ${error.message}`);
+    throw new Error(`Error creating group: ${error.message}`);
   }
 
-  const { error: memberError } = supabase.from("group_members").insert(members);
+  // If there are members to add, add them
+  if (members && members.length > 0) {
+    const membersData = members.map((memberId) => ({
+      group_id: group.id,
+      user_id: memberId,
+    }));
 
-  if (memberError) {
-    throw new Error(`Error assigning members${memberError.message}`);
+    const { error: membersError } = await supabase
+      .from("group_members")
+      .insert(membersData);
+
+    if (membersError) {
+      throw new Error(`Error adding group members: ${membersError.message}`);
+    }
   }
+
+  return group;
 };
 
 const editGroup = async ({ ministryId, name, description }) => {

@@ -14,11 +14,13 @@ const useGroups = ({ ministryId, groupId }) => {
   const groups = useQuery({
     queryKey: ["groups", ministryId],
     queryFn: async () => await fetchGroups(ministryId),
+    enabled: !!ministryId,
   });
 
   const groupmembers = useQuery({
     queryKey: ["groupMembers", groupId],
     queryFn: async () => await fetchGroupMembers(groupId),
+    enabled: !!groupId,
   });
 
   const addGroupMembersMutation = useMutation({
@@ -72,9 +74,9 @@ const useGroups = ({ ministryId, groupId }) => {
         description: "Error creating group",
       });
     },
-    onSettled: () => {
-      queryClient.invalidateQueries(["groups", ministryId]);
-    },
+    // onSettled: () => {
+    //   queryClient.invalidateQueries(["groups", ministryId]);
+    // },
   });
 
   const editGroupMutation = useMutation({

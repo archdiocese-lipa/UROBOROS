@@ -8,11 +8,12 @@ import {
 } from "@/components/ui/collapsible";
 import { ChevronDown, ChevronRight, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import SheetGroups from "./SheetGroups";
+// import SheetGroups from "./SheetGroups";
 import ConfigureGroup from "./ConfigureGroup";
 
 import { getAssignedMinistries } from "@/services/ministryService";
 import { useUser } from "@/context/useUser";
+import useGroups from "@/hooks/useGroups";
 
 const useAssignedMinistries = (userId) => {
   return useQuery({
@@ -27,8 +28,18 @@ const MinistryCollapsible = () => {
   const { userData } = useUser();
   const userId = userData?.id;
 
-  //Fetch ministry
+  // Fetch ministry
   const { data: assignedMinistries, isLoading } = useAssignedMinistries(userId);
+
+  // Fetch groups
+  const { groups } = useGroups({
+    ministryId: openMinistryId,
+  });
+
+  console.log(groups?.data);
+
+  if (isLoading) return <Loader2 />;
+
   return (
     <>
       {isLoading ? (
@@ -64,7 +75,7 @@ const MinistryCollapsible = () => {
                         <Label className="font-bold">
                           {ministry.ministry_name}
                         </Label>
-                        <p className="text-xs">{`${assignedMinistries.length} groups`}</p>
+                        {/* <p className="text-xs">{`${assignedMinistries.length} groups`}</p> */}
                       </div>
                     </div>
                   </div>
@@ -78,7 +89,14 @@ const MinistryCollapsible = () => {
               <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-collapse data-[state=open]:animate-expand">
                 <div className="mt-1 pl-16 pr-10">
                   <ul className="border-l-2 border-primary-outline pl-7">
-                    <SheetGroups />
+                    {/* <SheetGroups /> Mobile View */}
+                    {groups?.data?.length < 1 ? (
+                      <p>No Group </p>
+                    ) : (
+                      groups?.data?.map((group) => (
+                        <p key={group.id}>{group.name}</p>
+                      ))
+                    )}
                   </ul>
                 </div>
               </CollapsibleContent>
