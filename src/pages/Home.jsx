@@ -63,12 +63,19 @@ const Home = () => {
             </div>
           </div>
         </div>
-        <p className="absolute top-[12rem] w-screen max-w-[80dvw] whitespace-pre text-[9.4dvw] font-black leading-[10dvw] text-accent sm:top-[20dvh] sm:max-w-xl sm:text-[4.4rem] sm:leading-[5.4rem] lg:bottom-[50dvh] lg:top-auto lg:ml-[24dvw] lg:max-w-full lg:text-[8dvh] lg:leading-[9dvh]">
+        <div className="md:absolute md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 lg:left-[27%]">
+          <img
+            src="/jubilee.png"
+            alt="jubilee"
+            className="w-[60dvw] lg:w-[35dvw]"
+          />
+        </div>
+        {/* <p className="absolute top-[12rem] w-screen max-w-[80dvw] whitespace-pre text-[9.4dvw] font-black leading-[10dvw] text-accent sm:top-[20dvh] sm:max-w-xl sm:text-[4.4rem] sm:leading-[5.4rem] lg:bottom-[50dvh] lg:top-auto lg:ml-[24dvw] lg:max-w-full lg:text-[8dvh] lg:leading-[9dvh]">
           {"Growing in Faith\nTogether"}
         </p>
         <p className="absolute top-[calc(12rem_+_24dvw)] w-screen max-w-[80dvw] whitespace-pre text-[5.8dvw] font-medium text-accent sm:top-[calc(20dvh_+_12rem)] sm:max-w-xl sm:text-[2.6rem] lg:bottom-[calc(50dvh_-_14dvh)] lg:top-auto lg:ml-[24.2dvw] lg:max-w-full lg:text-[4.6dvh]">
           {"Engaging our Parishioners \nin the Joy of the Gospel"}
-        </p>
+        </p> */}
         {/* <div className="z-99 absolute bottom-0 left-1 h-32 w-64 md:bottom-48 md:left-12 md:h-60 md:w-96 lg:bottom-10 lg:left-72 lg:w-[30rem] lg:h-64">
           <iframe
             className="rounded-lg"
@@ -85,10 +92,10 @@ const Home = () => {
           ></iframe>
         </div> */}
       </div>
-      <div className="relative z-10 flex h-[10rem] w-full items-end bg-[#663F30] pb-2 pl-4 sm:h-[1.8rem]">
+      <div className="relative z-10 flex h-[10rem] w-full items-end border-t border-gray/10 bg-[#663F30] pb-2 pl-4 sm:h-[1.8rem]">
         <p className="font-regular text-[0.8rem] text-[#FBCCC0]/40">
           Developed by{" "}
-          <a href="http://a2kgroup.org" className="underline" target="_blank">
+          <a href="http://a2kgroup.org" target="_blank">
             A2K Group Corporation <span> © {currentYear}</span>
           </a>
         </p>
