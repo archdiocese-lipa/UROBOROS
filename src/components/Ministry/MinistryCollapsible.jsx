@@ -36,8 +36,6 @@ const MinistryCollapsible = () => {
     ministryId: openMinistryId,
   });
 
-  console.log(groups?.data);
-
   if (isLoading) return <Loader2 />;
 
   return (
