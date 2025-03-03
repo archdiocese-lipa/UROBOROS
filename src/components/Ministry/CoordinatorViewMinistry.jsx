@@ -1,6 +1,8 @@
 import PropTypes from "prop-types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useSearchParams } from "react-router-dom";
+
 import { Button } from "../ui/button";
 import { Label } from "../ui/label";
 import { ChevronDown, ChevronRight, Loader2 } from "lucide-react";
@@ -18,91 +20,12 @@ const useAssignedMinistries = (userId) => {
   });
 };
 
-// Component to display ministry with group count
-const MinistryItem = ({
-  ministry,
-  isExpanded,
-  onToggle,
-  selectedGroup,
-  onSelectGroup,
-}) => {
-  // Fetch groups
-  const {
-    groups: { data: groups = [] },
-    isLoading: isLoadingGroups,
-  } = useGroups({
-    ministryId: ministry.id,
-  });
-
-  return (
-    <div className="overflow-hidden rounded-lg border border-primary-outline">
-      <div
-        className="flex cursor-pointer items-center p-4 hover:bg-primary/5"
-        onClick={onToggle}
-      >
-        <div className="mr-2">
-          {isExpanded ? (
-            <ChevronDown className="h-4 w-4 text-primary-text" />
-          ) : (
-            <ChevronRight className="h-4 w-4 text-primary-text" />
-          )}
-        </div>
-        <div className="mr-3">
-          <Avatar>
-            <AvatarImage src="https://github.com/shadcn.png" />
-            <AvatarFallback>
-              {ministry.ministry_name?.substring(0, 2).toUpperCase() || "MN"}
-            </AvatarFallback>
-          </Avatar>
-        </div>
-        <div className="flex-1">
-          <h3 className="font-medium">{ministry.ministry_name}</h3>
-          <p className="text-muted-foreground text-sm">
-            {isLoadingGroups ? (
-              <Loader2 className="inline h-3 w-3 animate-spin" />
-            ) : (
-              `${groups.length} Groups`
-            )}
-          </p>
-        </div>
-        <div>
-          <ConfigureGroup
-            ministryId={ministry.id}
-            ministryName={ministry.ministry_name}
-            ministryDescription={ministry.ministry_description}
-          />
-        </div>
-      </div>
-
-      {isExpanded && (
-        <MinistryGroups
-          ministryId={ministry.id}
-          selectedGroup={selectedGroup}
-          onSelectGroup={onSelectGroup}
-          groups={groups}
-          isLoading={isLoadingGroups}
-        />
-      )}
-    </div>
-  );
-};
-
-MinistryItem.propTypes = {
-  ministry: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    ministry_name: PropTypes.string.isRequired,
-    ministry_description: PropTypes.string,
-  }).isRequired,
-  isExpanded: PropTypes.bool.isRequired,
-  onToggle: PropTypes.func.isRequired,
-  selectedGroup: PropTypes.string,
-  onSelectGroup: PropTypes.func.isRequired,
-};
-
 const CoordinatorViewMinistry = () => {
   const [expandedMinistries, setExpandedMinistries] = useState(new Set());
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [selectedGroupDetails, setSelectedGroupDetails] = useState(null);
+
+  const [searchParams, setSearchParams] = useSearchParams("");
 
   const { userData } = useUser();
   const { data: assignedMinistries = [], isLoading } = useAssignedMinistries(
@@ -124,7 +47,22 @@ const CoordinatorViewMinistry = () => {
   const selectGroup = (group) => {
     setSelectedGroup(group.id);
     setSelectedGroupDetails(group);
+    setSearchParams({ groupId: group.id });
   };
+
+  useEffect(() => {
+    const groupIdFromUrl = searchParams.get("group");
+    if (groupIdFromUrl) {
+      const group = assignedMinistries
+        .flatMap((ministry) => ministry.groups || [])
+        .find((group) => group.id === groupIdFromUrl);
+
+      if (group) {
+        setSelectedGroup(group.id);
+        setSelectedGroupDetails(group);
+      }
+    }
+  }, [assignedMinistries, searchParams]);
 
   return (
     <div className="flex text-primary-text">
@@ -258,6 +196,87 @@ MinistryGroups.defaultProps = {
   groups: [],
   isLoading: false,
   selectedGroup: null,
+};
+
+// Component to display ministry with group count
+const MinistryItem = ({
+  ministry,
+  isExpanded,
+  onToggle,
+  selectedGroup,
+  onSelectGroup,
+}) => {
+  // Fetch groups
+  const {
+    groups: { data: groups = [] },
+    isLoading: isLoadingGroups,
+  } = useGroups({
+    ministryId: ministry.id,
+  });
+
+  return (
+    <div className="overflow-hidden rounded-lg border border-primary-outline">
+      <div
+        className="flex cursor-pointer items-center p-4 hover:bg-primary/5"
+        onClick={onToggle}
+      >
+        <div className="mr-2">
+          {isExpanded ? (
+            <ChevronDown className="h-4 w-4 text-primary-text" />
+          ) : (
+            <ChevronRight className="h-4 w-4 text-primary-text" />
+          )}
+        </div>
+        <div className="mr-3">
+          <Avatar>
+            <AvatarImage src="https://github.com/shadcn.png" />
+            <AvatarFallback>
+              {ministry.ministry_name?.substring(0, 2).toUpperCase() || "MN"}
+            </AvatarFallback>
+          </Avatar>
+        </div>
+        <div className="flex-1">
+          <h3 className="font-medium">{ministry.ministry_name}</h3>
+          <p className="text-muted-foreground text-sm">
+            {isLoadingGroups ? (
+              <Loader2 className="inline h-3 w-3 animate-spin" />
+            ) : (
+              `${groups.length} Groups`
+            )}
+          </p>
+        </div>
+        <div>
+          <ConfigureGroup
+            ministryId={ministry.id}
+            ministryName={ministry.ministry_name}
+            ministryDescription={ministry.ministry_description}
+          />
+        </div>
+      </div>
+
+      {isExpanded && (
+        <MinistryGroups
+          ministryId={ministry.id}
+          selectedGroup={selectedGroup}
+          onSelectGroup={onSelectGroup}
+          groups={groups}
+          isLoading={isLoadingGroups}
+        />
+      )}
+    </div>
+  );
+};
+
+MinistryItem.propTypes = {
+  ministry: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    ministry_name: PropTypes.string.isRequired,
+    ministry_description: PropTypes.string,
+  }).isRequired,
+  isExpanded: PropTypes.bool.isRequired,
+  onToggle: PropTypes.func.isRequired,
+  selectedGroup: PropTypes.string,
+  onSelectGroup: PropTypes.func.isRequired,
 };
 
 export default CoordinatorViewMinistry;
