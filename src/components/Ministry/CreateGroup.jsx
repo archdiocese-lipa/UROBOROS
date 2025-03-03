@@ -27,6 +27,9 @@ import CustomReactSelect from "../CustomReactSelect";
 import { ROLES } from "@/constants/roles";
 import { useQuery } from "@tanstack/react-query";
 import { getUsersByRole } from "@/services/userService";
+import { useUser } from "@/context/useUser";
+import useGroups from "@/hooks/useGroups";
+import { useState } from "react";
 
 const createGroupSchema = z.object({
   name: z.string().min(2, {
@@ -36,8 +39,10 @@ const createGroupSchema = z.object({
   members: z.array(z.string()).optional(),
 });
 
-// const CreateGroup = ({ ministryId }) => { Lako me panga comment ini tan apin ini itang MinistryID
-const CreateGroup = () => {
+const CreateGroup = ({ ministryId }) => {
+  const [openDialog, setOpendialog] = useState(false);
+  const { userData } = useUser();
+
   const { data: parishioners, isLoading: parishionerLoading } = useQuery({
     queryKey: ["parishioner"],
     queryFn: async () => getUsersByRole(ROLES[2]),
@@ -57,23 +62,35 @@ const CreateGroup = () => {
     },
   });
 
+  const { createGroupMutation } = useGroups({ ministryId });
+
   const onSubmit = (data) => {
-    console.log({
-      name: data.name,
-      description: data.description,
-      members: data.members,
-    });
+    createGroupMutation.mutate(
+      {
+        ministryId,
+        name: data.name,
+        description: data.description,
+        created_by: userData?.id,
+        members: data.members,
+      },
+      {
+        onSuccess: () => {
+          setOpendialog(false);
+          form.reset();
+        },
+      }
+    );
   };
 
   return (
-    <AlertDialog>
+    <AlertDialog open={openDialog} onOpenChange={setOpendialog}>
       <AlertDialogTrigger asChild>
         <Button
           variant="secondary"
           className="rounded-xl bg-primary-outline/30 text-primary-text"
           size="sm"
         >
-          Create New Group
+          New Group
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent className="no-scrollbar max-h-[38rem] overflow-scroll text-primary-text">

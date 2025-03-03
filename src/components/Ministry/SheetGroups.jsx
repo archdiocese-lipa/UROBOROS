@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 const SheetGroups = () => {
   return (
     <Sheet>
-      <SheetTrigger className=" rounded-full p-2 font-medium hover:bg-primary-outline">
+      <SheetTrigger className="rounded-full p-2 font-medium hover:bg-primary-outline">
         Group 1
       </SheetTrigger>
       <SheetContent className="w-full">

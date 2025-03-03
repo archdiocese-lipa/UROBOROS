@@ -22,6 +22,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
+import useGroups from "@/hooks/useGroups";
+import { Loader2 } from "lucide-react"; // Add this import
 
 const ConfigureMinistry = ({
   coordinators,
@@ -31,9 +33,18 @@ const ConfigureMinistry = ({
 }) => {
   const { deleteMutation } = useMinistry({ ministryId });
 
+  // Fetch groups
+  const {
+    groups: { data: groups = [] },
+    isLoading: isLoadingGroups,
+  } = useGroups({
+    ministryId,
+  });
+
   const handleDeleteMinistry = () => {
     deleteMutation.mutate(ministryId);
   };
+
   return (
     <Dialog>
       <DialogTrigger>
@@ -67,10 +78,34 @@ const ConfigureMinistry = ({
               ))}
             </div>
             <div>
-              <Label>Groups</Label>
+              <div className="flex items-center justify-between">
+                <Label>Groups</Label>
+                {isLoadingGroups && (
+                  <Loader2 className="h-3 w-3 animate-spin text-primary" />
+                )}
+              </div>
             </div>
-            <div className="rounded-2xl bg-primary/50 p-4 hover:bg-primary">
-              <Label className="font-semibold">Group Name</Label>
+            <div className="no-scrollbar max-h-32 space-y-2 overflow-y-scroll">
+              {isLoadingGroups ? (
+                <div className="flex h-16 items-center justify-center">
+                  <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                </div>
+              ) : groups.length < 1 ? (
+                <div className="flex items-center justify-center py-2">
+                  <p className="text-muted-foreground text-sm">
+                    No groups created yet.
+                  </p>
+                </div>
+              ) : (
+                groups?.map((group) => (
+                  <div
+                    key={group.id}
+                    className="rounded-2xl bg-primary/50 p-4 hover:bg-primary"
+                  >
+                    <Label className="font-semibold">{group.name}</Label>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>

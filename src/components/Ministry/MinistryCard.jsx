@@ -47,8 +47,8 @@ const MinistryCard = ({ ministryId, title, description, createdDate }) => {
         <div className="flex items-center justify-between">
           <CardTitle className="font-bold">{title}</CardTitle>
           <ConfigureMinistry
-          coordinators ={coordinators?.data}
-          ministryId={ministryId}
+            coordinators={coordinators?.data}
+            ministryId={ministryId}
             ministryTitle={title}
             ministryDescription={description}
           />
@@ -98,10 +98,10 @@ const MinistryCard = ({ ministryId, title, description, createdDate }) => {
                 <p
                   key={coordinator.id}
                   className={cn(
-                    "text-nowrap text-xs ",
+                    "text-nowrap text-xs"
                     // index === arr.length - 1
-                    //   ? "flex-1 overflow-hidden text-ellipsis" 
-                    //   : "flex-shrink-0" 
+                    //   ? "flex-1 overflow-hidden text-ellipsis"
+                    //   : "flex-shrink-0"
                   )}
                 >
                   {`${coordinator.users.first_name} ${coordinator.users.last_name}`}
