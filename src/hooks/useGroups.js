@@ -74,9 +74,9 @@ const useGroups = ({ ministryId, groupId }) => {
         description: "Error creating group",
       });
     },
-    // onSettled: () => {
-    //   queryClient.invalidateQueries(["groups", ministryId]);
-    // },
+    onSettled: () => {
+      queryClient.invalidateQueries(["groups", ministryId]);
+    },
   });
 
   const editGroupMutation = useMutation({
