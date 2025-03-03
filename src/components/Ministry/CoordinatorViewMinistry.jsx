@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 
-import { Button } from "../ui/button";
 import { Label } from "../ui/label";
 import { ChevronDown, ChevronRight, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -11,6 +10,7 @@ import { getAssignedMinistries } from "@/services/ministryService";
 import { useUser } from "@/context/useUser";
 import useGroups from "@/hooks/useGroups";
 import ConfigureGroup from "./ConfigureGroup";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 const useAssignedMinistries = (userId) => {
   return useQuery({
@@ -24,6 +24,7 @@ const CoordinatorViewMinistry = () => {
   const [expandedMinistries, setExpandedMinistries] = useState(new Set());
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [selectedGroupDetails, setSelectedGroupDetails] = useState(null);
+  const [activeTab, setActiveTab] = useState("announcement");
 
   const [searchParams, setSearchParams] = useSearchParams("");
 
@@ -99,7 +100,11 @@ const CoordinatorViewMinistry = () => {
 
       <main className="hidden w-full lg:block">
         {selectedGroupDetails ? (
-          <>
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
             <div className="flex justify-between border-b border-primary-outline/50 px-8 py-4">
               <div>
                 <Label className="text-lg font-bold">
@@ -109,17 +114,26 @@ const CoordinatorViewMinistry = () => {
                   {selectedGroupDetails.description}
                 </p>
               </div>
-              <div className="flex gap-x-2">
-                <Button>Announcement</Button>
-                <Button variant="outline">Members</Button>
-              </div>
+              <TabsList>
+                <TabsTrigger value="announcement">Announcement</TabsTrigger>
+                <TabsTrigger value="members">Members</TabsTrigger>
+              </TabsList>
             </div>
+
             <div className="p-6">
-              <div className="text-muted-foreground grid h-[70vh] place-content-center">
-                Select a section from the menu above
-              </div>
+              <TabsContent value="announcement">
+                <div className="text-muted-foreground grid h-[70vh] place-content-center">
+                  Announcement content will go here
+                </div>
+              </TabsContent>
+
+              <TabsContent value="members">
+                <div className="text-muted-foreground grid h-[70vh] place-content-center">
+                  Members content will go here
+                </div>
+              </TabsContent>
             </div>
-          </>
+          </Tabs>
         ) : (
           <div className="text-muted-foreground grid h-[90vh] place-content-center">
             Select a group from the sidebar
