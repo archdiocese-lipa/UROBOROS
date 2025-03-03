@@ -2,10 +2,8 @@ import PropTypes from "prop-types";
 import {
   AlertDialog,
   AlertDialogAction,
-  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
-  AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
@@ -73,10 +71,11 @@ const ConfigureGroup = ({ ministryId, ministryName, ministryDescription }) => {
             ))}
           </div>
         </div>
-        <AlertDialogFooter className="px-6">
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction>Done</AlertDialogAction>
-        </AlertDialogFooter>
+        <div className="flex px-6">
+          <AlertDialogAction className="flex-1 border border-primary-outline/50 bg-white font-medium text-primary-text hover:bg-primary">
+            Close
+          </AlertDialogAction>
+        </div>
       </AlertDialogContent>
     </AlertDialog>
   );

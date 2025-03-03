@@ -90,7 +90,7 @@ const CreateGroup = ({ ministryId }) => {
           className="rounded-xl bg-primary-outline/30 text-primary-text"
           size="sm"
         >
-          Create New Group
+          New Group
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent className="no-scrollbar max-h-[38rem] overflow-scroll text-primary-text">
