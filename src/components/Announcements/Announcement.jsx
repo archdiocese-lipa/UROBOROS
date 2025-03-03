@@ -1,105 +1,56 @@
 import { Separator } from "@/components/ui/separator";
 import { KebabIcon, GlobeIcon, PersonIcon } from "@/assets/icons/icons";
-import { Input } from "@/components/ui/input";
 import PropTypes from "prop-types";
-import ReactSelect from "react-select";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
+import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+  // DialogDescription,
+  // DialogHeader,
+  // DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 
+import { Card, CardContent } from "@/components/ui/card";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { useEffect, useState } from "react";
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+
 import { Button } from "../ui/button";
-import { Textarea } from "../ui/textarea";
-import { Select } from "@radix-ui/react-select";
-import {
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
-import { useForm } from "react-hook-form";
-import { AnnouncementSchema } from "@/zodSchema/AnnouncementSchema";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useUser } from "@/context/useUser";
 import Comments from "../Comments";
 import TriggerLikeIcon from "../CommentComponents/TriggerLikeIcon";
-// import AssignVolunteerComboBox from "../Schedule/AssignVolunteerComboBox";
-import { useQuery } from "@tanstack/react-query";
-import { getAnnouncementMinistryId } from "@/services/AnnouncementsService";
+import AnnouncementForm from "./AnnouncementForm";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 const Announcement = ({
-  ministries,
+  groupId,
   announcement,
-  editAnnouncementMutation,
   deleteAnnouncementMutation,
 }) => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState();
-  const [editDialogOpen, setEditDialogOpen] = useState();
   const { userData } = useUser();
-  const [imagePreview, setImagePreview] = useState();
-  const [formVisibility, setFormVisibility] = useState(announcement.visibility);
-
-  const form = useForm({
-    resolver: zodResolver(AnnouncementSchema),
-    defaultValues: {
-      title: announcement.title,
-      content: announcement.content,
-      file: null,
-      ministry: [],
-      visibility: announcement.visibility,
-    },
-  });
-
-  const { data: MinistryIds } = useQuery({
-    queryFn: async () => await getAnnouncementMinistryId(announcement?.id),
-    queryKey: ["ministryIds", announcement?.id],
-    enabled: !!announcement?.id,
-  });
-
-  useEffect(() => {
-    form.reset({
-      title: announcement.title,
-      content: announcement.content,
-      file: null,
-      ministry: MinistryIds ? MinistryIds : [],
-      visibility: announcement.visibility,
-    });
-  }, [announcement, MinistryIds, form]);
-
-  const onSubmit = (announcementData) => {
-    editAnnouncementMutation.mutate({
-      announcementData: {
-        ...announcementData,
-        user_id: userData?.id,
-        announcement_id: announcement.id,
-        filePath: announcement.file_path,
-      },
-      first_name: userData?.first_name,
-      last_name: userData?.last_name,
-    });
-    form.reset();
-    setEditDialogOpen(false);
-  };
 
   if (!userData) {
     return null;
@@ -138,244 +89,59 @@ const Announcement = ({
                 <p className="text-center font-semibold">Actions</p>
               </div>
               <Separator />
-              <Dialog
-                open={editDialogOpen}
-                onOpenChange={(open) => {
-                  setEditDialogOpen(open);
-                }}
+
+              <AnnouncementForm
+                groupId={groupId}
+                announcementId={announcement.id}
+                files={announcement.announcement_files}
+                title={announcement.title}
+                content={announcement.content}
               >
-                <DialogTrigger className="w-full" asChild>
-                  <Button
-                    variant="ghost"
-                    className="w-full rounded-none p-3 hover:cursor-pointer"
-                  >
-                    Edit
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className=" h-fit overflow-scroll no-scrollbar max-h-[80%] border-none px-9 pt-8 sm:rounded-3xl md:w-[600px]">
-                  <DialogHeader>
-                    <DialogTitle className="text-2xl font-bold text-accent">
-                      Edit Announcement
-                    </DialogTitle>
-                  </DialogHeader>
-                  <div>
-                    <Form id="announcement-form" {...form}>
-                      <form
-                        onSubmit={form.handleSubmit(onSubmit)}
-                        className="space-y-2"
-                        encType="multipart/form-data"
-                      >
-                        <FormField
-                          control={form.control}
-                          name="title"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Title</FormLabel>
-                              <FormControl>
-                                <Input
-                                  className="text-accent"
-                                  placeholder="Title of your announcement"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                <Button
+                  variant="ghost"
+                  className="w-full rounded-none p-3 hover:cursor-pointer"
+                >
+                  Edit
+                </Button>
+              </AnnouncementForm>
 
-                        <FormField
-                          control={form.control}
-                          name="content"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Content</FormLabel>
-                              <FormControl>
-                                <Textarea
-                                  className="focus:ring-none no-scrollbar rounded-3xl border-none bg-primary text-accent placeholder:text-accent"
-                                  placeholder="Content of your announcement"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="file"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Image/File</FormLabel>
-                              <FormControl>
-                                <Input
-                                  // {...fieldProps}
-                                  type="file"
-                                  onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    field.onChange(file),
-                                      setImagePreview(
-                                        URL.createObjectURL(file)
-                                      );
-                                  }}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <div className="flex items-center justify-center">
-                          <img
-                            src={imagePreview ?? announcement.file_url}
-                            alt=""
-                          />
-                        </div>
-
-                        <FormField
-                          control={form.control}
-                          name="visibility"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Visibility</FormLabel>
-                              <FormControl>
-                                <Select
-                                  {...field}
-                                  onValueChange={(value) => {
-                                    if (value === "public") {
-                                      form.setValue("ministry", []);
-                                    }
-                                    setFormVisibility(`${value}`);
-                                    field.onChange(value);
-                                  }}
-                                >
-                                  <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Select visibility" />
-                                  </SelectTrigger>
-                                  <SelectContent className="">
-                                    <SelectGroup>
-                                      <SelectItem value="public">
-                                        Public
-                                      </SelectItem>
-                                      <SelectItem value="private">
-                                        Private
-                                      </SelectItem>
-                                    </SelectGroup>
-                                  </SelectContent>
-                                </Select>
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        {formVisibility === "private" && (
-                          <FormField
-                            control={form.control}
-                            name="ministry"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Ministry</FormLabel>
-                                <FormControl>
-                                  <ReactSelect
-                                    isMulti
-                                    options={ministries?.map((ministry) => ({
-                                      value: ministry.id,
-                                      label: `${ministry.ministry_name}`,
-                                    }))}
-                                    value={field.value.map((value) => ({
-                                      value,
-                                      label:
-                                        ministries?.find(
-                                          (ministry) => ministry.id === value
-                                        )?.ministry_name || "",
-                                    }))}
-                                    onChange={(selectedOptions) => {
-                                      field.onChange(
-                                        selectedOptions.map(
-                                          (option) => option.value
-                                        )
-                                      ); // Update field value to an array of ids
-                                    }}
-                                    placeholder="Select Ministry"
-                                    // disabled={formVisibility !== "private"}
-                                  />
-                                  {/* <AssignVolunteerComboBox
-                                  options={ministries?.map((ministry) => ({
-                                    value: ministry.id,
-                                    label: `${ministry.ministry_name}`,
-                                  }))}
-                                  value={
-                                    Array.isArray(field.value)
-                                      ? field.value
-                                      : []
-                                  } // Ensure it's always an array
-                                  onChange={field.onChange}
-                                  placeholder="Select Ministry"
-                                  disabled={formVisibility !== "private"}
-                                /> */}
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        )}
-                        <DialogFooter>
-                          <div className="flex justify-end">
-                            <Button
-                              disabled={editAnnouncementMutation.isPending}
-                              className="w-full"
-                              type="submit"
-                            >
-                              {editAnnouncementMutation.isPending
-                                ? "Editting..."
-                                : "Edit"}
-                            </Button>
-                          </div>
-                        </DialogFooter>
-                      </form>
-                    </Form>
-                  </div>
-                </DialogContent>
-              </Dialog>
-
-              <Dialog
+              <AlertDialog
                 open={deleteDialogOpen}
                 onOpenChange={(isOpen) => {
                   setDeleteDialogOpen(isOpen);
                 }}
               >
-                <DialogTrigger className="w-full" asChild>
+                <AlertDialogTrigger className="w-full" asChild>
                   <Button
                     variant="ghost"
                     className="w-full rounded-none text-start hover:cursor-pointer"
                   >
                     Delete
                   </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:rounded-3xl">
-                  <DialogHeader>
-                    <DialogTitle className="text-2xl text-accent">
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="text-2xl text-accent">
                       Delete Announcement?
-                    </DialogTitle>
-                  </DialogHeader>
-                  <DialogDescription className="text-accent opacity-80">
-                    Are you sure you want to delete this Announcement?
-                  </DialogDescription>
-                  <DialogFooter className="mx-2 flex gap-2">
-                    <Button
+                    </AlertDialogTitle>
+                    <AlertDialogDescription className="text-accent opacity-80">
+                      Are you sure you want to delete this Announcement?
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel
                       onClick={() => setDeleteDialogOpen(false)}
-                      className="rounded-xl text-accent hover:text-accent"
-                      variant="outline"
                     >
                       Cancel
-                    </Button>
-                    <Button
-                      className="rounded-xl"
+                    </AlertDialogCancel>
+                    <AlertDialogAction
                       variant={"destructive"}
                       onClick={() => {
                         deleteAnnouncementMutation.mutate({
                           announcement_id: announcement.id,
-                          filePath: announcement.file_path,
+                          filePaths: announcement.announcement_files.map(
+                            (file) => file.url
+                          ),
                         });
                         setDeleteDialogOpen(false);
                       }}
@@ -384,10 +150,10 @@ const Announcement = ({
                       {deleteAnnouncementMutation.isPending
                         ? "Deleting..."
                         : "Delete"}
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </PopoverContent>
           </Popover>
         )}
@@ -395,8 +161,70 @@ const Announcement = ({
       <p className="mb-4 whitespace-pre-wrap text-start leading-5 text-accent">
         {announcement.content}
       </p>
+      <Dialog className="border-none border-transparent">
+        <DialogTrigger>
+          {" "}
+          <div className="flex w-full gap-2">
+            {announcement.announcement_files.slice(0, 3).map((file, i) => (
+              <div
+                key={i}
+                className={cn(
+                  "flex-1 border border-primary-outline hover:cursor-pointer",
+                  {
+                    relative: i === 2,
+                  },
+                  { "rounded-s-md": i === 0 },
+                  { "relative z-20 rounded-e-md bg-black": i === 2 }
+                )}
+              >
+                <img
+                  className={cn("h-[223px] min-w-0 bg-black object-cover", {
+                    "opacity-45": i === 2,
+                  })}
+                  src={file.url}
+                  alt="file"
+                />
+                {i === 2 && (
+                  <p className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform text-base font-semibold text-white">
+                    +{announcement.announcement_files.length - 2} more
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </DialogTrigger>
+        <DialogContent className="flex h-full w-dvw max-w-none items-center justify-center border-0 bg-transparent">
+          {/* <DialogHeader className="sr-only">
+            <DialogTitle className="sr-only"></DialogTitle>
+            <DialogDescription className="sr-only"></DialogDescription>
+          </DialogHeader> */}
+          <Carousel className="w-full max-w-5xl">
+            <CarouselContent className="-ml-1">
+              {announcement.announcement_files.map((file, index) => (
+                <CarouselItem
+                  key={index}
+                  // className="pl-1 md:basis-1/2 lg:basis-1/4"
+                >
+                  <div className="p-1">
+                    <Card className="border-none bg-transparent">
+                      <CardContent className="flex aspect-square items-center justify-center bg-transparent bg-contain p-6">
+                        <img
+                          src={file.url}
+                          alt="an image of announcement object-ccover"
+                        />
+                      </CardContent>
+                    </Card>
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="" />
+            <CarouselNext />
+          </Carousel>
+        </DialogContent>
+      </Dialog>
 
-      {announcement?.file_type &&
+      {/* {announcement?.file_type &&
         announcement?.file_type.startsWith("image") && (
           <img
             className="mb-1 rounded-[6px]"
@@ -420,7 +248,7 @@ const Announcement = ({
             src={announcement.file_url}
             alt="file"
           />
-        )}
+        )} */}
       <div className="flex items-end justify-between">
         <div className="relative h-5">
           <TriggerLikeIcon
@@ -439,6 +267,7 @@ const Announcement = ({
 };
 
 Announcement.propTypes = {
+  groupId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   announcement: PropTypes.shape({
     id: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
@@ -451,10 +280,19 @@ Announcement.propTypes = {
     file_type: PropTypes.string,
     ministry_id: PropTypes.string,
     user_id: PropTypes.string.isRequired,
+    announcement_files: PropTypes.arrayOf(
+      PropTypes.shape({
+        url: PropTypes.string.isRequired,
+      })
+    ).isRequired,
     users: PropTypes.shape({
       first_name: PropTypes.string.isRequired,
       last_name: PropTypes.string.isRequired,
     }).isRequired,
+  }).isRequired,
+  deleteAnnouncementMutation: PropTypes.shape({
+    mutate: PropTypes.func.isRequired,
+    isPending: PropTypes.bool.isRequired,
   }).isRequired,
   ministries: PropTypes.arrayOf(
     PropTypes.shape({
@@ -465,11 +303,7 @@ Announcement.propTypes = {
   editAnnouncementMutation: PropTypes.shape({
     mutate: PropTypes.func.isRequired,
     isPending: PropTypes.bool.isRequired,
-  }).isRequired,
-  deleteAnnouncementMutation: PropTypes.shape({
-    mutate: PropTypes.func.isRequired,
-    isPending: PropTypes.bool.isRequired,
-  }).isRequired,
+  }),
 };
 
 export default Announcement;

@@ -5,7 +5,7 @@ const MainLayout = () => {
   return (
     <div className="flex h-dvh flex-col-reverse bg-primary lg:flex-row">
       <Sidebar />
-      <div className=" shadow-lg mb-3 md:m-4 flex-1 rounded-none md:rounded-[20px] bg-white overflow-y-scroll no-scrollbar border-b border-accent/30 md:border-none p-4 pb-0 md:p-9">
+      <div className="no-scrollbar mb-3 flex-1 overflow-y-scroll rounded-none border-b border-accent/30 bg-white p-4 pb-0 shadow-lg md:m-4 md:rounded-[20px] md:border-none md:p-9">
         <Outlet />
       </div>
     </div>
