@@ -55,7 +55,7 @@ const ConfigureGroup = ({ ministryId, ministryName, ministryDescription }) => {
                     {group.description}
                   </p>
                 </div>
-                <div className="flex items-center gap-x-2 border-l border-primary-text/30 pl-2 transition-opacity delay-150 duration-300 group-hover:flex md:hidden">
+                <div className="flex items-center gap-x-2 border-l border-primary-text/30 pl-2 opacity-0 transition-opacity duration-150 group-hover:opacity-100">
                   <Button
                     size="xs"
                     className="bg-primary-outline/60 font-medium text-primary-text"
