@@ -56,13 +56,9 @@ const CreateEvent = ({
     ministryId: selectedMinistry,
   });
 
+  const { userData } = useUser();
 
-
-
-
-  const { userData } = useUser(); 
-
-  const userId = userData?.id; 
+  const userId = userData?.id;
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -346,24 +342,11 @@ const CreateEvent = ({
                   <CustomReactSelect
                     options={
                       // Check visibility to determine which volunteers to pass
-                      watchVisibility === "public" || watchVisibility === ""
-                        ? publicVolunteers?.map((volunteer) => ({
-                            value: volunteer?.id || "",
-                            label: `${volunteer?.first_name || "Unknown"} ${volunteer?.last_name || "Unknown"}`,
-                          }))
-                        : selectedMinistry && ministryMembers?.length > 0
-                          ? ministryMembers?.map((member) => ({
-                              value: member?.user_id || "",
-                              label: `${member?.users?.first_name || "Unknown"} ${member?.users?.last_name || "Unknown"}`,
-                            }))
-                          : selectedMinistry && ministryMembers?.length === 0
-                            ? [
-                                {
-                                  value: "",
-                                  label: "Ministry has no assigned volunteer.",
-                                },
-                              ]
-                            : []
+                      publicVolunteers?.map((volunteer) => ({
+                        value: volunteer?.id || volunteer?.user_id || "",
+                        label: `${volunteer?.first_name || volunteer?.users?.first_name || "Unknown"} 
+                                ${volunteer?.last_name || volunteer?.users?.last_name || "Unknown"}`,
+                      }))
                     }
                     value={
                       Array.isArray(field.value)

@@ -50,7 +50,11 @@ export const SIDEBAR_LINKS = Object.freeze({
     COMMON_LINKS.ministries,
     COMMON_LINKS.schedule,
   ],
-  volunteer: [COMMON_LINKS.announcements, COMMON_LINKS.schedule],
+  volunteer: [
+    COMMON_LINKS.announcements,
+    COMMON_LINKS.schedule,
+    COMMON_LINKS.ministries,
+  ],
   parishioner: [
     COMMON_LINKS.announcements,
     COMMON_LINKS.events,
