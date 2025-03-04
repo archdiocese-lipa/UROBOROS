@@ -5,13 +5,14 @@ import { useSearchParams } from "react-router-dom";
 
 import { Label } from "../ui/label";
 import { ChevronDown, ChevronRight, Loader2 } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { getAssignedMinistries } from "@/services/ministryService";
 import { useUser } from "@/context/useUser";
 import useGroups from "@/hooks/useGroups";
 import ConfigureGroup from "./ConfigureGroup";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import GroupAnnouncements from "./GroupAnnouncements";
+import GroupMembers from "./GroupMembers";
 
 const useAssignedMinistries = (userId) => {
   return useQuery({
@@ -68,7 +69,7 @@ const CoordinatorViewMinistry = () => {
 
   return (
     <div className="flex h-full text-primary-text">
-      <aside className="w-full max-w-[336px] border-r border-primary-outline/50 pr-4">
+      <aside className="w-full max-w-[25rem] border-r border-primary-outline/50 pr-4">
         <div className="mb-4">
           <div className="px-8 py-4">
             <Label className="text-[20px] font-bold">Your Ministries</Label>
@@ -121,17 +122,21 @@ const CoordinatorViewMinistry = () => {
               </TabsList>
             </div>
 
+            {/* Fixed TabsContent components */}
             <TabsContent
-              className="mt-0 flex h-full w-full place-content-center items-center justify-center overflow-y-scroll bg-primary"
+              className="no-scrollbar mt-0 h-full w-full overflow-y-auto bg-primary"
               value="announcement"
             >
-              <GroupAnnouncements />
+              <div>
+                <GroupAnnouncements />
+              </div>
             </TabsContent>
 
-            <TabsContent value="members">
-              <div className="text-muted-foreground grid h-[70vh] place-content-center">
-                Members content will go here
-              </div>
+            <TabsContent
+              value="members"
+              className="no-scrollbar mt-0 h-full w-full overflow-y-auto bg-primary"
+            >
+              <GroupMembers groupId={selectedGroup} />
             </TabsContent>
           </Tabs>
         ) : (
@@ -243,7 +248,6 @@ const MinistryItem = ({
         </div>
         <div className="mr-3">
           <Avatar>
-            <AvatarImage src="https://github.com/shadcn.png" />
             <AvatarFallback>
               {ministry.ministry_name?.substring(0, 2).toUpperCase() || "MN"}
             </AvatarFallback>

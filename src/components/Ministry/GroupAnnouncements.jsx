@@ -25,7 +25,7 @@ const GroupAnnouncements = () => {
   const { ref } = useInterObserver(fetchNextPage);
 
   return (
-    <div className="flex h-full w-full max-w-[530px] flex-col pt-4">
+    <div className="mx-auto flex h-full w-full max-w-[530px] flex-col pt-4">
       <AnnouncementHeader
         image={userData.user_image}
         first_name={userData.first_name}

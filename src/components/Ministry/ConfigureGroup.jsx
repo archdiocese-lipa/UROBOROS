@@ -23,7 +23,7 @@ const ConfigureGroup = ({ ministryId, ministryName, ministryDescription }) => {
           <Icon icon="mingcute:more-2-line" className="h-5 w-5" />
         </Button>
       </AlertDialogTrigger>
-      <AlertDialogContent className="no-scrollbar max-h-[35rem] overflow-y-scroll rounded-3xl px-0 text-primary-text">
+      <AlertDialogContent className="no-scrollbar max-h-[35rem] overflow-y-scroll rounded-2xl py-6 text-primary-text">
         <AlertDialogHeader className="flex-row items-center justify-between space-y-0 px-6 text-start leading-none">
           <div>
             <AlertDialogTitle>{ministryName}</AlertDialogTitle>

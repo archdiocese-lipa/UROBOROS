@@ -1,9 +1,9 @@
 import { supabase } from "./supabaseClient";
 
 const fetchGroupMembers = async (groupId) => {
-  const { data, error } = supabase
+  const { data, error } = await supabase
     .from("group_members")
-    .select("users(id,first_name,last_name)")
+    .select("joined_at,users(id,first_name,last_name)")
     .eq("group_id", groupId);
 
   if (error) {
@@ -81,20 +81,36 @@ const editGroup = async ({ ministryId, name, description }) => {
   }
 };
 
-const addMember = async ({ userId, members }) => {
-  const membersdata = members.map((member) => ({
-    user_id: userId,
-    group_id: member,
-  }));
-  const { error } = supabase.from("group_members").insert(membersdata);
+const addMember = async ({ groupId, members }) => {
+  if (!groupId || !members || !members.length) {
+    throw new Error("Group ID and members are required");
+  }
 
-  if (error) {
-    throw new Error("Error adding members");
+  const membersToAdd = members.map((userId) => ({
+    group_id: groupId,
+    user_id: userId,
+  }));
+
+  try {
+    const { data, error } = await supabase
+      .from("group_members")
+      .insert(membersToAdd)
+      .select();
+
+    if (error) {
+      console.error("Error adding members:", error);
+      throw new Error(`Error adding members: ${error.message}`);
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Exception in addGroupMembers:", error);
+    throw error;
   }
 };
 
 const removeMember = async ({ userId, groupId }) => {
-  const { error } = supabase
+  const { error } = await supabase
     .from("group_members")
     .delete()
     .eq("group_id", groupId)

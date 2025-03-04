@@ -5,6 +5,8 @@ import {
   editGroup,
   fetchGroups,
   fetchGroupMembers,
+  removeMember,
+  addMember,
 } from "@/services/groupServices";
 import { toast } from "./use-toast";
 
@@ -24,17 +26,19 @@ const useGroups = ({ ministryId, groupId }) => {
   });
 
   const addGroupMembersMutation = useMutation({
-    mutationFn: createGroup,
+    mutationFn: ({ groupId, members }) => addMember({ groupId, members }),
     onSuccess: () => {
       toast({
         title: "Success",
-        description: "Member added successfully",
+        description: "Members added successfully",
       });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error("Error in addGroupMembersMutation:", error);
       toast({
         title: "Error",
-        description: "Error adding member",
+        description: error.message || "Error adding members",
+        variant: "destructive",
       });
     },
     onSettled: () => {
@@ -42,17 +46,18 @@ const useGroups = ({ ministryId, groupId }) => {
     },
   });
   const removeGroupMembersMutation = useMutation({
-    mutationFn: createGroup,
+    mutationFn: ({ userId, groupId }) => removeMember({ userId, groupId }),
     onSuccess: () => {
       toast({
         title: "Success",
         description: "Member removed successfully",
       });
     },
-    onError: () => {
+    onError: (error) => {
       toast({
         title: "Error",
-        description: "Error removing member",
+        description: error.message || "Error removing member",
+        variant: "destructive",
       });
     },
     onSettled: () => {
