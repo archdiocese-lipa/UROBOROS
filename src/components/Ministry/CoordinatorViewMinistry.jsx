@@ -11,6 +11,7 @@ import { useUser } from "@/context/useUser";
 import useGroups from "@/hooks/useGroups";
 import ConfigureGroup from "./ConfigureGroup";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import GroupAnnouncements from "./GroupAnnouncements";
 
 const useAssignedMinistries = (userId) => {
   return useQuery({
@@ -26,7 +27,7 @@ const CoordinatorViewMinistry = () => {
   const [selectedGroupDetails, setSelectedGroupDetails] = useState(null);
   const [activeTab, setActiveTab] = useState("announcement");
 
-  const [searchParams, setSearchParams] = useSearchParams("");
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const { userData } = useUser();
   const { data: assignedMinistries = [], isLoading } = useAssignedMinistries(
@@ -66,8 +67,8 @@ const CoordinatorViewMinistry = () => {
   }, [assignedMinistries, searchParams]);
 
   return (
-    <div className="flex text-primary-text">
-      <aside className="w-full max-w-md border-r border-primary-outline/50 pr-4">
+    <div className="flex h-full text-primary-text">
+      <aside className="w-full max-w-[336px] border-r border-primary-outline/50 pr-4">
         <div className="mb-4">
           <div className="px-8 py-4">
             <Label className="text-[20px] font-bold">Your Ministries</Label>
@@ -103,7 +104,7 @@ const CoordinatorViewMinistry = () => {
           <Tabs
             value={activeTab}
             onValueChange={setActiveTab}
-            className="w-full"
+            className="flex h-full w-full flex-col overflow-hidden"
           >
             <div className="flex justify-between border-b border-primary-outline/50 px-8 py-4">
               <div>
@@ -120,19 +121,18 @@ const CoordinatorViewMinistry = () => {
               </TabsList>
             </div>
 
-            <div className="p-6">
-              <TabsContent value="announcement">
-                <div className="text-muted-foreground grid h-[70vh] place-content-center">
-                  Announcement content will go here
-                </div>
-              </TabsContent>
+            <TabsContent
+              className="mt-0 flex h-full w-full place-content-center items-center justify-center overflow-y-scroll bg-primary"
+              value="announcement"
+            >
+              <GroupAnnouncements />
+            </TabsContent>
 
-              <TabsContent value="members">
-                <div className="text-muted-foreground grid h-[70vh] place-content-center">
-                  Members content will go here
-                </div>
-              </TabsContent>
-            </div>
+            <TabsContent value="members">
+              <div className="text-muted-foreground grid h-[70vh] place-content-center">
+                Members content will go here
+              </div>
+            </TabsContent>
           </Tabs>
         ) : (
           <div className="text-muted-foreground grid h-[90vh] place-content-center">

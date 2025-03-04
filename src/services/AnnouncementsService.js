@@ -14,7 +14,7 @@ import { supabase } from "./supabaseClient";
  *
  * @throws {Error} If there is an error during the file upload, announcement creation, or ministry association.
  */
-export const createAnnouncements = async ({ data, userId, group_id }) => {
+export const createAnnouncements = async ({ data, userId, groupId }) => {
   const fileData = [];
 
   await Promise.all(
@@ -44,8 +44,8 @@ export const createAnnouncements = async ({ data, userId, group_id }) => {
       {
         title: data.title,
         content: data.content,
-        visibility: group_id ? "private" : "public",
-        group_id: group_id ?? undefined,
+        visibility: groupId ? "private" : "public",
+        group_id: groupId ?? undefined,
         user_id: userId,
       },
     ])
@@ -95,7 +95,7 @@ export const createAnnouncements = async ({ data, userId, group_id }) => {
  *
  */
 
-export const fetchAnnouncementsV2 = async (page, pageSize, group_id) => {
+export const fetchAnnouncementsV2 = async (page, pageSize, groupId) => {
   try {
     const select =
       "*, users(first_name,last_name), announcement_files(url,name,type)";
@@ -104,8 +104,8 @@ export const fetchAnnouncementsV2 = async (page, pageSize, group_id) => {
     // Initialize query object
     const query = {};
 
-    if (group_id) {
-      query.group_id = group_id;
+    if (groupId) {
+      query.group_id = groupId;
     } else {
       query.visibility = "public";
     }

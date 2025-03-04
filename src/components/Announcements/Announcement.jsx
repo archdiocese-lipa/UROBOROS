@@ -21,6 +21,9 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
   // DialogDescription,
   // DialogHeader,
   // DialogTitle,
@@ -194,10 +197,10 @@ const Announcement = ({
           </div>
         </DialogTrigger>
         <DialogContent className="flex h-full w-dvw max-w-none items-center justify-center border-0 bg-transparent">
-          {/* <DialogHeader className="sr-only">
+          <DialogHeader className="sr-only">
             <DialogTitle className="sr-only"></DialogTitle>
             <DialogDescription className="sr-only"></DialogDescription>
-          </DialogHeader> */}
+          </DialogHeader>
           <Carousel className="w-full max-w-5xl">
             <CarouselContent className="-ml-1">
               {announcement.announcement_files.map((file, index) => (
@@ -267,7 +270,7 @@ const Announcement = ({
 };
 
 Announcement.propTypes = {
-  groupId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  groupId: PropTypes.string,
   announcement: PropTypes.shape({
     id: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
@@ -275,14 +278,14 @@ Announcement.propTypes = {
     file_path: PropTypes.string,
     created_at: PropTypes.string.isRequired,
     visibility: PropTypes.string.isRequired,
-    file_url: PropTypes.string,
-    file_name: PropTypes.string.isRequired,
-    file_type: PropTypes.string,
+
     ministry_id: PropTypes.string,
     user_id: PropTypes.string.isRequired,
     announcement_files: PropTypes.arrayOf(
       PropTypes.shape({
         url: PropTypes.string.isRequired,
+        name: PropTypes.string.isRequired,
+        type: PropTypes.string.isRequired,
       })
     ).isRequired,
     users: PropTypes.shape({
@@ -300,10 +303,6 @@ Announcement.propTypes = {
       ministry_name: PropTypes.string,
     })
   ),
-  editAnnouncementMutation: PropTypes.shape({
-    mutate: PropTypes.func.isRequired,
-    isPending: PropTypes.bool.isRequired,
-  }),
 };
 
 export default Announcement;

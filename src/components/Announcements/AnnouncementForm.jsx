@@ -32,15 +32,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { AnnouncementSchema } from "@/zodSchema/AnnouncementSchema";
 import { Label } from "../ui/label";
 import PropTypes from "prop-types";
+import { useSearchParams } from "react-router-dom";
 
 const AnnouncementForm = ({
   files,
   title,
   content,
-  groupId,
   announcementId,
   children,
 }) => {
+  const [searchParams] = useSearchParams();
   const { userData } = useUser();
   const [currentFiles, setCurrentFiles] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -62,18 +63,27 @@ const AnnouncementForm = ({
   const { addAnnouncementMutation, editAnnouncementMutation } =
     useAnnouncements({
       user_id: userData?.id,
+      group_id: searchParams.get("groupId"),
     });
 
   const onSubmit = (data) => {
     if (title) {
-      editAnnouncementMutation.mutate({ data, announcementId, groupId });
+      editAnnouncementMutation.mutate({
+        data,
+        announcementId,
+        groupId: searchParams.get("groupId"),
+      });
     } else {
-      addAnnouncementMutation.mutate({ data, userId: userData?.id });
+      addAnnouncementMutation.mutate({
+        data,
+        userId: userData?.id,
+        groupId: searchParams.get("groupId"),
+      });
     }
 
-    // form.reset();
-    // setIsOpen(false);
-    // setImagePreviews([]);
+    form.reset();
+    setIsOpen(false);
+    setImagePreviews([]);
   };
 
   useEffect(() => {
@@ -214,11 +224,11 @@ const AnnouncementForm = ({
                           if (files.length > 0) {
                             field.onChange([
                               ...currentFiles,
-                              ...Array.from(files),
+                              ...Array.from(files), // Convert FileList to array
                             ]);
                             setCurrentFiles((prevState) => [
                               ...prevState,
-                              ...Array.from(files),
+                              ...Array.from(files), // Convert FileList to array
                             ]);
 
                             const fileArray = Array.from(files); // Convert FileList to array
@@ -357,7 +367,6 @@ AnnouncementForm.propTypes = {
   ),
   title: PropTypes.string,
   content: PropTypes.string,
-  groupId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   announcementId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   children: PropTypes.node.isRequired,
 };
