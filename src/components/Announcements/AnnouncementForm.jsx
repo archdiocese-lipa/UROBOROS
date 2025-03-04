@@ -106,14 +106,9 @@ const AnnouncementForm = ({
     }
   }, []);
 
-  // useEffect(() => {
-  //   let files = [...currentFiles, ...form.getValues("files")];
-  //   setCurrentFiles(files);
-
-  //   form.setValue("files", files);
-  // }, [form.watch("files")]);
-
   const handleRemoveFile = (index) => {
+    URL.revokeObjectURL(imagePreviews[index]);
+
     const updatedFiles =
       Array.from(form.getValues("files"))?.filter((_, i) => i !== index) || [];
 
@@ -342,6 +337,11 @@ const AnnouncementForm = ({
                   </div>
                 )}
               </div>
+              {form.formState.errors.files && (
+                <p className="text-sm font-medium text-red-500">
+                  {form.formState.errors.files.message}
+                </p>
+              )}
             </AlertDialogBody>
             {/* Submit Button */}
             <AlertDialogFooter>
