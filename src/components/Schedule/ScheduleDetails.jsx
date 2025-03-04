@@ -22,7 +22,6 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -266,17 +265,14 @@ const ScheduleDetails = () => {
     exportAttendanceList(event, eventvolunteers, attendance, attendanceCount);
   };
 
-
-
-
   useEffect(() => {
     if (!event || !userData) {
       return;
     }
-  
+
     const eventDateTime = new Date(`${event?.event_date}T${event?.event_time}`);
     const currentDateTime = new Date();
-  
+
     let offset = 0;
     if (userData.role === "volunteer") {
       // 2 hours ahead for volunteer
@@ -285,17 +281,15 @@ const ScheduleDetails = () => {
       // 24 hours ahead for admin
       offset = 24 * 60 * 60 * 1000;
     }
-  
+
     const adjustedEventDateTime = new Date(eventDateTime.getTime() + offset);
-  
+
     if (currentDateTime > adjustedEventDateTime) {
       setDisableSchedule(true);
     } else {
       setDisableSchedule(false);
     }
   }, [event, userData]);
-  
-  
 
   const removeAssignedVolunteerMutation = useMutation({
     mutationFn: async (volunteerId) =>
@@ -708,8 +702,8 @@ const ScheduleDetails = () => {
           );
 
           const applicantName = walkInMainApplicant
-            ? `${walkInMainApplicant.first_name} ${walkInMainApplicant.last_name} Family`
-            : `Added by ${mainApplicant.first_name} ${mainApplicant.last_name} `;
+            ? `${walkInMainApplicant?.first_name} ${walkInMainApplicant?.last_name} Family`
+            : `Added by ${mainApplicant?.first_name} ${mainApplicant?.last_name} `;
 
           return (
             <Card className="p-2" key={i}>
