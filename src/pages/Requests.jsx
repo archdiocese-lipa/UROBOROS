@@ -105,7 +105,7 @@ const Requests = () => {
           <TabsList>
             <TabsTrigger value="parishioner">Parishioners</TabsTrigger>
             <TabsTrigger value="volunteer">Volunteers</TabsTrigger>
-            <TabsTrigger value="coordinator">Cooridnators</TabsTrigger>
+            <TabsTrigger value="coordinator">Coordinators</TabsTrigger>
             <TabsTrigger value="family">Families</TabsTrigger>
           </TabsList>
         </Tabs>
