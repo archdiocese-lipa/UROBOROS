@@ -36,7 +36,7 @@ const App = () => {
           </Route>
           {/* ========================================================= */}
           {/*  Admin and Coordinator can access the routes below */}
-          <Route element={<RequireRole roles={[ROLES[4], ROLES[0]]} />}>
+          <Route element={<RequireRole roles={[...ROLES]} />}>
             <Route path="/ministries" element={<Ministries />} />
           </Route>
           {/* ========================================================= */}

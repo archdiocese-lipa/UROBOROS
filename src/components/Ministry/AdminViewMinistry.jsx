@@ -8,8 +8,8 @@ const AdminViewMinistry = () => {
   const { ministries, ministryLoading } = useMinistry({});
 
   return (
-    <div className="relative flex h-full flex-col gap-y-5 px-0">
-      <div className="items-center justify-between space-y-2 border-b border-primary-outline md:flex">
+    <div className="relative flex h-full flex-col gap-y-5 p-0">
+      <div className="items-center justify-between space-y-2 border-b border-primary-outline p-6 md:flex">
         <div>
           <Title>Ministry Management</Title>
           <Description>Manage your ministry.</Description>
