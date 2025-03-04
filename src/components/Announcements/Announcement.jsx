@@ -48,7 +48,6 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 const Announcement = ({
-  groupId,
   announcement,
   deleteAnnouncementMutation,
 }) => {
@@ -94,7 +93,6 @@ const Announcement = ({
               <Separator />
 
               <AnnouncementForm
-                groupId={groupId}
                 announcementId={announcement.id}
                 files={announcement.announcement_files}
                 title={announcement.title}
@@ -227,31 +225,7 @@ const Announcement = ({
         </DialogContent>
       </Dialog>
 
-      {/* {announcement?.file_type &&
-        announcement?.file_type.startsWith("image") && (
-          <img
-            className="mb-1 rounded-[6px]"
-            src={announcement.file_url}
-            alt="file"
-          />
-        )}
-      {announcement?.file_type &&
-        announcement?.file_type.startsWith("application") && (
-          <div>
-            <a href={announcement.file_url} target="_blank" download>
-              <p>{announcement.file_name}</p>
-            </a>
-          </div>
-        )}
-      {announcement?.file_type &&
-        announcement?.file_type.startsWith("video") && (
-          <video
-            className="mb-2"
-            controls
-            src={announcement.file_url}
-            alt="file"
-          />
-        )} */}
+
       <div className="flex items-end justify-between">
         <div className="relative h-5">
           <TriggerLikeIcon
@@ -270,7 +244,6 @@ const Announcement = ({
 };
 
 Announcement.propTypes = {
-  groupId: PropTypes.string,
   announcement: PropTypes.shape({
     id: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,

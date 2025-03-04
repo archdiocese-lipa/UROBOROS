@@ -49,7 +49,6 @@ export const SIDEBAR_LINKS = Object.freeze({
     COMMON_LINKS.announcements,
     COMMON_LINKS.ministries,
     COMMON_LINKS.schedule,
-    COMMON_LINKS.requests,
   ],
   volunteer: [COMMON_LINKS.announcements, COMMON_LINKS.schedule],
   parishioner: [

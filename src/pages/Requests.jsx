@@ -105,7 +105,7 @@ const Requests = () => {
           <TabsList>
             <TabsTrigger value="parishioner">Parishioners</TabsTrigger>
             <TabsTrigger value="volunteer">Volunteers</TabsTrigger>
-            <TabsTrigger value="admin">Admins</TabsTrigger>
+            <TabsTrigger value="coordinator">Cooridnators</TabsTrigger>
             <TabsTrigger value="family">Families</TabsTrigger>
           </TabsList>
         </Tabs>
@@ -139,8 +139,8 @@ const Requests = () => {
           </Dialog>
         </div>
       </div>
-      {isLoading && tab !== "family" &&  <Loading />}
-      {!isLoading && tab !== "family" &&
+      {isLoading && tab !== "family" && <Loading />}
+      {!isLoading && tab !== "family" && (
         <Table>
           <TableHeader className="bg-primary">
             <TableRow>
@@ -192,11 +192,11 @@ const Requests = () => {
               </TableRow>
             )}
           </TableBody>
-        </Table>}
-       
-        {/* {hasNextPage && tab !== "family" &&<Skeleton className="h-32 w-full rounded-xl" />} */}
-         
-      
+        </Table>
+      )}
+
+      {/* {hasNextPage && tab !== "family" &&<Skeleton className="h-32 w-full rounded-xl" />} */}
+
       {tab === "family" && <FamilyCards />}
     </div>
   );
