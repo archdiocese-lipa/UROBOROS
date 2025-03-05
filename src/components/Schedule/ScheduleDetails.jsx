@@ -277,11 +277,11 @@ const ScheduleDetails = () => {
 
     let offset = 0;
     if (userData.role === "volunteer") {
-      // 2 hours ahead for volunteer
-      offset = 2 * 60 * 60 * 1000;
-    } else if (userData.role === "admin") {
-      // 24 hours ahead for admin
+      // 24 hours ahead for volunteer
       offset = 24 * 60 * 60 * 1000;
+    } else if (userData.role === "admin") {
+      // 7 days ahead for admin
+      offset = 7 * 24 * 60 * 60 * 1000;
     }
 
     const adjustedEventDateTime = new Date(eventDateTime.getTime() + offset);
