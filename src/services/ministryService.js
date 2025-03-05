@@ -31,6 +31,61 @@ export const getAssignedMinistries = async (userId) => {
   return arrangedData;
 };
 
+export const getMinistryGroups = async (userId) => {
+  if (!userId) {
+    console.error("User ID is required");
+    return [];
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("group_members")
+      .select(
+        `id, 
+         joined_at, 
+         groups(id, name, description, ministry_id, ministry:ministries(id, ministry_name)), 
+         users(id)`
+      )
+      .eq("user_id", userId);
+
+    if (error) {
+      console.error("Error fetching ministry groups:", error);
+      throw new Error(error.message);
+    }
+
+    // Transform the data to group by ministries
+    const groupedData = data.reduce((acc, item) => {
+      const ministryId = item.groups.ministry.id;
+      const ministryName = item.groups.ministry.ministry_name;
+
+      if (!acc[ministryId]) {
+        acc[ministryId] = {
+          ministry_id: ministryId,
+          ministry_name: ministryName,
+          groups: [],
+        };
+      }
+
+      acc[ministryId].groups.push({
+        group_id: item.groups.id,
+        group_name: item.groups.name,
+        description: item.groups.description,
+        joined_at: item.joined_at,
+      });
+
+      return acc;
+    }, {});
+
+    // Convert the grouped data into an array
+    const result = Object.values(groupedData);
+
+    return result;
+  } catch (error) {
+    console.error("Exception in getMinistryGroups:", error);
+    return [];
+  }
+};
+
 /**
  * Get a single ministry by its ID.
  * @param {string} id - UUID of the ministry.

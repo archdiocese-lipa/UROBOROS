@@ -69,15 +69,38 @@ const createGroup = async ({
   return group;
 };
 
-const editGroup = async ({ ministryId, name, description }) => {
-  const { error } = supabase.from("groups").update({
-    ministry_id: ministryId,
-    name,
-    description,
-  });
+const editGroup = async ({ groupId, name, description }) => {
+  // Data validation
+  if (!groupId) {
+    throw new Error("Group ID is required");
+  }
 
-  if (error) {
-    throw new Error(`Error editting group ${error.message}`);
+  // Create update object with only the fields to update
+  const updateData = {};
+  if (name) updateData.name = name;
+  if (description !== undefined) updateData.description = description;
+
+  // No fields to update
+  if (Object.keys(updateData).length === 0) {
+    throw new Error("No data provided for update");
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("groups")
+      .update(updateData)
+      .eq("id", groupId)
+      .select();
+
+    if (error) {
+      console.error("Error editing group:", error);
+      throw new Error(`Error editing group: ${error.message}`);
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Exception in editGroup:", error);
+    throw error;
   }
 };
 
@@ -120,11 +143,15 @@ const removeMember = async ({ userId, groupId }) => {
   }
 };
 
-const deleteGroup = async (ministryId) => {
-  const { error } = await supabase.from("groups").delete().eq("id", ministryId);
+const deleteGroup = async ({ groupId }) => {
+  const { error: groupError } = await supabase
+    .from("groups")
+    .delete()
+    .eq("id", groupId);
 
-  if (error) {
-    throw new Error("Error deleting group");
+  if (groupError) {
+    console.error("Error deleting group:", groupError);
+    throw new Error(`Failed to delete group: ${groupError.message}`);
   }
 };
 

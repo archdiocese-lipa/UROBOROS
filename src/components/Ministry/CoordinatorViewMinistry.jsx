@@ -54,7 +54,7 @@ const CoordinatorViewMinistry = () => {
   };
 
   useEffect(() => {
-    const groupIdFromUrl = searchParams.get("group");
+    const groupIdFromUrl = searchParams.get("groupId");
     if (groupIdFromUrl) {
       const group = assignedMinistries
         .flatMap((ministry) => ministry.groups || [])
@@ -141,7 +141,7 @@ const CoordinatorViewMinistry = () => {
           </Tabs>
         ) : (
           <div className="text-muted-foreground grid h-[90vh] place-content-center">
-            Select a group from the sidebar
+            Select a group
           </div>
         )}
       </main>

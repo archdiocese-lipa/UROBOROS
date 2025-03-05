@@ -7,6 +7,7 @@ import {
   fetchGroupMembers,
   removeMember,
   addMember,
+  deleteGroup,
 } from "@/services/groupServices";
 import { toast } from "./use-toast";
 
@@ -104,7 +105,7 @@ const useGroups = ({ ministryId, groupId }) => {
   });
 
   const deleteGroupMutation = useMutation({
-    mutationFn: editGroup,
+    mutationFn: deleteGroup,
     onSuccess: () => {
       toast({
         title: "Success",
