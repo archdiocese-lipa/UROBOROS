@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -25,30 +26,30 @@ import { Textarea } from "../ui/textarea";
 import useMinistry from "@/hooks/useMinistry";
 import CustomReactSelect from "../CustomReactSelect";
 import { ROLES } from "@/constants/roles";
-import { useQuery } from "@tanstack/react-query";
 import { getUsersByRole } from "@/services/userService";
 
 const CreateMinistry = () => {
   const [openDialog, setOpenDialog] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: coordinators, isLoading: coordinatorLoading } = useQuery({
     queryKey: ["coordinators"],
     queryFn: async () => getUsersByRole(ROLES[0]),
   });
-  const { data: admins, isLoading: adminLoading } = useQuery({
-    queryKey: ["admin"],
-    queryFn: async () => getUsersByRole(ROLES[4]),
+  const { data: volunteers, isLoading: volunteersLoading } = useQuery({
+    queryKey: ["volunteers"],
+    queryFn: async () => getUsersByRole(ROLES[1]),
   });
 
   const form = useForm({
     resolver: zodResolver(createMinistrySchema),
     defaultValues: {
-      coordinators: "",
+      coordinators: [],
       ministryName: "",
       ministryDescription: "",
     },
   });
-  const adminsCoordinators = [...(admins ?? []), ...(coordinators ?? [])];
+  const adminsCoordinators = [...(volunteers ?? []), ...(coordinators ?? [])];
 
   const coordinatorOptions = adminsCoordinators?.map((coordinator) => ({
     value: coordinator.id,
@@ -58,15 +59,22 @@ const CreateMinistry = () => {
   const { createMutation } = useMinistry({});
 
   const onSubmit = (values) => {
+    // Ensure coordinators is always an array
+    const coordinators = Array.isArray(values.coordinators)
+      ? values.coordinators
+      : values.coordinators
+        ? [values.coordinators]
+        : [];
     createMutation.mutate(
       {
-        coordinators: values.coordinators,
+        coordinators,
         ministry_name: values.ministryName,
         ministry_description: values.ministryDescription,
       },
       {
         onSuccess: () => {
           setOpenDialog(false);
+          queryClient.invalidateQueries(["ministryMembers"]);
         },
       }
     );
@@ -141,7 +149,7 @@ const CreateMinistry = () => {
                     <FormLabel className="font-bold">Coordinators</FormLabel>
                     <FormControl>
                       <CustomReactSelect
-                        isLoading={coordinatorLoading || adminLoading}
+                        isLoading={coordinatorLoading || volunteersLoading}
                         onChange={(selectedOptions) =>
                           field.onChange(
                             selectedOptions?.map((option) => option.value) || []

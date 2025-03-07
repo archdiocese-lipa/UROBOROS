@@ -1,6 +1,7 @@
 import {
   AlertDialog,
   AlertDialogAction,
+  AlertDialogBody,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -30,18 +31,18 @@ import { ROLES } from "@/constants/roles";
 import { getUsersByRole } from "@/services/userService";
 import PropTypes from "prop-types";
 
-const AddCoordinators = ({ministryId}) => {
+const AddCoordinators = ({ ministryId }) => {
   const { data: coordinators, isLoading: coordinatorLoading } = useQuery({
     queryKey: ["coordinators"],
     queryFn: async () => getUsersByRole(ROLES[0]),
   });
   const queryClient = useQueryClient();
-  const { data: admins, isLoading: adminLoading } = useQuery({
-    queryKey: ["admin"],
-    queryFn: async () => getUsersByRole(ROLES[4]),
+  const { data: volunteers, isLoading: volunteersLoading } = useQuery({
+    queryKey: ["volunteer"],
+    queryFn: async () => getUsersByRole(ROLES[1]),
   });
 
-  const adminsCoordinators = [...(admins ?? []), ...(coordinators ?? [])];
+  const adminsCoordinators = [...(volunteers ?? []), ...(coordinators ?? [])];
 
   const coordinatorOptions = adminsCoordinators?.map((coordinator) => ({
     value: coordinator.id,
@@ -51,7 +52,7 @@ const AddCoordinators = ({ministryId}) => {
   const form = useForm({
     resolver: zodResolver(coordinatorSchema),
     defaultValues: {
-      coordinators: "",
+      coordinators: [],
     },
   });
 
@@ -63,7 +64,7 @@ const AddCoordinators = ({ministryId}) => {
         description: "Coordinators added",
       });
     },
-    onMutate:() => {
+    onMutate: () => {
       toast({
         title: "Adding coordinators...",
       });
@@ -78,20 +79,18 @@ const AddCoordinators = ({ministryId}) => {
       queryClient.invalidateQueries({
         queryKey: ["ministryCoordinators", ministryId],
       });
-      form.reset()
+      form.reset();
     },
   });
 
   const onSubmit = ({ coordinators }) => {
-
     const coordinatorsData = coordinators.map((coordinator) => ({
       ministry_id: ministryId,
       coordinator_id: coordinator,
     }));
 
-    mutate({ministryId,coordinatorsData})
+    mutate({ ministryId, coordinatorsData });
   };
-
 
   return (
     <AlertDialog>
@@ -111,47 +110,46 @@ const AddCoordinators = ({ministryId}) => {
             Assign coordinators to this ministry.
           </AlertDialogDescription>
         </AlertDialogHeader>
-
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
-            <FormField
-              control={form.control}
-              name="coordinators"
-              render={({ field }) => (
-                <FormItem className="space-y-0">
-                  <FormLabel className="font-bold">Name</FormLabel>
-                  <FormControl>
-                    <CustomReactSelect
-                      isLoading={coordinatorLoading || adminLoading}
-                      options={coordinatorOptions}
-                      value={coordinatorOptions.filter((option) =>
-                        field.value?.includes(option.value)
-                      )}
-                      onChange={(selectedOptions) =>
-                        field.onChange(
-                          selectedOptions?.map((option) => option.value) || []
-                        )
-                      }
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <AlertDialogFooter className={"mt-2"}>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction type="submit">Done</AlertDialogAction>
-            </AlertDialogFooter>
-          </form>
-        </Form>
+        <AlertDialogBody>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+              <FormField
+                control={form.control}
+                name="coordinators"
+                render={({ field }) => (
+                  <FormItem className="space-y-0">
+                    <FormLabel className="font-bold">Name</FormLabel>
+                    <FormControl>
+                      <CustomReactSelect
+                        isLoading={coordinatorLoading || volunteersLoading}
+                        options={coordinatorOptions}
+                        value={coordinatorOptions.filter((option) =>
+                          field.value?.includes(option.value)
+                        )}
+                        onChange={(selectedOptions) =>
+                          field.onChange(
+                            selectedOptions?.map((option) => option.value) || []
+                          )
+                        }
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <AlertDialogFooter className={"mt-2"}>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction type="submit">Done</AlertDialogAction>
+              </AlertDialogFooter>
+            </form>
+          </Form>
+        </AlertDialogBody>
       </AlertDialogContent>
     </AlertDialog>
   );
 };
 
 AddCoordinators.propTypes = {
-
   ministryId: PropTypes.string.isRequired,
 };
 

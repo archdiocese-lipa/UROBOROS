@@ -69,7 +69,7 @@ const CoordinatorViewMinistry = () => {
 
   return (
     <div className="flex h-full text-primary-text">
-      <aside className="w-full max-w-[25rem] border-r border-primary-outline/50 pr-4">
+      <aside className="w-full border-primary-outline/50 lg:max-w-[25rem] lg:border-r">
         <div className="mb-4">
           <div className="px-8 py-4">
             <Label className="text-[20px] font-bold">Your Ministries</Label>

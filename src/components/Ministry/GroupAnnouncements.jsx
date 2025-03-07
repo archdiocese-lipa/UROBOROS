@@ -39,7 +39,7 @@ const GroupAnnouncements = () => {
           </div>
         ))
       ) : data?.pages?.flatMap((page) => page.items).length === 0 ? (
-        <p>No announcements yet.</p>
+        <p className="text-center">No announcements yet.</p>
       ) : (
         data?.pages?.flatMap((page) =>
           page?.items?.map((announcement) => (

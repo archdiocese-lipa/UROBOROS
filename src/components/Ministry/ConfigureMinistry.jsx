@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import {
   Dialog,
@@ -18,12 +19,22 @@ import {
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
+  AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
+import { z } from "zod";
 import useGroups from "@/hooks/useGroups";
-import { Loader2 } from "lucide-react"; // Add this import
+import { Loader2, PencilIcon, CheckIcon, XIcon } from "lucide-react";
+import { Input } from "../ui/input";
+import { Textarea } from "../ui/textarea";
+
+const titleSchema = z.string().min(2, {
+  message: "Ministry Title must be at least 2 characters.",
+});
+
+const descriptionSchema = z.string().optional();
 
 const ConfigureMinistry = ({
   coordinators,
@@ -31,7 +42,20 @@ const ConfigureMinistry = ({
   ministryTitle,
   ministryDescription,
 }) => {
-  const { deleteMutation } = useMinistry({ ministryId });
+  // Separate editing states for title and description
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const [title, setTitle] = useState(ministryTitle);
+  const [description, setDescription] = useState(ministryDescription || "");
+  const { deleteMutation, updateMinistryMutation } = useMinistry({
+    ministryId,
+  });
+
+  // Reset local states when props change
+  useEffect(() => {
+    setTitle(ministryTitle);
+    setDescription(ministryDescription || "");
+  }, [ministryTitle, ministryDescription]);
 
   // Fetch groups
   const {
@@ -45,6 +69,66 @@ const ConfigureMinistry = ({
     deleteMutation.mutate(ministryId);
   };
 
+  const validateAndSaveTitle = () => {
+    try {
+      const validatedTitle = titleSchema.parse(title);
+      updateMinistryMutation.mutate(
+        {
+          ministryId,
+          ministry_name: validatedTitle,
+        },
+        {
+          onSuccess: () => {
+            setIsEditingTitle(false);
+          },
+          onError: () => {
+            // Revert to original on error
+            setTitle(ministryTitle);
+          },
+        }
+      );
+    } catch (error) {
+      // Show error or revert to original
+      setTitle(ministryTitle);
+      console.error("Validation error:", error);
+    }
+  };
+
+  const validateAndSaveDescription = () => {
+    try {
+      const validatedDescription = descriptionSchema.parse(description);
+      updateMinistryMutation.mutate(
+        {
+          ministryId,
+          ministry_description: validatedDescription,
+        },
+        {
+          onSuccess: () => {
+            setIsEditingDescription(false);
+          },
+          onError: () => {
+            // Revert to original on error
+            setDescription(ministryDescription || "");
+          },
+        }
+      );
+    } catch (error) {
+      // Show error or revert to original
+      setDescription(ministryDescription || "");
+      console.error("Validation error:", error);
+    }
+  };
+
+  const cancelTitleEdit = () => {
+    setTitle(ministryTitle);
+    setIsEditingTitle(false);
+  };
+
+  const cancelDescriptionEdit = () => {
+    setDescription(ministryDescription || "");
+    setIsEditingDescription(false);
+  };
+
   return (
     <Dialog>
       <DialogTrigger>
@@ -52,9 +136,109 @@ const ConfigureMinistry = ({
       </DialogTrigger>
       <DialogContent className="max-w-md rounded-3xl px-0 text-primary-text">
         <DialogHeader className="px-6">
-          <DialogTitle className="font-bold">{ministryTitle}</DialogTitle>
-          <DialogDescription>{ministryDescription}</DialogDescription>
+          <div className="mb-4">
+            {isEditingTitle ? (
+              <div className="flex items-center gap-x-2">
+                <Input
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="w-64 text-lg font-bold"
+                  placeholder="Ministry Title"
+                />
+                <div className="flex justify-end space-x-2">
+                  <Button
+                    size="sm"
+                    onClick={validateAndSaveTitle}
+                    variant="outline"
+                    disabled={
+                      updateMinistryMutation.isPending ||
+                      !title ||
+                      title === ministryTitle
+                    }
+                  >
+                    {updateMinistryMutation.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <CheckIcon className="h-4 w-4" />
+                    )}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={cancelTitleEdit}
+                    disabled={updateMinistryMutation.isPending}
+                  >
+                    <XIcon className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center">
+                <DialogTitle className="text-lg font-bold">{title}</DialogTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-1"
+                  onClick={() => setIsEditingTitle(true)}
+                >
+                  <PencilIcon className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </div>
+
+          <div>
+            {isEditingDescription ? (
+              <div className="space-y-2">
+                <Textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="min-h-[80px] resize-none"
+                  placeholder="Ministry Description (optional)"
+                />
+                <div className="flex justify-end space-x-2">
+                  <Button
+                    size="sm"
+                    onClick={validateAndSaveDescription}
+                    disabled={
+                      updateMinistryMutation.isPending ||
+                      description === ministryDescription
+                    }
+                  >
+                    {updateMinistryMutation.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <CheckIcon className="h-4 w-4" />
+                    )}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={cancelDescriptionEdit}
+                    disabled={updateMinistryMutation.isPending}
+                  >
+                    <XIcon className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-start">
+                <DialogDescription>
+                  {description || "No description provided."}
+                </DialogDescription>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="ml-2 h-8 w-8 p-1"
+                  onClick={() => setIsEditingDescription(true)}
+                >
+                  <PencilIcon className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </div>
         </DialogHeader>
+
         <div className="border-y border-primary/100">
           <div className="flex flex-col gap-y-4 px-6 py-4">
             <div className="flex items-center justify-between">
@@ -120,19 +304,28 @@ const ConfigureMinistry = ({
               <AlertDialogHeader>
                 <AlertDialogTitle>Delete Ministry</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Are you sure you want to delete this minstry? This action
+                  Are you sure you want to delete this ministry? This action
                   cannot be undone.
                 </AlertDialogDescription>
 
-                <div className="flex justify-end gap-x-2">
+                <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                   <Button
                     onClick={handleDeleteMinistry}
-                    variant={"destructive"}
+                    variant="destructive"
+                    className="flex-1"
+                    disabled={deleteMutation.isPending}
                   >
-                    Confirm
+                    {deleteMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Deleting...
+                      </>
+                    ) : (
+                      "Delete Ministry"
+                    )}
                   </Button>
-                </div>
+                </AlertDialogFooter>
               </AlertDialogHeader>
             </AlertDialogContent>
           </AlertDialog>
@@ -144,7 +337,7 @@ const ConfigureMinistry = ({
 
 ConfigureMinistry.propTypes = {
   ministryTitle: PropTypes.string.isRequired,
-  ministryDescription: PropTypes.string.isRequired,
+  ministryDescription: PropTypes.string,
   ministryId: PropTypes.string.isRequired,
   coordinators: PropTypes.arrayOf(
     PropTypes.shape({

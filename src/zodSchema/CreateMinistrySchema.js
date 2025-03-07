@@ -1,7 +1,9 @@
 import { z } from "zod";
 
 const createMinistrySchema = z.object({
-  coordinators: z.array(z.string())   .min(1, "At least one coordinator must be selected"),
+  coordinators: z
+    .array(z.string())
+    .min(1, "At least one coordinator must be selected"),
   ministryName: z.string().min(1, "Ministry name is required"),
   ministryDescription: z
     .string()
@@ -9,13 +11,8 @@ const createMinistrySchema = z.object({
     .optional(),
 });
 
-
 const coordinatorSchema = createMinistrySchema.pick({
-  coordinators:true
-})
+  coordinators: true,
+});
 
-
-export {
-  createMinistrySchema,
-  coordinatorSchema
-}
+export { createMinistrySchema, coordinatorSchema };

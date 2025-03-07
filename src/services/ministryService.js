@@ -193,21 +193,20 @@ export const createMinistry = async ({
  */
 export const editMinistry = async (updatedValues) => {
   // Destructure the updatedValues object to extract necessary fields
-  const { coordinators, ministryId, ministry_name, ministry_description } =
-    updatedValues;
+  const { coordinators, ministryId } = updatedValues;
   // Perform the update query using destructured values
-  const { data, error } = await supabase
-    .from("ministries")
-    .update({
-      ministry_name, // Update ministry_name field
-      ministry_description, // Update ministry_description field
-    })
-    .eq("id", ministryId); // Use ministryId as the primary key for the update
+  // const { data, error } = await supabase
+  //   .from("ministries")
+  //   .update({
+  //     ministry_name, // Update ministry_name field
+  //     ministry_description, // Update ministry_description field
+  //   })
+  //   .eq("id", ministryId); // Use ministryId as the primary key for the update
 
-  if (error) {
-    console.error("Error updating ministry:", error.message);
-    throw new Error(error.message); // Handle the error appropriately
-  }
+  // if (error) {
+  //   console.error("Error updating ministry:", error.message);
+  //   throw new Error(error.message); // Handle the error appropriately
+  // }
 
   const { error: deleteCoordinatorError } = await supabase
     .from("ministry_coordinators")
@@ -232,8 +231,40 @@ export const editMinistry = async (updatedValues) => {
   if (coordinatorError) {
     throw new Error(coordinatorError.message);
   }
+};
 
-  return data; // Return the updated data
+export const updateMinistry = async (updatedValues) => {
+  // Destructure the updatedValues object to extract necessary fields
+  const { ministryId, ministry_name, ministry_description } = updatedValues;
+
+  if (!ministryId) {
+    throw new Error("Ministry ID is required");
+  }
+
+  // Create an update object with only the fields that are provided
+  const updateData = {};
+  if (ministry_name !== undefined) updateData.ministry_name = ministry_name;
+  if (ministry_description !== undefined)
+    updateData.ministry_description = ministry_description;
+
+  // Only perform the update if there are fields to update
+  if (Object.keys(updateData).length === 0) {
+    return null;
+  }
+
+  // Perform the update query
+  const { data, error } = await supabase
+    .from("ministries")
+    .update(updateData)
+    .eq("id", ministryId)
+    .select();
+
+  if (error) {
+    console.error("Error updating ministry:", error.message);
+    throw new Error(error.message);
+  }
+
+  return data;
 };
 
 /**

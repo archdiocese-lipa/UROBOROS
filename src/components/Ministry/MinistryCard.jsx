@@ -113,7 +113,6 @@ const MinistryCard = ({ ministryId, title, description, createdDate }) => {
         </div>
       </CardContent>
 
-      {/* Edit Ministry Modal or Component */}
       {/* {isEditDialogOpen && (
         <EditMinistry
           ministryId={ministryId}

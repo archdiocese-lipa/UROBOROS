@@ -9,6 +9,7 @@ import {
   fetchMinistryAssignedUsers,
   assignNewVolunteers,
   getMinistryCoordinators,
+  updateMinistry,
   // getAssignedMinistries,
 } from "@/services/ministryService";
 // import { ROLES } from "@/constants/roles";
@@ -28,7 +29,6 @@ const useMinistry = ({ ministryId }) => {
     enabled: !!ministryId,
   });
 
-
   // Fetch all ministries or assigned ministries depending on role and user
   const { data: ministries, isLoading: ministryLoading } = useQuery({
     queryKey: ["ministries"],
@@ -44,9 +44,9 @@ const useMinistry = ({ ministryId }) => {
     },
   });
   const coordinators = useQuery({
-    queryKey: ["ministryCoordinators",ministryId],
+    queryKey: ["ministryCoordinators", ministryId],
     queryFn: async () => getMinistryCoordinators(ministryId),
-    enabled: !!ministryId
+    enabled: !!ministryId,
   });
 
   // Mutation for creating a ministry
@@ -73,7 +73,27 @@ const useMinistry = ({ ministryId }) => {
   const editMutation = useMutation({
     mutationFn: async (values) => editMinistry(values),
     onSuccess: () => {
-      queryClient.invalidateQueries(["ministries"]);
+      queryClient.invalidateQueries(["ministries", ministryId]);
+      toast({
+        title: "Ministry Updated",
+        description: "Ministry has been updated successfully!",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error Updating Ministry",
+        description:
+          error?.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Create the edit mutation
+  const updateMinistryMutation = useMutation({
+    mutationFn: updateMinistry,
+    onSuccess: () => {
+      queryClient.invalidateQueries(["ministries", ministryId]);
       toast({
         title: "Ministry Updated",
         description: "Ministry has been updated successfully!",
@@ -154,6 +174,7 @@ const useMinistry = ({ ministryId }) => {
     coordinators,
     createMutation,
     editMutation,
+    updateMinistryMutation,
     deleteMutation,
     removeMinistryVolunteerMutation,
   };
