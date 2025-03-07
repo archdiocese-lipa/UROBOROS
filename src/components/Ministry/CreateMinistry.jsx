@@ -7,6 +7,7 @@ import {
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
+  AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
@@ -168,16 +169,21 @@ const CreateMinistry = () => {
                 )}
               />
 
-              <div className="flex justify-end gap-x-2">
+              <AlertDialogFooter>
                 <AlertDialogCancel asChild>
                   <Button onClick={() => form.reset()} variant="outline">
                     Cancel
                   </Button>
                 </AlertDialogCancel>
-                <Button type="submit" disabled={createMutation.isLoading}>
+                <Button
+                  type="submit"
+                  disabled={createMutation.isLoading}
+                  className="flex-1"
+                >
                   {createMutation.isPending ? "Creating..." : "Create"}
                 </Button>
-              </div>
+              </AlertDialogFooter>
+
               {createMutation.isError && (
                 <p className="text-red-500">
                   Error: {createMutation.error.message}
