@@ -2,6 +2,7 @@ import PropTypes from "prop-types";
 import {
   AlertDialog,
   AlertDialogAction,
+  AlertDialogBody,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -35,13 +36,39 @@ import { useQuery } from "@tanstack/react-query";
 import { getUsersByRole } from "@/services/userService";
 import { ROLES } from "@/constants/roles";
 import CustomReactSelect from "../CustomReactSelect";
+import { useUser } from "@/context/useUser";
+import useMinistry from "@/hooks/useMinistry";
 
 const addMembersSchema = z.object({
   members: z.array(z.string()).min(1, "Please select at least one member"),
 });
 
-const GroupMembers = ({ groupId }) => {
+const GroupMembers = ({ ministryId, groupId }) => {
   const { groupmembers, removeGroupMembersMutation } = useGroups({ groupId });
+  const { userData } = useUser();
+  const currentUserId = userData?.id;
+
+  // Get ministry coordinators to check if current user is a coordinator
+  const { coordinators: ministryCoordinatorsQuery } = useMinistry({
+    ministryId,
+  });
+
+  // Check if current user is a coordinator for this ministry
+  const isCoordinator = useMemo(() => {
+    if (
+      !ministryCoordinatorsQuery.data ||
+      !Array.isArray(ministryCoordinatorsQuery.data) ||
+      !currentUserId
+    ) {
+      return false;
+    }
+
+    return ministryCoordinatorsQuery.data.some(
+      (coordinator) =>
+        coordinator.users?.id === currentUserId ||
+        coordinator.coordinator_id === currentUserId
+    );
+  }, [ministryCoordinatorsQuery.data, currentUserId]);
 
   // Extract data and loading state
   const { data: members = [], isLoading: membersLoading } = groupmembers || {};
@@ -57,7 +84,10 @@ const GroupMembers = ({ groupId }) => {
     <div className="h-dvh bg-primary px-10 py-4">
       <div className="mb-4 flex items-center justify-between">
         <Label className="text-lg font-medium">Members</Label>
-        <AddGroupMembersForm groupId={groupId} />
+        {/* Only show Add Members button if user is a coordinator */}
+        {isCoordinator && (
+          <AddGroupMembersForm ministryId={ministryId} groupId={groupId} />
+        )}
       </div>
       {membersLoading ? (
         <div className="flex justify-center py-8">
@@ -89,14 +119,20 @@ const GroupMembers = ({ groupId }) => {
                         </span>
                       </div>
                     </div>
-                    <div className="transition-opacity lg:opacity-0 lg:group-hover:opacity-100">
-                      <RemoveMembers
-                        userId={member.id}
-                        groupId={groupId}
-                        memberName={`${member.first_name} ${member.last_name}`}
-                        removeGroupMembersMutation={removeGroupMembersMutation}
-                      />
-                    </div>
+                    {member && (
+                      <div className="transition-opacity lg:opacity-0 lg:group-hover:opacity-100">
+                        {isCoordinator && (
+                          <RemoveMembers
+                            userId={member.id}
+                            groupId={groupId}
+                            memberName={`${member.first_name} ${member.last_name}`}
+                            removeGroupMembersMutation={
+                              removeGroupMembersMutation
+                            }
+                          />
+                        )}
+                      </div>
+                    )}
                   </div>
                 </li>
               </ul>
@@ -109,15 +145,22 @@ const GroupMembers = ({ groupId }) => {
 };
 
 GroupMembers.propTypes = {
+  ministryId: PropTypes.string.isRequired,
   groupId: PropTypes.string.isRequired,
 };
 
-const AddGroupMembersForm = ({ groupId }) => {
+const AddGroupMembersForm = ({ ministryId, groupId }) => {
   const [open, setOpen] = useState(false);
+
+  const { userData } = useUser();
 
   // Get the current group members
   const { groupmembers, addGroupMembersMutation } = useGroups({ groupId });
   const { data: currentMembers = [] } = groupmembers || {};
+
+  const { coordinators: ministryCoordinatorsQuery } = useMinistry({
+    ministryId,
+  });
 
   // Extract the user IDs of existing members
   const existingMemberIds = useMemo(() => {
@@ -140,22 +183,76 @@ const AddGroupMembersForm = ({ groupId }) => {
     queryFn: async () => getUsersByRole(ROLES[1]),
   });
 
-  const isLoadingMembers =
-    coparentsLoading || parishionerLoading || volunteersLoading;
+  const { data: coordinators = [], isLoading: coordinatorsLoading } = useQuery({
+    queryKey: ["coordinator"],
+    queryFn: async () => getUsersByRole(ROLES[0]),
+  });
 
-  // Combine all potential members but filter out those already in the group
-  const availableMembers = useMemo(() => {
+  // Get ministry coordinator IDs in a convenient format
+  const ministryCoordinatorIds = useMemo(() => {
+    if (
+      !ministryCoordinatorsQuery.data ||
+      !Array.isArray(ministryCoordinatorsQuery.data)
+    ) {
+      return new Set();
+    }
+
+    // Extract user IDs from the nested structure
+    const coordinatorUserIds = ministryCoordinatorsQuery.data
+      .map((coordinator) => coordinator.users?.id)
+      .filter((id) => id != null);
+
+    return new Set(coordinatorUserIds);
+  }, [ministryCoordinatorsQuery.data]);
+
+  const isLoadingMembers =
+    coparentsLoading ||
+    parishionerLoading ||
+    volunteersLoading ||
+    coordinatorsLoading ||
+    ministryCoordinatorsQuery.isLoading;
+
+  // Filter out users who are already coordinators in this ministry
+  const filteredGroupMembers = useMemo(() => {
+    // Combine all potential members
     const allMembers = [
       ...(coparents || []),
       ...(volunteers || []),
       ...(parishioners || []),
+      ...(coordinators || []),
     ];
 
-    // Filter out members already in the group
-    return allMembers.filter((user) => !existingMemberIds.includes(user.id));
-  }, [coparents, volunteers, parishioners, existingMemberIds]);
+    // Filter out duplicates by ID (in case users appear in multiple role lists)
+    const uniqueMembers = Array.from(
+      new Map(allMembers.map((user) => [user.id, user])).values()
+    );
 
-  // Format members for the select input
+    // Filter out users who are coordinators for this ministry
+    // Also filter out current user
+    const filtered = uniqueMembers.filter((user) => {
+      const isCoordinator = ministryCoordinatorIds.has(user.id);
+      const isCurrentUser = user.id === userData?.id;
+      return !isCoordinator && !isCurrentUser;
+    });
+
+    return filtered;
+  }, [
+    coparents,
+    volunteers,
+    parishioners,
+    coordinators,
+    ministryCoordinatorIds,
+    userData?.id,
+  ]);
+
+  // Filter out users who are already members of the group
+  const availableMembers = useMemo(() => {
+    return filteredGroupMembers.filter(
+      (user) => !existingMemberIds.includes(user.id)
+    );
+  }, [filteredGroupMembers, existingMemberIds]);
+
+  // Update to use availableMembers instead of filteredGroupMembers
   const memberOptions = useMemo(() => {
     return availableMembers.map((user) => ({
       value: user.id,
@@ -198,7 +295,7 @@ const AddGroupMembersForm = ({ groupId }) => {
           Add Members
         </Button>
       </AlertDialogTrigger>
-      <AlertDialogContent className="py-6">
+      <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Add Members to Group</AlertDialogTitle>
           <AlertDialogDescription>
@@ -207,9 +304,13 @@ const AddGroupMembersForm = ({ groupId }) => {
               : "Select users you want to add to this group."}
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <div className="px-6">
+        <AlertDialogBody>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              id="form"
+              className="space-y-4"
+            >
               <FormField
                 control={form.control}
                 name="members"
@@ -255,36 +356,36 @@ const AddGroupMembersForm = ({ groupId }) => {
                   </FormItem>
                 )}
               />
-              <div className="flex items-center justify-end gap-x-2">
-                <div>
-                  <AlertDialogCancel className="m-0" disabled={isAddingMembers}>
-                    Cancel
-                  </AlertDialogCancel>
-                </div>
-
-                <Button
-                  type="submit"
-                  disabled={isAddingMembers || availableMembers.length === 0}
-                >
-                  {isAddingMembers ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Adding...
-                    </>
-                  ) : (
-                    "Done"
-                  )}
-                </Button>
-              </div>
             </form>
           </Form>
-        </div>
+        </AlertDialogBody>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={isAddingMembers}>
+            Cancel
+          </AlertDialogCancel>
+          <Button
+            type="submit"
+            disabled={isAddingMembers || availableMembers.length === 0}
+            className="flex-1"
+            form="form"
+          >
+            {isAddingMembers ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Adding...
+              </>
+            ) : (
+              "Done"
+            )}
+          </Button>
+        </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
   );
 };
 
 AddGroupMembersForm.propTypes = {
+  ministryId: PropTypes.string.isRequired,
   groupId: PropTypes.string.isRequired,
 };
 

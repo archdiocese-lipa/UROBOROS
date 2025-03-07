@@ -14,6 +14,7 @@ import {
   AlertDialogTrigger,
   AlertDialogFooter,
   AlertDialogCancel,
+  AlertDialogBody,
 } from "@/components/ui/alert-dialog";
 import {
   Form,
@@ -60,41 +61,37 @@ const ConfigureGroup = ({ ministryId, ministryName, ministryDescription }) => {
             <CreateGroup ministryId={ministryId} />
           </div>
         </AlertDialogHeader>
-        <div className="border-y border-primary-outline/20 py-4">
-          <div className="px-6">
-            {groups?.data?.length < 1 ? (
-              <p>No groups created yet.</p>
-            ) : (
-              <Label>Groups</Label>
-            )}
-            {groups?.data?.map((group) => (
-              <div
-                key={group.id}
-                className="group mt-2 flex items-center justify-between rounded-lg bg-primary-outline/20 px-4 py-2 hover:bg-primary"
-              >
-                <div>
-                  <Label className="font-semibold">{group.name}</Label>
-                  <p className="text-xs text-primary-text">
-                    {group.description}
-                  </p>
-                </div>
-                <div className="flex items-center gap-x-2 border-primary-text/30 pl-2 transition-opacity duration-150 group-hover:opacity-100 lg:opacity-0">
-                  <EditGroup
-                    groupId={group.id}
-                    groupName={group.name}
-                    groupDescription={group.description}
-                  />
-                  <DeleteGroup groupId={group.id} />
-                </div>
+        <AlertDialogBody>
+          {groups?.data?.length < 1 ? (
+            <p>No groups created yet.</p>
+          ) : (
+            <Label>Groups</Label>
+          )}
+          {groups?.data?.map((group) => (
+            <div
+              key={group.id}
+              className="group mt-2 flex items-center justify-between rounded-lg bg-primary-outline/20 px-4 py-2 hover:bg-primary"
+            >
+              <div>
+                <Label className="font-semibold">{group.name}</Label>
+                <p className="text-xs text-primary-text">{group.description}</p>
               </div>
-            ))}
-          </div>
-        </div>
-        <div className="flex px-6">
-          <AlertDialogAction className="flex-1 border border-primary-outline/50 bg-white font-medium text-primary-text hover:bg-primary">
+              <div className="flex items-center gap-x-2 border-primary-text/30 pl-2 transition-opacity duration-150 group-hover:opacity-100 lg:opacity-0">
+                <EditGroup
+                  groupId={group.id}
+                  groupName={group.name}
+                  groupDescription={group.description}
+                />
+                <DeleteGroup groupId={group.id} />
+              </div>
+            </div>
+          ))}
+        </AlertDialogBody>
+        <AlertDialogFooter>
+          <AlertDialogAction className="border border-primary-outline/50 bg-white font-medium text-primary-text hover:bg-primary">
             Close
           </AlertDialogAction>
-        </div>
+        </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
   );
@@ -154,9 +151,13 @@ const EditGroup = ({ groupId, groupName, groupDescription }) => {
             Update the information for this group.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <div className="px-6">
+        <AlertDialogBody>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              id="form"
+              className="space-y-4"
+            >
               <FormField
                 control={form.control}
                 name="name"
@@ -186,29 +187,28 @@ const EditGroup = ({ groupId, groupName, groupDescription }) => {
                   </FormItem>
                 )}
               />
-              <AlertDialogFooter>
-                <AlertDialogCancel disabled={editGroupMutation.isPending}>
-                  Cancel
-                </AlertDialogCancel>
-                <AlertDialogAction
-                  type="submit"
-                  disabled={
-                    editGroupMutation.isPending || !form.formState.isDirty
-                  }
-                >
-                  {editGroupMutation.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    "Save Changes"
-                  )}
-                </AlertDialogAction>
-              </AlertDialogFooter>
             </form>
           </Form>
-        </div>
+        </AlertDialogBody>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={editGroupMutation.isPending}>
+            Cancel
+          </AlertDialogCancel>
+          <AlertDialogAction
+            type="submit"
+            form="form"
+            disabled={editGroupMutation.isPending || !form.formState.isDirty}
+          >
+            {editGroupMutation.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              "Save Changes"
+            )}
+          </AlertDialogAction>
+        </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
   );

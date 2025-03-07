@@ -80,7 +80,7 @@ const AssignMembers = ({ ministryId, title }) => {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="font-normal">
+          <DialogTitle className="text-primary-text">
             Assign member to <span className="font-bold">{`"${title}"`}</span>
           </DialogTitle>
           <DialogDescription className="sr-only">
@@ -127,7 +127,7 @@ const AssignMembers = ({ ministryId, title }) => {
 
 AssignMembers.propTypes = {
   title: PropTypes.string.isRequired,
-  ministryId: PropTypes.string.isRequired, // Ensure ministryId is passed as a prop
+  ministryId: PropTypes.string.isRequired,
 };
 
 export default AssignMembers;

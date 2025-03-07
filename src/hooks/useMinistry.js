@@ -43,6 +43,7 @@ const useMinistry = ({ ministryId }) => {
       return getAllMinistries();
     },
   });
+
   const coordinators = useQuery({
     queryKey: ["ministryCoordinators", ministryId],
     queryFn: async () => getMinistryCoordinators(ministryId),
