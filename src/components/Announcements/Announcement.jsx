@@ -47,16 +47,15 @@ import AnnouncementForm from "./AnnouncementForm";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
-const Announcement = ({
-  announcement,
-  deleteAnnouncementMutation,
-}) => {
+const Announcement = ({ announcement, deleteAnnouncementMutation }) => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState();
   const { userData } = useUser();
 
   if (!userData) {
     return null;
   }
+
+  console.log(announcement.announcement_files[0]?.type);
 
   return (
     <div>
@@ -166,34 +165,60 @@ const Announcement = ({
         <DialogTrigger>
           {" "}
           <div className="flex w-full gap-2">
-            {announcement.announcement_files.slice(0, 3).map((file, i) => (
-              <div
-                key={i}
-                className={cn(
-                  "flex-1 border border-primary-outline hover:cursor-pointer",
-                  {
-                    relative: i === 2,
-                  },
-                  { "rounded-s-md": i === 0 },
-                  { "relative z-20 rounded-e-md bg-black": i === 2 }
-                )}
-              >
-                <img
-                  className={cn("h-[223px] min-w-0 bg-black object-cover", {
-                    "opacity-45": i === 2,
-                  })}
-                  src={file.url}
-                  alt="file"
-                />
-                {i === 2 && (
-                  <p className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform text-base font-semibold text-white">
-                    +{announcement.announcement_files.length - 2} more
-                  </p>
-                )}
-              </div>
-            ))}
+            {announcement.announcement_files[0]?.length > 0 &&
+              announcement.announcement_files[0]?.startsWith("image") &&
+              announcement.announcement_files.slice(0, 3).map((file, i) => (
+                <div
+                  key={i}
+                  className={cn(
+                    "flex-1 border border-primary-outline hover:cursor-pointer",
+                    {
+                      relative: i === 2,
+                    },
+                    { "rounded-s-md": i === 0 },
+                    { "relative z-20 rounded-e-md bg-black": i === 2 }
+                  )}
+                >
+                  <img
+                    className={cn("h-[223px] min-w-0 bg-black object-cover", {
+                      "opacity-45": i === 2,
+                    })}
+                    src={file.url}
+                    alt="file"
+                  />
+                  {i === 2 && (
+                    <p className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform text-base font-semibold text-white">
+                      +{announcement.announcement_files.length - 2} more
+                    </p>
+                  )}
+                </div>
+              ))}
           </div>
         </DialogTrigger>
+        {announcement.announcement_files[0]?.type?.startsWith("video") && (
+          <div className="border border-primary-outline">
+            <video
+              className="h-fit w-full"
+              controls
+              src={announcement.announcement_files[0]?.url}
+            >
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        )}
+
+        {announcement.announcement_files[0]?.type?.startsWith(
+          "application"
+        ) && (
+          <a
+            href={announcement.announcement_files[0]?.url}
+            target="_blank"
+            // rel="noopener noreferrer"
+            className="text-blue-500 underline"
+          >
+            {`${announcement.announcement_files[0]?.name}.${announcement.announcement_files[0].type.split("/")[1]}`}
+          </a>
+        )}
         <DialogContent className="flex h-full w-dvw max-w-none items-center justify-center border-0 bg-transparent">
           <DialogHeader className="sr-only">
             <DialogTitle className="sr-only"></DialogTitle>
@@ -224,7 +249,6 @@ const Announcement = ({
           </Carousel>
         </DialogContent>
       </Dialog>
-
 
       <div className="flex items-end justify-between">
         <div className="relative h-5">
@@ -259,8 +283,10 @@ Announcement.propTypes = {
         url: PropTypes.string.isRequired,
         name: PropTypes.string.isRequired,
         type: PropTypes.string.isRequired,
+        length: PropTypes.number,
+        startsWith: PropTypes.func,
       })
-    ).isRequired,
+    ),
     users: PropTypes.shape({
       first_name: PropTypes.string.isRequired,
       last_name: PropTypes.string.isRequired,

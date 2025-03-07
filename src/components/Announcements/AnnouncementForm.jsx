@@ -48,6 +48,8 @@ const AnnouncementForm = ({
   const [selectedFileType, setSelectedFileTypes] = useState(
     files ? "Image(s)" : "None"
   );
+  const [selectedVideo, setSelectedVideo] = useState("");
+  const [selectedPDF, setSelectedPDF] = useState("");
   const [imagePreviews, setImagePreviews] = useState([]);
 
   // console.log("edit data", files);
@@ -211,28 +213,46 @@ const AnnouncementForm = ({
                       <Input
                         id="file-input"
                         type="file"
+                        accept={
+                          selectedFileType === "Image(s)"
+                            ? "image/*"
+                            : selectedFileType === "Video"
+                              ? "video/*"
+                              : "application/pdf"
+                        }
                         className="hidden"
-                        multiple
+                        multiple={selectedFileType === "Image(s)"}
                         onChange={(e) => {
                           const files = e.target.files;
+                          if (!files || files.length === 0) return; // Prevent errors
 
-                          if (files.length > 0) {
-                            field.onChange([
-                              ...currentFiles,
-                              ...Array.from(files), // Convert FileList to array
-                            ]);
+                          if (selectedFileType === "Image(s)") {
+                            const fileArray = Array.from(files);
+
+                            field.onChange([...currentFiles, ...fileArray]);
                             setCurrentFiles((prevState) => [
                               ...prevState,
-                              ...Array.from(files), // Convert FileList to array
+                              ...fileArray,
                             ]);
 
-                            const fileArray = Array.from(files); // Convert FileList to array
+                            // Create image previews
                             setImagePreviews((prevState) => [
                               ...prevState,
-                              ...fileArray.map((item) =>
-                                URL.createObjectURL(item)
+                              ...fileArray.map((file) =>
+                                URL.createObjectURL(file)
                               ),
                             ]);
+                          } else {
+                            const file = files[0]; // Only one file for PDF or Video
+                            const url = URL.createObjectURL(file);
+
+                            if (file.type === "application/pdf") {
+                              setSelectedPDF(url);
+                            } else {
+                              setSelectedVideo(url);
+                            }
+
+                            form.setValue("files", [file]);
                           }
                         }}
                       />
@@ -250,7 +270,14 @@ const AnnouncementForm = ({
                   {fileTypes.map(({ icon, value }, index) => (
                     <div
                       key={index}
-                      onClick={() => setSelectedFileTypes(value)}
+                      onClick={() => {
+                        setImagePreviews([]),
+                          setSelectedFileTypes(value),
+                          setCurrentFiles([]);
+                        setSelectedVideo("");
+                        setSelectedPDF("");
+                        form.setValue("files", []);
+                      }}
                       className={cn(
                         "rounded-xl bg-[#F1E6E0] px-[14px] py-[6px] hover:cursor-pointer",
                         { "bg-accent": selectedFileType === value }
@@ -296,33 +323,63 @@ const AnnouncementForm = ({
                     </Label>
                   </div>
                 )}
-                {selectedFileType === "Video" && (
-                  <div className="flex h-[110px] flex-col items-center justify-center">
-                    <div className="flex flex-shrink-0 items-center justify-center rounded-md hover:cursor-pointer">
-                      <Icon
-                        className="h-11 w-11 text-[#CDA996]"
-                        icon={"mingcute:video-fill"}
-                      />
+
+                {selectedFileType === "Video" &&
+                  (selectedVideo ? (
+                    <div className="flex max-h-[110px] w-full max-w-[420px] justify-center gap-3 overflow-x-scroll">
+                      <div className="relative flex h-[100px] w-[100px] flex-shrink-0 rounded-md">
+                        <video
+                          // className="object-cover"
+                          controls="true"
+                          src={selectedVideo}
+                          alt="an image"
+                        />
+                      </div>
                     </div>
-                    <p className="text-[12px] font-semibold text-[#CDA996]">
-                      Upload Video
-                    </p>
-                  </div>
-                )}
-                {selectedFileType === "PDF Document" && (
-                  <div className="flex h-[110px] flex-col items-center justify-center">
-                    <div className="flex flex-shrink-0 items-center justify-center rounded-md hover:cursor-pointer">
-                      <Icon
-                        className="h-11 w-11 text-[#CDA996]"
-                        icon={"mingcute:pdf-fill"}
-                      />
+                  ) : (
+                    <Label htmlFor="file-input">
+                      <div className="flex h-[110px] flex-col items-center justify-center hover:cursor-pointer">
+                        <div className="flex flex-shrink-0 items-center justify-center rounded-md">
+                          <Icon
+                            className="h-11 w-11 text-[#CDA996]"
+                            icon={"mingcute:video-fill"}
+                          />
+                        </div>
+                        <p className="text-[12px] font-semibold text-[#CDA996]">
+                          Upload Video
+                        </p>
+                      </div>
+                    </Label>
+                  ))}
+                {selectedFileType === "PDF Document" &&
+                  (selectedPDF ? (
+                    <div className="flex max-h-[110px] w-full max-w-[420px] justify-center gap-3 overflow-x-scroll">
+                      <div className="relative h-[100px] w-[100px] flex-shrink-0 rounded-md">
+                        <Icon
+                          className="h-11 w-11 text-[#CDA996]"
+                          icon={"mingcute:pdf-fill"}
+                        />
+                        <p className="text-2xs text-[#CDA996]">
+                          {form.getValues("files")[0]?.name}
+                        </p>
+                      </div>
                     </div>
-                    <p className="text-[12px] font-semibold text-[#CDA996]">
-                      Upload PDF
-                    </p>
-                  </div>
-                )}
-                {selectedFileType === "Hyperlink" && (
+                  ) : (
+                    <Label htmlFor="file-input">
+                      <div className="flex h-[110px] flex-col items-center justify-center hover:cursor-pointer">
+                        <div className="flex flex-shrink-0 items-center justify-center rounded-md">
+                          <Icon
+                            className="h-11 w-11 text-[#CDA996]"
+                            icon={"mingcute:pdf-fill"}
+                          />
+                        </div>
+                        <p className="text-[12px] font-semibold text-[#CDA996]">
+                          Upload PDF
+                        </p>
+                      </div>
+                    </Label>
+                  ))}
+                {/* {selectedFileType === "Hyperlink" && (
                   <div className="flex h-[110px] flex-col items-center justify-center">
                     <div className="flex flex-shrink-0 items-center justify-center rounded-md hover:cursor-pointer">
                       <Input
@@ -335,7 +392,7 @@ const AnnouncementForm = ({
                       Hyperlink
                     </p>
                   </div>
-                )}
+                )} */}
               </div>
               {form.formState.errors.files && (
                 <p className="text-sm font-medium text-red-500">

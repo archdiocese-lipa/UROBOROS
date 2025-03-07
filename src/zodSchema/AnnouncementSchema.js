@@ -1,7 +1,7 @@
 import z from "zod";
 
 // Define maximum file size (5MB)
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
+const MAX_FILE_SIZE = 5 * 1024 * 1024 * 1024; // 5MB in bytes
 
 const allowedMimeTypes = [
   "image/jpeg",
@@ -22,15 +22,23 @@ const AnnouncementSchema = z.object({
   content: z.string().min(1, "Content is required"),
 
   files: z
-    .array(z.instanceof(File))
-    .max(5, "Maximum of 5 files allowed")
-    .default([])
+    .union([
+      z.instanceof(File), // Accepts a single file
+      z.array(z.instanceof(File)).max(5, "Maximum of 5 files allowed"), // Accepts multiple files
+    ])
+    .optional() // Make it optional if files are not required
     .refine(
-      (files) => files.every((file) => file.size <= MAX_FILE_SIZE),
-      `Each file must not exceed 5MB`
+      (files) =>
+        Array.isArray(files)
+          ? files.every((file) => file.size <= MAX_FILE_SIZE)
+          : files.size <= MAX_FILE_SIZE,
+      `Each file must not exceed 50MB`
     )
     .refine(
-      (files) => files.every((file) => allowedMimeTypes.includes(file.type)),
+      (files) =>
+        Array.isArray(files)
+          ? files.every((file) => allowedMimeTypes.includes(file.type))
+          : allowedMimeTypes.includes(files.type),
       "Invalid file type. Allowed: jpg, jpeg, png, gif, mp4, avi, mov, pdf, ppt, pptx, doc, docx."
     ),
 });
