@@ -21,7 +21,6 @@ import { useUser } from "@/context/useUser";
 import { useState } from "react";
 import TriggerLikeIcon from "./TriggerLikeIcon";
 
-
 const Replies = ({
   reply,
   showReply,
@@ -79,7 +78,9 @@ const Replies = ({
               <div></div>
             </div>
             <div>
-              <p className="text-sm text-accent">{reply.comment_content}</p>
+              <p className="break-all text-sm text-accent">
+                {reply.comment_content}
+              </p>
               <div className="flex items-center">
                 {/* <TriggerDislikeIcon
                   className="absolute -bottom-4 right-2 w-14 rounded-3xl bg-white p-1"
@@ -105,11 +106,11 @@ const Replies = ({
             </PopoverTrigger>
             <PopoverContent
               align="center"
-              className=" w-fit overflow-hidden p-0 outline-none"
+              className="w-fit overflow-hidden p-0 outline-none"
             >
               <Button
                 onClick={() => setEditting(true)}
-                className="w-full p-3 text-center  hover:cursor-pointer"
+                className="w-full p-3 text-center hover:cursor-pointer"
                 variant={"ghost"}
               >
                 Edit
@@ -132,7 +133,11 @@ const Replies = ({
                   </DialogHeader>
                   <DialogFooter>
                     <DialogClose asChild>
-                      <Button type="button" variant="outline" className="text-accent hover:text-accent rounded-xl">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="rounded-xl text-accent hover:text-accent"
+                      >
                         Cancel
                       </Button>
                     </DialogClose>
@@ -141,7 +146,7 @@ const Replies = ({
                         onClick={() => handleDeleteReply(reply.id)}
                         variant={"destructive"}
                         type="submit"
-                        className=" rounded-xl"
+                        className="rounded-xl"
                       >
                         Delete
                       </Button>
@@ -156,7 +161,7 @@ const Replies = ({
           onClick={() => setIsReplying(true)}
           className="ml-2 rounded-2xl"
         >
-          <ReplyIcon className="h-5 w-5 hover:cursor-pointer text-accent" />
+          <ReplyIcon className="h-5 w-5 text-accent hover:cursor-pointer" />
         </button>
       </div>
       <ReplyInput
@@ -181,8 +186,7 @@ Replies.propTypes = {
       first_name: PropTypes.string.isRequired,
       last_name: PropTypes.string.isRequired,
       user_image: PropTypes.string,
-      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
-        .isRequired,
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     }).isRequired,
   }).isRequired,
   showReply: PropTypes.bool.isRequired,

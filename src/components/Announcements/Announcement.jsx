@@ -47,10 +47,7 @@ import AnnouncementForm from "./AnnouncementForm";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
-const Announcement = ({
-  announcement,
-  deleteAnnouncementMutation,
-}) => {
+const Announcement = ({ announcement, deleteAnnouncementMutation }) => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState();
   const { userData } = useUser();
 
@@ -159,7 +156,7 @@ const Announcement = ({
           </Popover>
         )}
       </div>
-      <p className="mb-4 whitespace-pre-wrap text-start leading-5 text-accent">
+      <p className="mb-4 whitespace-pre-wrap break-all text-start leading-5 text-accent">
         {announcement.content}
       </p>
       <Dialog className="border-none border-transparent">
@@ -224,7 +221,6 @@ const Announcement = ({
           </Carousel>
         </DialogContent>
       </Dialog>
-
 
       <div className="flex items-end justify-between">
         <div className="relative h-5">
