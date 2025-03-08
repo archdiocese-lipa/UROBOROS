@@ -47,27 +47,37 @@ const Sidebar = () => {
         {temporaryRole === ROLES[1] && "Volunteer Management Centre"}
         {(temporaryRole === ROLES[2] || temporaryRole === ROLES[3]) &&
           `Welcome, ${userData?.first_name ?? ""} ${userData?.last_name ?? ""}`}
-        {temporaryRole === ROLES[4] &&
-          `Parish Management Centre`}
+        {temporaryRole === ROLES[4] && `Parish Management Centre`}
       </Title>
       <div className="mb-2 flex flex-1 justify-between lg:mb-0 lg:flex-col">
         <ul className="flex w-full items-center justify-evenly gap-0 sm:gap-2 lg:ml-4 lg:mr-8 lg:flex-col lg:items-start">
           {userData &&
-            SIDEBAR_LINKS[temporaryRole]?.map((links, index) => (
-              <SidebarLink
-                key={index}
-                label={links.label}
-                link={links.link}
-                icon={links.icon}
-                selectedIcon={links.selectedIcon}
-                isActive={url.pathname === links.link}
-              />
-            ))}
+            SIDEBAR_LINKS[temporaryRole]?.map((link, index) => {
+              // Hide "Ministries" if temporaryRole is not equal to userData.role
+              if (
+                link.label === "Ministries" &&
+                temporaryRole !== userData?.role
+              ) {
+                return null;
+              }
+
+              return (
+                <SidebarLink
+                  key={index}
+                  label={link.label}
+                  link={link.link}
+                  icon={link.icon}
+                  selectedIcon={link.selectedIcon}
+                  isActive={url.pathname === link.link}
+                />
+              );
+            })}
+
           <div className="flex flex-col items-center justify-center">
             <DropdownMenu>
               <DropdownMenuTrigger className="lg:hidden lg:px-6">
                 <div className="flex items-center gap-2">
-                  <Avatar className="bg-green h-8 w-8 border-[3px] border-accent">
+                  <Avatar className="h-8 w-8 border-[3px] border-accent">
                     <AvatarImage
                       src={userData?.user_image ?? ""}
                       alt="profile picture"
@@ -123,8 +133,6 @@ const SidebarProfile = ({ availableRoles, onSwitchRole }) => {
       console.error("Logout failed:", error.message);
     }
   };
-
-
 
   if (!userData) {
     return (

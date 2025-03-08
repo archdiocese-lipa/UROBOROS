@@ -7,7 +7,7 @@ import { supabase } from "./supabaseClient";
 export const getAllMinistries = async () => {
   const { data, error } = await supabase
     .from("ministries")
-    .select("*")
+    .select("*, ministry_coordinators(id)")
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -31,6 +31,61 @@ export const getAssignedMinistries = async (userId) => {
   return arrangedData;
 };
 
+export const getMinistryGroups = async (userId) => {
+  if (!userId) {
+    console.error("User ID is required");
+    return [];
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("group_members")
+      .select(
+        `id, 
+         joined_at, 
+         groups(id, name, description, ministry_id, ministry:ministries(id, ministry_name)), 
+         users(id)`
+      )
+      .eq("user_id", userId);
+
+    if (error) {
+      console.error("Error fetching ministry groups:", error);
+      throw new Error(error.message);
+    }
+
+    // Transform the data to group by ministries
+    const groupedData = data.reduce((acc, item) => {
+      const ministryId = item.groups.ministry.id;
+      const ministryName = item.groups.ministry.ministry_name;
+
+      if (!acc[ministryId]) {
+        acc[ministryId] = {
+          ministry_id: ministryId,
+          ministry_name: ministryName,
+          groups: [],
+        };
+      }
+
+      acc[ministryId].groups.push({
+        group_id: item.groups.id,
+        group_name: item.groups.name,
+        description: item.groups.description,
+        joined_at: item.joined_at,
+      });
+
+      return acc;
+    }, {});
+
+    // Convert the grouped data into an array
+    const result = Object.values(groupedData);
+
+    return result;
+  } catch (error) {
+    console.error("Exception in getMinistryGroups:", error);
+    return [];
+  }
+};
+
 /**
  * Get a single ministry by its ID.
  * @param {string} id - UUID of the ministry.
@@ -40,18 +95,78 @@ export const getMinistryById = async (id) => {
   return await supabase.from("ministries").select("*").eq("id", id).single();
 };
 
+export const getMinistryCoordinators = async (ministryId) => {
+  const { data, error } = await supabase
+    .from("ministry_coordinators")
+    .select("id,users(id, first_name,last_name)")
+    .eq("ministry_id", ministryId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+};
+
+export const addCoordinators = async ({ ministryId, coordinatorsData }) => {
+  // Extract ministry-coordinator pairs
+  const coordinatorIds = coordinatorsData?.map((c) => c.coordinator_id);
+
+  // Check if the combination of ministryId and coordinator_id already exists
+  const { data: existingCoordinators, error: checkError } = await supabase
+    .from("ministry_coordinators")
+    .select("coordinator_id, ministry_id")
+    .in("coordinator_id", coordinatorIds)
+    .eq("ministry_id", ministryId);
+
+  if (checkError) {
+    throw new Error("Error checking existing coordinators");
+  }
+
+  if (existingCoordinators?.length > 0) {
+    throw new Error("coordinators already exist in this ministry.");
+  }
+
+  // Insert new coordinators
+  const { error: insertError } = await supabase
+    .from("ministry_coordinators")
+    .insert(coordinatorsData);
+
+  if (insertError) {
+    throw new Error("Error assigning coordinators");
+  }
+};
+
+export const removeCoordinator = async ({ ministryId, coordinator_id }) => {
+  const { error } = await supabase
+    .from("ministry_coordinators")
+    .delete()
+    .eq("id", coordinator_id)
+    .eq("ministry_id", ministryId);
+
+  if (error) {
+    console.error("Error deleting coordinator:", error.message);
+    throw new Error(error.message);
+  }
+};
+
 /**
  * Create a new ministry.
  * @param {Object} ministry - The ministry object (name and description).
  * @returns {Promise<Object>} Response containing data or error.
  */
-export const createMinistry = async (ministry) => {
+
+export const createMinistry = async ({
+  coordinators,
+  ministry_name,
+  ministry_description,
+}) => {
   const { data, error } = await supabase
     .from("ministries")
     .insert([
       {
-        ministry_name: ministry.ministry_name,
-        ministry_description: ministry.ministry_description,
+        ministry_name,
+        ministry_description,
       },
     ])
     .select("id")
@@ -60,20 +175,14 @@ export const createMinistry = async (ministry) => {
   if (error) {
     throw new Error(error.message);
   }
-  return data;
+  // return data;
 
-  // const coordinators = ministry.coordinators.map((coordinator) => ({
-  //   ministry_id: data.id,
-  //   coordinator_id: coordinator,
-  // }));
+  const coordinatorsData = coordinators.map((coordinator) => ({
+    ministry_id: data.id,
+    coordinator_id: coordinator,
+  }));
 
-  // const { error: coordinatorError } = await supabase
-  //   .from("ministry_coordinators")
-  //   .insert(coordinators);
-
-  // if (coordinatorError) {
-  //   throw new Error("Error assigning coordinators", coordinatorError.message);
-  // }
+  addCoordinators({ ministryId: data.id, coordinatorsData });
 };
 
 /**
@@ -84,46 +193,78 @@ export const createMinistry = async (ministry) => {
  */
 export const editMinistry = async (updatedValues) => {
   // Destructure the updatedValues object to extract necessary fields
-  const { ministryId, ministry_name, ministry_description } = updatedValues;
+  const { coordinators, ministryId } = updatedValues;
   // Perform the update query using destructured values
+  // const { data, error } = await supabase
+  //   .from("ministries")
+  //   .update({
+  //     ministry_name, // Update ministry_name field
+  //     ministry_description, // Update ministry_description field
+  //   })
+  //   .eq("id", ministryId); // Use ministryId as the primary key for the update
+
+  // if (error) {
+  //   console.error("Error updating ministry:", error.message);
+  //   throw new Error(error.message); // Handle the error appropriately
+  // }
+
+  const { error: deleteCoordinatorError } = await supabase
+    .from("ministry_coordinators")
+    .delete()
+    .eq("ministry_id", ministryId);
+
+  if (deleteCoordinatorError) {
+    throw new Error(
+      "Error deleting coordinators!",
+      deleteCoordinatorError.message
+    );
+  }
+  const coordinatorInsert = coordinators.map((coordinator) => ({
+    ministry_id: ministryId,
+    coordinator_id: coordinator,
+  }));
+
+  const { error: coordinatorError } = await supabase
+    .from("ministry_coordinators")
+    .insert(coordinatorInsert);
+
+  if (coordinatorError) {
+    throw new Error(coordinatorError.message);
+  }
+};
+
+export const updateMinistry = async (updatedValues) => {
+  // Destructure the updatedValues object to extract necessary fields
+  const { ministryId, ministry_name, ministry_description } = updatedValues;
+
+  if (!ministryId) {
+    throw new Error("Ministry ID is required");
+  }
+
+  // Create an update object with only the fields that are provided
+  const updateData = {};
+  if (ministry_name !== undefined) updateData.ministry_name = ministry_name;
+  if (ministry_description !== undefined)
+    updateData.ministry_description = ministry_description;
+
+  // Only perform the update if there are fields to update
+  if (Object.keys(updateData).length === 0) {
+    return null;
+  }
+
+  // Perform the update query
   const { data, error } = await supabase
     .from("ministries")
-    .update({
-      ministry_name, // Update ministry_name field
-      ministry_description, // Update ministry_description field
-    })
-    .eq("id", ministryId); // Use ministryId as the primary key for the update
+    .update(updateData)
+    .eq("id", ministryId)
+    .select();
 
   if (error) {
     console.error("Error updating ministry:", error.message);
-    throw new Error(error.message); // Handle the error appropriately
+    throw new Error(error.message);
   }
 
-  // const { error: deleteCoordinatorError } = await supabase
-  //   .from("ministry_coordinators")
-  //   .delete()
-  //   .eq("ministry_id", ministryId);
-
-  // if (deleteCoordinatorError) {
-  //   throw new Error(
-  //     "Error deleting coordinators!",
-  //     deleteCoordinatorError.message
-  //   );
-  // }
-  // const coordinatorInsert = coordinators.map((coordinator) => ({
-  //   ministry_id: ministryId,
-  //   coordinator_id: coordinator,
-  // }));
-
-  //   const { error: coordinatorError } = await supabase
-  //   .from("ministry_coordinators")
-  //   .insert(coordinatorInsert);
-
-  // if (coordinatorError) {
-  //   throw new Error(coordinatorError.message);
-  // }
-
-  return data; // Return the updated data
+  return data;
 };
 
 /**
@@ -132,7 +273,11 @@ export const editMinistry = async (updatedValues) => {
  * @returns {Promise<Object>} Response containing data or error.
  */
 export const deleteMinistry = async (id) => {
-  return await supabase.from("ministries").delete().eq("id", id);
+  const { error } = await supabase.from("ministries").delete().eq("id", id);
+
+  if (error) {
+    throw new Error("Error Deleting Ministry", error);
+  }
 };
 
 export const fetchMinistryAssignedUsers = async (ministryId) => {

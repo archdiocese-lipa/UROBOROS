@@ -138,7 +138,9 @@ const CommentDetails = ({ announcement_id, comment, columnName }) => {
                 </button>
               </div>
             </div>
-            <div className="text-accent">{comment.comment_content}</div>
+            <div className="break-all text-accent">
+              {comment.comment_content}
+            </div>
 
             <div className="flex items-center">
               <TriggerLikeIcon

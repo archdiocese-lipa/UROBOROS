@@ -1,59 +1,57 @@
-import Loading from "@/components/Loading";
-import CreateGroup from "@/components/Ministry/CreateGroup";
-import MinistryCard from "@/components/Ministry/MinistryCard";
-import { Description, Title } from "@/components/Title";
-// import { ROLES } from "@/constants/roles";
-// import { useUser } from "@/context/useUser";
-import useMinistry from "@/hooks/useMinistry";
-// import useRoleSwitcher from "@/hooks/useRoleSwitcher";
+import { lazy, Suspense } from "react";
+import { ROLES } from "@/constants/roles";
+import { useUser } from "@/context/useUser";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Lazy load components
+const AdminViewMinistry = lazy(
+  () => import("@/components/Ministry/AdminViewMinistry")
+);
+const CoordinatorViewMinistry = lazy(
+  () => import("@/components/Ministry/CoordinatorViewMinistry")
+);
+
+const ROLE_COMPONENTS = {
+  [ROLES[0]]: CoordinatorViewMinistry,
+  [ROLES[4]]: AdminViewMinistry,
+  [ROLES[1]]: CoordinatorViewMinistry, // Volunteer
+  [ROLES[2]]: CoordinatorViewMinistry, // Parishioner
+  [ROLES[3]]: CoordinatorViewMinistry, // Co-parent
+};
+
+const LoadingFallback = () => (
+  <div className="space-y-4 p-4">
+    <Skeleton className="h-8 w-full" />
+    <Skeleton className="h-32 w-full" />
+  </div>
+);
+
+const UnauthorizedAccess = () => (
+  <div className="flex h-[50vh] items-center justify-center">
+    <p className="text-muted-foreground text-lg">
+      {`You don't have permission to access this page`}
+    </p>
+  </div>
+);
 
 const Ministries = () => {
-  // const { temporaryRole } = useRoleSwitcher();
-  // const { userData } = useUser();
-  const { ministries, ministryLoading } = useMinistry({
-    // userId: userData?.id,
-    // temporaryRole,
-  });
+  const { userData } = useUser();
+  const role = userData?.role;
+
+  if (!userData) {
+    return <LoadingFallback />;
+  }
+
+  const RoleComponent = ROLE_COMPONENTS[role];
+
+  if (!RoleComponent) {
+    return <UnauthorizedAccess />;
+  }
 
   return (
-    <div className="relative flex h-full flex-col gap-y-5">
-      <div className="fixed bottom-20 right-7 z-10 md:bottom-10">
-        <CreateGroup />
-      </div>
-
-      <div>
-        <Title>Ministry Management</Title>
-        <Description>Manage groups within your ministry.</Description>{" "}
-      </div>
-
-      {/* Render loading state while fetching data */}
-      {ministryLoading ? (
-        <Loading />
-      ) : (
-        <div className="no-scrollbar grid h-full w-full gap-4 overflow-scroll p-2 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-4">
-          {/* Check if ministries exist after loading */}
-          {ministries?.length === 0 ? (
-            <p>No groups have been created yet.</p>
-          ) : (
-            // <p>
-            //   {temporaryRole === ROLES[4]
-            //     ? "No groups have been created yet."
-            //     : "No assigned group yet."}
-            // </p>
-            ministries?.map((ministry) => (
-              <MinistryCard
-                key={ministry.id}
-                coordinators={ministry.ministry_coordinators}
-                ministryId={ministry.id}
-                title={ministry.ministry_name}
-                description={ministry.ministry_description}
-                createdDate={ministry.created_at}
-              />
-            ))
-          )}
-        </div>
-      )}
-    </div>
+    <Suspense fallback={<LoadingFallback />}>
+      <RoleComponent />
+    </Suspense>
   );
 };
 

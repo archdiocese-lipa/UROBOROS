@@ -22,8 +22,6 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 
-import ReactSelect from "react-select";
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -75,6 +73,7 @@ import useRoleSwitcher from "@/hooks/useRoleSwitcher";
 import { ROLES } from "@/constants/roles";
 import AddExistingRecord from "./AddExistingRecord";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import CustomReactSelect from "../CustomReactSelect";
 
 const ScheduleDetails = () => {
   const [qrCode, setQRCode] = useState(null);
@@ -527,8 +526,7 @@ const ScheduleDetails = () => {
                       <FormItem>
                         <FormLabel>Assign Volunteer</FormLabel>
                         <FormControl>
-                          <ReactSelect
-                            isMulti
+                          <CustomReactSelect
                             options={volunteerOptions}
                             onChange={(selectedOptions) => {
                               field.onChange(
@@ -705,8 +703,8 @@ const ScheduleDetails = () => {
           );
 
           const applicantName = walkInMainApplicant
-            ? `${walkInMainApplicant.first_name} ${walkInMainApplicant.last_name} Family`
-            : `Added by ${mainApplicant.first_name} ${mainApplicant.last_name} `;
+            ? `${walkInMainApplicant?.first_name} ${walkInMainApplicant?.last_name} Family`
+            : `Added by ${mainApplicant?.first_name} ${mainApplicant?.last_name} `;
 
           return (
             <Card className="p-2" key={i}>

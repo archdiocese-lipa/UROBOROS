@@ -9,51 +9,47 @@ import { supabase } from "./supabaseClient";
  * @param {Object} params.announcementData - The data for the announcement.
  * @param {string} params.announcementData.title - The title of the announcement.
  * @param {string} params.announcementData.content - The content of the announcement.
- * @param {string} params.announcementData.visibility - The visibility of the announcement (e.g., 'public').
- * @param {File} [params.announcementData.file] - The file to be uploaded (optional).
- * @param {string[]} params.announcementData.ministry - Array of ministry IDs to associate with the announcement.
+ * @param {FileList} [params.announcementData.files] - The file to be uploaded (optional).
  * @param {string} params.user_id - The ID of the user creating the announcement.
  *
  * @throws {Error} If there is an error during the file upload, announcement creation, or ministry association.
  */
-export const createAnnouncements = async ({ announcementData, user_id }) => {
-  let filepath = "";
-  let fileName = "";
+export const createAnnouncements = async ({ data, userId, groupId }) => {
+  const fileData = [];
 
-  if (announcementData.file) {
-    // Gets the file name and file extension
-    const fileNameWihoutExt = announcementData.file.name.split(".")[0];
-    const fileExt = announcementData.file.name.split(".")[1];
-    // Sets the file name using the date and the file name
-    fileName = `${fileNameWihoutExt}${Date.now()}.${fileExt}`;
-    const bucketName = "Uroboros";
+  await Promise.all(
+    data.files.map(async (file) => {
+      const fileName = `${file.name.split(".")[0]}-${Date.now()}`;
+      const fileExt = file.name.split(".")[1];
 
-    // Upload file in the supabase storage
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from(bucketName)
-      .upload(`announcement/${fileName}`, announcementData.file);
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("Uroboros")
+        .upload(`announcement/${fileName}.${fileExt}`, file);
 
-    if (uploadError) {
-      throw new Error(`Error uploading file: ${uploadError.message}`);
-    }
+      if (uploadError) {
+        throw new Error(`Error uploading file: ${uploadError.message}`);
+      }
 
-    filepath = uploadData.path;
-  }
+      fileData.push({
+        url: uploadData.path,
+        name: fileName,
+        type: file.type,
+      });
+    })
+  );
 
-  const { data, error } = await supabase
+  const { data: fetchData, error } = await supabase
     .from("announcement")
     .insert([
       {
-        title: announcementData.title,
-        content: announcementData.content,
-        visibility: announcementData.visibility,
-        user_id,
-        file_name: fileName,
-        file_type: announcementData.file.type,
-        file_path: filepath,
+        title: data.title,
+        content: data.content,
+        visibility: groupId ? "private" : "public",
+        group_id: groupId ?? undefined,
+        user_id: userId,
       },
     ])
-    .select("*")
+    .select("id")
     .single();
 
   if (error) {
@@ -61,24 +57,21 @@ export const createAnnouncements = async ({ announcementData, user_id }) => {
     throw error;
   }
 
-  //connect ministry Ids to announcement Id in backend
-  const insertPromises = announcementData.ministry.map(async (ministry_id) => {
-    const { error: insertError } = await supabase
-      .from("announcement_ministries")
-      .insert([
-        {
-          announcement_id: data.id,
-          ministry_id,
-        },
-      ]);
+  // Ensure we wait for all file insertions
+  await Promise.all(
+    fileData.map(async (file) => {
+      const { error: insertError } = await supabase
+        .from("announcement_files")
+        .insert([{ announcement_id: fetchData.id, ...file }]);
 
-    if (insertError) {
-      console.error("Error inserting into Announcement_Groups:", insertError);
-      throw insertError;
-    }
-  });
+      if (insertError) {
+        console.error("Error inserting into announcement_files:", insertError);
+        throw insertError;
+      }
+    })
+  );
 
-  await Promise.all(insertPromises);
+  return fetchData;
 };
 
 /**
@@ -98,107 +91,46 @@ export const createAnnouncements = async ({ announcementData, user_id }) => {
  * @returns {number} return.currentPage - The current page number.
  *
  * @throws {Error} If there is an error while fetching announcements.
+ *
+ *
  */
-export const fetchAnnouncements = async (page, pageSize, ministry_id) => {
+
+export const fetchAnnouncementsV2 = async (page, pageSize, groupId) => {
   try {
-  
-    const inquery = {};
+    const select =
+      "*, users(first_name,last_name), announcement_files(url,name,type)";
+    const order = [{ column: "created_at", ascending: false }];
+
+    // Initialize query object
     const query = {};
-    const select = "*,announcement(*, users(first_name,last_name))";
-    const filters = {};
 
-    // Check if ministry_id is an array
-    if (Array.isArray(ministry_id)) {
-      inquery.ministry_id = ministry_id;
-      filters.eq = { column: "visibility", value: "public" };
+    if (groupId) {
+      query.group_id = groupId;
     } else {
-      query.ministry_id = ministry_id;
+      query.visibility = "public";
     }
 
-    const order = [
-      {
-        column: "created_at",
-        ascending: false,
-      },
-    ];
-
-    // Fetch and paginate the public announcements when ministry_id is an array
-    let publicData = [];
-    let publicPagination = { totalItems: 0, totalPages: 0, currentPage: 1 };
-
-    if (Array.isArray(ministry_id)) {
-      // Paginate the public announcements 
-      publicPagination = await paginate({
-        key: "announcement",
-        page,
-        pageSize,
-        query: { visibility: "public" },
-        order,
-        select: "*, users(first_name,last_name)",
-      });
-
-      publicData = publicPagination.items || [];
-    }
-
-    // Paginate announcement_ministries 
+    // Ensure `paginate` has valid arguments
     const paginatedData = await paginate({
-      key: "announcement_ministries",
+      key: "announcement",
       page,
       pageSize,
       query,
       order,
       select,
-      inquery,
-      filters: {},
+      filters: {}, // Ensure filters are properly defined
     });
 
-    const paginatedDataItems = paginatedData.items.map(
-      (item) => item.announcement
-    );
+    paginatedData.items = paginatedData.items.map((item) => ({
+      ...item,
+      announcement_files: item.announcement_files.map((file) => ({
+        ...file,
+        url: supabase.storage.from("Uroboros").getPublicUrl(file.url).data
+          .publicUrl,
+      })),
+    }));
 
-    // Merge both paginated results (public + ministry-specific announcements)
-    const allAnnouncements = [...publicData, ...paginatedDataItems];
-
-    // Remove duplicates based on announcement ID
-    const uniqueAnnouncements = allAnnouncements.reduce((acc, obj) => {
-      if (!acc.some((existingObj) => existingObj.id === obj.id)) {
-        acc.push(obj);
-      }
-      return acc;
-    }, []);
-
- 
-    //sort by date
-    const sortedDates = uniqueAnnouncements.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-    paginatedData.items = sortedDates;
-
-  //get files associated
-    const announcementsWithURL = await Promise.all(
-      paginatedData.items.map(async (item) => {
-        const { data: urlData, error: urlError } = await supabase.storage
-          .from("Uroboros")
-          .getPublicUrl(item.file_path);
-
-        if (urlError) {
-          throw new Error(`Error retrieving public URL: ${urlError.message}`);
-        }
-
-        return { ...item, file_url: urlData.publicUrl };
-      })
-    );
-
-    // Return the merged data with file URLs and pagination details
-    return {
-      items: announcementsWithURL,
-      pageSize: paginatedData.pageSize || publicPagination.pageSize,
-      nextPage: paginatedData.nextPage || publicPagination.nextPage,
-      totalItems: publicPagination.totalItems + paginatedData.totalItems,
-      totalPages: Math.ceil(
-        (publicPagination.totalItems + paginatedData.totalItems) / pageSize
-      ),
-      currentPage: paginatedData.currentPage || publicPagination.currentPage,
-    };
+    return paginatedData;
   } catch (error) {
     console.error("Error fetching announcements:", error.message);
     throw new Error(
@@ -207,6 +139,113 @@ export const fetchAnnouncements = async (page, pageSize, ministry_id) => {
     );
   }
 };
+
+// export const fetchAnnouncements = async (page, pageSize, group_id) => {
+//   try {
+//     const inquery = {};
+//     const query = {};
+//     const select = "*,announcement(*, users(first_name,last_name))";
+//     const filters = {};
+
+//     if (group_id) {
+//       filters.eq = { column: "group_id", value: group_id };
+//     } else {
+//       query.ministry_id = ministry_id;
+//     }
+
+//     const order = [
+//       {
+//         column: "created_at",
+//         ascending: false,
+//       },
+//     ];
+
+//     // Fetch and paginate the public announcements when ministry_id is an array
+//     let publicData = [];
+//     let publicPagination = { totalItems: 0, totalPages: 0, currentPage: 1 };
+
+//     if (Array.isArray(ministry_id)) {
+//       // Paginate the public announcements
+//       publicPagination = await paginate({
+//         key: "announcement",
+//         page,
+//         pageSize,
+//         query: { visibility: "public" },
+//         order,
+//         select: "*, users(first_name,last_name)",
+//       });
+
+//       publicData = publicPagination.items || [];
+//     }
+
+//     // Paginate announcement_ministries
+//     const paginatedData = await paginate({
+//       key: "announcement_ministries",
+//       page,
+//       pageSize,
+//       query,
+//       order,
+//       select,
+//       inquery,
+//       filters: {},
+//     });
+
+//     const paginatedDataItems = paginatedData.items.map(
+//       (item) => item.announcement
+//     );
+
+//     // Merge both paginated results (public + ministry-specific announcements)
+//     const allAnnouncements = [...publicData, ...paginatedDataItems];
+
+//     // Remove duplicates based on announcement ID
+//     const uniqueAnnouncements = allAnnouncements.reduce((acc, obj) => {
+//       if (!acc.some((existingObj) => existingObj.id === obj.id)) {
+//         acc.push(obj);
+//       }
+//       return acc;
+//     }, []);
+
+//     //sort by date
+//     const sortedDates = uniqueAnnouncements.sort(
+//       (a, b) => new Date(b.created_at) - new Date(a.created_at)
+//     );
+
+//     paginatedData.items = sortedDates;
+
+//     //get files associated
+//     const announcementsWithURL = await Promise.all(
+//       paginatedData.items.map(async (item) => {
+//         const { data: urlData, error: urlError } = await supabase.storage
+//           .from("Uroboros")
+//           .getPublicUrl(item.file_path);
+
+//         if (urlError) {
+//           throw new Error(`Error retrieving public URL: ${urlError.message}`);
+//         }
+
+//         return { ...item, file_url: urlData.publicUrl };
+//       })
+//     );
+
+//     // Return the merged data with file URLs and pagination details
+//     return {
+//       items: announcementsWithURL,
+//       pageSize: paginatedData.pageSize || publicPagination.pageSize,
+//       nextPage: paginatedData.nextPage || publicPagination.nextPage,
+//       totalItems: publicPagination.totalItems + paginatedData.totalItems,
+//       totalPages: Math.ceil(
+//         (publicPagination.totalItems + paginatedData.totalItems) / pageSize
+//       ),
+//       currentPage: paginatedData.currentPage || publicPagination.currentPage,
+//     };
+//   } catch (error) {
+//     console.error("Error fetching announcements:", error.message);
+//     throw new Error(
+//       error.message ||
+//         "An unexpected error occurred while fetching announcements."
+//     );
+//   }
+// };
 
 /**
  * Edits an existing announcement. Optionally uploads a new file, deletes the old file, and updates ministry associations.
@@ -224,93 +263,119 @@ export const fetchAnnouncements = async (page, pageSize, ministry_id) => {
  *
  * @throws {Error} If there is an error during the file upload, announcement update, or ministry association update.
  */
-export const editAnnouncement = async (announcementData) => {
-  let filepath = "";
-  let fileName = "";
-  let update = {
-    title: announcementData.title,
-    content: announcementData.content,
-    visibility: announcementData.visibility,
-    ministry_id: null,
-  };
-
-  // Check if the new file is provided and delete the old file if it exists
-  if (announcementData.file) {
-    const { error: deleteError } = await supabase.storage
-      .from("Uroboros")
-      .remove([announcementData.filePath]);
-
-    if (deleteError) {
-      throw new Error(`Error deleting file: ${deleteError.message}`);
-    }
-
-    // Generate a new file name and upload the new file
-    const fileNameWithoutExt = announcementData.file.name.split(".")[0];
-    const fileExt = announcementData.file.name.split(".")[1];
-    fileName = `${fileNameWithoutExt}${Date.now()}.${fileExt}`;
-    const bucketName = "Uroboros";
-
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from(bucketName)
-      .upload(`announcement/${fileName}`, announcementData.file);
-
-    if (uploadError) {
-      throw new Error(`Error uploading file: ${uploadError.message}`);
-    }
-
-    filepath = uploadData.path;
-    update = {
-      ...update,
-      file_name: fileName,
-      file_type: announcementData.file.type,
-      file_path: filepath,
-    };
-  }
-
-  // If ministry Id is availbale delete previous connections and create new connections using the ministry Ids
-  if (announcementData.ministry.length > 0) {
-    const { error: deleteError } = await supabase
-      .from("announcement_ministries")
-      .delete()
-      .eq("announcement_id", announcementData.announcement_id);
-
-    if (deleteError) {
-      throw new Error(deleteError.message);
-    }
-    const insertPromises = announcementData.ministry.map(async (ministry) => {
-      const { error } = await supabase.from("announcement_ministries").insert([
-        {
-          announcement_id: announcementData.announcement_id,
-          ministry_id: ministry,
-        },
-      ]);
-
-      if (error) {
-        throw new Error(error.message);
-      }
-    });
-    await Promise.all(insertPromises);
-  }
-  // If visibility is public delete connection of the announcement
-  if (announcementData.visibility === "public") {
-    const { error } = await supabase
-      .from("announcement_ministries")
-      .delete()
-      .eq("announcement_id", announcementData.announcement_id);
-
-    if (error) {
-      throw new Error(error.message);
-    }
-  }
-  const { error } = await supabase
-    .from("announcement")
-    .update(update)
-    .eq("id", announcementData.announcement_id);
+export const editAnnouncement = async ({ data, announcementId }) => {
+  const { data: existingFiles, error } = await supabase
+    .from("announcement_files")
+    .select("id,name,url")
+    .eq("announcement_id", announcementId);
 
   if (error) {
-    throw new Error(error.message);
+    throw new Error("Error checking existing files.");
   }
+
+  // Delete files that are not in the new data.files array
+  const filesToDelete = existingFiles.filter(
+    (existingFile) =>
+      !data.files.some((file) => file.name === existingFile.name)
+  );
+
+  if (filesToDelete.length > 0) {
+    const fileIdsToDelete = filesToDelete.map((file) => file.id);
+    const filePathToDelete = filesToDelete.map((file) => file.url);
+
+    const { error: storageError } = await supabase.storage
+      .from("Uroboros")
+      .remove(filePathToDelete);
+
+    if (storageError) {
+      console.error(
+        `Error deleting file from storage: ${filesToDelete[0].url}`,
+        storageError
+      );
+    }
+
+    const { error: deleteError } = await supabase
+      .from("announcement_files")
+      .delete()
+      .in("id", fileIdsToDelete);
+
+    if (deleteError) {
+      throw new Error(`Error deleting files: ${deleteError.message}`);
+    }
+  }
+
+  // Upload new or updated files using their original name
+  const fileData = await Promise.all(
+    data.files.map(async (file) => {
+      const fileName = file.name; // using the original name
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("Uroboros")
+        .upload(`announcement/${fileName}`, file, { upsert: true });
+
+      if (uploadError) {
+        throw new Error(`Error uploading file: ${uploadError.message}`);
+      }
+
+      return {
+        url: uploadData.path,
+        name: fileName,
+        type: file.type,
+      };
+    })
+  );
+
+  // Update announcement details
+  const { error: updateError } = await supabase
+    .from("announcement")
+    .update({
+      title: data.title,
+      content: data.content,
+    })
+    .eq("id", announcementId);
+
+  if (updateError) {
+    throw new Error("Error updating announcement.");
+  }
+
+  // Upsert file data with conflict resolution on announcement_id and name
+  await Promise.all(
+    fileData.map(async (file) => {
+      // Check if the file already exists
+      const { data: existingFile, error: selectError } = await supabase
+        .from("announcement_files")
+        .select("id")
+        .eq("announcement_id", announcementId)
+        .eq("name", file.name)
+        .single(); // Get a single record
+
+      if (selectError && selectError.code !== "PGRST116") {
+        console.error("Error checking existing file:", selectError);
+        throw selectError;
+      }
+
+      // If file does NOT exist, insert it
+      if (!existingFile) {
+        const { error: insertError } = await supabase
+          .from("announcement_files")
+          .insert([{ announcement_id: announcementId, ...file }]);
+
+        if (insertError) {
+          // Check if the error is a unique constraint violation
+          if (insertError.code === "23505") {
+            throw new Error("Cannot upload the same image.");
+          }
+          console.error(
+            "Error inserting into announcement_files:",
+            insertError
+          );
+          throw insertError;
+        }
+      }
+    })
+  );
 };
+
 /**
  * Deletes an announcement and its associated file (if a file path is provided).
  * Checks if the announcement exists before deleting it.
@@ -319,13 +384,32 @@ export const editAnnouncement = async (announcementData) => {
  * @param {String} params.annnouncement_id - Id of the announcement to be deleted
  * @param {String} params.filepath - file path of the announcement file to be deleted
  */
+export const deleteAnnouncement = async ({ announcement_id, filePaths }) => {
+  const urls = filePaths.map((publicUrl) => {
+    try {
+      const decodedUrl = decodeURIComponent(publicUrl); // Decode spaces and special characters
+      const urlParts = new URL(decodedUrl);
+      const path = urlParts.pathname.split(
+        "/storage/v1/object/public/Uroboros/"
+      )[1];
 
-export const deleteAnnouncement = async ({ announcement_id, filePath }) => {
+      if (!path) {
+        throw new Error("Invalid file path extracted.");
+      }
+      const decodedPath = decodeURIComponent(path);
+
+      return decodedPath;
+    } catch (error) {
+      console.error("Error extracting path from URL:", error.message);
+      throw error;
+    }
+  });
+
   if (!announcement_id) {
     throw new Error("Announcement ID is missing");
   }
 
-  // Check if the announcement_id exists before attempting the delete operation
+  // Check if announcement exists before deletion
   const { data, error: existenceError } = await supabase
     .from("announcement")
     .select("id")
@@ -334,21 +418,22 @@ export const deleteAnnouncement = async ({ announcement_id, filePath }) => {
 
   if (existenceError) {
     throw new Error(
-      `Error Finding existing announcement: ${existenceError.message}`
+      `Error finding existing announcement: ${existenceError.message}`
     );
   }
 
-  // Proceed with file deletion only if filePath is provided
-  if (filePath) {
+  // Proceed with file deletion only if urls are valid
+  if (urls.length > 0) {
     const { error: storageError } = await supabase.storage
       .from("Uroboros")
-      .remove([filePath]);
+      .remove(urls); // Remove files correctly
 
     if (storageError) {
       throw new Error(`Error deleting file: ${storageError.message}`);
     }
   }
 
+  // Delete the announcement from the database
   const { error: deleteError } = await supabase
     .from("announcement")
     .delete()

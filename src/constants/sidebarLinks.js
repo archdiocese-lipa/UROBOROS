@@ -44,28 +44,34 @@ const COMMON_LINKS = {
 };
 
 export const SIDEBAR_LINKS = Object.freeze({
-  admin: [
+  coordinator: [
     COMMON_LINKS.dashboard,
     COMMON_LINKS.announcements,
     COMMON_LINKS.ministries,
     COMMON_LINKS.schedule,
-    COMMON_LINKS.requests,
   ],
-  volunteer: [COMMON_LINKS.announcements, COMMON_LINKS.schedule],
+  volunteer: [
+    COMMON_LINKS.announcements,
+    COMMON_LINKS.schedule,
+    COMMON_LINKS.ministries,
+  ],
   parishioner: [
     COMMON_LINKS.announcements,
     COMMON_LINKS.events,
     COMMON_LINKS.family,
+    COMMON_LINKS.ministries,
   ],
   coparent: [
     COMMON_LINKS.announcements,
     COMMON_LINKS.events,
     COMMON_LINKS.family,
+    COMMON_LINKS.ministries,
   ],
-  superadmin: [
+  admin: [
     COMMON_LINKS.dashboard,
     COMMON_LINKS.announcements,
     COMMON_LINKS.ministries,
+    COMMON_LINKS.schedule,
     COMMON_LINKS.requests,
   ],
 });

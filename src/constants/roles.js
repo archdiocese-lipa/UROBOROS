@@ -1,1 +1,7 @@
-export const ROLES = Object.freeze(["admin", "volunteer", "parishioner", "coparent","superadmin"]);
+export const ROLES = Object.freeze([
+  "coordinator",
+  "volunteer",
+  "parishioner",
+  "coparent",
+  "admin",
+]);
