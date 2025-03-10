@@ -15,8 +15,8 @@ export const fileTypes = Object.freeze([
     icon: "pdf-fill",
     value: "PDF Document",
   },
-  {
-    icon: "link-fill",
-    value: "Hyperlink",
-  },
+  // {
+  //   icon: "link-fill",
+  //   value: "Hyperlink",
+  // },
 ]);
