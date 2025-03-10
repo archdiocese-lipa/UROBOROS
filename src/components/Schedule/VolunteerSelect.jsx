@@ -125,7 +125,7 @@ const VolunteerSelect = ({
             onChange={setSelectedVolunteer}
             placeholder="Select a Volunteer"
             isClearable
-          />
+        />
           {error && (
             <div className="mt-2 text-sm font-semibold text-red-500">
               {error}

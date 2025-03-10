@@ -163,10 +163,9 @@ const Announcement = ({ announcement, deleteAnnouncementMutation }) => {
       </p>
       <Dialog className="border-none border-transparent">
         <DialogTrigger>
-          {" "}
           <div className="flex w-full gap-2">
-            {announcement.announcement_files[0]?.length > 0 &&
-              announcement.announcement_files[0]?.startsWith("image") &&
+            {announcement.announcement_files.length > 0 &&
+              announcement.announcement_files[0]?.type?.startsWith("image") &&
               announcement.announcement_files.slice(0, 3).map((file, i) => (
                 <div
                   key={i}
@@ -186,39 +185,41 @@ const Announcement = ({ announcement, deleteAnnouncementMutation }) => {
                     src={file.url}
                     alt="file"
                   />
-                  {i === 2 && (
+                  {i === 2 && announcement.announcement_files.length > 3 && (
                     <p className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform text-base font-semibold text-white">
-                      +{announcement.announcement_files.length - 2} more
+                      +{announcement.announcement_files.length - 3} more
                     </p>
                   )}
                 </div>
               ))}
           </div>
         </DialogTrigger>
-        {announcement.announcement_files[0]?.type?.startsWith("video") && (
-          <div className="border border-primary-outline">
-            <video
-              className="h-fit w-full"
-              controls
-              src={announcement.announcement_files[0]?.url}
-            >
-              Your browser does not support the video tag.
-            </video>
-          </div>
-        )}
+        {announcement.announcement_files.length > 0 &&
+          announcement.announcement_files[0]?.type?.startsWith("video") && (
+            <div className="border border-primary-outline">
+              <video
+                className="h-fit w-full"
+                controls
+                src={announcement.announcement_files[0]?.url}
+              >
+                Your browser does not support the video tag.
+              </video>
+            </div>
+          )}
 
-        {announcement.announcement_files[0]?.type?.startsWith(
-          "application"
-        ) && (
-          <a
-            href={announcement.announcement_files[0]?.url}
-            target="_blank"
-            // rel="noopener noreferrer"
-            className="text-blue-500 underline"
-          >
-            {`${announcement.announcement_files[0]?.name}.${announcement.announcement_files[0].type.split("/")[1]}`}
-          </a>
-        )}
+        {announcement.announcement_files.length > 0 &&
+          announcement.announcement_files[0]?.type?.startsWith(
+            "application"
+          ) && (
+            <a
+              href={announcement.announcement_files[0]?.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 underline"
+            >
+              {`${announcement.announcement_files[0]?.name}.${announcement.announcement_files[0].type.split("/")[1]}`}
+            </a>
+          )}
         <DialogContent className="flex h-full w-dvw max-w-none items-center justify-center border-0 bg-transparent">
           <DialogHeader className="sr-only">
             <DialogTitle className="sr-only"></DialogTitle>
@@ -235,6 +236,7 @@ const Announcement = ({ announcement, deleteAnnouncementMutation }) => {
                     <Card className="border-none bg-transparent">
                       <CardContent className="flex aspect-square items-center justify-center bg-transparent bg-contain p-6">
                         <img
+                          className="h-[100dvh] w-full object-contain"
                           src={file.url}
                           alt="an image of announcement object-ccover"
                         />

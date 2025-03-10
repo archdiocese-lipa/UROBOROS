@@ -18,10 +18,6 @@ const useComment = (announcement_id, comment_id) => {
   const addCommentMutation = useMutation({
     mutationFn: addComment,
     onSuccess: (data, { reset, setIsCommenting }) => {
-      // toast({
-      //   title: "Success",
-      //   description: "Comment Added.",
-      // });
       reset();
       setIsCommenting(false);
     },
@@ -61,12 +57,7 @@ const useComment = (announcement_id, comment_id) => {
 
   const deleteCommentMutation = useMutation({
     mutationFn: deleteComment,
-    // onSuccess: () => {
-    //   toast({
-    //     title: "Success",
-    //     description: "Comment Deleted.",
-    //   });
-    // },
+
     onError: (error) => {
       toast({
         title: "Something went wrong",
@@ -84,12 +75,7 @@ const useComment = (announcement_id, comment_id) => {
   });
   const updateCommentMutation = useMutation({
     mutationFn: updateComment,
-    // onSuccess: () => {
-    //   toast({
-    //     title: "Success",
-    //     description: "Comment Updated.",
-    //   });
-    // },
+ 
     onError: (error) => {
       toast({
         title: "Something went wrong",
