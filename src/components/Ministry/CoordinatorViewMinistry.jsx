@@ -14,6 +14,14 @@ import { useUser } from "@/context/useUser";
 import useGroups from "@/hooks/useGroups";
 import ConfigureGroup from "./ConfigureGroup";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import GroupAnnouncements from "./GroupAnnouncements";
 import GroupMembers from "./GroupMembers";
 
@@ -115,7 +123,7 @@ MinistryItem.propTypes = {
   onSelectGroup: PropTypes.func.isRequired,
 };
 
-//  MinistryGroups accept pre-fetched groups
+// MinistryGroups component update for responsive design
 const MinistryGroups = ({
   ministryId,
   selectedGroup,
@@ -148,20 +156,71 @@ const MinistryGroups = ({
     <div className="px-4 pb-4">
       <div className="space-y-1 pl-9">
         {groupsData.map((group) => (
-          <div
-            key={group.id}
-            className={`cursor-pointer rounded-lg px-4 py-2 ${
-              selectedGroup === group.id ? "bg-primary" : "hover:bg-primary/5"
-            }`}
-            onClick={() => onSelectGroup(group)}
-          >
-            <span
-              className={
-                selectedGroup === group.id ? "font-bold text-primary-text" : ""
-              }
+          <div key={group.id}>
+            {/* Mobile View using Sheet */}
+            <div className="lg:hidden">
+              <Sheet>
+                <SheetTrigger
+                  className={`w-full cursor-pointer rounded-lg px-4 py-2 text-left ${
+                    selectedGroup === group.id
+                      ? "bg-primary font-bold text-primary-text"
+                      : "hover:bg-primary/5"
+                  }`}
+                >
+                  {group.name}
+                </SheetTrigger>
+                <SheetContent className="w-full">
+                  <SheetHeader>
+                    <SheetTitle>{group.name}</SheetTitle>
+                    <SheetDescription>{group.description}</SheetDescription>
+                  </SheetHeader>
+
+                  {/* Mobile Tabs */}
+                  <Tabs defaultValue="announcement" className="h-full">
+                    <TabsList className="mb-4 grid w-full grid-cols-2">
+                      <TabsTrigger value="announcement">
+                        Announcements
+                      </TabsTrigger>
+                      <TabsTrigger value="members">Members</TabsTrigger>
+                    </TabsList>
+                    <TabsContent
+                      value="announcement"
+                      className="no-scrollbar h-[calc(100%-60px)] overflow-y-auto"
+                    >
+                      <GroupAnnouncements groupId={group.id} />
+                    </TabsContent>
+
+                    <TabsContent
+                      value="members"
+                      className="no-scrollbar h-[calc(100%-60px)] overflow-y-auto"
+                    >
+                      <GroupMembers
+                        ministryId={ministryId}
+                        groupId={group.id}
+                      />
+                    </TabsContent>
+                  </Tabs>
+                </SheetContent>
+              </Sheet>
+            </div>
+
+            {/* Desktop View */}
+            <div
+              className={`hidden cursor-pointer rounded-lg px-4 py-2 lg:block ${
+                selectedGroup === group.id ? "bg-primary" : "hover:bg-primary/5"
+              }`}
+              onClick={() => onSelectGroup(group)}
             >
-              {group.name}
-            </span>
+              <span
+                className={
+                  selectedGroup === group.id
+                    ? "font-bold text-primary-text"
+                    : ""
+                }
+              >
+                {group.name}
+              </span>
+            </div>
           </div>
         ))}
       </div>
@@ -223,24 +282,74 @@ const MemberMinistryItem = ({
         <div className="px-4 pb-4">
           <div className="space-y-1 pl-9">
             {ministry.groups.map((group) => (
-              <div
-                key={group.group_id}
-                className={`cursor-pointer rounded-lg px-4 py-2 ${
-                  selectedGroup === group.group_id
-                    ? "bg-primary"
-                    : "hover:bg-primary/5"
-                }`}
-                onClick={() => onSelectGroup(group)}
-              >
-                <span
-                  className={
+              <div key={group.group_id}>
+                {/* Mobile View using Sheet */}
+                <div className="lg:hidden">
+                  <Sheet>
+                    <SheetTrigger
+                      className={`w-full cursor-pointer rounded-lg px-4 py-2 text-left ${
+                        selectedGroup === group.group_id
+                          ? "bg-primary font-bold text-primary-text"
+                          : "hover:bg-primary/5"
+                      }`}
+                    >
+                      {group.group_name}
+                    </SheetTrigger>
+                    <SheetContent className="w-full">
+                      <SheetHeader>
+                        <SheetTitle>{group.group_name}</SheetTitle>
+                        <SheetDescription>{group.description}</SheetDescription>
+                      </SheetHeader>
+
+                      {/* Mobile Tabs */}
+                      <Tabs defaultValue="announcement" className="h-full">
+                        <TabsList className="mb-4 grid w-full grid-cols-2">
+                          <TabsTrigger value="announcement">
+                            Announcements
+                          </TabsTrigger>
+                          <TabsTrigger value="members">Members</TabsTrigger>
+                        </TabsList>
+
+                        <TabsContent
+                          value="announcement"
+                          className="no-scrollbar h-[calc(100%-60px)] overflow-y-auto"
+                        >
+                          <GroupAnnouncements groupId={group.group_id} />
+                        </TabsContent>
+
+                        <TabsContent
+                          value="members"
+                          className="no-scrollbar h-[calc(100%-60px)] overflow-y-auto"
+                        >
+                          <GroupMembers
+                            ministryId={ministry.ministry_id}
+                            groupId={group.group_id}
+                          />
+                        </TabsContent>
+                      </Tabs>
+                    </SheetContent>
+                  </Sheet>
+                </div>
+
+                {/* Desktop View */}
+                <div
+                  className={`hidden cursor-pointer rounded-lg px-4 py-2 lg:block ${
                     selectedGroup === group.group_id
-                      ? "font-bold text-primary-text"
-                      : ""
-                  }
+                      ? "bg-primary"
+                      : "hover:bg-primary/5"
+                  }`}
+                  onClick={() => onSelectGroup(group)}
                 >
-                  {group.group_name}
-                </span>
+                  <span
+                    className={
+                      selectedGroup === group.group_id
+                        ? "font-bold text-primary-text"
+                        : ""
+                    }
+                  >
+                    {group.group_name}
+                  </span>
+                </div>
               </div>
             ))}
           </div>
@@ -366,7 +475,7 @@ const CoordinatorViewMinistry = () => {
   }, [assignedMinistries, memberGroups, searchParams]);
 
   return (
-    <div className="flex h-full text-primary-text">
+    <div className="flex h-full flex-col text-primary-text lg:flex-row">
       <aside className="w-full overflow-y-auto border-primary-outline/50 lg:max-w-[25rem] lg:border-r">
         <div className="mb-4">
           <div className="px-8 py-4">
@@ -492,6 +601,11 @@ const CoordinatorViewMinistry = () => {
           </div>
         )}
       </main>
+
+      {/* On mobile, show a message to select a group if none selected */}
+      <div className="text-muted-foreground flex-1 py-8 text-center lg:hidden">
+        {!selectedGroup && "Select a ministry and group from above"}
+      </div>
     </div>
   );
 };

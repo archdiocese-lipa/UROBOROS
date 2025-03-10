@@ -158,7 +158,7 @@ const Announcement = ({ announcement, deleteAnnouncementMutation }) => {
           </Popover>
         )}
       </div>
-      <p className="mb-4 whitespace-pre-wrap text-start leading-5 text-accent">
+      <p className="mb-4 whitespace-pre-wrap break-all text-start leading-5 text-accent">
         {announcement.content}
       </p>
       <Dialog className="border-none border-transparent">
