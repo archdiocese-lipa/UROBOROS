@@ -120,12 +120,13 @@ const VolunteerSelect = ({
         </DialogHeader>
         <div>
           <CustomReactSelect
+          isMulti={false}
             options={volunteerOptions}
             value={selectedVolunteer}
             onChange={setSelectedVolunteer}
             placeholder="Select a Volunteer"
             isClearable
-          />
+        />
           {error && (
             <div className="mt-2 text-sm font-semibold text-red-500">
               {error}

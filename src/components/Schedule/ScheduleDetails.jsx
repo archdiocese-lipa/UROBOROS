@@ -70,7 +70,6 @@ import { Search } from "@/assets/icons/icons";
 import { useDebounce } from "@/hooks/useDebounce";
 import AttendanceTable from "./AttendanceTable";
 import useRoleSwitcher from "@/hooks/useRoleSwitcher";
-import { ROLES } from "@/constants/roles";
 import AddExistingRecord from "./AddExistingRecord";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import CustomReactSelect from "../CustomReactSelect";
@@ -500,7 +499,7 @@ const ScheduleDetails = () => {
             List of Assigned Volunteer(s)
           </Label>
           <Dialog>
-            {!disableSchedule && temporaryRole === "admin" && (
+            {!disableSchedule && (
               <DialogTrigger>
                 <button className="rounded-md bg-accent p-1 hover:cursor-pointer">
                   <Icon
@@ -553,15 +552,13 @@ const ScheduleDetails = () => {
         {eventvolunteers?.map((volunteer, i) => (
           <div key={i} className="flex gap-2">
             <p>{`${i + 1}.`}</p>
-            {temporaryRole === ROLES[0] && (
-              <p
-                className={cn("text-primary-text", {
-                  "line-through": volunteer.replaced === true,
-                })}
-              >{`${volunteer.users.first_name.toFirstUpperCase()} ${volunteer.users.last_name.toFirstUpperCase()} `}</p>
-            )}
+            <p
+              className={cn("text-primary-text", {
+                "line-through": volunteer.replaced === true,
+              })}
+            >{`${volunteer.users.first_name.toFirstUpperCase()} ${volunteer.users.last_name.toFirstUpperCase()} `}</p>
 
-            {temporaryRole !== ROLES[0] && volunteer.replaced === false && (
+            {volunteer.replaced === false && (
               <p
                 className={cn("text-primary-text", {
                   "line-through": volunteer.replaced === true,
@@ -575,7 +572,7 @@ const ScheduleDetails = () => {
             )}
 
             <div className="flex items-center justify-center gap-2">
-              {!disableSchedule && temporaryRole === "admin" && (
+              {!disableSchedule && (
                 <VolunteerSelect
                   // setVolunteerDialogOpen={setVolunteerDialogOpen}
                   currentVolunteer={volunteer}
