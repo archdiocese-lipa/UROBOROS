@@ -71,6 +71,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import AttendanceTable from "./AttendanceTable";
 import useRoleSwitcher from "@/hooks/useRoleSwitcher";
 import AddExistingRecord from "./AddExistingRecord";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import CustomReactSelect from "../CustomReactSelect";
 
 const ScheduleDetails = () => {
@@ -274,11 +275,11 @@ const ScheduleDetails = () => {
 
     let offset = 0;
     if (userData.role === "volunteer") {
-      // 2 hours ahead for volunteer
-      offset = 2 * 60 * 60 * 1000;
-    } else if (userData.role === "admin") {
-      // 24 hours ahead for admin
+      // 24 hours ahead for volunteer
       offset = 24 * 60 * 60 * 1000;
+    } else if (userData.role === "admin") {
+      // 7 days ahead for admin
+      offset = 7 * 24 * 60 * 60 * 1000;
     }
 
     const adjustedEventDateTime = new Date(eventDateTime.getTime() + offset);
@@ -666,7 +667,7 @@ const ScheduleDetails = () => {
             <div className="flex justify-between">
               <div className="flex items-center gap-2">
                 <h3 className="text-xl font-semibold text-accent">
-                  Parent(s)/ Guardian(s)
+                  Parent(s) / Guardian(s)
                 </h3>
               </div>
             </div>
@@ -716,14 +717,30 @@ const ScheduleDetails = () => {
                 <div className="flex justify-between">
                   <div className="flex items-center gap-2">
                     <h3 className="text-xl font-semibold text-accent">
-                      Parent(s)/ Guardian(s)
+                      Parent(s) / Guardian(s)
                     </h3>
                     {!disableSchedule && (
-                      <AddAttendee
-                        attendee_type={"parents"}
-                        family_id={family.family_id}
-                        event_id={eventId}
-                      />
+                      <>
+                        <AddAttendee
+                          attendee_type={"parents"}
+                          family_id={family.family_id}
+                          event_id={eventId}
+                        />
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Icon
+                              className="h-5 w-5 text-primary-text"
+                              icon="mingcute:question-line"
+                            />
+                          </PopoverTrigger>
+                          <PopoverContent>
+                            <p>
+                              This button allows you to add a parent or guardian
+                              to this family.
+                            </p>
+                          </PopoverContent>
+                        </Popover>
+                      </>
                     )}
                   </div>
                   <ParentAddLogs family_id={family.family_id} />
@@ -742,11 +759,27 @@ const ScheduleDetails = () => {
                     Children
                   </h3>
                   {!disableSchedule && (
-                    <AddAttendee
-                      attendee_type={"children"}
-                      family_id={family.family_id}
-                      event_id={eventId}
-                    />
+                    <>
+                      <AddAttendee
+                        attendee_type={"children"}
+                        family_id={family.family_id}
+                        event_id={eventId}
+                      />
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Icon
+                            className="h-5 w-5 text-primary-text"
+                            icon="mingcute:question-line"
+                          />
+                        </PopoverTrigger>
+                        <PopoverContent>
+                          <p>
+                            This button allows you to add a child to this
+                            family.
+                          </p>
+                        </PopoverContent>
+                      </Popover>
+                    </>
                   )}
                 </div>
 

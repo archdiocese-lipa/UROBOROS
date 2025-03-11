@@ -63,10 +63,11 @@ const CreateEvent = ({
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { createEventMutation, quickAccessEvents } = useEvent();
+  const { data: coordinators } = useUsersByRole("coordinator");
   const { data: volunteers } = useUsersByRole("volunteer");
   const { data: admins } = useUsersByRole("admin");
 
-  const publicVolunteers = [...(volunteers || []), ...(admins || [])];
+  const publicVolunteers = [...(volunteers || []), ...(admins || []), ...(coordinators || [])];
 
   const editMutation = useMutation({
     mutationFn: async ({ eventId, updatedData }) =>

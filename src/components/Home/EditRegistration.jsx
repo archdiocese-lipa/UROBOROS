@@ -283,7 +283,7 @@ const EditRegistration = () => {
     <>
       <Dialog open={isDialogOpen} onOpenChange={handleDialogChange}>
         <DialogTrigger asChild>
-          <Button variant="landingsecondary" disabled={false}>
+          <Button variant="landingsecondary" disabled={true}>
             Edit Registration
           </Button>
         </DialogTrigger>
