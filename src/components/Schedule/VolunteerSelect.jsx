@@ -120,6 +120,7 @@ const VolunteerSelect = ({
         </DialogHeader>
         <div>
           <CustomReactSelect
+          isMulti={false}
             options={volunteerOptions}
             value={selectedVolunteer}
             onChange={setSelectedVolunteer}

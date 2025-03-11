@@ -73,10 +73,10 @@ const CustomMultiValue = (props) => {
 };
 
 // Main Component
-const CustomReactSelect = ({ styles = customStyles, options, value, onChange, placeholder }) => {
+const CustomReactSelect = ({ isMulti=true, styles = customStyles, options, value, onChange, placeholder }) => {
   return (
     <ReactSelect
-      isMulti
+      isMulti={isMulti}
       styles={styles}
       components={{ MultiValue: CustomMultiValue }}
       options={options}
@@ -88,6 +88,7 @@ const CustomReactSelect = ({ styles = customStyles, options, value, onChange, pl
 };
 
 CustomReactSelect.propTypes = {
+  isMulti: PropTypes.bool,
   styles: PropTypes.object, 
   options: PropTypes.arrayOf(
     PropTypes.shape({

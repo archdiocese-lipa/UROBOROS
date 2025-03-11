@@ -552,7 +552,7 @@ const ScheduleDetails = () => {
         {eventvolunteers?.map((volunteer, i) => (
           <div key={i} className="flex gap-2">
             <p>{`${i + 1}.`}</p>
-            {temporaryRole === ROLES[0] && (
+            {temporaryRole === ROLES[4] && (
               <p
                 className={cn("text-primary-text", {
                   "line-through": volunteer.replaced === true,
@@ -560,7 +560,7 @@ const ScheduleDetails = () => {
               >{`${volunteer.users.first_name.toFirstUpperCase()} ${volunteer.users.last_name.toFirstUpperCase()} `}</p>
             )}
 
-            {temporaryRole !== ROLES[0] && volunteer.replaced === false && (
+            {temporaryRole !== ROLES[4] && volunteer.replaced === false && (
               <p
                 className={cn("text-primary-text", {
                   "line-through": volunteer.replaced === true,
