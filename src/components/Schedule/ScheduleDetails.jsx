@@ -499,7 +499,7 @@ const ScheduleDetails = () => {
             List of Assigned Volunteer(s)
           </Label>
           <Dialog>
-            {!disableSchedule && (
+            {!disableSchedule && temporaryRole !== "volunteer" && (
               <DialogTrigger>
                 <button className="rounded-md bg-accent p-1 hover:cursor-pointer">
                   <Icon
@@ -557,14 +557,6 @@ const ScheduleDetails = () => {
                 "line-through": volunteer.replaced === true,
               })}
             >{`${volunteer.users.first_name.toFirstUpperCase()} ${volunteer.users.last_name.toFirstUpperCase()} `}</p>
-
-            {volunteer.replaced === false && (
-              <p
-                className={cn("text-primary-text", {
-                  "line-through": volunteer.replaced === true,
-                })}
-              >{`${volunteer.users.first_name.toFirstUpperCase()} ${volunteer.users.last_name.toFirstUpperCase()} `}</p>
-            )}
             {volunteer?.volunteer_replacement && (
               <p
                 className={"text-primary-text"}
@@ -587,7 +579,8 @@ const ScheduleDetails = () => {
                 />
               )}
               <Dialog>
-                {!disableSchedule && temporaryRole === "admin" && (
+                {((!disableSchedule && temporaryRole === "admin") ||
+                  (!disableSchedule && temporaryRole === "coordinator")) && (
                   <DialogTrigger>
                     <Icon
                       className="h-5 w-5 text-red-500 hover:cursor-pointer"
