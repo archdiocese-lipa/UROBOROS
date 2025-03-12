@@ -80,8 +80,8 @@ const AddParent = ({ familyId, familyFirstName, familyLastName }) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger>
-        <Button className="h-7 w-5 rounded-lg">
-          <Icon className="h-4 w-4 text-white" icon="mingcute:add-fill"></Icon>
+        <Button className="h-6 w-5 rounded-lg">
+          <Icon className="h-2 w-2 text-white" icon="mingcute:add-fill"></Icon>
         </Button>
       </DialogTrigger>
       <DialogContent className="text-primary-text">

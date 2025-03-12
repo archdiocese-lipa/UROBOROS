@@ -24,6 +24,8 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { Search } from "@/assets/icons/icons";
 import AddParent from "./AddParent";
 import AddChild from "./AddChild";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { Icon } from "@iconify/react";
 
 const FamilyCards = () => {
   const [search, setSearch] = useState("");
@@ -114,6 +116,17 @@ const FamilyCards = () => {
                       familyFirstName={family?.users?.first_name}
                       familyLastName={family?.users?.last_name}
                     />
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Icon
+                          className="h-5 w-5 text-primary-text"
+                          icon="mingcute:question-line"
+                        />
+                      </PopoverTrigger>
+                      <PopoverContent>
+                        <p>{`This button allows you to add a family member for ${family?.users?.first_name} ${family?.users?.last_name}`}</p>
+                      </PopoverContent>
+                    </Popover>
                   </div>
                 </div>
                 {family.parents && (
@@ -174,6 +187,17 @@ const FamilyCards = () => {
                     familyFirstName={family?.users?.first_name}
                     familyLastName={family?.users?.last_name}
                   />
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Icon
+                        className="h-5 w-5 text-primary-text"
+                        icon="mingcute:question-line"
+                      />
+                    </PopoverTrigger>
+                    <PopoverContent>
+                      <p>{`This button allows you to add a family member for ${family?.users?.first_name} ${family?.users?.last_name}`}</p>
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 {family?.children && (
                   <Table>
