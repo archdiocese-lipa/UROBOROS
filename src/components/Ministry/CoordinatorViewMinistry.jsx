@@ -43,7 +43,7 @@ const useUserGroups = (userId) => {
   });
 };
 
-// Component to display ministry with group count - MOVED HERE BEFORE USAGE
+// Component to display ministry with group count
 const MinistryItem = ({
   ministry,
   isExpanded,
