@@ -17,7 +17,7 @@ const Announcements = () => {
     data,
     isLoading,
   } = useAnnouncements({
-    user_id: userData?.id,
+    group_id: null,
   });
 
   // const onSubmit = (announcementData) => {

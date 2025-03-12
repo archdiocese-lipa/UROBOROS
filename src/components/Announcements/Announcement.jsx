@@ -69,8 +69,7 @@ const Announcement = ({ announcement, deleteAnnouncementMutation }) => {
             <p className="text-[0.7rem] font-bold text-accent md:text-sm">
               {location.pathname.startsWith("/ministries")
                 ? "Coordinator"
-                : userData?.role === "parishioner" ||
-                    userData?.role === "volunteer"
+                : userData?.role !== "admin"
                   ? announcement.users.role.toFirstUpperCase()
                   : `${announcement?.users?.first_name} ${announcement?.users?.last_name}`}
             </p>
