@@ -26,7 +26,7 @@ import GroupAnnouncements from "./GroupAnnouncements";
 import GroupMembers from "./GroupMembers";
 
 // Custom hook for ministries where user is a coordinator
-const useAssignedMinistries = (userId) => {
+export const useAssignedMinistries = (userId) => {
   return useQuery({
     queryKey: ["assigned-ministries", userId],
     queryFn: () => getAssignedMinistries(userId),
@@ -135,6 +135,7 @@ const MinistryGroups = ({
   const groupsQuery = useGroups({ ministryId });
   const groupsData = groups || groupsQuery.groups?.data || [];
   const loading = isLoading || groupsQuery.isLoading;
+  console.log(ministryId);
 
   if (loading) {
     return (
@@ -187,7 +188,10 @@ const MinistryGroups = ({
                       value="announcement"
                       className="no-scrollbar h-[calc(100%-60px)] overflow-y-auto"
                     >
-                      <GroupAnnouncements groupId={group.id} />
+                      <GroupAnnouncements
+                        ministryId={ministryId}
+                        groupId={group.id}
+                      />
                     </TabsContent>
 
                     <TabsContent
@@ -314,7 +318,10 @@ const MemberMinistryItem = ({
                           value="announcement"
                           className="no-scrollbar h-[calc(100%-60px)] overflow-y-auto"
                         >
-                          <GroupAnnouncements groupId={group.group_id} />
+                          <GroupAnnouncements
+                            ministryId={ministry.ministry_id}
+                            groupId={group.group_id}
+                          />
                         </TabsContent>
 
                         <TabsContent
@@ -581,7 +588,10 @@ const CoordinatorViewMinistry = () => {
               value="announcement"
             >
               <div>
-                <GroupAnnouncements groupId={selectedGroup} />
+                <GroupAnnouncements
+                  groupId={selectedGroup}
+                  ministryId={selectedMinistryId}
+                />
               </div>
             </TabsContent>
 

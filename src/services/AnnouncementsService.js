@@ -98,7 +98,7 @@ export const createAnnouncements = async ({ data, userId, groupId }) => {
 export const fetchAnnouncementsV2 = async (page, pageSize, groupId) => {
   try {
     const select =
-      "*, users(first_name,last_name), announcement_files(url,name,type)";
+      "*, users(first_name,last_name,role), announcement_files(url,name,type)";
     const order = [{ column: "created_at", ascending: false }];
 
     // Initialize query object
