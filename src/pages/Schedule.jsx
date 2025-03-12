@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useInfiniteQuery,  } from "@tanstack/react-query";
-Sheet;
-
 import { Title, Description } from "@/components/Title";
 import { Input } from "@/components/ui/input";
 import CreateEvent from "@/components/Schedule/CreateEvent";
@@ -52,8 +50,6 @@ const Schedule = () => {
 
   const { userData } = useUser();
 
-
-
   const { data, isLoading, hasNextPage, fetchNextPage } = useInfiniteQuery({
     queryKey: [
       "schedules",
@@ -93,6 +89,8 @@ const Schedule = () => {
     getNextPageParam: (lastPage) =>
       lastPage?.nextPage ? lastPage.currentPage + 1 : undefined,
   });
+
+  console.log(data)
 
   const { ref } = useInterObserver(fetchNextPage);
 
