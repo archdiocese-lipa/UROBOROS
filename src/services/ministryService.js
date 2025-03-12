@@ -1,5 +1,33 @@
 import { supabase } from "./supabaseClient";
 
+export const getMinistryVolunteers = async (ministryId) => {
+  const { data: getGroup, error: groupError } = await supabase
+    .from("groups")
+    .select("id, name, ministry_id")
+    .eq("ministry_id", ministryId)
+    .eq("name", "Volunteers")
+    .single();
+
+  if (groupError) {
+    if (groupError.code === "PGRST116") {
+      return []; // Return empty array if no volunteers group exists
+    }
+    throw new Error(groupError.message);
+  }
+
+  const { data: volunteerList, error: volunteerError } = await supabase
+    .from("group_members")
+    .select(`users(id, first_name, last_name)`)
+    .eq("group_id", getGroup.id);
+
+  if (volunteerError) {
+    throw new Error(volunteerError.message);
+  }
+
+  // Transform data to a more usable format
+  return volunteerList || [];
+};
+
 /**
  * Get all ministries from the table.
  * @returns {Promise<Object>} Response containing data or error.

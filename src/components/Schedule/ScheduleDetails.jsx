@@ -93,7 +93,6 @@ const ScheduleDetails = () => {
   const { data: admins } = useUsersByRole("admin");
 
   // Fetch volunteers and admins for assigning volunteers
-
   const { data: event, isLoading } = useQuery({
     queryKey: ["event", eventId],
     queryFn: async () => {
@@ -397,15 +396,8 @@ const ScheduleDetails = () => {
           <div className="flex gap-1">
             {!disableSchedule && (
               <div className="flex flex-wrap gap-1">
-                {(temporaryRole === "admin" ||
-                  temporaryRole === "volunteer") && (
-                  <AddExistingRecord eventId={eventId} />
-                )}
-                {(temporaryRole === "admin" ||
-                  temporaryRole === "volunteer") && (
-                  <AddRecord eventId={eventId} />
-                )}
-
+                <AddExistingRecord eventId={eventId} />
+                <AddRecord eventId={eventId} />
                 <Dialog onOpenChange={generateQRCode}>
                   <DialogTrigger asChild>
                     <Button>
@@ -451,7 +443,8 @@ const ScheduleDetails = () => {
               setDeleteDialogOpen(isOpen);
             }}
           >
-            {!disableSchedule && temporaryRole === "admin" && (
+            {((!disableSchedule && temporaryRole === "admin") ||
+              (!disableSchedule && temporaryRole === "coordinator")) && (
               <DialogTrigger className="ml-2 w-fit" asChild>
                 <Button
                   // onClick={() => deleteMutation.mutate()}
