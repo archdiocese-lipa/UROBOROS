@@ -25,9 +25,9 @@ const buttonVariants = cva(
           "bg-accent text-white font-semibold rounded-[10px] tracking-wide",
         transparent:
           "bg-transparent text-white font-semibold rounded-[10px] tracking-wide border-0",
-        login: "bg-accent text-white font-semibold rounded-full tracking-wide",
+        login: "bg-[#2C3562] text-white font-semibold rounded-full tracking-wide w-[5rem] sm:w-[6rem] min-h-[2rem] sm:min-h-[3rem] text-[0.75rem] sm:text-[0.85rem]",
         landingsecondary:
-          "bg-white/75 text-[#663F30] rounded-full hover:bg-white/50 dark:bg-white/75 dark:text-[#663F30] dark:hover:bg-white/50",
+          "bg-white/50 text-[#2C3562] font-semibold rounded-full hover:bg-white/50 dark:bg-white/75 dark:text-[#2C3562] dark:hover:bg-white/50 min-h-[2rem] sm:min-h-[3rem] text-[0.75rem] sm:text-[0.85rem]",
       },
 
       size: {
