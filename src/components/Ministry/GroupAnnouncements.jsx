@@ -5,14 +5,11 @@ import Announcement from "../Announcements/Announcement";
 import useAnnouncements from "@/hooks/useAnnouncements";
 import { Skeleton } from "../ui/skeleton";
 import useInterObserver from "@/hooks/useInterObserver";
-import { useAssignedMinistries } from "./CoordinatorViewMinistry";
 import PropTypes from "prop-types";
 
-const GroupAnnouncements = ({ ministryId, groupId }) => {
+const GroupAnnouncements = ({ groupId }) => {
   const [searchParams] = useSearchParams();
   const { userData } = useUser();
-
-  const { data: assignedMinistries = [] } = useAssignedMinistries(userData?.id);
 
   // Use the passed groupId prop or fall back to search params
   const groupIdToUse = groupId || searchParams.get("groupId");
@@ -31,18 +28,14 @@ const GroupAnnouncements = ({ ministryId, groupId }) => {
   const { ref } = useInterObserver(fetchNextPage);
 
   // Check if user is coordinator for this ministry
-  const isCoordinator = assignedMinistries.some(
-    (ministry) => ministry.id === ministryId
-  );
 
   return (
     <div className="mx-auto flex h-full w-full max-w-[530px] flex-col pt-4">
-      {isCoordinator && (
-        <AnnouncementHeader
-          image={userData.user_image}
-          first_name={userData.first_name}
-        />
-      )}
+      <AnnouncementHeader
+        image={userData.user_image}
+        first_name={userData.first_name}
+      />
+
       {isLoading ? (
         Array.from({ length: 2 }).map((_, i) => (
           <div key={i} className="w-full">

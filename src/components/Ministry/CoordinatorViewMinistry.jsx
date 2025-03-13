@@ -135,7 +135,6 @@ const MinistryGroups = ({
   const groupsQuery = useGroups({ ministryId });
   const groupsData = groups || groupsQuery.groups?.data || [];
   const loading = isLoading || groupsQuery.isLoading;
-  console.log(ministryId);
 
   if (loading) {
     return (
@@ -588,10 +587,7 @@ const CoordinatorViewMinistry = () => {
               value="announcement"
             >
               <div>
-                <GroupAnnouncements
-                  groupId={selectedGroup}
-                  ministryId={selectedMinistryId}
-                />
+                <GroupAnnouncements groupId={selectedGroup} />
               </div>
             </TabsContent>
 

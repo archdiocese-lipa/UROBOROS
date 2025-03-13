@@ -19,62 +19,12 @@ const Events = () => {
     enabled: !!userData?.id,
   });
 
-  console.log(ministryIds);
-  // const { data: eventsOwned } = useQuery({
-  //   queryKey: ["events", userData?.id],
-  //   queryFn: () => getEventsByCreatorId(userData?.id),
-  //   enabled: !!userData?.id,
-  // });
-
-  // Fetch events based on the ministry's ID
   const { data: parishionerEvents, isLoading } = useQuery({
     queryKey: ["events", ministryIds],
     queryFn: async () => await getEventsCalendar(ministryIds),
     enabled: !!ministryIds,
   });
 
-  console.log(parishionerEvents);
-
-  // const { data, isLoading, fetchNextPage, hasNextPage } = useInfiniteQuery({
-  //   queryKey: ["schedules"],
-  //   queryFn: async ({ pageParam }) => {
-  //     // Fetch filtered events
-  //     const response = await getParishionerEvents({
-  //       page: pageParam,
-  //       pageSize: 8,
-  //     });
-
-  //     return response;
-  //   },
-  //   initialPageParam: 1,
-  //   getNextPageParam: (lastPage) => {
-  //     if (lastPage.nextPage) {
-  //       return lastPage.currentPage + 1;
-  //     }
-  //     return undefined;
-  //   },
-  // });
-
-  // const eventData = data?.pages.flatMap((page) =>
-  //   page.items.map((event) => ({
-  //     eventId: event.id,
-  //     eventName: event.event_name,
-  //     eventDescription: event.description,
-  //     eventDate: event.event_date,
-  //     eventTime: event.event_time,
-  //   }))
-  // );
-
-  // Filter out events that have already ended
-  // const filterEvents = (events) => {
-  //   return events.filter((event) => {
-  //     const eventDateTime = new Date(`${event.event_date}T${event.event_time}`);
-  //     return eventDateTime >= currentDateTime;
-  //   });
-  // };
-  // const filteredParishionerEvents = filterEvents(parishionerEvents?.data || []);
-  // const eventsToDisplay =
-  //   userData?.role === "admin" ? eventsOwned : parishionerEvents?.data;
   return (
     <>
       <Title>Events</Title>
@@ -101,13 +51,6 @@ const Events = () => {
           ))
         )}
       </div>
-      {/* {hasNextPage && (
-        <div className="mt-2 text-center md:text-end">
-          <Button variant="outline" onClick={() => fetchNextPage()}>
-            See more events
-          </Button>
-        </div>
-      )} */}
     </>
   );
 };

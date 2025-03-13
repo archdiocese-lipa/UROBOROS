@@ -1,8 +1,6 @@
 import { paginate } from "@/lib/utils";
 import { supabase } from "@/services/supabaseClient"; // Ensure supabase client is imported
 
-import { ROLES } from "@/constants/roles";
-
 // Function to create an event
 export const createEvent = async (eventData) => {
   try {

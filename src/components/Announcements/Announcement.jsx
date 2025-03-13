@@ -68,10 +68,9 @@ const Announcement = ({ announcement, deleteAnnouncementMutation }) => {
           <div className="flex flex-wrap items-center gap-2">
             <p className="text-[0.7rem] font-bold text-accent md:text-sm">
               {location.pathname.startsWith("/ministries")
-                ? "Coordinator"
-                : userData?.role !== "admin"
-                  ? announcement.users.role.toFirstUpperCase()
-                  : `${announcement?.users?.first_name} ${announcement?.users?.last_name}`}
+                ? `${announcement?.users?.first_name} ${announcement?.users?.last_name}`
+                : userData?.role !== "admin" &&
+                  announcement.users.role.toFirstUpperCase()}
             </p>
             <p className="text-[0.7rem] text-accent md:text-sm">
               {new Date(announcement.created_at).toDateTime()}
