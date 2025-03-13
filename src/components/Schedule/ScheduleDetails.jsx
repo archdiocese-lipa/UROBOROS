@@ -70,7 +70,6 @@ import { Search } from "@/assets/icons/icons";
 import { useDebounce } from "@/hooks/useDebounce";
 import AttendanceTable from "./AttendanceTable";
 import useRoleSwitcher from "@/hooks/useRoleSwitcher";
-import { ROLES } from "@/constants/roles";
 import AddExistingRecord from "./AddExistingRecord";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import CustomReactSelect from "../CustomReactSelect";
@@ -94,7 +93,6 @@ const ScheduleDetails = () => {
   const { data: admins } = useUsersByRole("admin");
 
   // Fetch volunteers and admins for assigning volunteers
-
   const { data: event, isLoading } = useQuery({
     queryKey: ["event", eventId],
     queryFn: async () => {
@@ -398,15 +396,8 @@ const ScheduleDetails = () => {
           <div className="flex gap-1">
             {!disableSchedule && (
               <div className="flex flex-wrap gap-1">
-                {(temporaryRole === "admin" ||
-                  temporaryRole === "volunteer") && (
-                  <AddExistingRecord eventId={eventId} />
-                )}
-                {(temporaryRole === "admin" ||
-                  temporaryRole === "volunteer") && (
-                  <AddRecord eventId={eventId} />
-                )}
-
+                <AddExistingRecord eventId={eventId} />
+                <AddRecord eventId={eventId} />
                 <Dialog onOpenChange={generateQRCode}>
                   <DialogTrigger asChild>
                     <Button>
@@ -452,7 +443,8 @@ const ScheduleDetails = () => {
               setDeleteDialogOpen(isOpen);
             }}
           >
-            {!disableSchedule && temporaryRole === "admin" && (
+            {((!disableSchedule && temporaryRole === "admin") ||
+              (!disableSchedule && temporaryRole === "coordinator")) && (
               <DialogTrigger className="ml-2 w-fit" asChild>
                 <Button
                   // onClick={() => deleteMutation.mutate()}
@@ -500,7 +492,7 @@ const ScheduleDetails = () => {
             List of Assigned Volunteer(s)
           </Label>
           <Dialog>
-            {!disableSchedule && temporaryRole === "admin" && (
+            {!disableSchedule && temporaryRole !== "volunteer" && (
               <DialogTrigger>
                 <button className="rounded-md bg-accent p-1 hover:cursor-pointer">
                   <Icon
@@ -553,21 +545,11 @@ const ScheduleDetails = () => {
         {eventvolunteers?.map((volunteer, i) => (
           <div key={i} className="flex gap-2">
             <p>{`${i + 1}.`}</p>
-            {temporaryRole === ROLES[0] && (
-              <p
-                className={cn("text-primary-text", {
-                  "line-through": volunteer.replaced === true,
-                })}
-              >{`${volunteer.users.first_name.toFirstUpperCase()} ${volunteer.users.last_name.toFirstUpperCase()} `}</p>
-            )}
-
-            {temporaryRole !== ROLES[0] && volunteer.replaced === false && (
-              <p
-                className={cn("text-primary-text", {
-                  "line-through": volunteer.replaced === true,
-                })}
-              >{`${volunteer.users.first_name.toFirstUpperCase()} ${volunteer.users.last_name.toFirstUpperCase()} `}</p>
-            )}
+            <p
+              className={cn("text-primary-text", {
+                "line-through": volunteer.replaced === true,
+              })}
+            >{`${volunteer.users.first_name.toFirstUpperCase()} ${volunteer.users.last_name.toFirstUpperCase()} `}</p>
             {volunteer?.volunteer_replacement && (
               <p
                 className={"text-primary-text"}
@@ -575,7 +557,7 @@ const ScheduleDetails = () => {
             )}
 
             <div className="flex items-center justify-center gap-2">
-              {!disableSchedule && temporaryRole === "admin" && (
+              {!disableSchedule && (
                 <VolunteerSelect
                   // setVolunteerDialogOpen={setVolunteerDialogOpen}
                   currentVolunteer={volunteer}
@@ -590,7 +572,8 @@ const ScheduleDetails = () => {
                 />
               )}
               <Dialog>
-                {!disableSchedule && temporaryRole === "admin" && (
+                {((!disableSchedule && temporaryRole === "admin") ||
+                  (!disableSchedule && temporaryRole === "coordinator")) && (
                   <DialogTrigger>
                     <Icon
                       className="h-5 w-5 text-red-500 hover:cursor-pointer"

@@ -13,7 +13,7 @@ import { getEventsCalendar } from "@/services/eventService";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useUser } from "@/context/useUser";
-import { fetchUserMinistries } from "@/services/ministryService";
+import { fetchUserMinistryIds } from "@/services/ministryService";
 import { fetchCalendarMeetings } from "@/services/meetingService";
 import EventInfoDialog from "./EventInfoDialog";
 
@@ -35,13 +35,11 @@ const VolunteerDialogCalendar = () => {
   // Destructure the data from the response
   const myMeetings = meetingResponse?.data;
 
-  const { data: myMinistries } = useQuery({
+  const { data: ministryIds } = useQuery({
     queryKey: ["ministries", userData.id],
-    queryFn: () => fetchUserMinistries(userData.id),
+    queryFn: () => fetchUserMinistryIds(userData.id),
     enabled: !!userData.id,
   });
-
-  const ministryIds = myMinistries?.map((ministry) => ministry.id) || [];
 
   const { data: events } = useQuery({
     queryKey: ["events", ministryIds],
