@@ -328,34 +328,6 @@ export const fetchMinistryAssignedUsers = async (ministryId) => {
   return data;
 };
 
-export const fetchUserMinistries = async (user_id) => {
-  // Accept userData as argument
-
-  try {
-    const { data, error } = await supabase
-      .from("ministry_assignments")
-      .select(
-        `
-        ministries(*)
-      `
-      )
-      .eq("user_id", user_id); // Use the userData passed as an argument
-
-    if (error) {
-      console.error("Error fetching ministries:", error);
-      throw error;
-    }
-
-    // Dynamically extract all ministries from the data array
-    const ministries = data.map((item) => item.ministries);
-
-    return ministries; // Return the array of ministries
-  } catch (err) {
-    console.error("Unexpected error:", err);
-    throw err;
-  }
-};
-
 export const fetchAvailableVolunteers = async (ministryId) => {
   try {
     // Fetch all volunteers (role = "volunteer")
@@ -452,4 +424,35 @@ export const removeMinistryVolunteer = async (ministryId, memberId) => {
     console.error("Error removing ministry volunteer:", error.message);
     throw error; // Re-throw the error to be handled in the component
   }
+};
+
+/**
+ * Fetches all ministry IDs that a user is a member of through group memberships
+ * @param {string} userId - The ID of the user
+ * @returns {Promise<Array<string>>} - Array of ministry IDs
+ */
+export const fetchUserMinistryIds = async (userId) => {
+  if (!userId) {
+    console.error("User ID is required");
+    return [];
+  }
+
+  // Query to get all groups the user is a member of and their associated ministries
+  const { data: ministries, error } = await supabase
+    .from("group_members")
+    .select("groups(ministry_id)")
+    .eq("user_id", userId);
+
+  if (error) {
+    console.error("Error fetching user's ministries:", error.message);
+    throw new Error(error.message);
+  }
+
+  // Extract unique ministry IDs from the results
+  const ministryIds = ministries.map((item) => item.groups.ministry_id);
+
+  // Remove duplicates using Set
+  const uniqueMinistryIds = [...new Set(ministryIds)];
+
+  return uniqueMinistryIds;
 };

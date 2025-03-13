@@ -6,32 +6,34 @@ import { getEventsCalendar } from "@/services/eventService";
 
 import { useQuery } from "@tanstack/react-query";
 import ParishionerDialogCalendar from "@/components/Events/ParishionerDialogCalendar";
-import { fetchUserMinistries } from "@/services/ministryService";
 import { useUser } from "@/context/useUser";
 import Loading from "@/components/Loading";
+import { fetchUserMinistryIds } from "@/services/ministryService";
 
 const Events = () => {
   const { userData } = useUser();
 
-  const { data: ministries } = useQuery({
+  const { data: ministryIds } = useQuery({
     queryKey: ["ministries", userData?.id],
-    queryFn: () => fetchUserMinistries(userData?.id),
+    queryFn: () => fetchUserMinistryIds(userData?.id),
     enabled: !!userData?.id,
   });
+
+  console.log(ministryIds);
   // const { data: eventsOwned } = useQuery({
   //   queryKey: ["events", userData?.id],
   //   queryFn: () => getEventsByCreatorId(userData?.id),
   //   enabled: !!userData?.id,
   // });
 
-  const ids = ministries?.map((ministry) => ministry.id);
-
   // Fetch events based on the ministry's ID
   const { data: parishionerEvents, isLoading } = useQuery({
-    queryKey: ["events", ministries],
-    queryFn: async () => await getEventsCalendar(ids),
-    enabled: !!ministries,
+    queryKey: ["events", ministryIds],
+    queryFn: async () => await getEventsCalendar(ministryIds),
+    enabled: !!ministryIds,
   });
+
+  console.log(parishionerEvents);
 
   // const { data, isLoading, fetchNextPage, hasNextPage } = useInfiniteQuery({
   //   queryKey: ["schedules"],
@@ -84,7 +86,7 @@ const Events = () => {
       <div className="mt-5 grid gap-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
         {isLoading ? (
           <Loading />
-        ) : parishionerEvents?.data.length === 0 ? (
+        ) : parishionerEvents?.data?.length === 0 ? (
           <p>No Upcoming Events</p>
         ) : (
           parishionerEvents?.data.map((event, i) => (
