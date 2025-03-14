@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -43,7 +43,7 @@ const CreateMinistry = ({
   const [openDialog, setOpenDialog] = useState(false);
   const queryClient = useQueryClient();
   const [imagePreview, setImagePreview] = useState(null);
-  const [fileInputKey, setFileInputKey] = useState(Date.now()); // Add key for file input reset
+  const fileInputRef = useRef(null); // Use ref instead of key for file input
   const isEditMode = !!ministryId;
 
   // Get coordinator options - only needed for create mode
@@ -108,9 +108,18 @@ const CreateMinistry = ({
 
   // Update reset logic
   const resetForm = () => {
-    form.reset();
+    form.reset({
+      coordinators: [],
+      ministryName: "",
+      ministryDescription: "",
+      ministryImage: null,
+    });
     setImagePreview(null);
-    setFileInputKey(Date.now()); // Change key to force re-render of file input
+
+    // The safest way to reset a file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const onSubmit = (values) => {
@@ -263,28 +272,26 @@ const CreateMinistry = ({
               <FormField
                 control={form.control}
                 name="ministryImage"
-                render={({ field: { onChange, ...rest } }) => (
+                render={({ field: { onChange } }) => (
                   <FormItem>
                     <FormLabel className="font-bold">Ministry Image</FormLabel>
                     <FormControl>
                       <Input
-                        key={fileInputKey} // Add key to force re-render
+                        ref={fileInputRef} // Use ref instead of key
                         id="file-input"
                         type="file"
                         accept="image/png, image/jpeg"
                         className="hidden"
+                        // Explicitly never set the value prop
                         onChange={(e) => {
                           const file = e.target.files?.[0];
                           if (file) {
-                            // Create object URL for preview
                             const previewUrl = URL.createObjectURL(file);
                             setImagePreview(previewUrl);
-
-                            // Set the actual File object as the value
                             onChange(file);
                           }
                         }}
-                        {...rest}
+                        // Remove the spread of rest props that might cause issues
                       />
                     </FormControl>
                     {imagePreview ? (
@@ -298,7 +305,9 @@ const CreateMinistry = ({
                           onClick={() => {
                             setImagePreview(null);
                             form.setValue("ministryImage", null);
-                            setFileInputKey(Date.now()); // Reset input when clearing
+                            if (fileInputRef.current) {
+                              fileInputRef.current.value = ""; // Safely reset file input
+                            }
                           }}
                           className="absolute right-4 top-4 text-2xl text-accent hover:cursor-pointer hover:text-red-600"
                           icon={"mingcute:close-circle-fill"}
