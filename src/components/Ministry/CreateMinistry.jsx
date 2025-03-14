@@ -43,6 +43,7 @@ const CreateMinistry = ({
   const [openDialog, setOpenDialog] = useState(false);
   const queryClient = useQueryClient();
   const [imagePreview, setImagePreview] = useState(null);
+  const [fileInputKey, setFileInputKey] = useState(Date.now()); // Add key for file input reset
   const isEditMode = !!ministryId;
 
   // Get coordinator options - only needed for create mode
@@ -105,6 +106,13 @@ const CreateMinistry = ({
     ministryId,
   });
 
+  // Update reset logic
+  const resetForm = () => {
+    form.reset();
+    setImagePreview(null);
+    setFileInputKey(Date.now()); // Change key to force re-render of file input
+  };
+
   const onSubmit = (values) => {
     if (isEditMode) {
       // Create the update object first
@@ -150,8 +158,7 @@ const CreateMinistry = ({
         }
       );
     }
-    form.reset();
-    setImagePreview(null);
+    resetForm(); // Use our custom reset function
   };
 
   const isSubmitting =
@@ -163,8 +170,7 @@ const CreateMinistry = ({
       onOpenChange={(open) => {
         setOpenDialog(open);
         if (!open) {
-          form.reset();
-          setImagePreview(null);
+          resetForm(); // Use our custom reset function
         }
       }}
     >
@@ -262,6 +268,7 @@ const CreateMinistry = ({
                     <FormLabel className="font-bold">Ministry Image</FormLabel>
                     <FormControl>
                       <Input
+                        key={fileInputKey} // Add key to force re-render
                         id="file-input"
                         type="file"
                         accept="image/png, image/jpeg"
@@ -291,6 +298,7 @@ const CreateMinistry = ({
                           onClick={() => {
                             setImagePreview(null);
                             form.setValue("ministryImage", null);
+                            setFileInputKey(Date.now()); // Reset input when clearing
                           }}
                           className="absolute right-4 top-4 text-2xl text-accent hover:cursor-pointer hover:text-red-600"
                           icon={"mingcute:close-circle-fill"}
@@ -320,10 +328,7 @@ const CreateMinistry = ({
             <AlertDialogFooter>
               <AlertDialogCancel asChild>
                 <Button
-                  onClick={() => {
-                    form.reset();
-                    setImagePreview(null);
-                  }}
+                  onClick={() => resetForm()} // Use our custom reset function
                   variant="outline"
                 >
                   Cancel
