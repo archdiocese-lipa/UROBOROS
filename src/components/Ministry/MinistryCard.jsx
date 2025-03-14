@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import { Users } from "@/assets/icons/icons";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Card,
   CardContent,
@@ -11,16 +11,17 @@ import {
 import useMinistry from "@/hooks/useMinistry";
 import { Label } from "../ui/label";
 import ConfigureMinistry from "./ConfigureMinistry";
-import { cn } from "@/lib/utils";
+import { cn, getInitial } from "@/lib/utils";
 
 // Utility function to get initials from a name
-const getInitials = (firstName, lastName) => {
-  const firstInitial = firstName?.charAt(0)?.toUpperCase() || "";
-  const lastInitial = lastName?.charAt(0)?.toUpperCase() || "";
-  return `${firstInitial}${lastInitial}`;
-};
 
-const MinistryCard = ({ ministryId, title, description, createdDate }) => {
+const MinistryCard = ({
+  ministryId,
+  title,
+  description,
+  createdDate,
+  image,
+}) => {
   const formatDateToUK = (dateString) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat("en-GB", {
@@ -42,25 +43,48 @@ const MinistryCard = ({ ministryId, title, description, createdDate }) => {
   const remainingCount = Math.max(coordinators?.data?.length - maxVisible, 0);
 
   return (
-    <Card className="max-h-96 rounded-2xl border text-primary-text">
-      <CardHeader className="text-pretty">
+    <Card className="h-fit max-h-96 rounded-[20px] border px-6 py-5 pb-[26] text-primary-text">
+      <CardHeader className="text-pretty p-0">
         <div className="flex items-center justify-between">
-          <CardTitle className="font-bold">{title}</CardTitle>
+          <div className="flex items-start gap-2">
+            <Avatar className="flex h-10 w-10 justify-center rounded-[4px] bg-primary">
+              <AvatarImage
+                className="h-10 w-10 rounded-[4px] object-cover"
+                src={image}
+                alt="profile picture"
+              />
+              <AvatarFallback className="h-10 w-10 rounded-[4px] bg-primary">
+                {getInitial(title)}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <CardTitle className="p-0 text-[16px] font-bold">
+                {title}
+              </CardTitle>
+              <CardDescription className="break-all text-sm font-medium">
+                {description}
+              </CardDescription>
+            </div>
+          </div>
           <ConfigureMinistry
             coordinators={coordinators?.data}
             ministryId={ministryId}
             ministryTitle={title}
+            ministryImage={image}
             ministryDescription={description}
           />
         </div>
-        <CardDescription className="break-words">{description}</CardDescription>
-        <p>
-          <span className="font-medium">Created: </span>
-          {formattedCreatedDate}
+
+        <p className="text-sm font-bold text-[#663F30]/60">
+          Created:
+          <span className="font-medium text-[#663F30]/60">
+            {" "}
+            {formattedCreatedDate}{" "}
+          </span>
         </p>
       </CardHeader>
-      <CardContent>
-        <div className="flex flex-col gap-y-3 rounded-2xl bg-primary px-5 py-3">
+      <CardContent className="p-0">
+        <div className="mt-3 flex flex-col gap-y-3 rounded-[15px] bg-primary px-[22px] py-[14px]">
           {membersLoading && <p>Loading members...</p>}
           {error && <p className="text-red-500">{error}</p>}
           {!membersLoading && !error && coordinators?.data?.length === 0 && (
@@ -69,13 +93,16 @@ const MinistryCard = ({ ministryId, title, description, createdDate }) => {
           <div className="flex items-center gap-x-6">
             <div className="flex flex-wrap items-center justify-center -space-x-4">
               {visibleAvatars?.map((member, index) => {
-                const initials = getInitials(
+                const initials = getInitial(
                   member.users?.first_name,
                   member.users?.last_name
                 );
 
                 return (
-                  <Avatar key={index} className="border-4 border-white">
+                  <Avatar
+                    key={index}
+                    className="h-12 w-12 border-4 border-white"
+                  >
                     <AvatarFallback>{initials || "?"}</AvatarFallback>
                   </Avatar>
                 );
@@ -91,38 +118,25 @@ const MinistryCard = ({ ministryId, title, description, createdDate }) => {
             )}
           </div>
           <div>
-            <Label className="font-semibold">Coordinators Preview:</Label>
+            <Label className="text-sm font-semibold">
+              Coordinators Preview:
+            </Label>
 
-            <div className="flex w-full overflow-hidden text-ellipsis">
-              {coordinators?.data?.map((coordinator) => (
-                <p
-                  key={coordinator.id}
-                  className={cn(
-                    "text-nowrap text-xs"
-                    // index === arr.length - 1
-                    //   ? "flex-1 overflow-hidden text-ellipsis"
-                    //   : "flex-shrink-0"
-                  )}
-                >
-                  {`${coordinator.users.first_name} ${coordinator.users.last_name}`}
-                  <span className="mr-1">,</span>
-                </p>
-              ))}
+            <div className="flex w-full">
+              <p
+                className={cn(
+                  "overflow-hidden text-ellipsis text-nowrap text-[11px] text-accent/75"
+                )}
+              >
+                {coordinators?.data?.map(
+                  (coordinator, i) =>
+                    `${coordinator.users.first_name} ${coordinator.users.last_name}${coordinators.data.length > 1 && i < coordinators.data.length - 1 ? ", " : ""}`
+                )}
+              </p>
             </div>
           </div>
         </div>
       </CardContent>
-
-      {/* {isEditDialogOpen && (
-        <EditMinistry
-          ministryId={ministryId}
-          currentName={title}
-          // coordinators={coordinators}
-          currentDescription={description}
-          isOpen={isEditDialogOpen}
-          closeDialog={() => setEditDialogOpen(false)}
-        />
-      )} */}
     </Card>
   );
 };
@@ -132,13 +146,7 @@ MinistryCard.propTypes = {
   description: PropTypes.string.isRequired,
   createdDate: PropTypes.string.isRequired,
   ministryId: PropTypes.string.isRequired,
-  // coordinators: PropTypes.arrayOf(
-  //   PropTypes.shape({
-  //     users: PropTypes.shape({
-  //       id: PropTypes.string.isRequired,
-  //     }).isRequired,
-  //   })
-  // ).isRequired,
+  image: PropTypes.string,
 };
 
 export default MinistryCard;
