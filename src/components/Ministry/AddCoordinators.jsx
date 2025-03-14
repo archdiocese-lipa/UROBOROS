@@ -97,7 +97,7 @@ const AddCoordinators = ({ ministryId }) => {
       <AlertDialogTrigger asChild>
         <Button
           variant="outline"
-          className="rounded-2xl border-none bg-primary/50 hover:bg-primary"
+          className="rounded-lg border-none bg-primary-outline/35 text-accent hover:bg-primary"
         >
           Add Coordinators
         </Button>
