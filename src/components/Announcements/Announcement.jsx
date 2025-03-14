@@ -46,16 +46,17 @@ import TriggerLikeIcon from "../CommentComponents/TriggerLikeIcon";
 import AnnouncementForm from "./AnnouncementForm";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useLocation } from "react-router-dom";
+import AutoLinkText from "@/lib/AutoLinkText";
 
 const Announcement = ({ announcement, deleteAnnouncementMutation }) => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState();
   const { userData } = useUser();
+  const location = useLocation();
 
   if (!userData) {
     return null;
   }
-
-  console.log(announcement.announcement_files[0]?.type);
 
   return (
     <div>
@@ -66,7 +67,11 @@ const Announcement = ({ announcement, deleteAnnouncementMutation }) => {
           </h2>
           <div className="flex flex-wrap items-center gap-2">
             <p className="text-[0.7rem] font-bold text-accent md:text-sm">
-              {`${announcement?.users?.first_name} ${announcement?.users?.last_name}`}
+              {location.pathname.startsWith("/ministries") ||
+              userData?.role === "admin"
+                ? `${announcement?.users?.first_name} ${announcement?.users?.last_name}`
+                : userData?.role !== "admin" &&
+                  announcement.users.role.toFirstUpperCase()}
             </p>
             <p className="text-[0.7rem] text-accent md:text-sm">
               {new Date(announcement.created_at).toDateTime()}
@@ -158,9 +163,10 @@ const Announcement = ({ announcement, deleteAnnouncementMutation }) => {
           </Popover>
         )}
       </div>
-      <p className="mb-4 whitespace-pre-wrap break-all text-start leading-5 text-accent">
-        {announcement.content}
-      </p>
+      <AutoLinkText
+        text={announcement.content}
+        className="mb-4 block whitespace-pre-wrap break-words text-start leading-5 text-accent"
+      />
       <Dialog className="border-none border-transparent">
         <DialogTrigger>
           <div className="flex w-full gap-2">
@@ -220,21 +226,18 @@ const Announcement = ({ announcement, deleteAnnouncementMutation }) => {
               {`${announcement.announcement_files[0]?.name}.${announcement.announcement_files[0].type.split("/")[1]}`}
             </a>
           )}
-        <DialogContent className="flex h-full w-dvw max-w-none items-center justify-center border-0 bg-transparent">
+        <DialogContent className="flex h-full w-dvw max-w-none items-center justify-center border-0 bg-transparent p-0">
           <DialogHeader className="sr-only">
             <DialogTitle className="sr-only"></DialogTitle>
             <DialogDescription className="sr-only"></DialogDescription>
           </DialogHeader>
           <Carousel className="w-full max-w-5xl">
-            <CarouselContent className="-ml-1">
+            <CarouselContent className="-ml-1 p-0">
               {announcement.announcement_files.map((file, index) => (
-                <CarouselItem
-                  key={index}
-                  // className="pl-1 md:basis-1/2 lg:basis-1/4"
-                >
+                <CarouselItem key={index} className="pl-0">
                   <div className="p-1">
                     <Card className="border-none bg-transparent">
-                      <CardContent className="flex aspect-square items-center justify-center bg-transparent bg-contain p-6">
+                      <CardContent className="flex aspect-square items-center justify-center bg-transparent bg-contain p-0">
                         <img
                           className="h-[100dvh] w-full object-contain"
                           src={file.url}
@@ -292,6 +295,7 @@ Announcement.propTypes = {
     users: PropTypes.shape({
       first_name: PropTypes.string.isRequired,
       last_name: PropTypes.string.isRequired,
+      role: PropTypes.string, // Added role prop type
     }).isRequired,
   }).isRequired,
   deleteAnnouncementMutation: PropTypes.shape({

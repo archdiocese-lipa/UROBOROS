@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { useInfiniteQuery,  } from "@tanstack/react-query";
-Sheet;
-
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { Title, Description } from "@/components/Title";
 import { Input } from "@/components/ui/input";
 import CreateEvent from "@/components/Schedule/CreateEvent";
@@ -52,8 +50,6 @@ const Schedule = () => {
 
   const { userData } = useUser();
 
-
-
   const { data, isLoading, hasNextPage, fetchNextPage } = useInfiniteQuery({
     queryKey: [
       "schedules",
@@ -101,7 +97,6 @@ const Schedule = () => {
   const onQuery = useCallback((e) => {
     setQuery(e.target.value);
   }, []);
-
 
   useEffect(() => {
     if (!urlPrms.get("filter")) {
@@ -162,7 +157,7 @@ const Schedule = () => {
           {userData?.role === ROLES[1] && <VolunteerDialogCalendar />}
         </div>
         <div className="flex flex-col gap-3">
-          {(temporaryRole === ROLES[0] || userData?.role === ROLES[4])  &&  (
+          {(temporaryRole === ROLES[0] || userData?.role === ROLES[4]) && (
             <div className="flex gap-1">
               <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <DialogTrigger asChild>

@@ -5,7 +5,6 @@ import { useSearchParams } from "react-router-dom";
 
 import { Label } from "../ui/label";
 import { ChevronDown, ChevronRight, Loader2 } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   getAssignedMinistries,
   getMinistryGroups,
@@ -24,9 +23,11 @@ import {
 } from "@/components/ui/sheet";
 import GroupAnnouncements from "./GroupAnnouncements";
 import GroupMembers from "./GroupMembers";
+import { getInitial } from "@/lib/utils";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 // Custom hook for ministries where user is a coordinator
-const useAssignedMinistries = (userId) => {
+export const useAssignedMinistries = (userId) => {
   return useQuery({
     queryKey: ["assigned-ministries", userId],
     queryFn: () => getAssignedMinistries(userId),
@@ -43,7 +44,7 @@ const useUserGroups = (userId) => {
   });
 };
 
-// Component to display ministry with group count - MOVED HERE BEFORE USAGE
+// Component to display ministry with group count
 const MinistryItem = ({
   ministry,
   isExpanded,
@@ -73,9 +74,14 @@ const MinistryItem = ({
           )}
         </div>
         <div className="mr-3">
-          <Avatar>
-            <AvatarFallback>
-              {ministry.ministry_name?.substring(0, 2).toUpperCase() || "MN"}
+          <Avatar className="flex h-10 w-10 justify-center rounded-[4px] bg-primary">
+            <AvatarImage
+              className="h-10 w-10 rounded-[4px] object-cover"
+              src={ministry.image_url}
+              alt="profile picture"
+            />
+            <AvatarFallback className="h-10 w-10 rounded-[4px] bg-primary">
+              {getInitial(ministry.ministry_name)}
             </AvatarFallback>
           </Avatar>
         </div>
@@ -116,6 +122,7 @@ MinistryItem.propTypes = {
     id: PropTypes.string.isRequired,
     ministry_name: PropTypes.string.isRequired,
     ministry_description: PropTypes.string,
+    image_url: PropTypes.string,
   }).isRequired,
   isExpanded: PropTypes.bool.isRequired,
   onToggle: PropTypes.func.isRequired,
@@ -187,7 +194,10 @@ const MinistryGroups = ({
                       value="announcement"
                       className="no-scrollbar h-[calc(100%-60px)] overflow-y-auto"
                     >
-                      <GroupAnnouncements groupId={group.id} />
+                      <GroupAnnouncements
+                        ministryId={ministryId}
+                        groupId={group.id}
+                      />
                     </TabsContent>
 
                     <TabsContent
@@ -314,7 +324,10 @@ const MemberMinistryItem = ({
                           value="announcement"
                           className="no-scrollbar h-[calc(100%-60px)] overflow-y-auto"
                         >
-                          <GroupAnnouncements groupId={group.group_id} />
+                          <GroupAnnouncements
+                            ministryId={ministry.ministry_id}
+                            groupId={group.group_id}
+                          />
                         </TabsContent>
 
                         <TabsContent
