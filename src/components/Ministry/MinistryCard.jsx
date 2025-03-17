@@ -20,10 +20,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "../ui/button";
 import AdminCoordinatorView from "./AdminCoordinatorView";
-
-// Utility function to get initials from a name
 
 const MinistryCard = ({
   ministryId,
