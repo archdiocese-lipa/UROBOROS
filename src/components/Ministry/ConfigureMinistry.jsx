@@ -1,5 +1,4 @@
 import PropTypes from "prop-types";
-import { ThreeDotsIcon } from "@/assets/icons/icons";
 import { Button } from "../ui/button";
 import { Label } from "../ui/label";
 import AddCoordinators from "./AddCoordinators";
@@ -22,6 +21,7 @@ import { Separator } from "../ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getInitial } from "@/lib/utils";
 import CreateMinistry from "./CreateMinistry";
+import { Icon } from "@iconify/react";
 
 const ConfigureMinistry = ({
   coordinators,
@@ -51,9 +51,9 @@ const ConfigureMinistry = ({
   return (
     <AlertDialog>
       <AlertDialogTrigger>
-        <ThreeDotsIcon />
+        <Icon icon="humbleicons:dots-horizontal" />
       </AlertDialogTrigger>
-      <AlertDialogContent className="no-scrollbar flex h-[80vh] max-h-[80vh] w-[860px] max-w-none flex-col overflow-hidden border-none">
+      <AlertDialogContent className="no-scrollbar flex h-auto max-h-[80vh] max-w-[860px] flex-col overflow-hidden border-none">
         <AlertDialogHeader className="flex-shrink-0 flex-row items-center justify-between gap-1">
           <div className="flex">
             <Avatar className="flex h-10 w-10 justify-center rounded-[4px] bg-primary">
@@ -85,14 +85,14 @@ const ConfigureMinistry = ({
           </CreateMinistry>
         </AlertDialogHeader>
 
-        <AlertDialogBody className="flex h-96 gap-6 overflow-auto">
+        <AlertDialogBody className="no-scrollbar flex h-96 flex-col gap-6 overflow-auto md:flex-row">
           {/* Coordinators Section */}
           <div className="flex-1 space-y-2">
             <div className="flex items-start justify-between text-[#663F30]/70">
               <Label className="font-bold text-accent">Coordinators</Label>
               <AddCoordinators ministryId={ministryId} />
             </div>
-            <div className="no-scrollbar max-h-[calc(100%-40px)] space-y-2 overflow-y-auto">
+            <div className="max-h-[calc(100%-40px)] space-y-2 overflow-y-auto">
               {coordinators?.map((coordinator) => (
                 <div
                   key={coordinator.id}

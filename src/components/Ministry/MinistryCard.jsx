@@ -43,7 +43,7 @@ const MinistryCard = ({
   const remainingCount = Math.max(coordinators?.data?.length - maxVisible, 0);
 
   return (
-    <Card className="h-fit max-h-96 rounded-[20px] border px-6 py-5 pb-[26] text-primary-text">
+    <Card className="h-fit max-h-96 h-72 rounded-[20px] max-w-96 border px-6 py-5 pb-[26] text-primary-text">
       <CardHeader className="text-pretty p-0">
         <div className="flex items-center justify-between">
           <div className="flex items-start gap-2">
@@ -66,13 +66,13 @@ const MinistryCard = ({
               </CardDescription>
             </div>
           </div>
-          <ConfigureMinistry
-            coordinators={coordinators?.data}
+          {!membersLoading && coordinators?.data && (<ConfigureMinistry //Load the data first before fetching the data
+            coordinators={coordinators.data}
             ministryId={ministryId}
             ministryTitle={title}
             ministryImage={image}
             ministryDescription={description}
-          />
+          />)}
         </div>
 
         <p className="text-sm font-bold text-[#663F30]/60">

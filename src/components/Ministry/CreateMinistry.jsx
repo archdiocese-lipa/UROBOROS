@@ -184,7 +184,7 @@ const CreateMinistry = ({
       }}
     >
       <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
-      <AlertDialogContent className="no-scrollbar h-[80%] overflow-scroll border-none">
+      <AlertDialogContent className="no-scrollbar max-h-[85dvh] overflow-scroll border-none">
         <AlertDialogHeader>
           <AlertDialogTitle className="text-2xl font-bold text-accent">
             {isEditMode ? "Edit Ministry" : "Create New Ministry"}

@@ -101,7 +101,7 @@ const CustomReactSelect = ({
       styles={styles}
       components={{ MultiValue: CustomMultiValue }}
       options={options}
-      value={value}
+      value={value || undefined}
       onChange={onChange}
       placeholder={placeholder}
     />
