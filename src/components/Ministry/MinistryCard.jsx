@@ -12,6 +12,16 @@ import useMinistry from "@/hooks/useMinistry";
 import { Label } from "../ui/label";
 import ConfigureMinistry from "./ConfigureMinistry";
 import { cn, getInitial } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Button } from "../ui/button";
+import AdminCoordinatorView from "./AdminCoordinatorView";
 
 // Utility function to get initials from a name
 
@@ -43,7 +53,7 @@ const MinistryCard = ({
   const remainingCount = Math.max(coordinators?.data?.length - maxVisible, 0);
 
   return (
-    <Card className="h-fit max-h-96 h-72 rounded-[20px] max-w-96 border px-6 py-5 pb-[26] text-primary-text">
+    <Card className="h-72 h-fit max-h-96 max-w-96 rounded-[20px] border px-6 py-5 pb-[26] text-primary-text">
       <CardHeader className="text-pretty p-0">
         <div className="flex items-center justify-between">
           <div className="flex items-start gap-2">
@@ -66,13 +76,15 @@ const MinistryCard = ({
               </CardDescription>
             </div>
           </div>
-          {!membersLoading && coordinators?.data && (<ConfigureMinistry //Load the data first before fetching the data
-            coordinators={coordinators.data}
-            ministryId={ministryId}
-            ministryTitle={title}
-            ministryImage={image}
-            ministryDescription={description}
-          />)}
+          {!membersLoading && coordinators?.data && (
+            <ConfigureMinistry //Load the data first before fetching the data
+              coordinators={coordinators.data}
+              ministryId={ministryId}
+              ministryTitle={title}
+              ministryImage={image}
+              ministryDescription={description}
+            />
+          )}
         </div>
 
         <p className="text-sm font-bold text-[#663F30]/60">
@@ -84,58 +96,74 @@ const MinistryCard = ({
         </p>
       </CardHeader>
       <CardContent className="p-0">
-        <div className="mt-3 flex flex-col gap-y-3 rounded-[15px] bg-primary px-[22px] py-[14px]">
-          {membersLoading && <p>Loading members...</p>}
-          {error && <p className="text-red-500">{error}</p>}
-          {!membersLoading && !error && coordinators?.data?.length === 0 && (
-            <p className="text-gray-500">No members</p>
-          )}
-          <div className="flex items-center gap-x-6">
-            <div className="flex flex-wrap items-center justify-center -space-x-4">
-              {visibleAvatars?.map((member, index) => {
-                const initials = getInitial(
-                  member.users?.first_name,
-                  member.users?.last_name
-                );
+        <Dialog>
+          <DialogTrigger className="w-full text-start">
+            <div className="mt-3 flex flex-col gap-y-3 rounded-[15px] bg-primary px-[22px] py-[14px]">
+              {membersLoading && <p>Loading members...</p>}
+              {error && <p className="text-red-500">{error}</p>}
+              {!membersLoading &&
+                !error &&
+                coordinators?.data?.length === 0 && (
+                  <p className="text-gray-500">No members</p>
+                )}
+              <div className="flex items-center gap-x-6">
+                <div className="flex flex-wrap items-center justify-center -space-x-4">
+                  {visibleAvatars?.map((member, index) => {
+                    const initials = getInitial(
+                      member.users?.first_name,
+                      member.users?.last_name
+                    );
 
-                return (
-                  <Avatar
-                    key={index}
-                    className="h-12 w-12 border-4 border-white"
+                    return (
+                      <Avatar
+                        key={index}
+                        className="h-12 w-12 border-4 border-white"
+                      >
+                        <AvatarFallback>{initials || "?"}</AvatarFallback>
+                      </Avatar>
+                    );
+                  })}
+                </div>
+                {remainingCount > 0 && (
+                  <div className="bg-muted text-muted-foreground -ml-2 flex h-10 w-10 justify-center rounded-full text-sm font-medium">
+                    <div className="inline-flex h-[19px] items-center justify-center gap-1 rounded-[10px] bg-white px-2 py-0.5">
+                      <span className="text-primary-text">
+                        +{remainingCount}
+                      </span>
+                      <Users className="text-primary-text" />
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div>
+                <Label className="text-sm font-semibold">
+                  Coordinators Preview:
+                </Label>
+                <div className="flex w-full">
+                  <p
+                    className={cn(
+                      "overflow-hidden text-ellipsis text-nowrap text-[11px] text-accent/75"
+                    )}
                   >
-                    <AvatarFallback>{initials || "?"}</AvatarFallback>
-                  </Avatar>
-                );
-              })}
-            </div>
-            {remainingCount > 0 && (
-              <div className="bg-muted text-muted-foreground -ml-2 flex h-10 w-10 justify-center rounded-full text-sm font-medium">
-                <div className="inline-flex h-[19px] items-center justify-center gap-1 rounded-[10px] bg-white px-2 py-0.5">
-                  <span className="text-primary-text">+{remainingCount}</span>
-                  <Users className="text-primary-text" />
+                    {coordinators?.data?.map(
+                      (coordinator, i) =>
+                        `${coordinator.users.first_name} ${coordinator.users.last_name}${coordinators.data.length > 1 && i < coordinators.data.length - 1 ? ", " : ""}`
+                    )}
+                  </p>
                 </div>
               </div>
-            )}
-          </div>
-          <div>
-            <Label className="text-sm font-semibold">
-              Coordinators Preview:
-            </Label>
-
-            <div className="flex w-full">
-              <p
-                className={cn(
-                  "overflow-hidden text-ellipsis text-nowrap text-[11px] text-accent/75"
-                )}
-              >
-                {coordinators?.data?.map(
-                  (coordinator, i) =>
-                    `${coordinator.users.first_name} ${coordinator.users.last_name}${coordinators.data.length > 1 && i < coordinators.data.length - 1 ? ", " : ""}`
-                )}
-              </p>
             </div>
-          </div>
-        </div>
+          </DialogTrigger>
+          <DialogContent className="flex h-full flex-col md:h-[80dvh] md:max-w-[80%]">
+            <DialogHeader>
+              <DialogTitle>Ministry</DialogTitle>
+              <DialogDescription>Ministry Description</DialogDescription>
+            </DialogHeader>
+            <div>
+              <AdminCoordinatorView ministryId={ministryId} />
+            </div>
+          </DialogContent>
+        </Dialog>
       </CardContent>
     </Card>
   );
