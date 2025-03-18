@@ -1,5 +1,16 @@
 import { supabase } from "./supabaseClient";
 
+export const getOneMinistryGroup = async (ministryId) => {
+  const { data, error } = await supabase
+    .from("groups")
+    .select("id, name, description, ministry_id")
+    .eq("ministry_id", ministryId);
+
+  if (error) throw new Error();
+
+  return data;
+};
+
 export const getMinistryVolunteers = async (ministryId) => {
   const { data: getGroup, error: groupError } = await supabase
     .from("groups")
@@ -103,7 +114,6 @@ export const getMinistryGroups = async (userId) => {
       console.error("Error fetching ministry groups:", error);
       throw new Error(error.message);
     }
-    console.log(data);
 
     // Transform the data to group by ministries
     const groupedData = data.reduce((acc, item) => {

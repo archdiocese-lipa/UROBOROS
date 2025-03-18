@@ -16,7 +16,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
@@ -50,7 +49,7 @@ const MinistryCard = ({
   const remainingCount = Math.max(coordinators?.data?.length - maxVisible, 0);
 
   return (
-    <Card className="h-72 h-fit max-h-96 max-w-96 rounded-[20px] border px-6 py-5 pb-[26] text-primary-text">
+    <Card className="h-72 max-h-96 max-w-96 rounded-[20px] border px-6 py-5 pb-[26] text-primary-text">
       <CardHeader className="text-pretty p-0">
         <div className="flex items-center justify-between">
           <div className="flex items-start gap-2">
@@ -152,12 +151,16 @@ const MinistryCard = ({
             </div>
           </DialogTrigger>
           <DialogContent className="flex h-full flex-col md:h-[80dvh] md:max-w-[80%]">
-            <DialogHeader>
-              <DialogTitle>Ministry</DialogTitle>
-              <DialogDescription>Ministry Description</DialogDescription>
-            </DialogHeader>
+            <DialogTitle className="sr-only">{title}</DialogTitle>
+            <DialogDescription className="sr-only">
+              {description}
+            </DialogDescription>
             <div>
-              <AdminCoordinatorView ministryId={ministryId} />
+              <AdminCoordinatorView
+                ministryId={ministryId}
+                ministryTitle={title}
+                ministryImage={image}
+              />
             </div>
           </DialogContent>
         </Dialog>

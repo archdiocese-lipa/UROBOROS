@@ -27,7 +27,7 @@ import { getInitial } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 // Custom hook for ministries where user is a coordinator
-export const useAssignedMinistries = (userId) => {
+const useAssignedMinistries = (userId) => {
   return useQuery({
     queryKey: ["assigned-ministries", userId],
     queryFn: () => getAssignedMinistries(userId),
