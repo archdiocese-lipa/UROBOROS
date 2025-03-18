@@ -22,7 +22,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import AdminCoordinatorView from "./AdminCoordinatorView";
 import { Button } from "../ui/button";
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 const MinistryCard = ({
   ministryId,
@@ -32,6 +33,9 @@ const MinistryCard = ({
   image,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const closingRef = useRef(false);
+
+  const [_searchParams, setSearchParams] = useSearchParams();
 
   const formatDateToUK = (dateString) => {
     const date = new Date(dateString);
@@ -54,9 +58,25 @@ const MinistryCard = ({
   const remainingCount = Math.max(coordinators?.data?.length - maxVisible, 0);
 
   // Function to handle dialog close
-  const handleClose = () => {
-    setIsOpen(false);
-  };
+  const handleClose = useCallback(() => {
+    closingRef.current = true;
+
+    // First update the search params
+    setSearchParams((prev) => {
+      const updatedParams = new URLSearchParams(prev);
+      if (updatedParams.has("groupId")) {
+        updatedParams.delete("groupId");
+      }
+      return updatedParams;
+    });
+
+    // Use a small timeout to update the dialog state after the params change has been processed
+    setTimeout(() => {
+      setIsOpen(false);
+      closingRef.current = false;
+    }, 0);
+  }, [setSearchParams]);
+
   return (
     <Card className="h-72 max-h-96 max-w-96 rounded-[20px] border px-6 py-5 pb-[26] text-primary-text">
       <CardHeader className="text-pretty p-0">
@@ -180,6 +200,7 @@ const MinistryCard = ({
                 ministryId={ministryId}
                 ministryTitle={title}
                 ministryImage={image}
+                isClosing={closingRef.current}
               />
             </div>
           </AlertDialogContent>

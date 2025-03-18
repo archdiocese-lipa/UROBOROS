@@ -13,16 +13,24 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import useMediaQuery from "@/hooks/use-media-query";
+import { useSearchParams } from "react-router-dom";
 
 import { getOneMinistryGroup } from "@/services/ministryService";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import GroupAnnouncements from "./GroupAnnouncements";
 
-const AdminCoordinatorView = ({ ministryId, ministryTitle, ministryImage }) => {
+const AdminCoordinatorView = ({
+  ministryId,
+  ministryTitle,
+  ministryImage,
+  isClosing = false,
+}) => {
   const [activeItem, setActiveItem] = useState(null);
-  const [groupId, setGroupId] = useState(null);
   const isMobile = useMediaQuery("(max-width: 768px)");
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const groupId = searchParams.get("groupId");
 
   // Fetch groups
   const { data: groups, isLoading: isLoadingGroups } = useQuery({
@@ -31,23 +39,50 @@ const AdminCoordinatorView = ({ ministryId, ministryTitle, ministryImage }) => {
     enabled: !!ministryId,
   });
 
-  const handleClickGroup = useCallback((name, id) => {
-    setActiveItem(name);
-    setGroupId(id);
-  }, []);
+  // Update the click handler to use searchParams
+  const handleClickGroup = useCallback(
+    (name, id) => {
+      setActiveItem(name);
 
-  //Update active item when groups data is available
+      // Update URL with groupId
+      setSearchParams((prev) => {
+        // Create a new URLSearchParams object to avoid mutating the original
+        const updatedParams = new URLSearchParams(prev);
+        updatedParams.set("groupId", id);
+        return updatedParams;
+      });
+    },
+    [setSearchParams]
+  );
+
   useEffect(() => {
-    if (groups && groups.length > 0) {
+    // Skip the auto-setting of groupId if we're in the process of closing
+    if (isClosing) return;
+
+    // If we have groups but no groupId in URL, set the first group
+    if (groups?.length > 0 && !groupId) {
       const firstGroupId = groups[0]?.id;
-      setGroupId(firstGroupId);
-      setActiveItem(groups[0]?.name);
+      const firstName = groups[0]?.name;
+
+      // Update URL with first group's ID
+      setSearchParams((prev) => {
+        const updatedParams = new URLSearchParams(prev);
+        updatedParams.set("groupId", firstGroupId);
+        return updatedParams;
+      });
+
+      setActiveItem(firstName);
     }
-  }, [groups]);
+    // If we have a groupId in URL but no activeItem, find and set the name
+    else if (groupId && !activeItem && groups?.length > 0) {
+      const selectedGroup = groups.find((group) => group.id === groupId);
+      if (selectedGroup) {
+        setActiveItem(selectedGroup.name);
+      }
+    }
+  }, [groups, groupId, setSearchParams, activeItem]);
 
   if (isLoadingGroups) return <Loader2 />;
-  console.log(groupId);
-  console.log(ministryId);
 
   return (
     <SidebarProvider>
@@ -104,6 +139,7 @@ AdminCoordinatorView.propTypes = {
   ministryId: PropTypes.string.isRequired,
   ministryTitle: PropTypes.string.isRequired,
   ministryImage: PropTypes.string.isRequired,
+  isClosing: PropTypes.bool.isRequired,
 };
 
 export default AdminCoordinatorView;
