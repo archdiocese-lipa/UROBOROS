@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { Users } from "@/assets/icons/icons";
+import { CloseIcon, Users } from "@/assets/icons/icons";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Card,
@@ -13,13 +13,16 @@ import { Label } from "../ui/label";
 import ConfigureMinistry from "./ConfigureMinistry";
 import { cn, getInitial } from "@/lib/utils";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import AdminCoordinatorView from "./AdminCoordinatorView";
+import { Button } from "../ui/button";
+import { useState } from "react";
 
 const MinistryCard = ({
   ministryId,
@@ -28,6 +31,8 @@ const MinistryCard = ({
   createdDate,
   image,
 }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
   const formatDateToUK = (dateString) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat("en-GB", {
@@ -48,6 +53,10 @@ const MinistryCard = ({
   const visibleAvatars = coordinators?.data?.slice(0, maxVisible);
   const remainingCount = Math.max(coordinators?.data?.length - maxVisible, 0);
 
+  // Function to handle dialog close
+  const handleClose = () => {
+    setIsOpen(false);
+  };
   return (
     <Card className="h-72 max-h-96 max-w-96 rounded-[20px] border px-6 py-5 pb-[26] text-primary-text">
       <CardHeader className="text-pretty p-0">
@@ -92,8 +101,11 @@ const MinistryCard = ({
         </p>
       </CardHeader>
       <CardContent className="p-0">
-        <Dialog>
-          <DialogTrigger className="w-full text-start">
+        <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
+          <AlertDialogTrigger
+            className="w-full text-start"
+            onClick={() => setIsOpen(true)}
+          >
             <div className="mt-3 flex flex-col gap-y-3 rounded-[15px] bg-primary px-[22px] py-[14px]">
               {membersLoading && <p>Loading members...</p>}
               {error && <p className="text-red-500">{error}</p>}
@@ -149,12 +161,20 @@ const MinistryCard = ({
                 </div>
               </div>
             </div>
-          </DialogTrigger>
-          <DialogContent className="flex h-full flex-col md:h-[80dvh] md:max-w-[80%]">
-            <DialogTitle className="sr-only">{title}</DialogTitle>
-            <DialogDescription className="sr-only">
-              {description}
-            </DialogDescription>
+          </AlertDialogTrigger>
+          <AlertDialogContent className="flex h-full flex-col p-6 md:h-[80dvh] md:max-w-[80%]">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="sr-only">{title}</AlertDialogTitle>
+              <AlertDialogDescription className="sr-only">
+                {description}
+              </AlertDialogDescription>
+              <Button
+                onClick={handleClose}
+                className="absolute right-10 top-5 flex h-9 w-9 items-center justify-center rounded-full bg-primary ring-offset-white transition-opacity hover:opacity-100 focus:outline-none focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-neutral-100 data-[state=open]:text-neutral-500 dark:ring-offset-neutral-950 dark:focus:ring-neutral-300 dark:data-[state=open]:bg-neutral-800 dark:data-[state=open]:text-neutral-400"
+              >
+                <CloseIcon className="h-5 w-5 text-accent opacity-75" />
+              </Button>
+            </AlertDialogHeader>
             <div>
               <AdminCoordinatorView
                 ministryId={ministryId}
@@ -162,8 +182,8 @@ const MinistryCard = ({
                 ministryImage={image}
               />
             </div>
-          </DialogContent>
-        </Dialog>
+          </AlertDialogContent>
+        </AlertDialog>
       </CardContent>
     </Card>
   );

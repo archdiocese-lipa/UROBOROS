@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import PropTypes from "prop-types";
 import {
   Sidebar,
@@ -21,7 +21,7 @@ import GroupAnnouncements from "./GroupAnnouncements";
 
 const AdminCoordinatorView = ({ ministryId, ministryTitle, ministryImage }) => {
   const [activeItem, setActiveItem] = useState(null);
-  const [groupId, setGroupId] = useState("");
+  const [groupId, setGroupId] = useState(null);
   const isMobile = useMediaQuery("(max-width: 768px)");
 
   // Fetch groups
@@ -31,26 +31,29 @@ const AdminCoordinatorView = ({ ministryId, ministryTitle, ministryImage }) => {
     enabled: !!ministryId,
   });
 
-  const handleClickGroup = (name, id) => {
+  const handleClickGroup = useCallback((name, id) => {
     setActiveItem(name);
     setGroupId(id);
-  };
+  }, []);
 
   //Update active item when groups data is available
   useEffect(() => {
     if (groups && groups.length > 0) {
-      setGroupId(groups[0].id);
+      const firstGroupId = groups[0]?.id;
+      setGroupId(firstGroupId);
       setActiveItem(groups[0]?.name);
     }
   }, [groups]);
 
   if (isLoadingGroups) return <Loader2 />;
+  console.log(groupId);
+  console.log(ministryId);
 
   return (
     <SidebarProvider>
       <Sidebar
         collapsible={isMobile ? "offcanvas" : "none"}
-        className="h-[650px] rounded-2xl"
+        className="rounded-2xl"
       >
         <SidebarHeader className="flex flex-row items-center text-primary-text">
           <span>
@@ -87,17 +90,11 @@ const AdminCoordinatorView = ({ ministryId, ministryTitle, ministryImage }) => {
           </SidebarGroup>
         </SidebarContent>
       </Sidebar>
-
-      <main className="flex-1">
-        <div className="mb-6 flex items-center justify-start px-6">
+      <main className="no-scrollbar h-[40rem] flex-1 overflow-y-scroll md:h-[40rem]">
+        <div className="flex items-center justify-start px-6">
           <SidebarTrigger className="mr-4 md:hidden" />
-          <h2 className="text-xl font-semibold text-primary-text">
-            {activeItem}
-          </h2>
         </div>
-        <div>
-          <GroupAnnouncements ministryId={ministryId} groupId={groupId} />
-        </div>
+        <GroupAnnouncements ministryId={ministryId} groupId={groupId} />
       </main>
     </SidebarProvider>
   );
