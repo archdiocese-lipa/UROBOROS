@@ -138,7 +138,7 @@ const AdminCoordinatorView = ({
           onValueChange={setActiveTab}
           className="flex w-full flex-col overflow-hidden"
         >
-          <div className="flex justify-between rounded-t-2xl border-b border-primary-outline bg-primary px-8 py-4">
+          <div className="flex flex-col items-center justify-center rounded-t-2xl border-b border-primary-outline bg-primary px-8 py-4 md:flex-row md:justify-between">
             <div>
               <Label className="text-lg font-bold">
                 {groups.find((group) => group.id === groupId)?.name ||
@@ -159,7 +159,7 @@ const AdminCoordinatorView = ({
             className="no-scrollbar mt-0 h-full w-full overflow-y-auto bg-primary"
             value="announcement"
           >
-            <div>
+            <div className="h-dvh">
               <GroupAnnouncements ministryId={ministryId} groupId={groupId} />
             </div>
           </TabsContent>
