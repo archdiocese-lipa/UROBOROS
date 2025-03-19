@@ -12,6 +12,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import useMediaQuery from "@/hooks/use-media-query";
 import { useSearchParams } from "react-router-dom";
 
@@ -19,6 +20,8 @@ import { getOneMinistryGroup } from "@/services/ministryService";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import GroupAnnouncements from "./GroupAnnouncements";
+import GroupMembers from "./GroupMembers";
+import { Label } from "../ui/label";
 
 const AdminCoordinatorView = ({
   ministryId,
@@ -27,7 +30,8 @@ const AdminCoordinatorView = ({
   isClosing = false,
 }) => {
   const [activeItem, setActiveItem] = useState(null);
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  const isMobile = useMediaQuery("(max-width: 1024px)");
+  const [activeTab, setActiveTab] = useState("announcement");
 
   const [searchParams, setSearchParams] = useSearchParams();
   const groupId = searchParams.get("groupId");
@@ -125,11 +129,48 @@ const AdminCoordinatorView = ({
           </SidebarGroup>
         </SidebarContent>
       </Sidebar>
-      <main className="no-scrollbar h-[40rem] flex-1 overflow-y-scroll md:h-[40rem]">
+      <main className="no-scrollbar h-[45rem] flex-1 overflow-y-scroll md:h-[40rem]">
         <div className="flex items-center justify-start px-6">
           <SidebarTrigger className="mr-4 md:hidden" />
         </div>
-        <GroupAnnouncements ministryId={ministryId} groupId={groupId} />
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="flex w-full flex-col overflow-hidden"
+        >
+          <div className="flex justify-between rounded-t-2xl border-b border-primary-outline bg-primary px-8 py-4">
+            <div>
+              <Label className="text-lg font-bold">
+                {groups.find((group) => group.id === groupId)?.name ||
+                  "No group selected"}
+              </Label>
+              <p className="text-muted-foreground text-sm">
+                {groups.find((group) => group.id === groupId)?.description ||
+                  ""}
+              </p>
+            </div>
+            <TabsList>
+              <TabsTrigger value="announcement">Announcement</TabsTrigger>
+              <TabsTrigger value="members">Members</TabsTrigger>
+            </TabsList>
+          </div>
+
+          <TabsContent
+            className="no-scrollbar mt-0 h-full w-full overflow-y-auto bg-primary"
+            value="announcement"
+          >
+            <div>
+              <GroupAnnouncements ministryId={ministryId} groupId={groupId} />
+            </div>
+          </TabsContent>
+
+          <TabsContent
+            value="members"
+            className="no-scrollbar mt-0 h-full w-full overflow-y-auto bg-primary"
+          >
+            <GroupMembers ministryId={ministryId} groupId={groupId} />
+          </TabsContent>
+        </Tabs>
       </main>
     </SidebarProvider>
   );

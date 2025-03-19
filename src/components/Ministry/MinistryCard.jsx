@@ -182,7 +182,7 @@ const MinistryCard = ({
               </div>
             </div>
           </AlertDialogTrigger>
-          <AlertDialogContent className="flex h-full flex-col p-6 md:h-[80dvh] md:max-w-[80%]">
+          <AlertDialogContent className="flex h-full flex-col px-2 py-6 md:h-[80dvh] md:max-w-[80%]">
             <AlertDialogHeader>
               <AlertDialogTitle className="sr-only">{title}</AlertDialogTitle>
               <AlertDialogDescription className="sr-only">

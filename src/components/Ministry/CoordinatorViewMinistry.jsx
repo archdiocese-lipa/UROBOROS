@@ -593,9 +593,7 @@ const CoordinatorViewMinistry = () => {
               className="no-scrollbar mt-0 h-full w-full overflow-y-auto bg-primary"
               value="announcement"
             >
-              <div>
-                <GroupAnnouncements groupId={selectedGroup} />
-              </div>
+              <GroupAnnouncements groupId={selectedGroup} />
             </TabsContent>
 
             <TabsContent
