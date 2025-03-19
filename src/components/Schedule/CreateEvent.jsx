@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -30,17 +30,39 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { DownIcon } from "@/assets/icons/icons";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Loader2 } from "lucide-react";
 import TimePicker from "./TimePicker";
 import { Textarea } from "../ui/textarea";
 import { useUser } from "@/context/useUser";
 import useUsersByRole from "@/hooks/useUsersByRole";
 
 import { updateEvent } from "@/services/eventService";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import useMinistry from "@/hooks/useMinistry";
 import useEvent from "@/hooks/useEvent";
 import CustomReactSelect from "../CustomReactSelect";
+import useRoleSwitcher from "@/hooks/useRoleSwitcher";
+import { ROLES } from "@/constants/roles";
+import {
+  getAssignedMinistries,
+  getMinistryVolunteers,
+} from "@/services/ministryService";
+
+const useAssignedMinistries = (userId) => {
+  return useQuery({
+    queryKey: ["assigned-ministries", userId],
+    queryFn: () => getAssignedMinistries(userId),
+    enabled: !!userId,
+  });
+};
+
+const useMinistryVolunteers = (ministryId) => {
+  return useQuery({
+    queryKey: ["ministry-volunteers", ministryId],
+    queryFn: () => getMinistryVolunteers(ministryId),
+    enabled: !!ministryId,
+  });
+};
 
 const CreateEvent = ({
   id = "create-event",
@@ -52,13 +74,14 @@ const CreateEvent = ({
 
   const [selectedMinistry, setSelectedMinistry] = useState(null);
 
-  const { ministryMembers, ministries } = useMinistry({
+  const { ministries } = useMinistry({
     ministryId: selectedMinistry,
   });
 
   const { userData } = useUser();
 
   const userId = userData?.id;
+  const { temporaryRole } = useRoleSwitcher();
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -67,7 +90,19 @@ const CreateEvent = ({
   const { data: volunteers } = useUsersByRole("volunteer");
   const { data: admins } = useUsersByRole("admin");
 
-  const publicVolunteers = [...(volunteers || []), ...(admins || []), ...(coordinators || [])];
+  const {
+    data: assignedMinistries = [],
+    isLoading: assignedMinistriesLoading,
+  } = useAssignedMinistries(userData?.id);
+
+  const { data: ministryVolunteers, isLoading: ministryVolunteersLoading } =
+    useMinistryVolunteers(selectedMinistry);
+
+  const publicVolunteers = [
+    ...(volunteers || []),
+    ...(admins || []),
+    ...(coordinators || []),
+  ];
 
   const editMutation = useMutation({
     mutationFn: async ({ eventId, updatedData }) =>
@@ -92,6 +127,41 @@ const CreateEvent = ({
     },
   });
 
+  const coordinatorMinistry = useMemo(
+    () => assignedMinistries?.map((ministry) => ministry.id) || [],
+    [assignedMinistries]
+  );
+
+  //Volunteer options
+  const getVolunteerOptions = () => {
+    //For public visibility, return all volunteers
+    if (watchVisibility === "public") {
+      return (
+        publicVolunteers?.map((volunteer) => ({
+          value: volunteer?.id || "",
+          label: `${volunteer?.first_name} ${volunteer?.last_name}`,
+        })) || []
+      );
+    }
+
+    // For private visibility events with a selected ministry
+    if (
+      watchVisibility === "private" &&
+      !ministryVolunteersLoading &&
+      ministryVolunteers
+    ) {
+      return (
+        ministryVolunteers?.map((volunteer) => ({
+          value: volunteer?.users?.id || "",
+          label: `${volunteer?.users?.first_name} ${volunteer?.users?.last_name}`,
+        })) || []
+      );
+    }
+
+    // Fallback
+    return [];
+  };
+
   const updateEventSchema = createEventSchema.omit({ assignVolunteer: true });
 
   const eventForm = useForm({
@@ -99,8 +169,12 @@ const CreateEvent = ({
     defaultValues: {
       eventName: eventData?.event_name || "",
       eventCategory: eventData?.event_category || "",
-      eventVisibility: eventData?.event_visibility || "",
-      ministry: eventData?.event_ministry || "",
+      eventVisibility:
+        eventData?.event_visibility ||
+        (temporaryRole === ROLES[0] ? "private" : "public"),
+      ministry:
+        eventData?.event_ministry ||
+        (coordinatorMinistry?.length === 1 ? coordinatorMinistry[0] : ""),
       eventDate: eventData?.event_date
         ? new Date(`${eventData?.event_date}T${eventData?.event_time}`)
         : null,
@@ -120,10 +194,29 @@ const CreateEvent = ({
 
   // Effect to reset the ministry field when visibility changes to "public"
   useEffect(() => {
-    if (watchVisibility !== "ministry") {
-      resetField("ministry"); // Reset the ministry field when eventVisibility is not "ministry"
+    if (watchVisibility === "public") {
+      // Reset ministry when changing to public
+      resetField("ministry");
+      resetField("assignVolunteer", { defaultValue: [] });
+    } else if (watchVisibility === "private") {
+      // Reset volunteer selections when switching from public to private
+      resetField("assignVolunteer", { defaultValue: [] });
+
+      // Auto-select the only ministry when changing to private
+      if (coordinatorMinistry?.length === 1) {
+        setValue("ministry", coordinatorMinistry[0]);
+        setSelectedMinistry(coordinatorMinistry[0]);
+      }
     }
-  }, [watchVisibility, resetField]);
+  }, [watchVisibility, coordinatorMinistry, resetField, setValue]);
+
+  // Reset the volunteer field when selecting to other ministry.
+  useEffect(() => {
+    // Reset volunteer selections when the selected ministry changes
+    if (watchVisibility === "private" && selectedMinistry) {
+      resetField("assignVolunteer", { defaultValue: [] });
+    }
+  }, [selectedMinistry, watchVisibility, resetField]);
 
   const handleEventSelect = (eventItem) => {
     // Convert the event time string to a Date object
@@ -189,8 +282,6 @@ const CreateEvent = ({
 
     setDialogOpen(false); // Close the dialog if success
   };
-
-  // console.log("form values",eventForm.getValues())
 
   return (
     <Form {...eventForm}>
@@ -290,7 +381,6 @@ const CreateEvent = ({
               </FormItem>
             )}
           />
-
           {/* Conditional Ministry Selection */}
           {watchVisibility === "private" && (
             <FormField
@@ -302,8 +392,8 @@ const CreateEvent = ({
                   <FormControl>
                     <Select
                       onValueChange={(value) => {
-                        field.onChange(value); // Update the form field value
-                        setSelectedMinistry(value); // Call setSelectedMinistry with the selected value
+                        field.onChange(value);
+                        setSelectedMinistry(value);
                       }}
                       value={field.value}
                     >
@@ -311,9 +401,24 @@ const CreateEvent = ({
                         <SelectValue placeholder="Select Ministry" />
                       </SelectTrigger>
                       <SelectContent>
-                        {/* Ensure ministries.data is an array before mapping */}
-                        {Array.isArray(ministries) && ministries?.length > 0 ? (
-                          ministries?.map((ministry) => (
+                        {assignedMinistriesLoading ? (
+                          <Loader2 />
+                        ) : temporaryRole === ROLES[0] ? (
+                          // If user is coordinator
+                          assignedMinistries?.length > 0 ? (
+                            assignedMinistries.map((ministry) => (
+                              <SelectItem key={ministry.id} value={ministry.id}>
+                                {ministry.ministry_name}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem disabled>
+                              No ministries available
+                            </SelectItem>
+                          )
+                        ) : // If user is admin
+                        ministries?.length > 0 ? (
+                          ministries.map((ministry) => (
                             <SelectItem key={ministry.id} value={ministry.id}>
                               {ministry.ministry_name}
                             </SelectItem>
@@ -342,34 +447,20 @@ const CreateEvent = ({
                 <FormControl>
                   <CustomReactSelect
                     options={
-                      // Check visibility to determine which volunteers to pass
-                      publicVolunteers?.map((volunteer) => ({
-                        value: volunteer?.id || volunteer?.user_id || "",
-                        label: `${volunteer?.first_name || volunteer?.users?.first_name || "Unknown"} 
-                                ${volunteer?.last_name || volunteer?.users?.last_name || "Unknown"}`,
-                      }))
+                      watchVisibility === "private" && ministryVolunteersLoading
+                        ? [{ label: "Loading...", isDisabled: true }]
+                        : getVolunteerOptions()
                     }
-                    value={
-                      Array.isArray(field.value)
-                        ? field.value.map((value) => {
-                            const member = ministryMembers?.find(
-                              (member) => member.user_id === value
-                            );
-                            const volunteer = publicVolunteers?.find(
-                              (volunteer) => volunteer.id === value
-                            );
+                    value={field.value.map((value) => {
+                      // Find the volunteer in our options list
+                      const allOptions = getVolunteerOptions();
+                      const foundOption = allOptions.find(
+                        (opt) => opt.value === value
+                      );
 
-                            return {
-                              value,
-                              label: member
-                                ? `${member.users?.first_name} ${member.users?.last_name || ""}`.trim()
-                                : volunteer
-                                  ? `${volunteer.first_name} ${volunteer.last_name || ""}`.trim()
-                                  : "Unknown",
-                            };
-                          })
-                        : []
-                    }
+                      // If found, use that, otherwise create a placeholder
+                      return foundOption || { value, label: "Unknown" };
+                    })}
                     onChange={(selected) =>
                       field.onChange(
                         selected ? selected.map((option) => option.value) : []
@@ -400,7 +491,7 @@ const CreateEvent = ({
                         className="bg-primary font-normal"
                       >
                         {field.value ? (
-                          format(new Date(field.value), "MMMM d, yyyy") // Ensure `field.value` is a valid Date object
+                          format(new Date(field.value), "MMMM d, yyyy")
                         ) : (
                           <span>Select a date</span>
                         )}

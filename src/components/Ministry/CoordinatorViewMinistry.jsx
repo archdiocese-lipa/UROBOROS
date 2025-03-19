@@ -26,7 +26,7 @@ import GroupAnnouncements from "./GroupAnnouncements";
 import GroupMembers from "./GroupMembers";
 
 // Custom hook for ministries where user is a coordinator
-const useAssignedMinistries = (userId) => {
+export const useAssignedMinistries = (userId) => {
   return useQuery({
     queryKey: ["assigned-ministries", userId],
     queryFn: () => getAssignedMinistries(userId),
@@ -43,7 +43,7 @@ const useUserGroups = (userId) => {
   });
 };
 
-// Component to display ministry with group count - MOVED HERE BEFORE USAGE
+// Component to display ministry with group count
 const MinistryItem = ({
   ministry,
   isExpanded,
@@ -187,7 +187,10 @@ const MinistryGroups = ({
                       value="announcement"
                       className="no-scrollbar h-[calc(100%-60px)] overflow-y-auto"
                     >
-                      <GroupAnnouncements groupId={group.id} />
+                      <GroupAnnouncements
+                        ministryId={ministryId}
+                        groupId={group.id}
+                      />
                     </TabsContent>
 
                     <TabsContent
@@ -314,7 +317,10 @@ const MemberMinistryItem = ({
                           value="announcement"
                           className="no-scrollbar h-[calc(100%-60px)] overflow-y-auto"
                         >
-                          <GroupAnnouncements groupId={group.group_id} />
+                          <GroupAnnouncements
+                            ministryId={ministry.ministry_id}
+                            groupId={group.group_id}
+                          />
                         </TabsContent>
 
                         <TabsContent

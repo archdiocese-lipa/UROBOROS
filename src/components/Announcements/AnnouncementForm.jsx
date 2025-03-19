@@ -64,7 +64,6 @@ const AnnouncementForm = ({
 
   const { addAnnouncementMutation, editAnnouncementMutation } =
     useAnnouncements({
-      user_id: userData?.id,
       group_id: searchParams.get("groupId"),
     });
 

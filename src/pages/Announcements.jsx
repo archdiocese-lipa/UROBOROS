@@ -17,7 +17,7 @@ const Announcements = () => {
     data,
     isLoading,
   } = useAnnouncements({
-    user_id: userData?.id,
+    group_id: null,
   });
 
   // const onSubmit = (announcementData) => {
@@ -50,10 +50,12 @@ const Announcements = () => {
         {/* Announcements List */}
         <div className="no-scrollbar flex w-full flex-col items-center overflow-y-scroll rounded-none border-t border-primary-outline p-1 pt-3 md:rounded-xl md:border md:bg-primary md:px-9 md:py-6">
           <div className="w-full lg:w-2/3">
-            <AnnouncementHeader
-              image={userData?.user_image}
-              first_name={userData?.first_name}
-            />
+            {userData?.role === "admin" && (
+              <AnnouncementHeader
+                image={userData?.user_image}
+                first_name={userData?.first_name}
+              />
+            )}
             {isLoading && <Loading />}
 
             {data?.pages?.flatMap((page) => page.items).length === 0 ? (

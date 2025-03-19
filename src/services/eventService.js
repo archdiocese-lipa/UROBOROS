@@ -1,8 +1,6 @@
 import { paginate } from "@/lib/utils";
 import { supabase } from "@/services/supabaseClient"; // Ensure supabase client is imported
 
-import { ROLES } from "@/constants/roles";
-
 // Function to create an event
 export const createEvent = async (eventData) => {
   try {
@@ -146,53 +144,113 @@ export const getEvents = async ({
 
     // Apply filters for the selected year and month
     if (selectedYear && selectedMonth) {
-      // Create a filter for events that fall within the selected month of the selected year
       const formattedMonth = String(selectedMonth).padStart(2, "0");
-      const selectedDate = `${selectedYear}-${formattedMonth}`; // Example: "2024-12"
+      const selectedDate = `${selectedYear}-${formattedMonth}`;
 
       const [year, month] = selectedDate.split("-");
-
-      // Get the first day of the month
       const startOfMonth = `${year}-${month}-01`;
-
-      // Get the last day of the month
-      const lastDayOfMonth = new Date(year, month, 0).getDate(); // `month` is 0-indexed
+      const lastDayOfMonth = new Date(year, month, 0).getDate();
       const endOfMonth = `${year}-${month}-${lastDayOfMonth}`;
 
       filters.gte = {
-        "event_date": startOfMonth
-      }
+        event_date: startOfMonth,
+      };
       filters.lte = {
-        "event_date": endOfMonth
-      }
+        event_date: endOfMonth,
+      };
     }
+
     if (query) {
       filters.ilike = { event_name: query };
     }
 
-    let nonAdminEventIds = [];
-
-    // Check if user is a volunteer and apply filters
-    if (role === ROLES[1]) {
-      // Assuming ROLES[0] is admin
-
+    // Handle role-based access
+    if (role === "admin") {
+      // Admins can see all events - no additional filters needed
+    } else if (role === "volunteer") {
+      // Volunteers see events they're assigned to
       const { data: volunteerEvents } = await supabase
         .from("event_volunteers")
-        .select("*")
+        .select("event_id")
         .eq("volunteer_id", userId);
-      nonAdminEventIds = volunteerEvents.map((event) => event.event_id);
 
-      if (nonAdminEventIds.length > 0) {
-        filters.id = nonAdminEventIds; // Apply only the volunteer's events
+      const volunteerEventIds =
+        volunteerEvents?.map((event) => event.event_id) || [];
+
+      if (volunteerEventIds.length > 0) {
+        filters.id = volunteerEventIds;
       } else {
-        filters.id = []; // Reset filter if no volunteer events are found
+        filters.id = []; // No events found, return empty result
+      }
+    } else if (role === "coordinator") {
+      // Coordinators see:
+      // 1. All public events
+      // 2. Private events from ministries they coordinate
+      const { data: coordinatorMinistries } = await supabase
+        .from("ministry_coordinators")
+        .select("ministry_id")
+        .eq("coordinator_id", userId);
+
+      const ministryIds =
+        coordinatorMinistries?.map((item) => item.ministry_id) || [];
+
+      // Adjust filters based on ministry access
+      if (ministryIds.length > 0) {
+        // For coordinators with ministries, get all their ministry's events + public events
+        const ministryFilter = `ministry_id.in.(${ministryIds.join(",")})`;
+        const visibilityFilter = "event_visibility.eq.public";
+
+        // Get all events that match either condition
+        const { data: accessibleEvents } = await supabase
+          .from("events")
+          .select("id")
+          .or(`${ministryFilter},${visibilityFilter}`);
+
+        if (accessibleEvents?.length > 0) {
+          filters.id = accessibleEvents.map((event) => event.id);
+        } else {
+          filters.event_visibility = "public"; // Fallback to just public events
+        }
+      } else {
+        filters.event_visibility = "public"; // If no ministries, only show public events
+      }
+    } else if (role === "parishioner" || role === "coparent") {
+      // Parishioners/coparents see:
+      // 1. Public events
+      // 2. Private events from ministries they belong to via groups
+      const { data: groupMemberships } = await supabase
+        .from("group_members")
+        .select("groups(ministry_id)")
+        .eq("user_id", userId);
+
+      const ministryIds =
+        groupMemberships
+          ?.filter((item) => item.groups?.ministry_id)
+          .map((item) => item.groups.ministry_id) || [];
+
+      if (ministryIds.length > 0) {
+        // For parishioners with ministry connections, get their ministry's events + public events
+        const ministryFilter = `ministry_id.in.(${ministryIds.join(",")})`;
+        const visibilityFilter = "event_visibility.eq.public";
+
+        // Get all events that match either condition
+        const { data: accessibleEvents } = await supabase
+          .from("events")
+          .select("id")
+          .or(`${ministryFilter},${visibilityFilter}`);
+
+        if (accessibleEvents?.length > 0) {
+          filters.id = accessibleEvents.map((event) => event.id);
+        } else {
+          filters.event_visibility = "public"; // Fallback to just public events
+        }
+      } else {
+        filters.event_visibility = "public"; // If no ministries, only show public events
       }
     }
-    const order = [
-      { column: "event_date", ascending: true }, // Descending order by created_at
-    ];
 
-    // console.log("filters",filters)
+    const order = [{ column: "event_date", ascending: true }];
+
     // Fetch data using pagination
     const data = await paginate({
       key: "events",
@@ -202,7 +260,6 @@ export const getEvents = async ({
       filters,
       order,
     });
-    // console.log("backend data",data)
 
     return data;
   } catch (error) {
@@ -287,8 +344,6 @@ export const getAllEvents = async () => {
 // Updated getEventsCalendar to accept year and month as arguments
 export const getEventsCalendar = async (ministry = []) => {
   try {
-
-
     // Fetch all public events (no filtering by ministry)
     const publicEventsQuery = supabase
       .from("events")
@@ -304,7 +359,7 @@ export const getEventsCalendar = async (ministry = []) => {
             .select("*")
             .eq("event_visibility", "private")
             .in("ministry_id", ministry)
-            .gte("event_date",  new Date().toISOString()) // Apply ministry filter
+            .gte("event_date", new Date().toISOString()) // Apply ministry filter
         : null;
 
     // Execute both queries
@@ -442,9 +497,9 @@ export const getEventsByCreatorId = async (creatorId) => {
   const { data, error } = await supabase
     .from("events")
     .select("*")
-    .gte("event_date", now.toISOString()) 
-    .eq("creator_id", creatorId)         
-    .order("event_date", { ascending: false }); 
+    .gte("event_date", now.toISOString())
+    .eq("creator_id", creatorId)
+    .order("event_date", { ascending: false });
 
   if (error) {
     throw new Error(error.message);
@@ -487,14 +542,15 @@ export const replaceVolunteer = async ({
   }
 };
 
-export const removeAssignedVolunteer = async (volunteerId,eventId) => {
+export const removeAssignedVolunteer = async (volunteerId, eventId) => {
   if (!volunteerId) {
     throw new Error("Volunteer ID is required");
   }
   const { data, error: getError } = await supabase
     .from("event_volunteers")
     .select("*")
-    .eq("volunteer_id", volunteerId).eq("event_id",eventId);
+    .eq("volunteer_id", volunteerId)
+    .eq("event_id", eventId);
   if (getError) {
     throw new Error(error.message);
   }
@@ -506,7 +562,8 @@ export const removeAssignedVolunteer = async (volunteerId,eventId) => {
   const { error } = await supabase
     .from("event_volunteers")
     .delete()
-    .eq("volunteer_id", volunteerId).eq("event_id",eventId);
+    .eq("volunteer_id", volunteerId)
+    .eq("event_id", eventId);
 
   if (error) {
     throw new Error(error.message);
