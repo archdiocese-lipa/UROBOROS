@@ -131,7 +131,7 @@ const activateUser = async ({ id, payload }) => {
 
 const forgotPassword = async (email) => {
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: "https://togather.app/reset-password",
+    redirectTo: "https://archdioceseoflipa.togather.app/reset-password",
   });
   if (error) {
     console.error("Error sending reset password email:", error.message);
@@ -182,7 +182,7 @@ const sendChangeEmailVerification = async (email) => {
       email,
     },
     {
-      emailRedirectTo: "https://togather.app/profile",
+      emailRedirectTo: "https://archdioceseoflipa.togather.app/profile",
     }
   );
 
