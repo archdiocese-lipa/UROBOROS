@@ -58,7 +58,7 @@ const InviteFamily = () => {
 
       const response = await axios.post(
         // `${import.meta.env.VITE_UROBOROS_API_URL}/invite/send-invite`,
-        "https://uroboros-api.onrender.com/invite/send-invite",
+        "https://archdioceseoflipa-api.onrender.com/invite/send-invite",
         { email: data.email, inviterName },
         {
           headers: {

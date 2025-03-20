@@ -16,7 +16,7 @@ const AcceptInvite = () => {
 
       try {
         const response = await axios.post(
-          "https://uroboros-api.onrender.com/accept-invite",
+          "https://archdioceseoflipa-api.onrender.com/accept-invite",
           // `${import.meta.env.VITE_UROBOROS_API_URL}/accept-invite`,
           {
             token,
