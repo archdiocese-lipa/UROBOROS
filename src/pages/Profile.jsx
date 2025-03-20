@@ -11,6 +11,7 @@ import {
   DialogFooter,
   DialogTrigger,
   DialogDescription,
+  DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,7 +30,7 @@ import Loading from "@/components/Loading";
 import { Label } from "@/components/ui/label";
 import { Link } from "react-router-dom";
 import { fetchVicariatesAndParishes } from "@/services/authService";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Select,
   SelectContent,
@@ -37,9 +38,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { updateParish } from "@/services/userService";
+import { toast } from "@/hooks/use-toast";
 
 const Profile = () => {
   const { userData } = useUser();
+  const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isemailDialogOpen, setIsEmailDialogOpen] = useState(false);
   const [isNameDialogOpen, setIsNameDialogOpen] = useState(false);
@@ -143,18 +147,46 @@ const Profile = () => {
     });
   };
 
+  const updateParishMutation = useMutation({
+    mutationFn: updateParish,
+    onMutate: () => {
+      toast({
+        title: "Updating Parish",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error updating parish",
+        message: `${error.message}`,
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Parish Updated",
+      });
+      queryClient.invalidateQueries(["fetchVicariatesAndParishes"]);
+    },
+  });
+
   const handleUpdateParish = (data) => {
-    console.log(data);
+    updateParishMutation.mutate({
+      userId: userData?.id,
+      parishId: data.parish,
+      vicariateId: data.vicariate,
+    });
   };
 
   useEffect(() => {
     if (userData && vicariatesData) {
       let foundParishName = "";
+      let foundVicariateId = null;
 
+      // Find parish and its parent vicariate
       for (const vicariate of vicariatesData) {
         for (const parish of vicariate.parishes || []) {
           if (parish.id === userData.parish_id) {
             foundParishName = parish.name;
+            foundVicariateId = vicariate.id;
             break;
           }
         }
@@ -162,7 +194,18 @@ const Profile = () => {
       }
 
       setSelectedParish(foundParishName || "Select Parish");
-      parishForm.reset({ parish: userData.parish_id || "" });
+
+      // Set both vicariate and parish in the form
+      parishForm.reset({
+        vicariate: foundVicariateId || "",
+        parish: userData.parish_id || "",
+      });
+
+      // Also update the selected vicariate state if found
+      if (foundVicariateId) {
+        const vicariate = vicariatesData.find((v) => v.id === foundVicariateId);
+        setSelectedVicariate(vicariate);
+      }
     }
   }, [userData, vicariatesData, parishForm]);
 
@@ -212,6 +255,7 @@ const Profile = () => {
                                     const vicariate = vicariatesData?.find(
                                       (v) => v.id === value
                                     );
+                                    parishForm.setValue("parish", " ");
                                     setSelectedVicariate(vicariate);
                                   }}
                                   value={field.value}
@@ -278,9 +322,9 @@ const Profile = () => {
                             )}
                           />
                         )}
-                        <DialogFooter className="mt-6">
+                        <DialogClose className="mt-6 flex w-full justify-end">
                           <Button type="submit">Update Parish</Button>
-                        </DialogFooter>
+                        </DialogClose>
                       </form>
                     </Form>
                   </div>

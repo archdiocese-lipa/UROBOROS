@@ -228,6 +228,20 @@ const updateName = async ({ userId, first_name, last_name }) => {
   }
 };
 
+const updateParish = async ({ userId, parishId, vicariateId }) => {
+  const { error } = await supabase
+    .from("users")
+    .update({
+      parish_id: parishId,
+      vicariates_id: vicariateId,
+    })
+    .eq("id", userId);
+
+  if (error) {
+    throw new Error("Error updating parish!", error.message);
+  }
+};
+
 export {
   getUser,
   getUsersByRole,
@@ -241,4 +255,5 @@ export {
   updateEmail,
   updateName,
   resetPassword,
+  updateParish,
 };
