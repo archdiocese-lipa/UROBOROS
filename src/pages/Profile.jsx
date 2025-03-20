@@ -28,18 +28,42 @@ import {
 import Loading from "@/components/Loading";
 import { Label } from "@/components/ui/label";
 import { Link } from "react-router-dom";
+import { fetchVicariatesAndParishes } from "@/services/authService";
+import { useQuery } from "@tanstack/react-query";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const Profile = () => {
   const { userData } = useUser();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isemailDialogOpen, setIsEmailDialogOpen] = useState(false);
-  const [iseNameDialogOpen, setIsNameDialogOpen] = useState(false);
+  const [isNameDialogOpen, setIsNameDialogOpen] = useState(false);
+  const [selectedParish, setSelectedParish] = useState("");
+  const [selectedVicariate, setSelectedVicariate] = useState(null);
+  const [_selectedParishName, setSelectedParishName] =
+    useState("Select Parish");
+
+  const { data: vicariatesData, isLoading: _isLoadingParishes } = useQuery({
+    queryKey: ["fetchVicariatesAndParishes"],
+    queryFn: fetchVicariatesAndParishes,
+  });
 
   const contactSchema = z.object({
     contact_number: z.string().regex(/^[0-9]{11}$/, {
       message: "Contact number must be exactly 11 digits.",
     }),
   });
+
+  const parishSchema = z.object({
+    vicariate: z.string(),
+    parish: z.string(),
+  });
+
   const nameSchema = z.object({
     first_name: z.string().min(1, "First name is required."),
     last_name: z.string().min(1, "First name is required."),
@@ -56,6 +80,11 @@ const Profile = () => {
   const form = useForm({
     resolver: zodResolver(contactSchema),
     defaultValues: { contact_number: "" },
+  });
+
+  const parishForm = useForm({
+    resolver: zodResolver(parishSchema),
+    defaultValues: { vicariate: "", parish: "" },
   });
 
   const {
@@ -114,6 +143,29 @@ const Profile = () => {
     });
   };
 
+  const handleUpdateParish = (data) => {
+    console.log(data);
+  };
+
+  useEffect(() => {
+    if (userData && vicariatesData) {
+      let foundParishName = "";
+
+      for (const vicariate of vicariatesData) {
+        for (const parish of vicariate.parishes || []) {
+          if (parish.id === userData.parish_id) {
+            foundParishName = parish.name;
+            break;
+          }
+        }
+        if (foundParishName) break;
+      }
+
+      setSelectedParish(foundParishName || "Select Parish");
+      parishForm.reset({ parish: userData.parish_id || "" });
+    }
+  }, [userData, vicariatesData, parishForm]);
+
   const initials = `${getInitial(data?.first_name)}${getInitial(data?.last_name)}`;
 
   if (isLoading || !userData || !data) {
@@ -132,9 +184,113 @@ const Profile = () => {
 
         {/* Display Fields */}
         <div className="space-y-4">
+          <div className="flex flex-col items-start space-y-2">
+            <Label>Parish</Label>
+            <Dialog className="text-start">
+              <DialogTrigger>{selectedParish}</DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Vicariates</DialogTitle>
+                  <DialogDescription>
+                    Please select your Vicariate/Parish
+                  </DialogDescription>
+                  <div>
+                    <Form {...parishForm}>
+                      <form
+                        onSubmit={parishForm.handleSubmit(handleUpdateParish)}
+                      >
+                        <FormField
+                          control={parishForm.control}
+                          name="vicariate"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Vicariate</FormLabel>
+                              <FormControl>
+                                <Select
+                                  onValueChange={(value) => {
+                                    field.onChange(value);
+                                    const vicariate = vicariatesData?.find(
+                                      (v) => v.id === value
+                                    );
+                                    setSelectedVicariate(vicariate);
+                                  }}
+                                  value={field.value}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select Vicariate" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {vicariatesData?.map((vicariate) => (
+                                      <SelectItem
+                                        key={vicariate.id}
+                                        value={vicariate.id}
+                                      >
+                                        {vicariate.name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        {selectedVicariate && (
+                          <FormField
+                            control={parishForm.control}
+                            name="parish"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Parish</FormLabel>
+                                <FormControl>
+                                  <Select
+                                    onValueChange={(value) => {
+                                      parishForm.setValue("parish", value);
+                                      const parish =
+                                        selectedVicariate?.parishes.find(
+                                          (p) => p.id === value
+                                        );
+                                      if (parish) {
+                                        setSelectedParishName(parish.name);
+                                      }
+                                    }}
+                                    value={field.value}
+                                  >
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select Parish" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {selectedVicariate?.parishes.map(
+                                        (parish) => (
+                                          <SelectItem
+                                            key={parish.id}
+                                            value={parish.id}
+                                          >
+                                            {parish.name}
+                                          </SelectItem>
+                                        )
+                                      )}
+                                    </SelectContent>
+                                  </Select>
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        )}
+                        <DialogFooter className="mt-6">
+                          <Button type="submit">Update Parish</Button>
+                        </DialogFooter>
+                      </form>
+                    </Form>
+                  </div>
+                </DialogHeader>
+              </DialogContent>
+            </Dialog>
+          </div>
           <div className="flex items-center justify-between">
             <Label>Name</Label>
-            <Dialog open={iseNameDialogOpen} onOpenChange={setIsNameDialogOpen}>
+            <Dialog open={isNameDialogOpen} onOpenChange={setIsNameDialogOpen}>
               <DialogTrigger asChild>
                 <Button>Edit</Button>
               </DialogTrigger>
@@ -324,7 +480,7 @@ const Profile = () => {
                       </DialogFooter>
                     </form>
                   </Form>
-                </div>{" "}
+                </div>
               </DialogContent>
             </Dialog>
           </div>

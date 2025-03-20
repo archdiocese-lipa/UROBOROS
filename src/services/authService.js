@@ -167,4 +167,46 @@ const fetchUserById = async (userId) => {
   }
 };
 
-export { registerUser, updateContact, fetchUserById, registerCoParent };
+const fetchVicariatesAndParishes = async () => {
+  try {
+    // Step 1: Fetch all vicariates
+    const { data: vicariates, error: vicariatesError } = await supabase
+      .from("vicariates")
+      .select("id, name")
+      .order("name");
+
+    if (vicariatesError) throw vicariatesError;
+
+    // Step 2: Fetch all parishes with their vicariate_id
+    const { data: parishes, error: parishesError } = await supabase
+      .from("parishes")
+      .select(
+        "id, name, vicariate_id, address, established, titular, feast_date, contact, email"
+      )
+      .order("name");
+
+    if (parishesError) throw parishesError;
+
+    // Step 3: Group parishes by vicariate
+    const vicariatesWithParishes = vicariates.map((vicariate) => ({
+      id: vicariate.id,
+      name: vicariate.name,
+      parishes: parishes.filter(
+        (parish) => parish.vicariate_id === vicariate.id
+      ),
+    }));
+
+    return vicariatesWithParishes;
+  } catch (error) {
+    console.error("Error fetching vicariates and parishes:", error);
+    throw error;
+  }
+};
+
+export {
+  registerUser,
+  updateContact,
+  fetchUserById,
+  registerCoParent,
+  fetchVicariatesAndParishes,
+};
