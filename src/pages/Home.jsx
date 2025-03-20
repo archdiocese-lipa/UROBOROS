@@ -58,7 +58,7 @@ const Home = () => {
           </p>
         </div>
         <p className="absolute top-[calc(9rem_+_50dvw)] w-screen max-w-[80dvw] whitespace-pre text-[5.8dvw] font-medium text-[#2C3562] text-center lg:text-left sm:top-[calc(20dvh_+_14rem)] sm:max-w-xl sm:text-[2.6rem] lg:bottom-[calc(50dvh_-_18dvh)] lg:top-[auto] lg:ml-[24.2dvw] lg:max-w-full lg:text-[4.6dvh]">
-          {"Placeholder subheading\n "}
+          {"\n "}
         </p>
         
       </div>

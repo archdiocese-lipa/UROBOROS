@@ -187,7 +187,7 @@ const ParishionerRegister = () => {
                       <FormControl>
                         <Input
                           type="tel"
-                          placeholder="+441172345678"
+                          placeholder="09123456789"
                           {...field}
                         />
                       </FormControl>
@@ -276,14 +276,14 @@ const ParishionerRegister = () => {
                   >
                     Terms and Conditions.
                   </a> */}
-                  I confirm that St Laurence’s Parish may store the personal
+                  I confirm that the Archdiocese of Lipa may store the personal
                   information provided here and may use this data to contact me
-                  (including by email) about Parish support, news, and
-                  activities. This data may be shared with Parish staff and
-                  volunteers administering the Parish database, and with
+                  (including by email) about Archdiocese support, news, and
+                  activities. This data may be shared with Archdiocese staff and
+                  volunteers administering the Archdiocese database, and with
                   volunteers who organise support or activities in which I
                   expressed an interest. I understand that I can withdraw this
-                  consent any time by contacting the Parish Office.
+                  consent any time by contacting the Archdiocese Office.
                 </div>
                 <DialogFooter>
                   <DialogClose asChild>
