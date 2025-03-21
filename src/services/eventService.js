@@ -345,9 +345,12 @@ export const getEventById = async (eventId) => {
   }
 };
 
-export const getAllEvents = async () => {
+export const getAllEvents = async (userId) => {
   try {
-    const { data, error } = await supabase.from("events").select("*"); // Select all columns from the events table
+    const { data, error } = await supabase
+      .from("events")
+      .select("*")
+      .eq("creator_id", userId); // Select all columns from the events table
 
     if (error) {
       throw new Error(error.message); // Handle any errors
