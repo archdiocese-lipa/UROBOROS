@@ -43,7 +43,7 @@ const CreateMinistry = ({
   const [openDialog, setOpenDialog] = useState(false);
   const queryClient = useQueryClient();
   const [imagePreview, setImagePreview] = useState(null);
-  const fileInputRef = useRef(null); // Use ref instead of key for file input
+  const fileInputRef = useRef(null);
   const isEditMode = !!ministryId;
 
   // Get coordinator options - only needed for create mode
@@ -61,7 +61,7 @@ const CreateMinistry = ({
 
   // Create a schema based on edit mode
   const formSchema = isEditMode
-    ? createMinistrySchema.omit({ coordinators: true }) // Remove coordinators requirement in edit mode
+    ? createMinistrySchema.omit({ coordinators: true })
     : createMinistrySchema;
 
   const form = useForm({
@@ -277,7 +277,7 @@ const CreateMinistry = ({
                     <FormLabel className="font-bold">Ministry Image</FormLabel>
                     <FormControl>
                       <Input
-                        ref={fileInputRef} // Use ref instead of key
+                        ref={fileInputRef}
                         id="file-input"
                         type="file"
                         accept="image/png, image/jpeg"

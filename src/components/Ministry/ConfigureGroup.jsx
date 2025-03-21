@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import PropTypes from "prop-types";
 import {
@@ -32,12 +32,31 @@ import useGroups from "@/hooks/useGroups";
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
 import { Loader2 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { getInitial } from "@/lib/utils";
 
 const editGroupSchema = z.object({
   name: z.string().min(2, {
     message: "Name is required.",
   }),
   description: z.string().optional(),
+  groupImage: z
+    .union([
+      z
+        .instanceof(File)
+        .refine(
+          (file) => file.size <= 5 * 1024 * 1024,
+          "Image size must be less than 5MB"
+        )
+        .refine(
+          (file) => ["image/jpeg", "image/png"].includes(file.type),
+          "Invalid file type. Allowed: jpg, jpeg, png"
+        ),
+      z.string(), // For URLs
+      z.null(), // For no image
+      z.undefined(), // For optional
+    ])
+    .optional(),
 });
 
 const ConfigureGroup = ({ ministryId, ministryName, ministryDescription }) => {
@@ -72,15 +91,32 @@ const ConfigureGroup = ({ ministryId, ministryName, ministryDescription }) => {
               key={group.id}
               className="group mt-2 flex items-center justify-between rounded-lg bg-primary-outline/20 px-4 py-2 hover:bg-primary"
             >
-              <div>
-                <Label className="font-semibold">{group.name}</Label>
-                <p className="text-xs text-primary-text">{group.description}</p>
+              <div className="flex items-center gap-x-2">
+                <div>
+                  <Avatar className="flex h-10 w-10 justify-center rounded-[4px] bg-primary">
+                    <AvatarImage
+                      className="h-10 w-10 rounded-[4px] object-cover"
+                      src={group?.image_url}
+                      alt="profile picture"
+                    />
+                    <AvatarFallback className="h-10 w-10 rounded-[4px] bg-primary">
+                      {getInitial(group?.name)}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
+                <div>
+                  <Label className="font-semibold">{group.name}</Label>
+                  <p className="text-xs text-primary-text">
+                    {group.description}
+                  </p>
+                </div>
               </div>
               <div className="flex items-center gap-x-2 border-primary-text/30 pl-2 transition-opacity duration-150 group-hover:opacity-100 lg:opacity-0">
                 <EditGroup
                   groupId={group.id}
                   groupName={group.name}
                   groupDescription={group.description}
+                  groupImage={group.image_url}
                 />
                 <DeleteGroup groupId={group.id} />
               </div>
@@ -103,15 +139,18 @@ ConfigureGroup.propTypes = {
   ministryDescription: PropTypes.string,
 };
 
-const EditGroup = ({ groupId, groupName, groupDescription }) => {
+const EditGroup = ({ groupId, groupName, groupDescription, groupImage }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { editGroupMutation } = useGroups({ groupId });
+  const [imagePreview, setImagePreview] = useState(groupImage || null);
+  const fileInputRef = useRef(null);
 
   const form = useForm({
     resolver: zodResolver(editGroupSchema),
     defaultValues: {
       name: groupName,
       description: groupDescription || "",
+      groupImage: groupImage || null,
     },
   });
 
@@ -121,6 +160,7 @@ const EditGroup = ({ groupId, groupName, groupDescription }) => {
         groupId,
         name: data.name,
         description: data.description,
+        groupImage: data.groupImage,
       },
       {
         onSuccess: () => {
@@ -151,7 +191,7 @@ const EditGroup = ({ groupId, groupName, groupDescription }) => {
             Update the information for this group.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogBody>
+        <AlertDialogBody className="no-scrollbar max-h-96 overflow-y-scroll">
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(onSubmit)}
@@ -187,6 +227,67 @@ const EditGroup = ({ groupId, groupName, groupDescription }) => {
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control}
+                name="groupImage"
+                render={({ field: { onChange } }) => (
+                  <FormItem>
+                    <FormLabel className="font-bold">Group Image</FormLabel>
+                    <FormControl>
+                      <Input
+                        ref={fileInputRef}
+                        id="file-input"
+                        type="file"
+                        accept="image/png, image/jpeg"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const previewUrl = URL.createObjectURL(file);
+                            setImagePreview(previewUrl);
+                            onChange(file);
+                          }
+                        }}
+                      />
+                    </FormControl>
+                    {imagePreview ? (
+                      <div className="relative h-full min-h-[210px] w-full overflow-hidden rounded-lg">
+                        <img
+                          className="w-full object-cover"
+                          src={imagePreview}
+                          alt="Group logo"
+                        />
+                        <Icon
+                          onClick={() => {
+                            setImagePreview(null);
+                            form.setValue("groupImage", null);
+                            if (fileInputRef.current) {
+                              fileInputRef.current.value = ""; // Safely reset file input
+                            }
+                          }}
+                          className="absolute right-4 top-4 text-2xl text-accent hover:cursor-pointer hover:text-red-600"
+                          icon={"mingcute:close-circle-fill"}
+                        />
+                      </div>
+                    ) : (
+                      <Label htmlFor="file-input">
+                        <div className="flex h-[210px] flex-col items-center justify-center rounded-lg border border-dashed border-accent/60 hover:cursor-pointer hover:bg-accent/5">
+                          <div className="flex flex-shrink-0 items-center justify-center rounded-md">
+                            <Icon
+                              className="h-11 w-11 text-[#CDA996]"
+                              icon={"mingcute:pic-fill"}
+                            />
+                          </div>
+                          <p className="text-[12px] font-semibold text-[#CDA996]">
+                            {groupImage ? "Change" : "Upload"} Group Image
+                          </p>
+                        </div>
+                      </Label>
+                    )}
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </form>
           </Form>
         </AlertDialogBody>
@@ -197,7 +298,10 @@ const EditGroup = ({ groupId, groupName, groupDescription }) => {
           <AlertDialogAction
             type="submit"
             form="form"
-            disabled={editGroupMutation.isPending || !form.formState.isDirty}
+            disabled={
+              editGroupMutation.isPending ||
+              (!form.formState.isDirty && imagePreview === groupImage)
+            }
           >
             {editGroupMutation.isPending ? (
               <>
@@ -218,6 +322,7 @@ EditGroup.propTypes = {
   groupId: PropTypes.string.isRequired,
   groupName: PropTypes.string.isRequired,
   groupDescription: PropTypes.string,
+  groupImage: PropTypes.string,
 };
 
 const DeleteGroup = ({ groupId }) => {

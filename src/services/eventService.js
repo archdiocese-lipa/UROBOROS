@@ -9,6 +9,7 @@ export const createEvent = async (eventData) => {
       eventCategory,
       eventVisibility,
       ministry,
+      groups,
       eventDate, // formatted date from the form
       eventTime, // formatted time from the form
       eventDescription,
@@ -25,6 +26,7 @@ export const createEvent = async (eventData) => {
           event_category: eventCategory,
           event_visibility: eventVisibility,
           ministry_id: ministry || null, // Ministry is optional
+          group_id: groups || null,
           event_date: eventDate, // formatted date (yyyy-MM-dd)
           event_time: eventTime, // formatted time (HH:mm:ss)
           event_description: eventDescription || null, // Optional field
@@ -70,6 +72,7 @@ export const updateEvent = async (eventData) => {
       eventCategory,
       eventVisibility,
       ministry,
+      groups,
       eventDate, // formatted date from the form
       eventTime, // formatted time from the form
       eventDescription,
@@ -84,6 +87,7 @@ export const updateEvent = async (eventData) => {
         event_category: eventCategory,
         event_visibility: eventVisibility,
         ministry_id: ministry || null, // Ministry is optional
+        group_id: groups || null,
         event_date: eventDate, // formatted date (yyyy-MM-dd)
         event_time: eventTime, // formatted time (HH:mm:ss)
         event_description: eventDescription || null, // Optional field

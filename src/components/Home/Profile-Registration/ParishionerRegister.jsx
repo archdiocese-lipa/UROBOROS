@@ -276,8 +276,17 @@ const ParishionerRegister = () => {
                   >
                     Terms and Conditions.
                   </a> */}
-                  <span className="text-justify mb-[0.5rem]">I confirm that the Archdiocese of Lipa may store the personal information provided here and may use this data to contact me (including by email) about Archdiocese support, news, and activities. This data may be shared with Archdiocese staff and volunteers administering the Archdiocese database, and with volunteers who organise support or activities in which I expressed an interest. I understand that I can withdraw this consent at any time by contacting the Archidiocese Office.</span>
-                  
+                  <span className="mb-[0.5rem] text-justify">
+                    I confirm that the Archdiocese of Lipa may store the
+                    personal information provided here and may use this data to
+                    contact me (including by email) about Archdiocesan support,
+                    news, and activities. This data may be shared with
+                    Archdiocesan staff and volunteers administering the
+                    Archdiocesan database, and with volunteers who organise
+                    support or activities in which I expressed an interest. I
+                    understand that I can withdraw this consent at any time by
+                    contacting the Archidiocesan Office.
+                  </span>
                 </div>
                 <DialogFooter>
                   <DialogClose asChild>
