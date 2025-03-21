@@ -173,7 +173,7 @@ const fetchVicariatesAndParishes = async () => {
     const { data: vicariates, error: vicariatesError } = await supabase
       .from("vicariates")
       .select("id, name")
-      .order("name");
+      .order("created_at");
 
     if (vicariatesError) throw vicariatesError;
 

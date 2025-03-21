@@ -11,25 +11,11 @@ export const getOneMinistryGroup = async (ministryId) => {
   return data;
 };
 
-export const getMinistryVolunteers = async (ministryId) => {
-  const { data: getGroup, error: groupError } = await supabase
-    .from("groups")
-    .select("id, name, ministry_id")
-    .eq("ministry_id", ministryId)
-    .eq("name", "Volunteers")
-    .single();
-
-  if (groupError) {
-    if (groupError.code === "PGRST116") {
-      return []; // Return empty array if no volunteers group exists
-    }
-    throw new Error(groupError.message);
-  }
-
+export const getMinistryVolunteers = async (groupId) => {
   const { data: volunteerList, error: volunteerError } = await supabase
     .from("group_members")
     .select(`users(id, first_name, last_name)`)
-    .eq("group_id", getGroup.id);
+    .eq("group_id", groupId);
 
   if (volunteerError) {
     throw new Error(volunteerError.message);

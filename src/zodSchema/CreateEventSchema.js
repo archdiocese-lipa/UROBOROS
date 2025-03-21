@@ -4,7 +4,6 @@ export const createEventSchema = z.object({
   eventName: z.string().min(2, {
     message: "Event name is required.",
   }),
-  eventCategory: z.string().min(1, { message: "Category is required." }),
   eventVisibility: z.string().min(1, { message: "Visibility." }),
   ministry: z
     .string()
@@ -18,11 +17,17 @@ export const createEventSchema = z.object({
         });
       }
     }),
+  // groups: z.string().optional().superRefine((data, ctx) => {
+  //   if(data.eventVisibility === "")
+  // }),
   eventDate: z
-    .instanceof(Date, { message: "Please select date." }) 
+    .instanceof(Date, { message: "Please select date." })
     .refine((date) => !isNaN(date.getTime()), {
       message: "Date is required.",
-    }).refine((date) => date >= new Date(),{message:"Date must not be in the past."}),
+    })
+    .refine((date) => date >= new Date(), {
+      message: "Date must not be in the past.",
+    }),
   eventTime: z
     .instanceof(Date, { message: "Time is required" })
     .refine((date) => date.getHours() >= 0 && date.getHours() < 24, {
@@ -30,6 +35,6 @@ export const createEventSchema = z.object({
     }),
   eventDescription: z.string().optional().default(""),
   assignVolunteer: z
-    .array(z.string()) 
+    .array(z.string())
     .min(1, { message: "At least one volunteer must be assigned." }),
 });

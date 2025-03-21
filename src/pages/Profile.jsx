@@ -11,7 +11,6 @@ import {
   DialogFooter,
   DialogTrigger,
   DialogDescription,
-  DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,6 +50,7 @@ const Profile = () => {
   const [selectedVicariate, setSelectedVicariate] = useState(null);
   const [_selectedParishName, setSelectedParishName] =
     useState("Select Parish");
+  const [isParishDialogOpen, setIsParishDialogOpen] = useState(false);
 
   const { data: vicariatesData, isLoading: _isLoadingParishes } = useQuery({
     queryKey: ["fetchVicariatesAndParishes"],
@@ -165,6 +165,8 @@ const Profile = () => {
         title: "Parish Updated",
       });
       queryClient.invalidateQueries(["fetchVicariatesAndParishes"]);
+      //Close the dialog on success
+      setIsParishDialogOpen(false);
     },
   });
 
@@ -229,8 +231,14 @@ const Profile = () => {
         <div className="space-y-4">
           <div className="flex flex-col items-start space-y-2">
             <Label>Parish</Label>
-            <Dialog className="text-start">
-              <DialogTrigger>{selectedParish}</DialogTrigger>
+            <Dialog
+              open={isParishDialogOpen}
+              onOpenChange={setIsParishDialogOpen}
+              className="text-start"
+            >
+              <DialogTrigger onClick={() => setIsParishDialogOpen(true)}>
+                {selectedParish}
+              </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Vicariates</DialogTitle>
@@ -264,12 +272,12 @@ const Profile = () => {
                                     <SelectValue placeholder="Select Vicariate" />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    {vicariatesData?.map((vicariate) => (
+                                    {vicariatesData?.map((vicariate, index) => (
                                       <SelectItem
                                         key={vicariate.id}
                                         value={vicariate.id}
                                       >
-                                        {vicariate.name}
+                                        {`Vicariate ${index + 1} - ${vicariate.name}`}
                                       </SelectItem>
                                     ))}
                                   </SelectContent>
@@ -322,9 +330,9 @@ const Profile = () => {
                             )}
                           />
                         )}
-                        <DialogClose className="mt-6 flex w-full justify-end">
+                        <DialogFooter className="mt-6 flex w-full justify-end">
                           <Button type="submit">Update Parish</Button>
-                        </DialogClose>
+                        </DialogFooter>
                       </form>
                     </Form>
                   </div>
@@ -472,7 +480,11 @@ const Profile = () => {
             </label>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button onClick={form.setValue(data?.contact_number)}>
+                <Button
+                  onClick={() =>
+                    form.reset({ contact_number: data?.contact_number })
+                  }
+                >
                   Edit
                 </Button>
               </DialogTrigger>
