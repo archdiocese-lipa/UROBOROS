@@ -8,12 +8,9 @@ import EventInfoDialog from "./Schedule/EventInfoDialog";
 import { Button } from "./ui/button";
 import { useState } from "react";
 import useRoleSwitcher from "@/hooks/useRoleSwitcher";
-import useEvent from "@/hooks/useEvent";
+import { getAllEvents } from "@/services/eventService";
 
 const Calendar = ({ events }) => {
-
-
-  const { calendarEvents } = useEvent();
   const [selectedShowCalendar, setSelectedShowCalendar] = useState("Events");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -26,8 +23,16 @@ const Calendar = ({ events }) => {
     enabled: !!userData?.id,
   });
 
+  const { data: calendarEvents } = useQuery({
+    queryKey: ["calendarevents", userData?.id],
+    queryFn: () => getAllEvents(userData?.id),
+    enabled: !!userData?.id,
+  });
+
   // Make sure getEvents is available and is an array
-  const eventArray = Array.isArray(calendarEvents?.data) ? calendarEvents.data : [];
+  const eventArray = Array.isArray(calendarEvents?.data)
+    ? calendarEvents.data
+    : [];
   const safeMeetings = Array.isArray(meetings) ? meetings : [];
 
   const eventData = events
@@ -43,7 +48,6 @@ const Calendar = ({ events }) => {
         description: item.event_description,
         id: item.id,
       }));
-
 
   const meetingData = safeMeetings.map((meeting) => ({
     title: meeting.meeting_name,
