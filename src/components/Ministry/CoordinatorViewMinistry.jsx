@@ -161,7 +161,7 @@ const MinistryGroups = ({
 
   return (
     <div className="px-4 pb-4">
-      <div className="space-y-1 pl-9">
+      <div className="space-y-1 pl-5">
         {groupsData.map((group) => (
           <div key={group.id}>
             {/* Mobile View using Sheet */}
@@ -174,7 +174,19 @@ const MinistryGroups = ({
                       : "hover:bg-primary/5"
                   }`}
                 >
-                  {group.name}
+                  <div className="flex items-center gap-x-2">
+                    <Avatar className="flex h-10 w-10 justify-center rounded-[4px] bg-primary">
+                      <AvatarImage
+                        className="h-10 w-10 rounded-[4px] object-cover"
+                        src={group?.image_url}
+                        alt="profile picture"
+                      />
+                      <AvatarFallback className="h-10 w-10 rounded-[4px] bg-primary">
+                        {getInitial(group?.name)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span>{group.name}</span>
+                  </div>
                 </SheetTrigger>
                 <SheetContent className="w-full">
                   <SheetHeader>
@@ -221,15 +233,29 @@ const MinistryGroups = ({
               }`}
               onClick={() => onSelectGroup(group)}
             >
-              <span
-                className={
-                  selectedGroup === group.id
-                    ? "font-bold text-primary-text"
-                    : ""
-                }
-              >
-                {group.name}
-              </span>
+              <div className="flex items-center gap-x-2">
+                <div>
+                  <Avatar className="flex h-10 w-10 justify-center rounded-[4px] bg-primary">
+                    <AvatarImage
+                      className="h-10 w-10 rounded-[4px] object-cover"
+                      src={group?.image_url}
+                      alt="profile picture"
+                    />
+                    <AvatarFallback className="h-10 w-10 rounded-[4px] bg-primary">
+                      {getInitial(group?.name)}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
+                <span
+                  className={
+                    selectedGroup === group.id
+                      ? "font-bold text-primary-text"
+                      : ""
+                  }
+                >
+                  {group.name}
+                </span>
+              </div>
             </div>
           </div>
         ))}
@@ -244,12 +270,6 @@ MinistryGroups.propTypes = {
   onSelectGroup: PropTypes.func.isRequired,
   groups: PropTypes.array,
   isLoading: PropTypes.bool,
-};
-
-MinistryGroups.defaultProps = {
-  groups: [],
-  isLoading: false,
-  selectedGroup: null,
 };
 
 // Define MemberMinistryItem component for member groups
@@ -275,6 +295,11 @@ const MemberMinistryItem = ({
         </div>
         <div className="mr-3">
           <Avatar>
+            <AvatarImage
+              className="h-10 w-10 rounded-[4px] object-cover"
+              src={ministry.image_url}
+              alt="profile picture"
+            />
             <AvatarFallback>
               {ministry.ministry_name?.substring(0, 2).toUpperCase() || "MN"}
             </AvatarFallback>
@@ -290,7 +315,7 @@ const MemberMinistryItem = ({
 
       {isExpanded && (
         <div className="px-4 pb-4">
-          <div className="space-y-1 pl-9">
+          <div className="space-y-1 pl-5">
             {ministry.groups.map((group) => (
               <div key={group.group_id}>
                 {/* Mobile View using Sheet */}
@@ -303,7 +328,19 @@ const MemberMinistryItem = ({
                           : "hover:bg-primary/5"
                       }`}
                     >
-                      {group.group_name}
+                      <div className="flex items-center gap-x-2">
+                        <Avatar className="flex h-10 w-10 justify-center rounded-[4px] bg-primary">
+                          <AvatarImage
+                            className="h-10 w-10 rounded-[4px] object-cover"
+                            src={group?.image_url}
+                            alt="profile picture"
+                          />
+                          <AvatarFallback className="h-10 w-10 rounded-[4px] bg-primary">
+                            {getInitial(group?.group_name)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span>{group.group_name}</span>
+                      </div>
                     </SheetTrigger>
                     <SheetContent className="w-full">
                       <SheetHeader>
@@ -360,7 +397,19 @@ const MemberMinistryItem = ({
                         : ""
                     }
                   >
-                    {group.group_name}
+                    <div className="flex items-center gap-x-2">
+                      <Avatar className="flex h-10 w-10 justify-center rounded-[4px] bg-primary">
+                        <AvatarImage
+                          className="h-10 w-10 rounded-[4px] object-cover"
+                          src={group?.image_url}
+                          alt="profile picture"
+                        />
+                        <AvatarFallback className="h-10 w-10 rounded-[4px] bg-primary">
+                          {getInitial(group?.group_name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span>{group.group_name}</span>
+                    </div>
                   </span>
                 </div>
               </div>
@@ -376,11 +425,13 @@ MemberMinistryItem.propTypes = {
   ministry: PropTypes.shape({
     ministry_id: PropTypes.string.isRequired,
     ministry_name: PropTypes.string.isRequired,
+    image_url: PropTypes.string,
     groups: PropTypes.arrayOf(
       PropTypes.shape({
         group_id: PropTypes.string.isRequired,
         group_name: PropTypes.string.isRequired,
         description: PropTypes.string,
+        image_url: PropTypes.string,
       })
     ).isRequired,
   }).isRequired,
@@ -489,7 +540,7 @@ const CoordinatorViewMinistry = () => {
 
   return (
     <div className="flex h-full flex-col text-primary-text lg:flex-row">
-      <aside className="w-full overflow-y-auto border-primary-outline/50 lg:max-w-[25rem] lg:border-r">
+      <aside className="no-scrollbar w-full overflow-y-auto border-primary-outline/50 lg:max-w-[25rem] lg:border-r">
         <div className="mb-4">
           <div className="px-8 py-4">
             <Label className="text-[20px] font-bold">Your Ministries</Label>

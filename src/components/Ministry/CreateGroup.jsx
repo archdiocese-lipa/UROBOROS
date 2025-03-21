@@ -1,3 +1,4 @@
+import { useMemo, useState, useRef } from "react";
 import PropTypes from "prop-types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -31,21 +32,42 @@ import { useQuery } from "@tanstack/react-query";
 import { getUsersByRole } from "@/services/userService";
 import { useUser } from "@/context/useUser";
 import useGroups from "@/hooks/useGroups";
-import { useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import useMinistry from "@/hooks/useMinistry";
+import { Label } from "../ui/label";
+import { Icon } from "@iconify/react";
 
 const createGroupSchema = z.object({
   name: z.string().min(2, {
     message: "Name is required.",
   }),
   description: z.string().optional(),
+  groupImage: z
+    .union([
+      z
+        .instanceof(File)
+        .refine(
+          (file) => file.size <= 5 * 1024 * 1024,
+          "Image size must be less than 5MB"
+        )
+        .refine(
+          (file) => ["image/jpeg", "image/png"].includes(file.type),
+          "Invalid file type. Allowed: jpg, jpeg, png"
+        ),
+      z.string(), // For URLs
+      z.null(), // For no image
+      z.undefined(), // For optional
+    ])
+    .optional(),
   members: z.array(z.string()).optional(),
 });
 
 const CreateGroup = ({ ministryId }) => {
   const [openDialog, setOpenDialog] = useState(false);
   const { userData } = useUser();
+
+  const [imagePreview, setImagePreview] = useState(null);
+  const fileInputRef = useRef(null);
 
   const { coordinators: ministryCoordinatorsQuery } = useMinistry({
     ministryId,
@@ -155,6 +177,7 @@ const CreateGroup = ({ ministryId }) => {
         description: data.description,
         created_by: userData?.id,
         members: data.members,
+        groupImage: data.groupImage,
       },
       {
         onSuccess: () => {
@@ -216,6 +239,67 @@ const CreateGroup = ({ ministryId }) => {
                         {...field}
                       />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="groupImage"
+                render={({ field: { onChange } }) => (
+                  <FormItem>
+                    <FormLabel className="font-bold">Group Image</FormLabel>
+                    <FormControl>
+                      <Input
+                        ref={fileInputRef}
+                        id="file-input"
+                        type="file"
+                        accept="image/png, image/jpeg"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const previewUrl = URL.createObjectURL(file);
+                            setImagePreview(previewUrl);
+                            onChange(file);
+                          }
+                        }}
+                      />
+                    </FormControl>
+                    {imagePreview ? (
+                      <div className="relative h-full min-h-[210px] w-full overflow-hidden rounded-lg">
+                        <img
+                          className="w-full object-cover"
+                          src={imagePreview}
+                          alt="Group logo"
+                        />
+                        <Icon
+                          onClick={() => {
+                            setImagePreview(null);
+                            form.setValue("groupImage", null);
+                            if (fileInputRef.current) {
+                              fileInputRef.current.value = ""; // Safely reset file input
+                            }
+                          }}
+                          className="absolute right-4 top-4 text-2xl text-accent hover:cursor-pointer hover:text-red-600"
+                          icon={"mingcute:close-circle-fill"}
+                        />
+                      </div>
+                    ) : (
+                      <Label htmlFor="file-input">
+                        <div className="flex h-[210px] flex-col items-center justify-center rounded-lg border border-dashed border-accent/60 hover:cursor-pointer hover:bg-accent/5">
+                          <div className="flex flex-shrink-0 items-center justify-center rounded-md">
+                            <Icon
+                              className="h-11 w-11 text-[#CDA996]"
+                              icon={"mingcute:pic-fill"}
+                            />
+                          </div>
+                          <p className="text-[12px] font-semibold text-[#CDA996]">
+                            Upload Group Image
+                          </p>
+                        </div>
+                      </Label>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}

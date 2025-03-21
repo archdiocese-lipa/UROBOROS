@@ -11,25 +11,11 @@ export const getOneMinistryGroup = async (ministryId) => {
   return data;
 };
 
-export const getMinistryVolunteers = async (ministryId) => {
-  const { data: getGroup, error: groupError } = await supabase
-    .from("groups")
-    .select("id, name, ministry_id")
-    .eq("ministry_id", ministryId)
-    .eq("name", "Volunteers")
-    .single();
-
-  if (groupError) {
-    if (groupError.code === "PGRST116") {
-      return []; // Return empty array if no volunteers group exists
-    }
-    throw new Error(groupError.message);
-  }
-
+export const getMinistryVolunteers = async (groupId) => {
   const { data: volunteerList, error: volunteerError } = await supabase
     .from("group_members")
     .select(`users(id, first_name, last_name)`)
-    .eq("group_id", getGroup.id);
+    .eq("group_id", groupId);
 
   if (volunteerError) {
     throw new Error(volunteerError.message);
@@ -105,7 +91,7 @@ export const getMinistryGroups = async (userId) => {
       .select(
         `id, 
          joined_at, 
-         groups(id, name, description, ministry_id, ministry:ministries(id, ministry_name, image_url)), 
+         groups(id, name, description, image_url, ministry_id, ministry:ministries(id, ministry_name, image_url)), 
          users(id)`
       )
       .eq("user_id", userId);
@@ -119,22 +105,32 @@ export const getMinistryGroups = async (userId) => {
     const groupedData = data.reduce((acc, item) => {
       const ministryId = item.groups.ministry.id;
       const ministryName = item.groups.ministry.ministry_name;
-      const imageUrl = item.groups.ministry.image_url;
+      const ministryImageUrl = item.groups.ministry.image_url;
+      const groupImageUrl = item.groups.image_url;
 
       // Get the public URL properly
-      let publicUrl = null;
-      if (imageUrl) {
+      let ministryPublicUrl = null;
+      if (ministryImageUrl) {
         const { data: urlData } = supabase.storage
           .from("Uroboros")
-          .getPublicUrl(imageUrl);
-        publicUrl = urlData.publicUrl;
+          .getPublicUrl(ministryImageUrl);
+        ministryPublicUrl = urlData.publicUrl;
+      }
+
+      // Get the public URL for group image
+      let groupPublicUrl = null;
+      if (groupImageUrl) {
+        const { data: urlData } = supabase.storage
+          .from("Uroboros")
+          .getPublicUrl(groupImageUrl);
+        groupPublicUrl = urlData.publicUrl;
       }
 
       if (!acc[ministryId]) {
         acc[ministryId] = {
           ministry_id: ministryId,
           ministry_name: ministryName,
-          image_url: publicUrl,
+          image_url: ministryPublicUrl,
           groups: [],
         };
       }
@@ -143,6 +139,7 @@ export const getMinistryGroups = async (userId) => {
         group_id: item.groups.id,
         group_name: item.groups.name,
         description: item.groups.description,
+        image_url: groupPublicUrl,
         joined_at: item.joined_at,
       });
 

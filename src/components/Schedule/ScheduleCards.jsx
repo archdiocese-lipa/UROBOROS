@@ -33,9 +33,8 @@ const ScheduleCards = ({
   j,
 }) => {
   const { userData } = useUser();
-  const {temporaryRole} = useRoleSwitcher();
+  const { temporaryRole } = useRoleSwitcher();
   const [disableEdit, setDisabledEdit] = useState(false);
-
 
   useEffect(() => {
     if (event.event_date) {
@@ -93,23 +92,24 @@ const ScheduleCards = ({
             </p>
           </div>
         </div>
-        {userData?.role === ROLES[0] && (
+        {(userData?.role === ROLES[0] || userData?.role === ROLES[4]) && (
           <Dialog
             open={editDialogOpenIndex === `${i}-${j}`}
             onOpenChange={(isOpen) =>
               setEditDialogOpenIndex(isOpen ? `${i}-${j}` : null)
             }
           >
-            {!disableEdit && temporaryRole === ROLES[0] &&  (
-              <DialogTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="-mt-3 p-0 font-semibold text-accent hover:underline"
-                >
-                  Edit
-                </Button>
-              </DialogTrigger>
-            )}
+            {!disableEdit &&
+              (temporaryRole === ROLES[0] || temporaryRole === ROLES[4]) && (
+                <DialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="-mt-3 p-0 font-semibold text-accent hover:underline"
+                  >
+                    Edit
+                  </Button>
+                </DialogTrigger>
+              )}
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Edit Events</DialogTitle>
@@ -196,14 +196,16 @@ const ScheduleCards = ({
             setSheetEditDialogOpenIndex(isOpen ? `${i}-${j}` : null)
           }
         >
-          {temporaryRole === ROLES[0] && !disableEdit  && <DialogTrigger asChild>
-            <Button
-              variant="ghost"
-              className="-mt-3 p-0 font-semibold text-accent hover:underline"
-            >
-              Edit
-            </Button>
-          </DialogTrigger>}
+          {temporaryRole === ROLES[0] && !disableEdit && (
+            <DialogTrigger asChild>
+              <Button
+                variant="ghost"
+                className="-mt-3 p-0 font-semibold text-accent hover:underline"
+              >
+                Edit
+              </Button>
+            </DialogTrigger>
+          )}
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Edit Events</DialogTitle>

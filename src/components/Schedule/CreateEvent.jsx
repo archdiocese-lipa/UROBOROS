@@ -46,6 +46,7 @@ import { ROLES } from "@/constants/roles";
 import {
   getAssignedMinistries,
   getMinistryVolunteers,
+  getOneMinistryGroup,
 } from "@/services/ministryService";
 
 const useAssignedMinistries = (userId) => {
@@ -56,10 +57,18 @@ const useAssignedMinistries = (userId) => {
   });
 };
 
-const useMinistryVolunteers = (ministryId) => {
+const useMinistryVolunteers = (groupId) => {
   return useQuery({
-    queryKey: ["ministry-volunteers", ministryId],
-    queryFn: () => getMinistryVolunteers(ministryId),
+    queryKey: ["ministry-volunteers", groupId],
+    queryFn: () => getMinistryVolunteers(groupId),
+    enabled: !!groupId,
+  });
+};
+
+const useMinistryGroups = (ministryId) => {
+  return useQuery({
+    queryKey: ["ministry-groups", ministryId],
+    queryFn: () => getOneMinistryGroup(ministryId),
     enabled: !!ministryId,
   });
 };
@@ -71,8 +80,8 @@ const CreateEvent = ({
   queryKey,
 }) => {
   const [isPopoverOpen, setPopoverOpen] = useState(false);
-
   const [selectedMinistry, setSelectedMinistry] = useState(null);
+  const [selectedGroup, setSelectedGroup] = useState(null);
 
   const { ministries } = useMinistry({
     ministryId: selectedMinistry,
@@ -90,13 +99,23 @@ const CreateEvent = ({
   const { data: volunteers } = useUsersByRole("volunteer");
   const { data: admins } = useUsersByRole("admin");
 
+  // Fetch assigned ministry
   const {
     data: assignedMinistries = [],
     isLoading: assignedMinistriesLoading,
   } = useAssignedMinistries(userData?.id);
 
-  const { data: ministryVolunteers, isLoading: ministryVolunteersLoading } =
-    useMinistryVolunteers(selectedMinistry);
+  // Get the current selected group from the form
+
+  // Fetch volunteers
+  const {
+    data: ministryVolunteers = [],
+    isLoading: ministryVolunteersLoading,
+  } = useMinistryVolunteers(selectedGroup);
+
+  // Fetch groups
+  const { data: groups, isLoading: groupsLoading } =
+    useMinistryGroups(selectedMinistry);
 
   const publicVolunteers = [
     ...(volunteers || []),
@@ -168,7 +187,6 @@ const CreateEvent = ({
     resolver: zodResolver(eventData ? updateEventSchema : createEventSchema),
     defaultValues: {
       eventName: eventData?.event_name || "",
-      eventCategory: eventData?.event_category || "",
       eventVisibility:
         eventData?.event_visibility ||
         (temporaryRole === ROLES[0] ? "private" : "public"),
@@ -233,13 +251,21 @@ const CreateEvent = ({
     }
 
     setValue("eventName", eventItem.event_name);
-    setValue("eventCategory", eventItem.event_category);
     setValue("eventVisibility", eventItem.event_visibility);
-
-    setValue("eventTime", eventDate); // Set Date object here
-
+    setValue("eventTime", eventDate);
     setPopoverOpen(false); // Close the popover
   };
+
+  // Reset form when selected another ministry
+  useEffect(() => {
+    if (watchVisibility === "private") {
+      if (selectedMinistry) {
+        resetField("groups", { defaultValue: "" });
+        resetField("assignVolunteer", { defaultValue: [] });
+        setSelectedGroup(null);
+      }
+    }
+  }, [selectedMinistry, watchVisibility, resetField]);
 
   // Mark dito mo connect backend
   const onSubmit = (data) => {
@@ -337,50 +363,6 @@ const CreateEvent = ({
 
         {/* Event Category, Visibility & Ministry */}
         <div className="flex flex-wrap gap-2">
-          {/* Event Category */}
-          <FormField
-            control={control}
-            name="eventCategory"
-            render={({ field }) => (
-              <FormItem className="flex-1">
-                <FormLabel>Category</FormLabel>
-                <FormControl>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="youth">Youth</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Event Visibility */}
-          <FormField
-            control={control}
-            name="eventVisibility"
-            render={({ field }) => (
-              <FormItem className="flex-1">
-                <FormLabel>Event Visibility</FormLabel>
-                <FormControl>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Visibility" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="public">Public</SelectItem>
-                      <SelectItem value="private">Private</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
           {/* Conditional Ministry Selection */}
           {watchVisibility === "private" && (
             <FormField
@@ -406,7 +388,7 @@ const CreateEvent = ({
                         ) : temporaryRole === ROLES[0] ? (
                           // If user is coordinator
                           assignedMinistries?.length > 0 ? (
-                            assignedMinistries.map((ministry) => (
+                            assignedMinistries?.map((ministry) => (
                               <SelectItem key={ministry.id} value={ministry.id}>
                                 {ministry.ministry_name}
                               </SelectItem>
@@ -436,6 +418,67 @@ const CreateEvent = ({
               )}
             />
           )}
+          {/* Groups */}
+          {watchVisibility === "private" && (
+            <FormField
+              control={control}
+              name="groups"
+              render={({ field }) => (
+                <FormItem className="flex-1">
+                  <FormLabel>Select Group</FormLabel>
+                  <FormControl>
+                    <Select
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        setSelectedGroup(value);
+                        resetField("assignVolunteer", { defaultValue: [] });
+                      }}
+                      value={field.value}
+                      disabled={!selectedMinistry}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select group" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {groupsLoading ? (
+                          <Loader2 />
+                        ) : (
+                          groups?.map((group) => (
+                            <SelectItem key={group.id} value={group.id}>
+                              {group.name}
+                            </SelectItem>
+                          ))
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+          {/* Event Visibility */}
+          <FormField
+            control={control}
+            name="eventVisibility"
+            render={({ field }) => (
+              <FormItem className="flex-1">
+                <FormLabel>Event Visibility</FormLabel>
+                <FormControl>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Visibility" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="public">Public</SelectItem>
+                      <SelectItem value="private">Private</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
         {!eventData && (
           <FormField

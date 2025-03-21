@@ -9,6 +9,7 @@ export const createEvent = async (eventData) => {
       eventCategory,
       eventVisibility,
       ministry,
+      groups,
       eventDate, // formatted date from the form
       eventTime, // formatted time from the form
       eventDescription,
@@ -25,6 +26,7 @@ export const createEvent = async (eventData) => {
           event_category: eventCategory,
           event_visibility: eventVisibility,
           ministry_id: ministry || null, // Ministry is optional
+          group_id: groups || null,
           event_date: eventDate, // formatted date (yyyy-MM-dd)
           event_time: eventTime, // formatted time (HH:mm:ss)
           event_description: eventDescription || null, // Optional field
@@ -70,6 +72,7 @@ export const updateEvent = async (eventData) => {
       eventCategory,
       eventVisibility,
       ministry,
+      groups,
       eventDate, // formatted date from the form
       eventTime, // formatted time from the form
       eventDescription,
@@ -84,6 +87,7 @@ export const updateEvent = async (eventData) => {
         event_category: eventCategory,
         event_visibility: eventVisibility,
         ministry_id: ministry || null, // Ministry is optional
+        group_id: groups || null,
         event_date: eventDate, // formatted date (yyyy-MM-dd)
         event_time: eventTime, // formatted time (HH:mm:ss)
         event_description: eventDescription || null, // Optional field
@@ -183,37 +187,52 @@ export const getEvents = async ({
         filters.id = []; // No events found, return empty result
       }
     } else if (role === "coordinator") {
+      // Coordinators only see events they created
+      // Get all events created by this coordinator
+      const { data: createdEvents } = await supabase
+        .from("events")
+        .select("id")
+        .eq("creator_id", userId);
+
+      if (createdEvents?.length > 0) {
+        // If they have created events, set the filter to only show those event IDs
+        filters.id = createdEvents.map((event) => event.id);
+      } else {
+        // If they haven't created any events, return empty results
+        filters.id = []; // This ensures no events will be returned
+      }
       // Coordinators see:
       // 1. All public events
       // 2. Private events from ministries they coordinate
-      const { data: coordinatorMinistries } = await supabase
-        .from("ministry_coordinators")
-        .select("ministry_id")
-        .eq("coordinator_id", userId);
+      // const { data: coordinatorMinistries } = await supabase
+      //   .from("ministry_coordinators")
+      //   .select("ministry_id")
+      //   .eq("coordinator_id", userId);
 
-      const ministryIds =
-        coordinatorMinistries?.map((item) => item.ministry_id) || [];
+      // const ministryIds =
+      //   coordinatorMinistries?.map((item) => item.ministry_id) || [];
 
-      // Adjust filters based on ministry access
-      if (ministryIds.length > 0) {
-        // For coordinators with ministries, get all their ministry's events + public events
-        const ministryFilter = `ministry_id.in.(${ministryIds.join(",")})`;
-        const visibilityFilter = "event_visibility.eq.public";
+      // // Adjust filters based on ministry access
+      // if (ministryIds.length > 0) {
+      //   // For coordinators with ministries, get all their ministry's events + public events
+      //   const ministryFilter = `ministry_id.in.(${ministryIds.join(",")})`;
+      //   const visibilityFilter = "event_visibility.eq.public";
+      //   const creatorFilter = `creator_id.eq.${userId}`;
 
-        // Get all events that match either condition
-        const { data: accessibleEvents } = await supabase
-          .from("events")
-          .select("id")
-          .or(`${ministryFilter},${visibilityFilter}`);
+      //   // Get all events that match either condition
+      //   const { data: accessibleEvents } = await supabase
+      //     .from("events")
+      //     .select("id")
+      //     .or(`${ministryFilter},${visibilityFilter}, ${creatorFilter}`);
 
-        if (accessibleEvents?.length > 0) {
-          filters.id = accessibleEvents.map((event) => event.id);
-        } else {
-          filters.event_visibility = "public"; // Fallback to just public events
-        }
-      } else {
-        filters.event_visibility = "public"; // If no ministries, only show public events
-      }
+      //   if (accessibleEvents?.length > 0) {
+      //     filters.id = accessibleEvents.map((event) => event.id);
+      //   } else {
+      //     filters.or = `event_visibility.eq.public,creator_id.eq.${userId}`; // Fallback to just public events
+      //   }
+      // } else {
+      //   filters.or = `event_visibility.eq.public,creator_id.eq.${userId}`; // If no ministries, only show public events
+      // }
     } else if (role === "parishioner" || role === "coparent") {
       // Parishioners/coparents see:
       // 1. Public events

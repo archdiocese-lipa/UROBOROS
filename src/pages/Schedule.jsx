@@ -90,6 +90,8 @@ const Schedule = () => {
       lastPage?.nextPage ? lastPage.currentPage + 1 : undefined,
   });
 
+  console.log(data);
+
   const { ref } = useInterObserver(fetchNextPage);
 
   const [query, setQuery] = useState(urlPrms.get("query")?.toString() || "");
