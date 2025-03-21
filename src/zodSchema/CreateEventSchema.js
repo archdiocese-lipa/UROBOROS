@@ -17,21 +17,16 @@ export const createEventSchema = z.object({
         });
       }
     }),
-  groups: z
-    .string()
-    .optional()
-    .superRefine((data, ctx) => {
-      if (
-        (data.eventVisibility === "private" || data.ministry) &&
-        !data.groups
-      ) {
-        ctx.addIssue({
-          path: ["groups"],
-          message: "Group selection is required.",
-          code: z.ZodIssueCode.custom,
-        });
-      }
-    }),
+  groups: z.string().optional(),
+  // .superRefine((data, ctx) => {
+  //   if (data.eventVisibility === "groups" && !data.groups) {
+  //     ctx.addIssue({
+  //       path: ["groups"],
+  //       message: "Group selection is required.",
+  //       code: z.ZodIssueCode.custom,
+  //     });
+  //   }
+  // }),
   eventDate: z
     .instanceof(Date, { message: "Please select date." })
     .refine((date) => !isNaN(date.getTime()), {
