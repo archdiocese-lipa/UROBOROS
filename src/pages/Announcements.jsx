@@ -5,6 +5,7 @@ import { useUser } from "@/context/useUser";
 import useInterObserver from "@/hooks/useInterObserver";
 import Loading from "@/components/Loading";
 import AnnouncementHeader from "@/components/Announcements/AnnouncementHeader";
+import FoldedPaper from "@/assets/images/FoldedPaper.png";
 
 const Announcements = () => {
   const { userData } = useUser();
@@ -46,7 +47,7 @@ const Announcements = () => {
         )} */}
       </div>
 
-      <div className="no-scrollbar flex h-full w-full flex-col-reverse gap-4 overflow-y-scroll lg:flex-row">
+      <div className="no-scrollbar flex h-full w-full gap-4 overflow-y-scroll lg:flex-row">
         {/* Announcements List */}
         <div className="no-scrollbar flex w-full flex-col items-center overflow-y-scroll rounded-none border-t border-primary-outline p-1 pt-3 md:rounded-xl md:border md:bg-primary md:px-9 md:py-6">
           <div className="w-full lg:w-2/3">
@@ -59,7 +60,18 @@ const Announcements = () => {
             {isLoading && <Loading />}
 
             {data?.pages?.flatMap((page) => page.items).length === 0 ? (
-              <p>No announcements yet.</p>
+              <div className="mt-20 flex flex-col gap-y-5 text-center md:mt-32">
+                <div>
+                  <img
+                    src={FoldedPaper}
+                    alt="Folded Paper"
+                    className="mx-auto"
+                  />
+                </div>
+                <p className="text[14px] text-accent/30 md:text-[20px]">
+                  No announcements yet.
+                </p>
+              </div>
             ) : (
               data?.pages?.flatMap((page) =>
                 page?.items?.map((announcement) => (

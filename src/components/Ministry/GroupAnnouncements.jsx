@@ -6,6 +6,7 @@ import useAnnouncements from "@/hooks/useAnnouncements";
 import { Skeleton } from "../ui/skeleton";
 import useInterObserver from "@/hooks/useInterObserver";
 import PropTypes from "prop-types";
+import FoldedPaper from "@/assets/images/FoldedPaper.png";
 
 const GroupAnnouncements = ({ groupId }) => {
   const [searchParams] = useSearchParams();
@@ -45,7 +46,14 @@ const GroupAnnouncements = ({ groupId }) => {
           </div>
         ))
       ) : data?.pages?.flatMap((page) => page.items).length === 0 ? (
-        <p className="text-center">No announcements yet.</p>
+        <div className="mt-32 flex flex-col gap-y-6">
+          <div>
+            <img src={FoldedPaper} alt="Folded Paper" className="mx-auto" />
+          </div>
+          <p className="text-center text-[20px] text-accent/30">
+            No announcements yet.
+          </p>
+        </div>
       ) : (
         data?.pages?.flatMap((page) =>
           page?.items?.map((announcement) => (
