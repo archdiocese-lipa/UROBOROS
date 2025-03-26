@@ -9,6 +9,25 @@ import { Button } from "./ui/button";
 import { useState } from "react";
 import useRoleSwitcher from "@/hooks/useRoleSwitcher";
 import { getAllEvents } from "@/services/eventService";
+import { Loader2 } from "lucide-react";
+
+// Fetch all Events
+const useCalendarEvents = (userId) => {
+  return useQuery({
+    queryKey: ["calendarevents", userId],
+    queryFn: () => getAllEvents(userId),
+    enabled: !!userId,
+  });
+};
+
+// Fetch meeting
+const useFetchMeetings = (userId) => {
+  return useQuery({
+    queryKey: ["meetings", userId],
+    queryFn: () => fetchMeetingByCreatorId(userId),
+    enabled: !!userId,
+  });
+};
 
 const Calendar = ({ events }) => {
   const [selectedShowCalendar, setSelectedShowCalendar] = useState("Events");
@@ -17,17 +36,12 @@ const Calendar = ({ events }) => {
   const { userData } = useUser();
 
   const temporaryRole = useRoleSwitcher();
-  const { data: meetings } = useQuery({
-    queryKey: ["meetings", userData?.id],
-    queryFn: () => fetchMeetingByCreatorId(userData?.id),
-    enabled: !!userData?.id,
-  });
+  const { data: calendarEvents = [], isLoading: calendarEventsLoading } =
+    useCalendarEvents(userData?.id);
 
-  const { data: calendarEvents } = useQuery({
-    queryKey: ["calendarevents", userData?.id],
-    queryFn: () => getAllEvents(userData?.id),
-    enabled: !!userData?.id,
-  });
+  const { data: meetings = [], isLoading: meetingsLoading } = useFetchMeetings(
+    userData?.id
+  );
 
   // Make sure getEvents is available and is an array
   const eventArray = Array.isArray(calendarEvents?.data)
@@ -70,41 +84,49 @@ const Calendar = ({ events }) => {
 
   return (
     <div className="h-full w-full">
-      {userData?.role === "admin" && (
-        <div className="flex gap-2">
-          <Button
-            onClick={() => setSelectedShowCalendar("Events")}
-            variant={"outline"}
-          >
-            Events
-          </Button>
-          <Button
-            onClick={() => setSelectedShowCalendar("Meetings")}
-            variant={"outline"}
-          >
-            Meetings
-          </Button>
+      {calendarEventsLoading || meetingsLoading ? (
+        <div className="grid h-full place-content-center">
+          <Loader2 />
         </div>
+      ) : (
+        <>
+          {userData?.role === "admin" && (
+            <div className="flex gap-2">
+              <Button
+                onClick={() => setSelectedShowCalendar("Events")}
+                variant={"outline"}
+              >
+                Events
+              </Button>
+              <Button
+                onClick={() => setSelectedShowCalendar("Meetings")}
+                variant={"outline"}
+              >
+                Meetings
+              </Button>
+            </div>
+          )}
+          <FullCalendar
+            plugins={[dayGridPlugin]}
+            initialView="dayGridMonth"
+            weekends={true}
+            events={selectedShowCalendar === "Events" ? eventData : meetingData}
+            height="100%"
+            contentHeight="auto"
+            eventClick={handleEventClick}
+            eventContent={(arg) => (
+              <div className="truncate text-sm">{arg.event.title}</div>
+            )}
+            displayEventTime={false}
+          />
+          <EventInfoDialog
+            open={dialogOpen}
+            event={selectedEvent}
+            onClose={() => setDialogOpen(false)}
+            temporaryRole={temporaryRole?.temporaryRole}
+          />
+        </>
       )}
-      <FullCalendar
-        plugins={[dayGridPlugin]}
-        initialView="dayGridMonth"
-        weekends={true}
-        events={selectedShowCalendar === "Events" ? eventData : meetingData}
-        height="100%"
-        contentHeight="auto"
-        eventClick={handleEventClick} // Attach click event handler
-        eventContent={(arg) => (
-          <div className="truncate text-sm">{arg.event.title}</div>
-        )} // Customize event content
-        displayEventTime={false} // Hide time from display
-      />
-      <EventInfoDialog
-        open={dialogOpen}
-        event={selectedEvent}
-        onClose={() => setDialogOpen(false)}
-        temporaryRole={temporaryRole?.temporaryRole}
-      />
     </div>
   );
 };

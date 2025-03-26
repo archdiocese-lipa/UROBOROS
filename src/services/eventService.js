@@ -331,7 +331,7 @@ export const getEventById = async (eventId) => {
       .from("events")
       .select("*")
       .eq("id", eventId)
-      .single(); // Fetch only one record
+      .single();
 
     if (error) {
       console.error("Error fetching event by ID:", error);
@@ -350,16 +350,16 @@ export const getAllEvents = async (userId) => {
     const { data, error } = await supabase
       .from("events")
       .select("*")
-      .eq("creator_id", userId); // Select all columns from the events table
+      .eq("creator_id", userId);
 
     if (error) {
-      throw new Error(error.message); // Handle any errors
+      throw new Error(error.message);
     }
 
-    return { success: true, data }; // Return success structure with data
+    return { success: true, data };
   } catch (error) {
     console.error("Error fetching events:", error);
-    return { success: false, error: error.message }; // Return error structure
+    return { success: false, error: error.message };
   }
 };
 
