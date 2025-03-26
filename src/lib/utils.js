@@ -223,7 +223,8 @@ const downloadExcel = (event, eventvolunteers, attendance, attendanceCount) => {
         return [
           [
             family?.family_surname ? `Family Surname:  ` : "Registered by: ",
-            family?.family_surname ?? `${family.registered_by.first_name} ${family.registered_by.last_name}`,
+            family?.family_surname ??
+              `${family.registered_by.first_name} ${family.registered_by.last_name}`,
           ],
           ...(attendedParents.length > 0
             ? [
@@ -333,7 +334,13 @@ const exportAttendanceList = (
 
     // Add Family Surname Header
     doc.setFontSize(14);
-    doc.text(family?.family_surname ? `Family Surname ${family?.family_surname}` : `Registered by ${family.registered_by.first_name} ${family.registered_by.last_name}` , 10, currentY);
+    doc.text(
+      family?.family_surname
+        ? `Family Surname ${family?.family_surname}`
+        : `Registered by ${family.registered_by.first_name} ${family.registered_by.last_name}`,
+      10,
+      currentY
+    );
 
     // Update currentY for the next element
     currentY += 10;
@@ -392,7 +399,7 @@ const formatEventTime = (time) => {
   });
 };
 
-const getCurrentTime =  () => {
+const getCurrentTime = () => {
   const now = new Date();
   const hours = String(now.getHours()).padStart(2, "0");
   const minutes = String(now.getMinutes()).padStart(2, "0");
