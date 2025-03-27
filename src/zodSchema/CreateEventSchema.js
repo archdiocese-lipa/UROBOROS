@@ -24,7 +24,7 @@ export const createEventSchema = z
             invalid_type_error: "Please provide a valid date.",
           })
           .refine((date) => date >= new Date(), {
-            message: "Event date must not be in the past.",
+            message: "Date must not be in the past.",
           }),
         z.null(),
       ])
@@ -32,16 +32,18 @@ export const createEventSchema = z
         message: "Date is required.",
       }),
 
-    // eventTime validation
-    eventTime: z.union([
-      z.date().refine((date) => !isNaN(date.getTime()), {
-        message: "Please provide a valid time.",
-      }),
-      z.string().refine((str) => str.trim().length > 0, {
-        message: "Time is required.",
-      }),
-      z.null(),
-    ]),
+    // eventTime validation (only required if eventObservation is false)
+    eventTime: z
+      .union([
+        z.date().refine((date) => !isNaN(date.getTime()), {
+          message: "Please provide a valid time.",
+        }),
+        z.string().refine((str) => str.trim().length > 0, {
+          message: "Required.",
+        }),
+        z.null(),
+      ])
+      .optional(),
 
     eventObservation: z.boolean().default(false),
 
@@ -69,41 +71,43 @@ export const createEventSchema = z
       .optional(),
   })
   .superRefine((data, ctx) => {
-    // Only perform validation if we have the core fields completed
-    // This helps prevent validation errors during initial form render
-    if (!data.eventName || !data.eventVisibility || !data.eventDate) {
-      return; // Skip validation if core fields aren't filled
+    // Check if eventVisibility is filled, and add errors for empty fields
+    if (!data.eventVisibility) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Event visibility is required.",
+        path: ["eventVisibility"],
+      });
     }
+
     // Validate ministry and groups for private events
     if (data.eventVisibility === "private") {
       if (!data.ministry) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "Ministry is required for private events",
+          message: "Required",
           path: ["ministry"],
         });
       }
       if (!data.groups) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "Groups are required for private events",
+          message: "Required",
           path: ["groups"],
         });
       }
     }
 
     // Validate time and volunteers for non-observation events
-    // Use strict equality check to ensure proper boolean comparison
-    const isObservationEvent = data.eventObservation === true;
-
-    if (!isObservationEvent) {
-      // Improved eventTime validation that handles all cases
-      const hasValidTime =
+    if (data.eventObservation === false) {
+      // Validate eventTime (eventTime is required when eventObservation is false)
+      const isValidEventTime =
         data.eventTime &&
         ((data.eventTime instanceof Date && !isNaN(data.eventTime.getTime())) ||
-          (typeof data.eventTime === "string" && data.eventTime.trim() !== ""));
+          (typeof data.eventTime === "string" &&
+            data.eventTime.trim().length > 0));
 
-      if (!hasValidTime) {
+      if (!isValidEventTime) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Time is required.",
@@ -111,15 +115,14 @@ export const createEventSchema = z
         });
       }
 
-      // Check volunteers with proper array handling
+      // Validate assignVolunteer (must have at least one volunteer when eventObservation is false)
       const hasVolunteers =
         Array.isArray(data.assignVolunteer) && data.assignVolunteer.length > 0;
 
       if (!hasVolunteers) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message:
-            "At least one volunteer must be assigned for non-observation events",
+          message: "At least one volunteer must be assigned.",
           path: ["assignVolunteer"],
         });
       }

@@ -146,7 +146,7 @@ const NewCreateEventForm = () => {
       eventDescription: "",
       eventVisibility: "",
       eventObservation: false,
-      eventTime: "",
+      eventTime: null,
       eventDate: null,
       eventPosterImage: null,
       assignVolunteer: [],
@@ -236,11 +236,6 @@ const NewCreateEventForm = () => {
                           <Input
                             placeholder="Enter event name here"
                             {...field}
-                            className={
-                              form.formState.errors.eventName
-                                ? "border-red-800"
-                                : ""
-                            }
                           />
                           <QuickAccessEvents
                             quickAccessEvents={quickAccessEvents}
@@ -301,7 +296,7 @@ const NewCreateEventForm = () => {
                               </SelectTrigger>
                               <SelectContent>
                                 {assignedMinistriesLoading ? (
-                                  <Loader2 />
+                                  <Loader2 className="animate-spin" />
                                 ) : temporaryRole === ROLES[0] ? (
                                   // If user is coordinator
                                   assignedMinistries?.length > 0 ? (
@@ -368,7 +363,7 @@ const NewCreateEventForm = () => {
                               </SelectTrigger>
                               <SelectContent>
                                 {groupsLoading ? (
-                                  <Loader2 />
+                                  <Loader2 className="animate-spin" />
                                 ) : (
                                   groups?.map((group) => (
                                     <SelectItem key={group.id} value={group.id}>
@@ -657,7 +652,6 @@ const QuickAccessEvents = ({
   const handleEventSelect = (eventItem) => {
     setValue("eventName", eventItem.event_name);
     setValue("eventVisibility", eventItem.event_visibility);
-    setValue("eventTIme", eventItem.event_time);
     setPopoverOpen(false);
   };
 
