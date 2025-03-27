@@ -406,6 +406,17 @@ const getCurrentTime = () => {
   const seconds = String(now.getSeconds()).padStart(2, "0");
   return `${hours}:${minutes}:${seconds}`;
 };
+
+//Function to convert a time string (HH:MM:ss) to a date object
+const convertTimeStringToDate = (timeString) => {
+  const [hours, minutes, seconds] = timeString.split(":");
+  const eventTime = new Date();
+  eventTime.setHours(parseInt(hours, 10));
+  eventTime.setMinutes(parseInt(minutes, 10));
+  eventTime.setSeconds(parseInt(seconds, 10));
+
+  return eventTime;
+};
 export {
   getCurrentTime,
   cn,
@@ -415,4 +426,5 @@ export {
   exportAttendanceList,
   formatEventDate,
   formatEventTime,
+  convertTimeStringToDate,
 };

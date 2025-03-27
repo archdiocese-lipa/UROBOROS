@@ -39,7 +39,7 @@ import { Label } from "../ui/label";
 import { Calendar } from "../ui/calendar";
 import { Icon } from "@iconify/react";
 
-import { formatEventTime } from "@/lib/utils";
+import { convertTimeStringToDate, formatEventTime } from "@/lib/utils";
 import { getQuickAccessEvents } from "@/services/eventService";
 import useRoleSwitcher from "@/hooks/useRoleSwitcher";
 import {
@@ -652,6 +652,7 @@ const QuickAccessEvents = ({
   const handleEventSelect = (eventItem) => {
     setValue("eventName", eventItem.event_name);
     setValue("eventVisibility", eventItem.event_visibility);
+    setValue("eventTime", convertTimeStringToDate(eventItem.event_time));
     setPopoverOpen(false);
   };
 
