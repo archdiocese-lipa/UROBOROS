@@ -656,6 +656,8 @@ const QuickAccessEvents = ({
 
   const handleEventSelect = (eventItem) => {
     setValue("eventName", eventItem.event_name);
+    setValue("eventVisibility", eventItem.event_visibility);
+    setValue("eventTIme", eventItem.event_time);
     setPopoverOpen(false);
   };
 
