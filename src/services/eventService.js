@@ -10,11 +10,12 @@ export const createEvent = async (eventData) => {
       eventVisibility,
       ministry,
       groups,
-      eventDate, // formatted date from the form
-      eventTime, // formatted time from the form
+      eventDate,
+      eventTime,
+      eventObservation,
       eventDescription,
       userId, // Creator's ID
-      assignVolunteer, // Array of volunteer IDs
+      assignVolunteer,
     } = eventData;
 
     // Step 1: Insert event data into Supabase
@@ -25,12 +26,13 @@ export const createEvent = async (eventData) => {
           event_name: eventName,
           event_category: eventCategory,
           event_visibility: eventVisibility,
-          ministry_id: ministry || null, // Ministry is optional
+          ministry_id: ministry || null,
           group_id: groups || null,
-          event_date: eventDate, // formatted date (yyyy-MM-dd)
-          event_time: eventTime, // formatted time (HH:mm:ss)
-          event_description: eventDescription || null, // Optional field
-          creator_id: userId, // Assuming userId is passed in the form data
+          event_date: eventDate,
+          event_time: eventTime,
+          event_description: eventDescription || null,
+          creator_id: userId,
+          requires_attendance: !eventObservation,
         },
       ])
       .select("id") // Return the new event ID
@@ -56,77 +58,40 @@ export const createEvent = async (eventData) => {
       }
     }
 
-    return { success: true, data: event }; // Return success structure
+    return { success: true, data: event };
   } catch (error) {
     console.error("Error creating event:", error);
-    return { success: false, error: error.message }; // Return error structure
+    return { success: false, error: error.message };
   }
 };
 
 // Function to update an existing event
 
-export const updateEvent = async (eventData) => {
+export const updateEvent = async ({ eventId, updatedData }) => {
   try {
-    const {
-      eventName,
-      eventCategory,
-      eventVisibility,
-      ministry,
-      groups,
-      eventDate, // formatted date from the form
-      eventTime, // formatted time from the form
-      eventDescription,
-      // userId, // Creator's ID
-    } = eventData.updatedData;
-
     // Step 1: Update the event data in the 'events' table
-    const { data: updatedEvent, error: eventError } = await supabase
+    const { data, error } = await supabase
       .from("events")
       .update({
-        event_name: eventName,
-        event_category: eventCategory,
-        event_visibility: eventVisibility,
-        ministry_id: ministry || null, // Ministry is optional
-        group_id: groups || null,
-        event_date: eventDate, // formatted date (yyyy-MM-dd)
-        event_time: eventTime, // formatted time (HH:mm:ss)
-        event_description: eventDescription || null, // Optional field
+        event_name: updatedData.eventName,
+        event_category: updatedData.eventCategory,
+        event_visibility: updatedData.eventVisibility,
+        ministry_id: updatedData.ministry || null,
+        group_id: updatedData.groups || null,
+        event_date: updatedData.eventDate,
+        event_time: updatedData.eventTime,
+        event_description: updatedData.eventDescription || null,
+        requires_attendance: !updatedData.eventObservation,
       })
-      .eq("id", eventData.eventId) // Update the event with the matching ID
-      .select("id") // Return the updated event ID
+      .eq("id", eventId)
+      .select("id")
       .single(); // Return single object
 
-    if (eventError) {
-      throw new Error(eventError.message); // Handle any errors
+    if (error) {
+      throw new Error(error.message);
     }
 
-    // // Step 2: Remove all existing volunteer assignments for the event
-    // const { error: removeError } = await supabase
-    //   .from("event_volunteers")
-    //   .delete()
-    //   .eq("event_id", eventData.eventId); // Remove all existing volunteer assignments for the event
-
-    // if (removeError) {
-    //   throw new Error(removeError.message); // Handle any errors
-    // }
-
-    // // Step 3: Insert new volunteer assignments (if any volunteers are selected)
-    // if (assignVolunteer?.length > 0) {
-    //   const volunteerData = assignVolunteer.map((volunteerId) => ({
-    //     event_id: eventData.eventId, // Use the event ID to assign volunteers
-    //     volunteer_id: volunteerId,
-    //   }));
-
-    //   const { error: volunteerError } = await supabase
-    //     .from("event_volunteers")
-    //     .insert(volunteerData);
-
-    //   if (volunteerError) {
-    //     throw new Error(volunteerError.message); // Handle any errors
-    //   }
-    // }
-
-    return { success: true, data: updatedEvent }; // Return success structure
+    return { success: true, data }; // Return success structure
   } catch (error) {
     console.error("Error updating event:", error);
     return { success: false, error: error.message }; // Return error structure

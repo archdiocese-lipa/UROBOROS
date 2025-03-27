@@ -417,6 +417,48 @@ const convertTimeStringToDate = (timeString) => {
 
   return eventTime;
 };
+
+/**
+ * Formats event time with dots and lowercase (e.g., "10.30am")
+ * @param {string} time - The event time string
+ * @returns {string} Formatted time string
+ */
+const formatEventTimeCompact = (time) => {
+  try {
+    if (!time) return "";
+
+    // Try to handle both cases: when date is provided and when only time is provided
+    let dateTime;
+
+    if (time.includes("T")) {
+      // Time is already a full datetime string
+      dateTime = new Date(time);
+    } else {
+      // Time is just a time string (HH:MM:SS)
+      dateTime = new Date(`2000-01-01T${time}`);
+    }
+
+    // Check if date is valid
+    if (isNaN(dateTime.getTime())) {
+      console.error("Invalid time for compact formatting:", time);
+      return "";
+    }
+
+    return dateTime
+      .toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "numeric",
+        hour12: true,
+      })
+      .replace(":", ".")
+      .replace(" ", "")
+      .toLowerCase();
+  } catch (error) {
+    console.error("Error formatting time compact:", error, time);
+    return "";
+  }
+};
+
 export {
   getCurrentTime,
   cn,
@@ -427,4 +469,5 @@ export {
   formatEventDate,
   formatEventTime,
   convertTimeStringToDate,
+  formatEventTimeCompact,
 };

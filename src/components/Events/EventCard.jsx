@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Description } from "../Title";
 import ManualAttendEvents from "./ManualAttendEvents";
-import SampleImage from "@/assets/images/1131w-orVwDS2lrfY.png";
+import SampleImage from "@/assets/images/CartoonizedChurch.png";
 import { Button } from "../ui/button";
 import { Icon } from "@iconify/react";
 import { formatEventDate, formatEventTime } from "@/lib/utils";
@@ -21,7 +21,7 @@ const EventCard = ({
       <Card className="h-[27rem] max-h-[27rem] w-72 rounded-2xl border-primary-text/30 text-primary-text">
         <CardContent className="flex h-full flex-col gap-y-1 p-4">
           {/* Image container with fixed size and aspect ratio */}
-          <div className="border-primary-cursor-pointer aspect-square w-full cursor-pointer overflow-hidden rounded-2xl border">
+          <div className="aspect-square w-full cursor-pointer overflow-hidden rounded-2xl border border-primary-text/30">
             <img
               src={SampleImage}
               alt="Event Image"

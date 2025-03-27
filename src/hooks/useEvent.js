@@ -40,7 +40,7 @@ const useEvent = () => {
   });
 
   const updateEventMutation = useMutation({
-    mutationFn: updateEvent,
+    mutationFn: updateEvent, // This function expects {eventId, updatedData}
     onMutate: () => {
       toast({
         title: "Updating Event...",
