@@ -548,6 +548,11 @@ export const getEventsCalendar = async (ministry = []) => {
       const dateB = new Date(`${b.event_date}T${b.event_time}`);
       return dateA - dateB; // Sort in ascending order (earliest date first)
     });
+    allEvents.forEach((event) => {
+      if (event.image_url) {
+        event.image_url = getPublicImageUrl(event.image_url);
+      }
+    });
 
     return { success: true, data: allEvents };
   } catch (error) {

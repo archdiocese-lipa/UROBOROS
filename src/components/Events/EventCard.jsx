@@ -13,6 +13,8 @@ const EventCard = ({
   eventName,
   eventDate = "No description available",
   eventTime,
+  eventImage,
+  requireAttendance,
 }) => {
   const [showFullImage, setShowFullImage] = useState(false);
 
@@ -23,7 +25,7 @@ const EventCard = ({
           {/* Image container with fixed size and aspect ratio */}
           <div className="aspect-square w-full cursor-pointer overflow-hidden rounded-2xl border border-primary-text/30">
             <img
-              src={SampleImage}
+              src={eventImage ?? SampleImage}
               alt="Event Image"
               className="h-full w-full object-cover"
               onClick={() => setShowFullImage(true)}
@@ -32,16 +34,17 @@ const EventCard = ({
           <CardTitle className="mt-4 break-words px-2 text-[16px] font-bold">
             {eventName}
           </CardTitle>
-
           <Description className="flex-grow break-words px-2 text-[14px] font-medium">
             {`${formatEventDate(eventDate)} ${formatEventTime(eventTime)}`}
           </Description>
-          <ManualAttendEvents
-            eventId={eventId}
-            eventName={eventName}
-            eventTime={eventTime}
-            eventDate={eventDate}
-          />
+          {requireAttendance && (
+            <ManualAttendEvents
+              eventId={eventId}
+              eventName={eventName}
+              eventTime={eventTime}
+              eventDate={eventDate}
+            />
+          )}
         </CardContent>
       </Card>
       {/* Full screen image modal */}
@@ -52,7 +55,7 @@ const EventCard = ({
         >
           <div className="relative max-h-[90vh] max-w-[90vw]">
             <img
-              src={SampleImage}
+              src={eventImage ?? SampleImage}
               alt="Event Image"
               className="max-h-[90vh] max-w-[90vw] object-contain"
             />
@@ -80,6 +83,8 @@ EventCard.propTypes = {
   eventDescription: PropTypes.string,
   eventDate: PropTypes.string.isRequired,
   eventTime: PropTypes.string.isRequired,
+  eventImage: PropTypes.string,
+  requireAttendance: PropTypes.bool,
 };
 
 export default EventCard;

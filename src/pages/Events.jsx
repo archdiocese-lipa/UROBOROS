@@ -39,7 +39,7 @@ const Events = () => {
         ) : parishionerEvents?.data?.length === 0 ? (
           <p>No Upcoming Events</p>
         ) : (
-          parishionerEvents?.data.map((event, i) => (
+          parishionerEvents?.data?.map((event, i) => (
             <EventCard
               key={i}
               eventId={event.id}
@@ -47,6 +47,8 @@ const Events = () => {
               eventDescription={event.description}
               eventDate={event.event_date}
               eventTime={event.event_time}
+              eventImage={event.image_url}
+              requireAttendance={event.requires_attendance}
             />
           ))
         )}
