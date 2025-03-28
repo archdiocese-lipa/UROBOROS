@@ -35,7 +35,7 @@ const ManualAttendEvents = ({ eventId, eventName, eventTime, eventDate }) => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button onClick={handleSelectEvent} className="w-full">
+        <Button onClick={handleSelectEvent} className="flex-1">
           Manage Attendance
         </Button>
       </DialogTrigger>

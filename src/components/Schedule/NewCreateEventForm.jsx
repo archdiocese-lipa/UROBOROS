@@ -600,18 +600,15 @@ const NewCreateEventForm = ({
                   name="eventObservation"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[12px] font-semibold text-accent/75">
+                      <FormLabel className="sr-only text-[12px] font-semibold text-accent/75">
                         Event as Observation
                       </FormLabel>
                       <FormControl>
                         <div className="flex justify-between rounded-xl bg-primary px-4 py-2">
                           <div>
-                            <Label className="text-[14px] font-medium text-accent">
-                              Event as Observation
+                            <Label className="text-[12px] font-medium text-accent/75">
+                              Option to disable time and volunteer
                             </Label>
-                            <p className="text-[10px] font-medium text-accent/75">
-                              This will disable time and volunteer selection.
-                            </p>
                           </div>
                           <Switch
                             {...field}

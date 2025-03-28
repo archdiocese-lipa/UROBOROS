@@ -35,7 +35,9 @@ const EventCard = ({
             {eventName}
           </CardTitle>
           <Description className="flex-grow break-words px-2 text-[14px] font-medium">
-            {`${formatEventDate(eventDate)} ${formatEventTime(eventTime)}`}
+            {requireAttendance
+              ? `${formatEventDate(eventDate)} ${formatEventTime(eventTime)}`
+              : formatEventDate(eventDate)}
           </Description>
           {requireAttendance && (
             <ManualAttendEvents

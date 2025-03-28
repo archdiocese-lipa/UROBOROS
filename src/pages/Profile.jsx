@@ -552,7 +552,7 @@ const Profile = () => {
           <p className="text-gray-700">{data?.contact_number}</p>
 
           <div className="flex items-center justify-between">
-            Toggle Notification
+            <p>Email Notification</p>
             <Switch
               defaultChecked={data.is_receiving_notification}
               onCheckedChange={() =>
