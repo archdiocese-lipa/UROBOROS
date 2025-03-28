@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/select";
 import { updateParish } from "@/services/userService";
 import { toast } from "@/hooks/use-toast";
+import { Switch } from "@/components/ui/switch";
 
 const Profile = () => {
   const { userData } = useUser();
@@ -92,6 +93,7 @@ const Profile = () => {
   });
 
   const {
+    toggleNotificationMutation,
     updateNameMutation,
     sendEmailLinkMutation,
     updateContactMutation,
@@ -212,6 +214,13 @@ const Profile = () => {
   }, [userData, vicariatesData, parishForm]);
 
   const initials = `${getInitial(data?.first_name)}${getInitial(data?.last_name)}`;
+
+  const toggleNotification = async (userId, isReceivingNotification) => {
+    toggleNotificationMutation.mutate({
+      userId,
+      isReceivingNotification,
+    });
+  };
 
   if (isLoading || !userData || !data) {
     return <Loading />;
@@ -541,6 +550,16 @@ const Profile = () => {
             </Dialog>
           </div>
           <p className="text-gray-700">{data?.contact_number}</p>
+
+          <div className="flex items-center justify-between">
+            Toggle Notification
+            <Switch
+              defaultChecked={data.is_receiving_notification}
+              onCheckedChange={() =>
+                toggleNotification(userData.id, !data.is_receiving_notification)
+              }
+            />
+          </div>
         </div>
         <div className="flex justify-end">
           <Link
