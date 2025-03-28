@@ -1,22 +1,38 @@
 import { paginate } from "@/lib/utils";
 import { supabase } from "@/services/supabaseClient"; // Ensure supabase client is imported
+import { deleteImageFromStorage } from "./ministryService";
 
 // Function to create an event
 export const createEvent = async (eventData) => {
+  const {
+    eventName,
+    eventCategory,
+    eventVisibility,
+    ministry,
+    groups,
+    eventDate,
+    eventTime,
+    eventObservation,
+    eventDescription,
+    userId, // Creator's ID
+    assignVolunteer,
+    eventPosterImage,
+  } = eventData;
+
   try {
-    const {
-      eventName,
-      eventCategory,
-      eventVisibility,
-      ministry,
-      groups,
-      eventDate,
-      eventTime,
-      eventObservation,
-      eventDescription,
-      userId, // Creator's ID
-      assignVolunteer,
-    } = eventData;
+    //  Upload the image (if provided)
+    let imagePath = null;
+    if (eventPosterImage) {
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("Uroboros")
+        .upload(`event_images/${eventName}_${Date.now()}`, eventPosterImage);
+
+      if (uploadError) {
+        throw new Error(`Image upload failed: ${uploadError.message}`);
+      }
+
+      imagePath = uploadData.path;
+    }
 
     // Step 1: Insert event data into Supabase
     const { data: event, error: eventError } = await supabase
@@ -33,13 +49,18 @@ export const createEvent = async (eventData) => {
           event_description: eventDescription || null,
           creator_id: userId,
           requires_attendance: !eventObservation,
+          image_url: imagePath,
         },
       ])
       .select("id") // Return the new event ID
       .single(); // Single object
 
     if (eventError) {
-      throw new Error(eventError.message); // Handle any errors
+      if (imagePath) {
+        await deleteImageFromStorage();
+      } else {
+        throw new Error(eventError.message); // Handle any errors
+      }
     }
 
     // Step 2: Insert assigned volunteers into event_volunteers table
@@ -69,32 +90,147 @@ export const createEvent = async (eventData) => {
 
 export const updateEvent = async ({ eventId, updatedData }) => {
   try {
+    const { eventPosterImage, ...eventDetails } = updatedData;
+
+    const updatePayload = {
+      event_name: eventDetails.eventName,
+      event_category: eventDetails.eventCategory,
+      event_visibility: eventDetails.eventVisibility,
+      ministry_id: eventDetails.ministry || null,
+      group_id: eventDetails.groups || null,
+      event_date: eventDetails.eventDate,
+      event_time: eventDetails.eventTime,
+      event_description: eventDetails.eventDescription || null,
+      requires_attendance: !eventDetails.eventObservation,
+    };
+
     // Step 1: Update the event data in the 'events' table
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("events")
-      .update({
-        event_name: updatedData.eventName,
-        event_category: updatedData.eventCategory,
-        event_visibility: updatedData.eventVisibility,
-        ministry_id: updatedData.ministry || null,
-        group_id: updatedData.groups || null,
-        event_date: updatedData.eventDate,
-        event_time: updatedData.eventTime,
-        event_description: updatedData.eventDescription || null,
-        requires_attendance: !updatedData.eventObservation,
-      })
-      .eq("id", eventId)
-      .select("id")
-      .single(); // Return single object
+      .update(updatePayload)
+      .eq("id", eventId);
 
     if (error) {
       throw new Error(error.message);
     }
 
-    return { success: true, data }; // Return success structure
+    // Handle image upload if a new one is provided
+    if (eventPosterImage instanceof File) {
+      // Get current image URL to delete later
+      const { data: currentEvent, error: fetchError } = await supabase
+        .from("events")
+        .select("image_url")
+        .eq("id", eventId)
+        .single();
+
+      if (fetchError) {
+        throw new Error(`Error fetching current event: ${fetchError.message}`);
+      }
+
+      // Generate a unique file name to prevent conflicts
+      const fileName = `event_posters/${eventDetails.eventName}_${Date.now()}`;
+
+      // Upload new image
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("Uroboros")
+        .upload(fileName, eventPosterImage);
+
+      if (uploadError) {
+        throw new Error(`Error uploading new poster: ${uploadError.message}`);
+      }
+
+      // Update event with new image URL
+      const { error: imageUpdateError } = await supabase
+        .from("events")
+        .update({ image_url: uploadData.path })
+        .eq("id", eventId);
+
+      if (imageUpdateError) {
+        // If update fails, remove the uploaded image
+        await supabase.storage.from("Uroboros").remove([uploadData.path]);
+        throw new Error(
+          `Error updating event poster: ${imageUpdateError.message}`
+        );
+      }
+
+      // Delete old image if exists and is different
+      if (
+        currentEvent?.image_url &&
+        currentEvent.image_url !== uploadData.path
+      ) {
+        await deleteImageFromStorage(currentEvent.image_url);
+      }
+    }
+    // Handle case where image is explicitly removed (set to null)
+    else if (eventPosterImage === null) {
+      const { data: currentEvent, error: fetchError } = await supabase
+        .from("events")
+        .select("image_url")
+        .eq("id", eventId)
+        .single();
+
+      if (!fetchError && currentEvent?.image_url) {
+        // Delete the existing image
+        await deleteImageFromStorage(currentEvent.image_url);
+
+        // Update event to clear poster field
+        const { error: clearImageError } = await supabase
+          .from("events")
+          .update({ image_url: null })
+          .eq("id", eventId);
+
+        if (clearImageError) {
+          throw new Error(
+            `Error clearing event image: ${clearImageError.message}`
+          );
+        }
+      }
+    }
+
+    // Return the updated event
+    const { data: updatedEvent, error: getError } = await supabase
+      .from("events")
+      .select("*")
+      .eq("id", eventId)
+      .single();
+
+    if (getError) {
+      throw new Error(`Error fetching updated event: ${getError.message}`);
+    }
+
+    // Transform image_url to public URL if it exists
+    if (updatedEvent.image_url) {
+      const { data: urlData } = supabase.storage
+        .from("Uroboros")
+        .getPublicUrl(updatedEvent.image_url);
+
+      updatedEvent.image_url = urlData.publicUrl;
+    }
+
+    return { success: true, data: updatedEvent }; // Return updatedEvent, not data
   } catch (error) {
     console.error("Error updating event:", error);
     return { success: false, error: error.message }; // Return error structure
+  }
+};
+
+const getPublicImageUrl = (path) => {
+  if (!path) return null;
+
+  // Handle if the path is already a full URL
+  if (path.startsWith("http")) {
+    return path;
+  }
+
+  // Use the Supabase client to get the public URL
+  try {
+    const { data } = supabase.storage.from("Uroboros").getPublicUrl(path);
+
+    return data.publicUrl;
+  } catch (error) {
+    console.error("Error converting image path to URL:", error);
+    // Fallback to constructing the URL manually
+    return `https://spvkbkqezuwdkngytrnt.supabase.co/storage/v1/object/public/Uroboros/${encodeURIComponent(path)}`;
   }
 };
 
@@ -236,7 +372,7 @@ export const getEvents = async ({
     const order = [{ column: "event_date", ascending: true }];
 
     // Fetch data using pagination
-    const data = await paginate({
+    const paginatedData = await paginate({
       key: "events",
       select: `*, event_volunteers (volunteer_id)`,
       page,
@@ -245,7 +381,20 @@ export const getEvents = async ({
       order,
     });
 
-    return data;
+    // Transform image URLs to public URLs
+    if (paginatedData && paginatedData.items) {
+      paginatedData.items = paginatedData.items.map((event) => {
+        if (event.image_url) {
+          return {
+            ...event,
+            image_url: getPublicImageUrl(event.image_url),
+          };
+        }
+        return event;
+      });
+
+      return paginatedData;
+    }
   } catch (error) {
     console.error("Error fetching events:", error);
     return { success: false, error: error.message };
@@ -255,13 +404,35 @@ export const getEvents = async ({
 // Function to delete an event by its ID
 export const deleteEvent = async (eventId) => {
   try {
+    // Step 1: Get the event details to retrieve image_url if exists
+    const { data: eventData, error: fetchError } = await supabase
+      .from("events")
+      .select("image_url")
+      .eq("id", eventId)
+      .single();
+
+    if (fetchError) {
+      throw new Error(`Error fetching event details: ${fetchError.message}`);
+    }
+
+    // Step 2: Delete the event image from storage if one exists
+    if (eventData?.image_url) {
+      try {
+        await deleteImageFromStorage(eventData.image_url);
+      } catch (imageError) {
+        console.error("Error deleting event image:", imageError);
+        // Continue with event deletion even if image deletion fails
+      }
+    }
+
+    // Step 3: Delete the event record
     const { data, error } = await supabase
       .from("events")
       .delete()
       .eq("id", eventId);
 
     if (error) {
-      throw new Error(error.message);
+      throw new Error(`Error deleting event record: ${error.message}`);
     }
 
     return { success: true, data };

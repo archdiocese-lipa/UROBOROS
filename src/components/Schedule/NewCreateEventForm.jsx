@@ -151,7 +151,6 @@ const NewCreateEventForm = ({
   // Fetch groups
   const { data: groups = [], isLoading: groupsLoading } =
     useMinistryGroups(selectedMinistry);
-
   // 1. Define the form.
   const form = useForm({
     resolver: zodResolver(
@@ -170,7 +169,7 @@ const NewCreateEventForm = ({
             eventDate: initialEventData?.event_date
               ? new Date(initialEventData?.event_date)
               : null,
-            eventPosterImage: initialEventData?.event_poster || null,
+            eventPosterImage: initialEventData?.image_url || null,
             assignVolunteer: [],
             groups: initialEventData?.group_id || "",
             ministry: initialEventData?.ministry_id || "",
@@ -213,6 +212,16 @@ const NewCreateEventForm = ({
       userId, // For creator id in event table
     };
 
+    if (initialEventData) {
+      // If a new file is selected, include it
+      if (data.eventPosterImage instanceof File) {
+        eventPayload.eventPosterImage = data.eventPosterImage;
+      }
+      // If no new file but existing image URL, keep the existing URL
+      else if (initialEventData.image_url) {
+        eventPayload.eventPosterImage = initialEventData.image_url;
+      }
+    }
     // Call the create event function with the prepared data
     if (!initialEventData) {
       createEventMutation.mutate(eventPayload, {
@@ -342,8 +351,9 @@ const NewCreateEventForm = ({
       }
 
       // Set image preview if available
-      if (initialEventData.event_poster) {
-        setImagePreview(initialEventData.event_poster);
+      if (initialEventData.image_url) {
+        setImagePreview(initialEventData.image_url);
+        form.setValue("eventPosterImage", initialEventData?.image_url);
       }
     }
   }, [isEditMode, initialEventData, form]);

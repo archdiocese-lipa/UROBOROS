@@ -164,7 +164,9 @@ const ScheduleDetails = () => {
     enabled: !!eventId,
   });
 
-  const assignedUsers = [...(volunteers || []), ...(admins || [])];
+  const assignedUsers = useMemo(() => {
+    return [...(volunteers || []), ...(admins || [])];
+  }, [volunteers, admins]);
 
   // Calculate volunteer replacement Sets with useMemo
   const { previousVolunteerIds, replacementVolunteerIds } = useMemo(() => {
