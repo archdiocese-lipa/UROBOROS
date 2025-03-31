@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "./use-toast";
 import {
   createEvent,
-  getAllEvents,
+  // getAllEvents,
   getEvents,
   getQuickAccessEvents,
   getWalkInEvents,
@@ -40,7 +40,7 @@ const useEvent = () => {
   });
 
   const updateEventMutation = useMutation({
-    mutationFn: updateEvent,
+    mutationFn: updateEvent, // This function expects {eventId, updatedData}
     onMutate: () => {
       toast({
         title: "Updating Event...",
@@ -71,29 +71,25 @@ const useEvent = () => {
   });
 
   // For full calendar in dashboard
-  const { data: calendarEvents } = useQuery({
-    queryKey: ["calendarevents"],
-    queryFn: getAllEvents,
-  });
+  // const { data: calendarEvents } = useQuery({
+  //   queryKey: ["calendarevents"],
+  //   queryFn: getAllEvents,
+  // });
 
   const { data: walkInEvents } = useQuery({
-    queryKey: ["walkinevents"], 
-    queryFn: getWalkInEvents, 
+    queryKey: ["walkinevents"],
+    queryFn: getWalkInEvents,
   });
 
-   const {
-      data:quickAccessEvents, // The data returned by the query
-
-    } = useQuery({
-      queryKey: ["quick_access_events"], // The query key
-      queryFn: getQuickAccessEvents, // The query function
-    });
-
+  const { data: quickAccessEvents } = useQuery({
+    queryKey: ["quick_access_events"],
+    queryFn: getQuickAccessEvents,
+  });
 
   return {
     quickAccessEvents,
     events,
-    calendarEvents,
+    // calendarEvents,
     walkInEvents,
     createEventMutation,
     updateEventMutation,

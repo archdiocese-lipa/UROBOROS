@@ -45,7 +45,13 @@ import {
 } from "@/services/attendanceService";
 
 import { useUser } from "@/context/useUser";
-import { cn, downloadExcel, exportAttendanceList } from "@/lib/utils";
+import {
+  cn,
+  downloadExcel,
+  exportAttendanceList,
+  formatEventDate,
+  formatEventTimeCompact,
+} from "@/lib/utils";
 import { Label } from "../ui/label";
 import { useToast } from "@/hooks/use-toast";
 import AddRecord from "./AddRecord";
@@ -158,37 +164,63 @@ const ScheduleDetails = () => {
     enabled: !!eventId,
   });
 
-  const assignedUsers = [...(volunteers || []), ...(admins || [])];
+  const assignedUsers = useMemo(() => {
+    return [...(volunteers || []), ...(admins || [])];
+  }, [volunteers, admins]);
 
-  const previousVolunteerIds = new Set(
-    // Create a set of volunteer IDs that have already been replaced
-    eventVolunteers
-      ?.filter((volunteer) => volunteer.replaced) // Filter for volunteers that have been replaced
-      .map((volunteer) => volunteer.volunteer_id) // Extract the volunteer_id for those replaced volunteers
-  );
+  // Calculate volunteer replacement Sets with useMemo
+  const { previousVolunteerIds, replacementVolunteerIds } = useMemo(() => {
+    if (!eventVolunteers) {
+      return {
+        previousVolunteerIds: new Set(),
+        replacementVolunteerIds: new Set(),
+      };
+    }
 
-  const replacementVolunteerIds = new Set(
-    // Create a set of volunteer IDs that are replacements (i.e., volunteers who replaced someone)
-    eventVolunteers
-      ?.filter((volunteer) => volunteer.replaced) // Filter for volunteers that have been replaced
-      .map((volunteer) => volunteer.replacedby_id) // Extract the replacedby_id (the ID of the replacement volunteer)
-  );
+    // Get volunteers who have been replaced
+    const replacedVolunteers = eventVolunteers.filter(
+      (volunteer) => volunteer.replaced
+    );
 
-  const filteredVolunteers = assignedUsers?.filter(
-    (volunteer) =>
-      // Include volunteers that are either not yet assigned or are previous replacements
-      (!eventVolunteers?.some(
-        (assignedVolunteer) => assignedVolunteer.volunteer_id === volunteer.id
-      ) ||
-        previousVolunteerIds.has(volunteer.id)) &&
-      // Exclude volunteers who are currently replacements
-      !replacementVolunteerIds.has(volunteer.id)
-  );
+    // Create the sets only once
+    return {
+      previousVolunteerIds: new Set(
+        replacedVolunteers.map((v) => v.volunteer_id)
+      ),
+      replacementVolunteerIds: new Set(
+        replacedVolunteers.map((v) => v.replacedby_id)
+      ),
+    };
+  }, [eventVolunteers]);
 
-  const volunteerOptions = filteredVolunteers?.map((volunteer) => ({
-    value: volunteer.id,
-    label: `${volunteer.first_name} ${volunteer.last_name}`,
-  }));
+  const filteredVolunteers = useMemo(() => {
+    if (!assignedUsers || !eventVolunteers) return [];
+
+    return assignedUsers.filter(
+      (volunteer) =>
+        // Include volunteers that are either not yet assigned or are previous replacements
+        (!eventVolunteers.some(
+          (assignedVolunteer) => assignedVolunteer.volunteer_id === volunteer.id
+        ) ||
+          previousVolunteerIds.has(volunteer.id)) &&
+        // Exclude volunteers who are currently replacements
+        !replacementVolunteerIds.has(volunteer.id)
+    );
+  }, [
+    assignedUsers,
+    eventVolunteers,
+    previousVolunteerIds,
+    replacementVolunteerIds,
+  ]);
+
+  const volunteerOptions = useMemo(() => {
+    return (
+      filteredVolunteers?.map((volunteer) => ({
+        value: volunteer.id,
+        label: `${volunteer.first_name} ${volunteer.last_name}`,
+      })) || []
+    );
+  }, [filteredVolunteers]);
 
   const ministryVolunteerOptions = useMemo(() => {
     if (!ministryVolunteers || !Array.isArray(ministryVolunteers)) return [];
@@ -425,28 +457,15 @@ const ScheduleDetails = () => {
 
   return (
     <div className="no-scrollbar flex h-full grow flex-col gap-2 overflow-y-scroll px-3 py-2 md:px-9 md:py-6">
-      <div className="flex flex-wrap justify-between">
+      <div className="flex flex-wrap justify-between gap-y-2">
         <div>
           <Title className="text-2xl">
-            {`${event.event_name}, ${new Date(
-              `${event.event_date}T${event.event_time}`
-            )
-              .toLocaleTimeString("en-US", {
-                hour: "numeric",
-                minute: "numeric",
-                hour12: true,
-              })
-              .replace(":", ".")
-              .replace(" ", "")
-              .toLowerCase()}`}
+            {event.requires_attendance
+              ? `${event.event_name}, ${formatEventTimeCompact(event.event_time)}`
+              : event.event_name}
           </Title>
           <Label className="text-xl text-primary-text">
-            Date:{" "}
-            {new Date(event?.event_date).toLocaleDateString("en-GB", {
-              day: "numeric",
-              month: "short",
-              year: "numeric",
-            })}
+            Date: {formatEventDate(event?.event_date)}
           </Label>
           <Description>{event?.event_description}</Description>
         </div>

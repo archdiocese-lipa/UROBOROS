@@ -14,8 +14,9 @@ import { Button } from "../ui/button";
 import { Label } from "../ui/label";
 import { useUser } from "@/context/useUser";
 import { Icon } from "@iconify/react";
-import { formatEventDate, formatEventTime } from "@/lib/utils";
+
 import FamilyData from "./FamilyData";
+import { formatEventDate, formatEventTime } from "@/lib/utils";
 
 const ManualAttendEvents = ({ eventId, eventName, eventTime, eventDate }) => {
   const [selectedEvent, setSelectedEvent] = useState(null); // set the selected event
@@ -34,7 +35,9 @@ const ManualAttendEvents = ({ eventId, eventName, eventTime, eventDate }) => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button onClick={handleSelectEvent}>Manage Attendance</Button>
+        <Button onClick={handleSelectEvent} className="flex-1">
+          Manage Attendance
+        </Button>
       </DialogTrigger>
       <DialogContent className="no-scrollbar max-h-[37rem] overflow-scroll text-primary-text">
         <DialogHeader className="font-bold">

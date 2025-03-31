@@ -238,9 +238,7 @@ const CreateEvent = ({
 
   const handleEventSelect = (eventItem) => {
     // Convert the event time string to a Date object
-    const eventDate = eventItem.event_time
-      ? new Date() // Z to indicate UTC time
-      : null;
+    const eventDate = eventItem.event_time ? new Date() : null;
 
     // Set the time on the event date
     if (eventDate && eventItem.event_time) {

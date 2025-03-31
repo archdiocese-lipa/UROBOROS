@@ -241,8 +241,21 @@ const updateParish = async ({ userId, parishId, vicariateId }) => {
     throw new Error("Error updating parish!", error.message);
   }
 };
+const toggleNotification = async ({ userId, isReceivingNotification }) => {
+  const { error } = await supabase
+    .from("users")
+    .update({
+      email_notifications_enabled: isReceivingNotification,
+    })
+    .eq("id", userId);
+
+  if (error) {
+    throw new Error("Error updating notification!", error.message);
+  }
+};
 
 export {
+  toggleNotification,
   getUser,
   getUsersByRole,
   getUsers,

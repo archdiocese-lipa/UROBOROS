@@ -12,7 +12,7 @@ import { useUser } from "@/context/useUser";
 import ManualAttendEvents from "../Events/ManualAttendEvents";
 
 const EventInfoDialog = ({ open, event, onClose, temporaryRole }) => {
-  const {userData} = useUser();
+  const { userData } = useUser();
   const role = userData?.role;
 
   const formatUKDate = (dateString) => {
@@ -46,7 +46,7 @@ const EventInfoDialog = ({ open, event, onClose, temporaryRole }) => {
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex flex-row justify-end gap-x-1">
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={onClose} className="flex-1">
             Close
           </Button>
           {(role === "parishioner" ||
