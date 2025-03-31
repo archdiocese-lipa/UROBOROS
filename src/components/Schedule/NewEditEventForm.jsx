@@ -255,7 +255,6 @@ const NewEditEventForm = ({
       const groupExists = groups.some(
         (group) => group.id === initialEventData.group_id
       );
-
       if (groupExists) {
         setSelectedGroup(initialEventData.group_id);
         form.setValue("groups", initialEventData.group_id);
