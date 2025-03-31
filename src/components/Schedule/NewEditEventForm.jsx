@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import PropTypes from "prop-types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -23,7 +23,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "../ui/button";
-import { DownIcon, EventIcon } from "@/assets/icons/icons";
+import { DownIcon } from "@/assets/icons/icons";
 import { Input } from "../ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { CalendarIcon, Loader2 } from "lucide-react";
@@ -44,7 +44,6 @@ import { getQuickAccessEvents } from "@/services/eventService";
 import useRoleSwitcher from "@/hooks/useRoleSwitcher";
 import {
   getAssignedMinistries,
-  getMinistryVolunteers,
   getOneMinistryGroup,
 } from "@/services/ministryService";
 import { useUser } from "@/context/useUser";
@@ -53,10 +52,9 @@ import useMinistry from "@/hooks/useMinistry";
 import { Switch } from "../ui/switch";
 import TimePicker from "./TimePicker";
 import { format } from "date-fns";
-import CustomReactSelect from "../CustomReactSelect";
-import useUsersByRole from "@/hooks/useUsersByRole";
 import { createEventSchema } from "@/zodSchema/CreateEventSchema";
 import useEvent from "@/hooks/useEvent";
+import { editEventSchema } from "@/zodSchema/EditEventSchema";
 
 const useQuickAccessEvents = () => {
   return useQuery({
@@ -74,14 +72,6 @@ const useAssignedMinistries = (userId) => {
   });
 };
 
-const useMinistryVolunteers = (groupId) => {
-  return useQuery({
-    queryKey: ["ministry-volunteers", groupId],
-    queryFn: () => getMinistryVolunteers(groupId),
-    enabled: !!groupId,
-  });
-};
-
 const useMinistryGroups = (ministryId) => {
   return useQuery({
     queryKey: ["ministry-groups", ministryId],
@@ -90,30 +80,30 @@ const useMinistryGroups = (ministryId) => {
   });
 };
 
-const NewCreateEventForm = () => {
+const NewEditEventForm = ({
+  initialEventData = null,
+  onSuccess = () => {},
+  queryKey = ["events"],
+}) => {
   const [openDialog, setOpenDialog] = useState(false);
-  const [selectedMinistry, setSelectedMinistry] = useState(null);
-  const [selectedGroup, setSelectedGroup] = useState(null);
+  const [selectedMinistry, setSelectedMinistry] = useState(
+    initialEventData?.ministry_id || null
+  );
+  const [selectedGroup, setSelectedGroup] = useState(
+    initialEventData?.group_id || null
+  );
   const [openCalendar, setOpenCalendar] = useState(false);
 
-  const [imagePreview, setImagePreview] = useState(null);
+  const [imagePreview, setImagePreview] = useState(
+    initialEventData?.image_url || null
+  );
   const fileInputRef = useRef(null);
 
   const { userData } = useUser();
   const userId = userData?.id;
   const { temporaryRole } = useRoleSwitcher();
 
-  // Fetch users by role
-  const { data: coordinators } = useUsersByRole("coordinator");
-  const { data: volunteers } = useUsersByRole("volunteer");
-  const { data: admins } = useUsersByRole("admin");
-
-  // Fetch users to become public volunteers
-  const publicVolunteers = [
-    ...(volunteers || []),
-    ...(admins || []),
-    ...(coordinators || []),
-  ];
+  const queryClient = useQueryClient();
 
   // Fetch quick access events
   const {
@@ -128,12 +118,6 @@ const NewCreateEventForm = () => {
     isLoading: assignedMinistriesLoading,
   } = useAssignedMinistries(userId);
 
-  // Fetch volunteers
-  const {
-    data: ministryVolunteers = [],
-    isLoading: ministryVolunteersLoading,
-  } = useMinistryVolunteers(selectedGroup);
-
   const { ministries } = useMinistry({
     ministryId: selectedMinistry,
   });
@@ -143,18 +127,24 @@ const NewCreateEventForm = () => {
     useMinistryGroups(selectedMinistry);
   // 1. Define the form.
   const form = useForm({
-    resolver: zodResolver(createEventSchema),
+    resolver: zodResolver(
+      initialEventData ? editEventSchema : createEventSchema
+    ),
     defaultValues: {
-      eventName: "",
-      eventDescription: "",
-      eventVisibility: "",
-      eventObservation: false,
-      eventTime: null,
-      eventDate: null,
-      eventPosterImage: null,
+      eventName: initialEventData?.event_name || "",
+      eventDescription: initialEventData?.description || "",
+      eventVisibility: initialEventData?.event_visibility || "",
+      eventObservation: initialEventData?.requires_attendance === false,
+      eventTime: initialEventData?.event_time
+        ? convertTimeStringToDate(initialEventData?.event_time)
+        : null,
+      eventDate: initialEventData?.event_date
+        ? new Date(initialEventData?.event_date)
+        : null,
+      eventPosterImage: initialEventData?.image_url || null,
       assignVolunteer: [],
-      groups: "",
-      ministry: "",
+      groups: selectedGroup || " ",
+      ministry: initialEventData?.ministry_id || "",
     },
   });
 
@@ -162,7 +152,7 @@ const NewCreateEventForm = () => {
   const watchVisibility = form.watch("eventVisibility");
   const watchObservation = form.watch("eventObservation");
 
-  const { createEventMutation } = useEvent();
+  const { updateEventMutation } = useEvent();
 
   // Function to submit.
   const onSubmit = (data) => {
@@ -181,12 +171,31 @@ const NewCreateEventForm = () => {
       eventTime: formattedTime,
       userId, // For creator id in event table
     };
+
+    if (initialEventData) {
+      // If a new file is selected, include it
+      if (data.eventPosterImage instanceof File) {
+        eventPayload.eventPosterImage = data.eventPosterImage;
+      }
+      // If no new file but existing image URL, keep the existing URL
+      else if (initialEventData.image_url) {
+        eventPayload.eventPosterImage = initialEventData.image_url;
+      }
+    }
     // Call the create event function with the prepared data
-    createEventMutation.mutate(eventPayload, {
-      onSuccess: () => {
-        setOpenDialog(false);
+    updateEventMutation.mutate(
+      {
+        eventId: initialEventData?.id,
+        updatedData: eventPayload,
       },
-    });
+      {
+        onSuccess: () => {
+          setOpenDialog(false);
+          onSuccess();
+          queryClient.invalidateQueries(queryKey);
+        },
+      }
+    );
   };
 
   // Function for opening and closing the dialog
@@ -196,36 +205,7 @@ const NewCreateEventForm = () => {
     // If dialog is closing, reset the form
     if (!openState) {
       form.reset();
-      setImagePreview(null);
     }
-  };
-
-  const getVolunteerOptions = () => {
-    //For public visibility, return all volunteers
-    if (watchVisibility === "public") {
-      return (
-        publicVolunteers?.map((volunteer) => ({
-          value: volunteer?.id || "",
-          label: `${volunteer?.first_name || ""} ${volunteer?.last_name || ""}`,
-        })) || []
-      );
-    }
-    // For private visibility events with a selected ministry
-    if (
-      watchVisibility === "private" &&
-      !ministryVolunteersLoading &&
-      ministryVolunteers
-    ) {
-      return (
-        ministryVolunteers?.map((volunteer) => ({
-          value: volunteer?.users?.id || "",
-          label: `${volunteer?.users?.first_name || ""} ${volunteer?.users?.last_name || ""}`,
-        })) || []
-      );
-    }
-
-    // Fallback
-    return [];
   };
 
   // Effect to handle visibility changes
@@ -237,13 +217,9 @@ const NewCreateEventForm = () => {
       // Reset ministry-related fields when changing to public visibility
       resetField("ministry", { defaultValue: "" });
       resetField("groups");
-      resetField("assignVolunteer", { defaultValue: [] });
       setSelectedMinistry(null);
       setSelectedGroup(null);
     } else if (watchVisibility === "private") {
-      // Reset volunteer selections when switching to private
-      resetField("assignVolunteer", { defaultValue: [] });
-
       // Auto-select the only ministry when there's exactly one option
       if (assignedMinistries?.length === 1) {
         const ministryId = assignedMinistries[0].id;
@@ -272,26 +248,35 @@ const NewCreateEventForm = () => {
     }
   }, [selectedMinistry, watchVisibility, groups, form]);
 
+  // Separate effect to set the group AFTER the ministry is selected and groups are loaded
+  useEffect(() => {
+    if (initialEventData?.group_id && selectedMinistry && groups?.length > 0) {
+      // Verify the group belongs to the selected ministry
+      const groupExists = groups.some(
+        (group) => group.id === initialEventData.group_id
+      );
+
+      if (groupExists) {
+        setSelectedGroup(initialEventData.group_id);
+        form.setValue("groups", initialEventData.group_id);
+      }
+    }
+  }, [initialEventData?.group_id, selectedMinistry, groups, form]);
+
   return (
     <AlertDialog open={openDialog} onOpenChange={handleOpenDialog}>
-      <AlertDialogTrigger asChild>
-        <Button>
-          <div className="flex gap-2">
-            <EventIcon className="text-primary" />
-            <p>Create Event</p>
-          </div>
-        </Button>
+      <AlertDialogTrigger className="font-semibold text-accent hover:text-accent hover:underline">
+        <p>Edit</p>
       </AlertDialogTrigger>
-
       <AlertDialogContent className="max-w-4xl">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <AlertDialogHeader className="text-primary-text">
               <AlertDialogTitle className="text-[20px] font-bold">
-                Create Event
+                Update Event
               </AlertDialogTitle>
               <AlertDialogDescription>
-                Schedule an upcoming event.
+                Make changes to your event
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogBody className="no-scrollbar flex max-h-[27rem] flex-col gap-6 overflow-y-scroll md:max-h-full md:flex-row md:overflow-y-auto">
@@ -519,12 +504,12 @@ const NewCreateEventForm = () => {
                     </FormItem>
                   )}
                 />
-                <div className="flex flex-col items-center gap-x-2 sm:flex-row">
+                <div className="flex items-center gap-x-2">
                   <FormField
                     control={form.control}
                     name="eventDate"
                     render={({ field }) => (
-                      <FormItem className="flex w-full flex-1 flex-col">
+                      <FormItem className="flex flex-1 flex-col">
                         <FormLabel className="text-[12px] font-semibold text-accent/75">
                           Event Date
                         </FormLabel>
@@ -573,7 +558,7 @@ const NewCreateEventForm = () => {
                     control={form.control}
                     name="eventTime"
                     render={({ field }) => (
-                      <FormItem className="w-full flex-1">
+                      <FormItem className="flex-1">
                         <FormLabel className="text-[12px] font-semibold text-accent/75">
                           Event Time
                         </FormLabel>
@@ -596,53 +581,7 @@ const NewCreateEventForm = () => {
               </div>
               {/************************************************************ Right Div **********************************/}
               <div className="flex-1">
-                <div className="flex flex-col gap-6">
-                  {/* Assign Volunteer */}
-                  <FormField
-                    control={form.control}
-                    name="assignVolunteer"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-[12px] font-semibold text-accent/75">
-                          Assign Volunteer
-                        </FormLabel>
-                        <FormControl>
-                          <CustomReactSelect
-                            options={
-                              watchVisibility === "private" &&
-                              ministryVolunteersLoading
-                                ? [{ label: "Loading...", isDisabled: true }]
-                                : getVolunteerOptions()
-                            }
-                            value={field.value.map((value) => {
-                              // Find the volunteer in our options list
-                              const allOptions = getVolunteerOptions();
-                              const foundOption = allOptions.find(
-                                (opt) => opt.value === value
-                              );
-
-                              // If found, use that, otherwise create a placeholder
-                              return foundOption || { value, label: "Unknown" };
-                            })}
-                            onChange={(selected) =>
-                              field.onChange(
-                                selected
-                                  ? selected.map((option) => option.value)
-                                  : []
-                              )
-                            }
-                            placeholder={"Select Volunteer"}
-                            disabled={watchObservation}
-                            className={
-                              watchObservation &&
-                              "cursor-not-allowed opacity-50"
-                            }
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                <div>
                   {/* Event Poster Image */}
                   <FormField
                     control={form.control}
@@ -715,7 +654,7 @@ const NewCreateEventForm = () => {
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <Button type="submit" className="flex-1">
-                {createEventMutation.isPending ? "Creating..." : "Create"}
+                {updateEventMutation.isPending ? "Updating..." : "Update"}
               </Button>
             </AlertDialogFooter>
           </form>
@@ -725,7 +664,7 @@ const NewCreateEventForm = () => {
   );
 };
 
-NewCreateEventForm.propTypes = {
+NewEditEventForm.propTypes = {
   isEditMode: PropTypes.bool,
   initialEventData: PropTypes.object,
   onSuccess: PropTypes.func,
@@ -799,4 +738,4 @@ QuickAccessEvents.propTypes = {
   isError: PropTypes.bool,
 };
 
-export default NewCreateEventForm;
+export default NewEditEventForm;

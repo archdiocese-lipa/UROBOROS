@@ -14,7 +14,7 @@ const TimePicker = ({ value, onChange, disabled, className = "" }) => {
         timeIntervals={15} // 15-minute intervals
         timeCaption="Time"
         dateFormat="h:mm aa"
-        className={`rounded-full border border-neutral-200 bg-primary px-4 py-2 text-sm text-accent/75 placeholder:text-accent/50 ${className} `}
+        className={`w-full rounded-full border border-neutral-200 bg-primary px-4 py-2 text-sm text-accent/75 placeholder:text-accent/50 ${className} `}
         popperPlacement="bottom-start"
         placeholderText="Set time"
         disabled={disabled}

@@ -3,23 +3,29 @@ import { ROLES } from "@/constants/roles";
 import { cn, formatEventDate, formatEventTimeCompact } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 import ScheduleDetails from "./ScheduleDetails";
-import { Button } from "../ui/button";
-import { memo } from "react";
+import { memo, useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import useRoleSwitcher from "@/hooks/useRoleSwitcher";
-import NewCreateEventForm from "./NewCreateEventForm";
+import NewEditEventForm from "./NewEditEventForm";
 
-const ScheduleCards = ({
-  editDialogOpenIndex,
-  setEditDialogOpenIndex,
-  event,
-  onEventClick,
-  urlPrms,
-  filter,
-  i,
-  j,
-}) => {
+const ScheduleCards = ({ event, onEventClick, urlPrms, filter }) => {
+  const [disableEdit, setDisabledEdit] = useState(false);
   const { temporaryRole } = useRoleSwitcher();
+
+  useEffect(() => {
+    if (event.event_date) {
+      const eventDate = new Date(`${event.event_date}T${event.event_time}`);
+      const sevenDaysAhead = new Date(
+        eventDate.getTime() + 7 * 24 * 60 * 60 * 1000
+      );
+      const currentDate = new Date();
+      if (sevenDaysAhead < currentDate) {
+        setDisabledEdit(true);
+      } else {
+        setDisabledEdit(false);
+      }
+    }
+  }, [event.event_date, event.event_time]);
 
   return (
     <div className="relative">
@@ -48,35 +54,17 @@ const ScheduleCards = ({
             </p>
           </div>
         </div>
-        {(temporaryRole === ROLES[0] || temporaryRole === ROLES[4]) && (
-          <div>
-            <Button
-              variant="ghost"
-              size="xs"
-              className="-mt-3 font-semibold text-accent hover:text-accent hover:underline"
-              onClick={() => setEditDialogOpenIndex(`${i}-${j}`)}
-            >
-              Edit
-            </Button>
-
-            {editDialogOpenIndex === `${i}-${j}` && (
-              <NewCreateEventForm
-                isEditMode={true}
-                initialEventData={event}
-                onSuccess={() => setEditDialogOpenIndex(null)}
-                queryKey={[
-                  "schedules",
-                  filter,
-                  urlPrms.get("query")?.toString() || "",
-                ]}
-                isOpen={editDialogOpenIndex === `${i}-${j}`}
-                onOpenChange={(isOpen) =>
-                  setEditDialogOpenIndex(isOpen ? `${i}-${j}` : null)
-                }
-              />
-            )}
-          </div>
-        )}
+        {!disableEdit &&
+          (temporaryRole === ROLES[0] || temporaryRole === ROLES[4]) && (
+            <NewEditEventForm
+              initialEventData={{ ...event }}
+              queryKey={[
+                "schedules",
+                filter,
+                urlPrms.get("query")?.toString() || "",
+              ]}
+            />
+          )}
       </div>
 
       <div
@@ -119,36 +107,17 @@ const ScheduleCards = ({
             )}
           </SheetContent>
         </Sheet>
-        {(temporaryRole === ROLES[0] || temporaryRole === ROLES[4]) && (
-          <div>
-            <Button
-              variant="ghost"
-              size="xs"
-              className="-mt-3 font-semibold text-accent hover:text-accent hover:underline"
-              onClick={() => setEditDialogOpenIndex(`${i}-${j}`)}
-            >
-              Edit
-            </Button>
-
-            {/* Render form in a portal to avoid layout issues */}
-            {editDialogOpenIndex === `${i}-${j}` && (
-              <NewCreateEventForm
-                isEditMode={true}
-                initialEventData={event}
-                onSuccess={() => setEditDialogOpenIndex(null)}
-                queryKey={[
-                  "schedules",
-                  filter,
-                  urlPrms.get("query")?.toString() || "",
-                ]}
-                isOpen={editDialogOpenIndex === `${i}-${j}`}
-                onOpenChange={(isOpen) =>
-                  setEditDialogOpenIndex(isOpen ? `${i}-${j}` : null)
-                }
-              />
-            )}
-          </div>
-        )}
+        {!disableEdit &&
+          (temporaryRole === ROLES[0] || temporaryRole === ROLES[4]) && (
+            <NewEditEventForm
+              initialEventData={{ ...event }}
+              queryKey={[
+                "schedules",
+                filter,
+                urlPrms.get("query")?.toString() || "",
+              ]}
+            />
+          )}
       </div>
     </div>
   );
