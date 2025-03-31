@@ -115,8 +115,8 @@ const AnnouncementForm = ({
 
       // API endpoint
       const apiUrl = groupId
-        ? `http://localhost:3000/api/announcements/group/${groupId}`
-        : "http://localhost:3000/api/announcements";
+        ? `https://archdioceseoflipa-api.onrender.com/${groupId}`
+        : "ttps://archdioceseoflipa-api.onrender.com/api/announcements";
 
       // Make the API request
       const response = await axios.post(apiUrl, formData, {
