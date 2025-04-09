@@ -44,7 +44,7 @@ const addMembersSchema = z.object({
   members: z.array(z.string()).min(1, "Please select at least one member"),
 });
 
-const GroupMembers = ({ ministryId, groupId }) => {
+const GroupMembers = ({ ministryId, groupId, assignedMinistry }) => {
   const { groupmembers, removeGroupMembersMutation } = useGroups({ groupId });
   const { userData } = useUser();
   const currentUserId = userData?.id;
@@ -129,6 +129,7 @@ const GroupMembers = ({ ministryId, groupId }) => {
                               groupId={groupId}
                               firstName={member.first_name}
                               lastName={member.last_name}
+                              assignedMinistry={assignedMinistry}
                             />
                             <RemoveMembers
                               userId={member.id}
@@ -156,6 +157,15 @@ const GroupMembers = ({ ministryId, groupId }) => {
 GroupMembers.propTypes = {
   ministryId: PropTypes.string.isRequired,
   groupId: PropTypes.string.isRequired,
+  assignedMinistry: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      image_url: PropTypes.string.isRequired,
+      created_at: PropTypes.string.isRequired,
+      ministry_name: PropTypes.string.isRequired,
+      ministry_description: PropTypes.string,
+    })
+  ),
 };
 
 const AddGroupMembersForm = ({ ministryId, groupId }) => {
