@@ -38,6 +38,7 @@ import { ROLES } from "@/constants/roles";
 import CustomReactSelect from "../CustomReactSelect";
 import { useUser } from "@/context/useUser";
 import useMinistry from "@/hooks/useMinistry";
+import TransferMember from "./TransferMember";
 
 const addMembersSchema = z.object({
   members: z.array(z.string()).min(1, "Please select at least one member"),
@@ -122,14 +123,22 @@ const GroupMembers = ({ ministryId, groupId }) => {
                     {member && (
                       <div className="transition-opacity lg:opacity-0 lg:group-hover:opacity-100">
                         {isCoordinator && (
-                          <RemoveMembers
-                            userId={member.id}
-                            groupId={groupId}
-                            memberName={`${member.first_name} ${member.last_name}`}
-                            removeGroupMembersMutation={
-                              removeGroupMembersMutation
-                            }
-                          />
+                          <div className="flex items-center space-x-2">
+                            <TransferMember
+                              userId={member.id}
+                              groupId={groupId}
+                              firstName={member.first_name}
+                              lastName={member.last_name}
+                            />
+                            <RemoveMembers
+                              userId={member.id}
+                              groupId={groupId}
+                              memberName={`${member.first_name} ${member.last_name}`}
+                              removeGroupMembersMutation={
+                                removeGroupMembersMutation
+                              }
+                            />
+                          </div>
                         )}
                       </div>
                     )}
