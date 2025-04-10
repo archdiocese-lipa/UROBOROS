@@ -6,13 +6,14 @@ import useAnnouncements from "@/hooks/useAnnouncements";
 import { Skeleton } from "../ui/skeleton";
 import useInterObserver from "@/hooks/useInterObserver";
 import PropTypes from "prop-types";
-import FoldedPaper from "@/assets/images/FoldedPaper.png";
+import foldedPaperImage from "@/assets/images/foldedpaper.png";
 
-const GroupAnnouncements = ({ groupId }) => {
+const GroupAnnouncements = ({ groupId, subgroupId }) => {
   const [searchParams] = useSearchParams();
   const { userData } = useUser();
 
-  // Use the passed groupId prop or fall back to search params
+  // Use the passed subgroupId first, then groupId, then search params
+  const subgroupIdToUse = subgroupId || searchParams.get("subgroupId");
   const groupIdToUse = groupId || searchParams.get("groupId");
 
   const {
@@ -23,18 +24,27 @@ const GroupAnnouncements = ({ groupId }) => {
     isLoading,
   } = useAnnouncements({
     user_id: userData?.id,
-    group_id: groupIdToUse,
+    group_id: subgroupIdToUse ? null : groupIdToUse,
+    subgroup_id: subgroupIdToUse,
   });
 
   const { ref } = useInterObserver(fetchNextPage);
 
-  // Check if user is coordinator for this ministry
+  // Determine the placeholder text based on what's selected
+  const getPlaceholderText = () => {
+    if (subgroupIdToUse) {
+      return "POST YOUR FIRST SUBGROUP ANNOUNCEMENT";
+    }
+    return "POST YOUR FIRST ANNOUNCEMENT";
+  };
 
   return (
-    <div className="mx-auto flex h-full w-full max-w-[530px] flex-col pt-4">
+    <div className="mx-auto flex h-dvh w-full max-w-[530px] flex-col items-center pt-4">
       <AnnouncementHeader
         image={userData.user_image}
         first_name={userData.first_name}
+        subgroupId={subgroupIdToUse}
+        groupId={!subgroupIdToUse ? groupIdToUse : null}
       />
 
       {isLoading ? (
@@ -46,12 +56,12 @@ const GroupAnnouncements = ({ groupId }) => {
           </div>
         ))
       ) : data?.pages?.flatMap((page) => page.items).length === 0 ? (
-        <div className="mt-32 flex flex-col gap-y-6">
-          <div>
-            <img src={FoldedPaper} alt="Folded Paper" className="mx-auto" />
+        <div className="mt-32 flex flex-1 flex-col gap-y-6 self-center">
+          <div className="mx-auto">
+            <img src={foldedPaperImage} alt="Folded Paper" />
           </div>
-          <p className="text-center text-[20px] text-accent/30">
-            No announcements yet.
+          <p className="text-center text-[20px] font-medium text-accent/35">
+            {getPlaceholderText()}
           </p>
         </div>
       ) : (
@@ -77,6 +87,7 @@ const GroupAnnouncements = ({ groupId }) => {
 GroupAnnouncements.propTypes = {
   ministryId: PropTypes.string,
   groupId: PropTypes.string,
+  subgroupId: PropTypes.string,
 };
 
 export default GroupAnnouncements;
