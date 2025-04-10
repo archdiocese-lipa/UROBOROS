@@ -27,7 +27,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Button } from "./ui/button";
 import { Icon } from "@iconify/react";
 import { Textarea } from "./ui/textarea";
 
@@ -60,10 +59,10 @@ const FeedbackForm = () => {
   return (
     <>
       <HoverCard>
-        <HoverCardTrigger asChild>
-          <Button variant="outline" onClick={handleOpenDialog}>
-            <Icon icon="mingcute:message-1-fill" />
-          </Button>
+        <HoverCardTrigger onClick={handleOpenDialog} className="cursor-pointer">
+          <div className="rounded-lg border border-accent/30 p-1">
+            <Icon icon="mingcute:edit-4-fill" width={24} color="#663F30" />
+          </div>
         </HoverCardTrigger>
         <HoverCardContent>
           Click this button to provide feedback about the portal.
