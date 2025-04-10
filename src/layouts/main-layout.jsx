@@ -1,6 +1,7 @@
 import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "@/components/Sidebar";
 import { cn } from "@/lib/utils";
+import FeedbackForm from "@/components/FeedbackForm";
 
 const MainLayout = () => {
   const url = useLocation();
@@ -8,7 +9,7 @@ const MainLayout = () => {
   return (
     <div className="flex h-dvh flex-col">
       {/* Main content area */}
-      <div className="flex flex-1 flex-col-reverse overflow-hidden bg-primary lg:flex-row">
+      <div className="relative flex flex-1 flex-col-reverse overflow-hidden bg-primary lg:flex-row">
         <Sidebar />
         <div
           className={cn(
@@ -17,6 +18,9 @@ const MainLayout = () => {
           )}
         >
           <Outlet />
+        </div>
+        <div className="absolute bottom-16 right-1 md:bottom-20 md:right-5 lg:bottom-5">
+          <FeedbackForm />
         </div>
       </div>
 

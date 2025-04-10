@@ -657,6 +657,7 @@ const CoordinatorViewMinistry = () => {
               <GroupMembers
                 ministryId={selectedMinistryId}
                 groupId={selectedGroup}
+                assignedMinistry={assignedMinistries}
               />
             </TabsContent>
           </Tabs>
