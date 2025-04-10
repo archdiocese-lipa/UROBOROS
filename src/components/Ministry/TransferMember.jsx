@@ -12,27 +12,22 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuPortal,
-  DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Button } from "../ui/button";
-import { Avatar, AvatarFallback } from "../ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Icon } from "@iconify/react";
 import { Label } from "../ui/label";
 import { useQuery } from "@tanstack/react-query";
 import { transferMembersFetchGroups } from "@/services/groupServices";
 import { Loader2 } from "lucide-react";
 import useGroups from "@/hooks/useGroups";
+
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const TransferMember = ({
   userId,
@@ -90,31 +85,38 @@ const TransferMember = ({
             </div>
           </div>
         </AlertDialogHeader>
-        <AlertDialogBody>
+        <AlertDialogBody className="no-scrollbar max-h-[37rem] overflow-y-scroll">
           <div>
-            <Label>Select group to transfer</Label>
+            <Label>Transfer to</Label>
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline">
-                {selectedGroup.name ? selectedGroup.name : "Select Group"}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuLabel>Ministries</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                {assignedMinistry.map((ministry) => (
+          <Accordion type="single" collapsible>
+            {assignedMinistry.map((ministry) => (
+              <AccordionItem key={ministry.id} value={ministry.id}>
+                <AccordionTrigger>
+                  <div className="flex items-center gap-x-2">
+                    <Avatar>
+                      <AvatarImage src={ministry.image_url} />
+                      <AvatarFallback className="bg-primary-outline/60 text-primary-text">
+                        {ministry.ministry_name?.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <Label className="font-bold">
+                        {ministry.ministry_name}
+                      </Label>
+                    </div>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
                   <MinistrySubMenu
-                    key={ministry.id}
                     ministry={ministry}
                     currentGroupId={groupId}
-                    onSelectGroup={(group) => handleGroupSelect({ ...group })}
+                    onSelectGroup={handleGroupSelect}
                   />
-                ))}
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
         </AlertDialogBody>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
@@ -157,6 +159,7 @@ TransferMember.propTypes = {
 
 // Ministry submenu
 const MinistrySubMenu = ({ ministry, currentGroupId, onSelectGroup }) => {
+  const [selectedValue, setSelectedValue] = useState("");
   // Fetch groups for this specific ministry
   const { data: groups = [], isLoading } = useQuery({
     queryKey: ["transferGroups", ministry.id, currentGroupId],
@@ -164,33 +167,56 @@ const MinistrySubMenu = ({ ministry, currentGroupId, onSelectGroup }) => {
     enabled: !!ministry.id && !!currentGroupId,
   });
 
+  const handleValueChange = (value) => {
+    setSelectedValue(value);
+    const selectedGroup = groups.find((group) => group.id === value);
+    if (selectedGroup) {
+      onSelectGroup(selectedGroup);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-4">
+        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        <span className="text-sm">Loading groups...</span>
+      </div>
+    );
+  }
+
+  if (groups.length === 0) {
+    return (
+      <div className="text-muted-foreground px-2 py-4 text-center text-sm">
+        No other groups available in this ministry
+      </div>
+    );
+  }
+
   return (
-    <DropdownMenuSub>
-      <DropdownMenuSubTrigger>{ministry.ministry_name}</DropdownMenuSubTrigger>
-      <DropdownMenuPortal>
-        <DropdownMenuSubContent>
-          {isLoading ? (
-            <div className="flex items-center justify-center px-2 py-2">
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              <span>Loading groups...</span>
-            </div>
-          ) : groups.length > 0 ? (
-            groups.map((group) => (
-              <DropdownMenuItem
-                key={group.id}
-                onClick={() => onSelectGroup(group)}
-              >
+    <RadioGroup
+      value={selectedValue}
+      onValueChange={handleValueChange}
+      className="space-y-2"
+    >
+      {groups.map((group) => (
+        <div key={group.id} className="flex items-center justify-between px-2">
+          <div className="flex flex-col">
+            <div className="flex items-center gap-x-2">
+              <Avatar>
+                <AvatarImage src={group.image_url} />
+                <AvatarFallback className="bg-primary-outline/60 text-primary-text">
+                  {group.name?.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+              <Label htmlFor={`group-${group.id}`} className="font-medium">
                 {group.name}
-              </DropdownMenuItem>
-            ))
-          ) : (
-            <DropdownMenuItem disabled>
-              No other groups available
-            </DropdownMenuItem>
-          )}
-        </DropdownMenuSubContent>
-      </DropdownMenuPortal>
-    </DropdownMenuSub>
+              </Label>
+            </div>
+          </div>
+          <RadioGroupItem value={group.id} id={`group-${group.id}`} />
+        </div>
+      ))}
+    </RadioGroup>
   );
 };
 
