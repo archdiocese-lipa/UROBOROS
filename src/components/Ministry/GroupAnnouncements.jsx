@@ -6,7 +6,7 @@ import useAnnouncements from "@/hooks/useAnnouncements";
 import { Skeleton } from "../ui/skeleton";
 import useInterObserver from "@/hooks/useInterObserver";
 import PropTypes from "prop-types";
-import foldedPaperImage from "@/assets/images/foldedpaper.png";
+import foldedPaperImage from "@/assets/images/FoldedPaper.png";
 
 const GroupAnnouncements = ({ groupId, subgroupId }) => {
   const [searchParams] = useSearchParams();
