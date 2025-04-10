@@ -90,7 +90,7 @@ const TransferMember = ({
             <Label>Transfer to</Label>
           </div>
           <Accordion type="single" collapsible>
-            {assignedMinistry.map((ministry) => (
+            {assignedMinistry?.map((ministry) => (
               <AccordionItem key={ministry.id} value={ministry.id}>
                 <AccordionTrigger>
                   <div className="flex items-center gap-x-2">

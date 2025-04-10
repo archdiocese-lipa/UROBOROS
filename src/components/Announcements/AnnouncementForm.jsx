@@ -33,8 +33,6 @@ import { AnnouncementSchema } from "@/zodSchema/AnnouncementSchema";
 import { Label } from "../ui/label";
 import PropTypes from "prop-types";
 import { useSearchParams } from "react-router-dom";
-import { supabase } from "@/services/supabaseClient";
-import axios from "axios";
 
 const AnnouncementForm = ({
   files,
@@ -42,9 +40,16 @@ const AnnouncementForm = ({
   content,
   announcementId,
   children,
+  subgroupId,
+  groupId,
 }) => {
   const [searchParams] = useSearchParams();
-  const { _userData } = useUser();
+  const { userData } = useUser();
+
+  // Use the props first, then fall back to URL params if needed
+  const subgroupIdToUse = subgroupId || searchParams.get("subgroupId");
+  const groupIdToUse = groupId || searchParams.get("groupId");
+
   const [currentFiles, setCurrentFiles] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedFileType, setSelectedFileTypes] = useState(
@@ -53,8 +58,6 @@ const AnnouncementForm = ({
   const [selectedVideo, setSelectedVideo] = useState("");
   const [selectedPDF, setSelectedPDF] = useState("");
   const [imagePreviews, setImagePreviews] = useState([]);
-
-  // console.log("edit data", files);
   const form = useForm({
     resolver: zodResolver(AnnouncementSchema),
     defaultValues: {
@@ -66,90 +69,30 @@ const AnnouncementForm = ({
 
   const { addAnnouncementMutation, editAnnouncementMutation } =
     useAnnouncements({
-      group_id: searchParams.get("groupId"),
+      group_id: groupIdToUse,
+      subgroup_id: subgroupIdToUse,
     });
 
   const onSubmit = (data) => {
     if (title) {
-      // Keep the existing edit mutation
       editAnnouncementMutation.mutate({
         data,
         announcementId,
-        groupId: searchParams.get("groupId"),
+        groupId: groupIdToUse,
+        subgroupId: subgroupIdToUse,
       });
     } else {
-      // Direct API call for creating a new announcement
-      handleCreateAnnouncement(data);
+      addAnnouncementMutation.mutate({
+        data,
+        userId: userData?.id,
+        groupId: groupIdToUse,
+        subgroupId: subgroupIdToUse,
+      });
     }
 
     form.reset();
     setIsOpen(false);
     setImagePreviews([]);
-  };
-
-  // function to handle direct API call
-  const handleCreateAnnouncement = async (data) => {
-    try {
-      // Create FormData for file uploads
-      const formData = new FormData();
-      formData.append("title", data.title);
-      formData.append("content", data.content);
-
-      // Add groupId if available
-      const groupId = searchParams.get("groupId");
-      if (groupId) {
-        formData.append("groupId", groupId);
-      }
-
-      // Append files if any
-      if (data.files && data.files.length > 0) {
-        data.files.forEach((file) => {
-          formData.append("files", file);
-        });
-      }
-
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const token = session?.access_token;
-
-      // API endpoint
-      const apiUrl = groupId
-        ? `http://localhost:3000/api/announcements/group/${groupId}`
-        : "http://localhost:3000/api/announcements";
-
-      // Make the API request
-      const response = await axios.post(apiUrl, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      console.log("Announcement created successfully:", response.data);
-
-      // show a success notification here
-      alert("Announcement created successfully!");
-    } catch (error) {
-      console.error("Error creating announcement:", error);
-
-      // Improved error handling for axios
-      let errorMessage = "Failed to create announcement";
-
-      if (error.response) {
-        // The request was made and the server responded with a status code
-        // that falls out of the range of 2xx
-        errorMessage = error.response.data?.message || errorMessage;
-      } else if (error.request) {
-        // The request was made but no response was received
-        errorMessage = "No response from server";
-      } else {
-        // Something happened in setting up the request
-        errorMessage = error.message;
-      }
-
-      alert(`Error creating announcement: ${errorMessage}`);
-    }
   };
 
   useEffect(() => {
@@ -443,20 +386,6 @@ const AnnouncementForm = ({
                       </div>
                     </Label>
                   ))}
-                {/* {selectedFileType === "Hyperlink" && (
-                  <div className="flex h-[110px] flex-col items-center justify-center">
-                    <div className="flex flex-shrink-0 items-center justify-center rounded-md hover:cursor-pointer">
-                      <Input
-                        className="p-x-0 p-y-0 border-b-1 mb-2 h-6 w-72 rounded-none border-x-0 border-t-0 border-b-[#CDA996] bg-transparent text-accent"
-                        defaultValue="https://"
-                        icon={"mingcute:pdf-fill"}
-                      />
-                    </div>
-                    <p className="text-[12px] font-semibold text-[#CDA996]">
-                      Hyperlink
-                    </p>
-                  </div>
-                )} */}
               </div>
               {form.formState.errors.files && (
                 <p className="text-sm font-medium text-red-500">
@@ -490,6 +419,8 @@ AnnouncementForm.propTypes = {
   content: PropTypes.string,
   announcementId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   children: PropTypes.node.isRequired,
+  subgroupId: PropTypes.string,
+  groupId: PropTypes.string,
 };
 
 export default AnnouncementForm;
