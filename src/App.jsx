@@ -16,16 +16,21 @@ import RequireRole from "@/components/RequireRole";
 import { ROLES } from "@/constants/roles";
 import ResetPassword from "./pages/ResetPassword";
 import AcceptInvite from "./pages/AcceptInvite";
+import SendFeedback from "./pages/SendFeedback";
+import Feedback from "./pages/Feedback";
+import FeedBackSuccess from "./pages/FeedBackSuccess";
 
 const App = () => {
   return (
     // <Router basename="/portal">
     <Router>
       <Routes>
-        {/* Auth Routes */}
+        {/* No Auth Routes */}
         <Route path="/" element={<Home />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/accept-invite" element={<AcceptInvite />} />
+        <Route path="/send-feedback" element={<SendFeedback />} />
+        <Route path="/feedback/success" element={<FeedBackSuccess />} />
         {/* Privacy Policy Route */}
         {/* Protected Routes */}
         <Route element={<MainLayout />}>
@@ -43,6 +48,7 @@ const App = () => {
           {/* Only admin can access the routes below */}
           <Route element={<RequireRole roles={[ROLES[4]]} />}>
             <Route path="/requests" element={<Requests />} />
+            <Route path="/feedback" element={<Feedback />} />
           </Route>
           {/* ========================================================= */}
           {/* Roles of Coordinator and Volunteer can access the routes below */}
