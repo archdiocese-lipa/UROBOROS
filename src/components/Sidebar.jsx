@@ -96,6 +96,14 @@ const Sidebar = () => {
                   </DropdownMenuItem>
                 ))}
                 <DropdownMenuSeparator />
+                <Link
+                  to="/send-feedback"
+                  className="flex w-full items-center gap-2 hover:cursor-pointer"
+                >
+                  <DropdownMenuItem className="w-full">
+                    Send Feedback
+                  </DropdownMenuItem>
+                </Link>
                 <DropdownMenuItem onClick={() => navigate("/profile")}>
                   Profile
                 </DropdownMenuItem>
@@ -181,7 +189,14 @@ const SidebarProfile = ({ availableRoles, onSwitchRole }) => {
             </DropdownMenuItem>
           ))}
           {userData?.role !== ROLES[2] && <DropdownMenuSeparator />}
-
+          <Link
+            to="/send-feedback"
+            className="flex w-full items-center gap-2 hover:cursor-pointer"
+          >
+            <DropdownMenuItem className="w-full">
+              Send Feedback
+            </DropdownMenuItem>
+          </Link>
           <Link
             to="/profile"
             className="flex w-full items-center gap-2 hover:cursor-pointer"
