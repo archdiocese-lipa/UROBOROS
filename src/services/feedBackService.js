@@ -1,7 +1,7 @@
 import axios from "axios";
 import { supabase } from "./supabaseClient";
 
-const getAuthToken = async () => {
+export const getAuthToken = async () => {
   try {
     const {
       data: { session },
