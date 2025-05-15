@@ -1,5 +1,5 @@
 import {
-  createAnnouncements,
+  createAnnouncement,
   deleteAnnouncement,
   editAnnouncement,
   fetchAnnouncementsV2,
@@ -37,7 +37,7 @@ const useAnnouncements = ({ group_id, subgroup_id }) => {
   });
 
   const addAnnouncementMutation = useMutation({
-    mutationFn: createAnnouncements,
+    mutationFn: createAnnouncement,
 
     onSuccess: () => {
       toast({

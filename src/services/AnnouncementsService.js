@@ -1,82 +1,142 @@
 import { paginate } from "@/lib/utils";
 import { supabase } from "./supabaseClient";
+import axios from "axios";
+import { getAuthToken } from "./feedBackService";
 
-/**
- * Creates a new announcement and uploads associated files to Supabase storage.
- * Also associates the announcement with ministries via the `announcement_ministries` table.
- *
- * @param {Object} params - The parameters for creating an announcement.
- * @param {Object} params.announcementData - The data for the announcement.
- * @param {string} params.announcementData.title - The title of the announcement.
- * @param {string} params.announcementData.content - The content of the announcement.
- * @param {FileList} [params.announcementData.files] - The file to be uploaded (optional).
- * @param {string} params.user_id - The ID of the user creating the announcement.
- *
- * @throws {Error} If there is an error during the file upload, announcement creation, or ministry association.
- */
-export const createAnnouncements = async ({
+// /**
+//  * Creates a new announcement and uploads associated files to Supabase storage.
+//  * Also associates the announcement with ministries via the `announcement_ministries` table.
+//  *
+//  * @param {Object} params - The parameters for creating an announcement.
+//  * @param {Object} params.announcementData - The data for the announcement.
+//  * @param {string} params.announcementData.title - The title of the announcement.
+//  * @param {string} params.announcementData.content - The content of the announcement.
+//  * @param {FileList} [params.announcementData.files] - The file to be uploaded (optional).
+//  * @param {string} params.user_id - The ID of the user creating the announcement.
+//  *
+//  * @throws {Error} If there is an error during the file upload, announcement creation, or ministry association.
+//  */
+// export const createAnnouncements = async ({
+//   data,
+//   userId,
+//   groupId,
+//   subgroupId,
+// }) => {
+//   const fileData = [];
+
+//   await Promise.all(
+//     data.files.map(async (file) => {
+//       const fileName = `${file.name.split(".")[0]}-${Date.now()}`;
+//       const fileExt = file.name.split(".")[1];
+
+//       const { data: uploadData, error: uploadError } = await supabase.storage
+//         .from("Uroboros")
+//         .upload(`announcement/${fileName}.${fileExt}`, file);
+
+//       if (uploadError) {
+//         throw new Error(`Error uploading file: ${uploadError.message}`);
+//       }
+
+//       fileData.push({
+//         url: uploadData.path,
+//         name: fileName,
+//         type: file.type,
+//       });
+//     })
+//   );
+
+//   const { data: fetchData, error } = await supabase
+//     .from("announcement")
+//     .insert([
+//       {
+//         title: data.title,
+//         content: data.content,
+//         visibility: groupId || subgroupId ? "private" : "public",
+//         group_id: groupId ?? undefined,
+//         subgroup_id: subgroupId ?? undefined,
+//         user_id: userId,
+//       },
+//     ])
+//     .select("id")
+//     .single();
+
+//   if (error) {
+//     console.error("Error inserting announcement:", error.message);
+//     throw error;
+//   }
+
+//   await Promise.all(
+//     fileData.map(async (file) => {
+//       const { error: insertError } = await supabase
+//         .from("announcement_files")
+//         .insert([{ announcement_id: fetchData.id, ...file }]);
+
+//       if (insertError) {
+//         console.error("Error inserting into announcement_files:", insertError);
+//         throw insertError;
+//       }
+//     })
+//   );
+
+//   return fetchData;
+// };
+
+export const createAnnouncement = async ({
   data,
-  userId,
-  groupId,
-  subgroupId,
+  groupId = null,
+  subGroupId = null,
 }) => {
-  const fileData = [];
+  try {
+    const token = await getAuthToken();
+    // Create a FormData instance for multipart/form-data submission
+    const formData = new FormData();
 
-  await Promise.all(
-    data.files.map(async (file) => {
-      const fileName = `${file.name.split(".")[0]}-${Date.now()}`;
-      const fileExt = file.name.split(".")[1];
+    // Add text fields
+    formData.append("title", data.title);
+    formData.append("content", data.content);
 
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from("Uroboros")
-        .upload(`announcement/${fileName}.${fileExt}`, file);
+    // Add optional fields if they exist
+    if (groupId) formData.append("groupId", groupId);
+    if (subGroupId) formData.append("subGroupId", subGroupId);
 
-      if (uploadError) {
-        throw new Error(`Error uploading file: ${uploadError.message}`);
-      }
-
-      fileData.push({
-        url: uploadData.path,
-        name: fileName,
-        type: file.type,
+    // Add files if they exist
+    if (data.files && data.files.length > 0) {
+      Array.from(data.files).forEach((file) => {
+        formData.append("files", file);
       });
-    })
-  );
+    }
 
-  const { data: fetchData, error } = await supabase
-    .from("announcement")
-    .insert([
+    // Make API request with the formData
+    const response = await axios.post(
+      `${import.meta.env.VITE_UROBOROS_API_PRODUCTION}/announcement/create`,
+      // "http://localhost:3000/announcement/create",
+      formData,
       {
-        title: data.title,
-        content: data.content,
-        visibility: groupId || subgroupId ? "private" : "public",
-        group_id: groupId ?? undefined,
-        subgroup_id: subgroupId ?? undefined,
-        user_id: userId,
-      },
-    ])
-    .select("id")
-    .single();
-
-  if (error) {
-    console.error("Error inserting announcement:", error.message);
-    throw error;
-  }
-
-  await Promise.all(
-    fileData.map(async (file) => {
-      const { error: insertError } = await supabase
-        .from("announcement_files")
-        .insert([{ announcement_id: fetchData.id, ...file }]);
-
-      if (insertError) {
-        console.error("Error inserting into announcement_files:", insertError);
-        throw insertError;
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
       }
-    })
-  );
+    );
 
-  return fetchData;
+    return response.data;
+  } catch (error) {
+    console.error("Error creating announcement:", error);
+
+    // Return a more helpful error message
+    if (error.response) {
+      // The server responded with a status code outside the 2xx range
+      throw new Error(
+        error.response.data.error || "Failed to create announcement"
+      );
+    } else if (error.request) {
+      // The request was made but no response was received
+      throw new Error("No response from server. Please check your connection.");
+    } else {
+      // Something happened in setting up the request
+      throw new Error("Error setting up request: ", error.message);
+    }
+  }
 };
 
 /**
