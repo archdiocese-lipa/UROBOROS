@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import PropTypes from "prop-types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -57,6 +57,7 @@ import CustomReactSelect from "../CustomReactSelect";
 import useUsersByRole from "@/hooks/useUsersByRole";
 import { createEventSchema } from "@/zodSchema/CreateEventSchema";
 import useEvent from "@/hooks/useEvent";
+import { editEventSchema } from "@/zodSchema/EditEventSchema";
 
 const useQuickAccessEvents = () => {
   return useQuery({
@@ -90,8 +91,15 @@ const useMinistryGroups = (ministryId) => {
   });
 };
 
-const NewCreateEventForm = () => {
-  const [openDialog, setOpenDialog] = useState(false);
+const NewCreateEventForm = ({
+  isEditMode = false,
+  initialEventData = null,
+  onSuccess = () => {},
+  queryKey = ["events"],
+  isOpen = false,
+  onOpenChange = () => {},
+}) => {
+  const [openDialog, setOpenDialog] = useState(isEditMode ? isOpen : false);
   const [selectedMinistry, setSelectedMinistry] = useState(null);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [openCalendar, setOpenCalendar] = useState(false);
@@ -102,6 +110,8 @@ const NewCreateEventForm = () => {
   const { userData } = useUser();
   const userId = userData?.id;
   const { temporaryRole } = useRoleSwitcher();
+
+  const queryClient = useQueryClient();
 
   // Fetch users by role
   const { data: coordinators } = useUsersByRole("coordinator");
@@ -143,26 +153,46 @@ const NewCreateEventForm = () => {
     useMinistryGroups(selectedMinistry);
   // 1. Define the form.
   const form = useForm({
-    resolver: zodResolver(createEventSchema),
-    defaultValues: {
-      eventName: "",
-      eventDescription: "",
-      eventVisibility: "",
-      eventObservation: false,
-      eventTime: null,
-      eventDate: null,
-      eventPosterImage: null,
-      assignVolunteer: [],
-      groups: "",
-      ministry: "",
-    },
+    resolver: zodResolver(
+      initialEventData ? editEventSchema : createEventSchema
+    ),
+    defaultValues:
+      isEditMode && initialEventData
+        ? {
+            eventName: initialEventData?.event_name || "",
+            eventDescription: initialEventData?.description || "",
+            eventVisibility: initialEventData?.event_visibility || "",
+            eventObservation: initialEventData?.requires_attendance === false,
+            eventTime: initialEventData?.event_time
+              ? convertTimeStringToDate(initialEventData?.event_time)
+              : null,
+            eventDate: initialEventData?.event_date
+              ? new Date(initialEventData?.event_date)
+              : null,
+            eventPosterImage: initialEventData?.image_url || null,
+            assignVolunteer: [],
+            groups: initialEventData?.group_id || "",
+            ministry: initialEventData?.ministry_id || "",
+          }
+        : {
+            eventName: "",
+            eventDescription: "",
+            eventVisibility: "",
+            eventObservation: false,
+            eventTime: null,
+            eventDate: null,
+            eventPosterImage: null,
+            assignVolunteer: [],
+            groups: "",
+            ministry: "",
+          },
   });
 
   // Watch visibility and observation
   const watchVisibility = form.watch("eventVisibility");
   const watchObservation = form.watch("eventObservation");
 
-  const { createEventMutation } = useEvent();
+  const { createEventMutation, updateEventMutation } = useEvent();
 
   // Function to submit.
   const onSubmit = (data) => {
@@ -181,17 +211,50 @@ const NewCreateEventForm = () => {
       eventTime: formattedTime,
       userId, // For creator id in event table
     };
+
+    if (initialEventData) {
+      // If a new file is selected, include it
+      if (data.eventPosterImage instanceof File) {
+        eventPayload.eventPosterImage = data.eventPosterImage;
+      }
+      // If no new file but existing image URL, keep the existing URL
+      else if (initialEventData.image_url) {
+        eventPayload.eventPosterImage = initialEventData.image_url;
+      }
+    }
     // Call the create event function with the prepared data
-    createEventMutation.mutate(eventPayload, {
-      onSuccess: () => {
-        setOpenDialog(false);
-      },
-    });
+    if (!initialEventData) {
+      createEventMutation.mutate(eventPayload, {
+        onSuccess: () => {
+          setOpenDialog(false);
+          onSuccess();
+        },
+      });
+    } else {
+      updateEventMutation.mutate(
+        {
+          eventId: initialEventData?.id,
+          updatedData: eventPayload,
+        },
+        {
+          onSuccess: () => {
+            setOpenDialog(false);
+            onSuccess();
+            queryClient.invalidateQueries(queryKey);
+          },
+        }
+      );
+    }
   };
 
   // Function for opening and closing the dialog
   const handleOpenDialog = (openState) => {
     setOpenDialog(openState);
+
+    // If in edit mode, call the parent's callback
+    if (isEditMode) {
+      onOpenChange(openState);
+    }
 
     // If dialog is closing, reset the form
     if (!openState) {
@@ -227,6 +290,13 @@ const NewCreateEventForm = () => {
     // Fallback
     return [];
   };
+
+  // Use useEffect to sync with parent's open state
+  useEffect(() => {
+    if (isEditMode) {
+      setOpenDialog(isOpen);
+    }
+  }, [isOpen, isEditMode]);
 
   // Effect to handle visibility changes
   useEffect(() => {
@@ -272,29 +342,68 @@ const NewCreateEventForm = () => {
     }
   }, [selectedMinistry, watchVisibility, groups, form]);
 
+  useEffect(() => {
+    if (isEditMode && initialEventData) {
+      // Set the selected ministry from initialEventData
+      if (initialEventData.ministry_id) {
+        setSelectedMinistry(initialEventData.ministry_id);
+        form.setValue("ministry", initialEventData.ministry_id);
+      }
+
+      // Set image preview if available
+      if (initialEventData.image_url) {
+        setImagePreview(initialEventData.image_url);
+        form.setValue("eventPosterImage", initialEventData?.image_url);
+      }
+    }
+  }, [isEditMode, initialEventData, form]);
+
+  // Separate effect to set the group AFTER the ministry is selected and groups are loaded
+  useEffect(() => {
+    if (
+      isEditMode &&
+      initialEventData?.group_id &&
+      selectedMinistry &&
+      groups?.length > 0
+    ) {
+      // Verify the group belongs to the selected ministry
+      const groupExists = groups.some(
+        (group) => group.id === initialEventData.group_id
+      );
+
+      if (groupExists) {
+        setSelectedGroup(initialEventData.group_id);
+        form.setValue("groups", initialEventData.group_id);
+      }
+    }
+  }, [isEditMode, initialEventData?.group_id, selectedMinistry, groups, form]);
+
   return (
     <AlertDialog open={openDialog} onOpenChange={handleOpenDialog}>
-      <AlertDialogTrigger asChild>
-        <Button>
-          <div className="flex gap-2">
-            <EventIcon className="text-primary" />
-            <p>Create Event</p>
-          </div>
-        </Button>
-      </AlertDialogTrigger>
-
+      {!isEditMode && (
+        <AlertDialogTrigger asChild>
+          <Button>
+            <div className="flex gap-2">
+              <EventIcon className="text-primary" />
+              <p>Create Event</p>
+            </div>
+          </Button>
+        </AlertDialogTrigger>
+      )}
       <AlertDialogContent className="max-w-4xl">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <AlertDialogHeader className="text-primary-text">
               <AlertDialogTitle className="text-[20px] font-bold">
-                Create Event
+                {isEditMode ? "Update Event" : "Create Event"}
               </AlertDialogTitle>
               <AlertDialogDescription>
-                Schedule an upcoming event.
+                {isEditMode
+                  ? "Make changes to your event"
+                  : "Schedule an upcoming event."}
               </AlertDialogDescription>
             </AlertDialogHeader>
-            <AlertDialogBody className="no-scrollbar flex max-h-[27rem] flex-col gap-6 overflow-y-scroll md:max-h-full md:flex-row md:overflow-y-auto">
+            <AlertDialogBody className="no-scrollbar flex max-h-[35rem] flex-col gap-6 overflow-y-scroll md:max-h-full md:flex-row md:overflow-y-auto">
               <div className="flex flex-1 flex-col gap-6">
                 <FormField
                   control={form.control}
@@ -491,15 +600,18 @@ const NewCreateEventForm = () => {
                   name="eventObservation"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="sr-only text-[12px] font-semibold text-accent/75">
+                      <FormLabel className="text-[12px] font-semibold text-accent/75">
                         Event as Observation
                       </FormLabel>
                       <FormControl>
                         <div className="flex justify-between rounded-xl bg-primary px-4 py-2">
                           <div>
-                            <Label className="text-[12px] font-medium text-accent/75">
-                              Option to disable time and volunteer
+                            <Label className="text-[14px] font-medium text-accent">
+                              Event as Observation
                             </Label>
+                            <p className="text-[10px] font-medium text-accent/75">
+                              This will disable time and volunteer selection.
+                            </p>
                           </div>
                           <Switch
                             {...field}
@@ -519,12 +631,12 @@ const NewCreateEventForm = () => {
                     </FormItem>
                   )}
                 />
-                <div className="flex flex-col items-center gap-x-2 sm:flex-row">
+                <div className="flex items-center gap-x-2">
                   <FormField
                     control={form.control}
                     name="eventDate"
                     render={({ field }) => (
-                      <FormItem className="flex w-full flex-1 flex-col">
+                      <FormItem className="flex flex-1 flex-col">
                         <FormLabel className="text-[12px] font-semibold text-accent/75">
                           Event Date
                         </FormLabel>
@@ -573,7 +685,7 @@ const NewCreateEventForm = () => {
                     control={form.control}
                     name="eventTime"
                     render={({ field }) => (
-                      <FormItem className="w-full flex-1">
+                      <FormItem className="flex-1">
                         <FormLabel className="text-[12px] font-semibold text-accent/75">
                           Event Time
                         </FormLabel>
@@ -598,51 +710,55 @@ const NewCreateEventForm = () => {
               <div className="flex-1">
                 <div className="flex flex-col gap-6">
                   {/* Assign Volunteer */}
-                  <FormField
-                    control={form.control}
-                    name="assignVolunteer"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-[12px] font-semibold text-accent/75">
-                          Assign Volunteer
-                        </FormLabel>
-                        <FormControl>
-                          <CustomReactSelect
-                            options={
-                              watchVisibility === "private" &&
-                              ministryVolunteersLoading
-                                ? [{ label: "Loading...", isDisabled: true }]
-                                : getVolunteerOptions()
-                            }
-                            value={field.value.map((value) => {
-                              // Find the volunteer in our options list
-                              const allOptions = getVolunteerOptions();
-                              const foundOption = allOptions.find(
-                                (opt) => opt.value === value
-                              );
+                  {!isEditMode && (
+                    <FormField
+                      control={form.control}
+                      name="assignVolunteer"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-[12px] font-semibold text-accent/75">
+                            Assign Volunteer
+                          </FormLabel>
+                          <FormControl>
+                            <CustomReactSelect
+                              options={
+                                watchVisibility === "private" &&
+                                ministryVolunteersLoading
+                                  ? [{ label: "Loading...", isDisabled: true }]
+                                  : getVolunteerOptions()
+                              }
+                              value={field.value.map((value) => {
+                                // Find the volunteer in our options list
+                                const allOptions = getVolunteerOptions();
+                                const foundOption = allOptions.find(
+                                  (opt) => opt.value === value
+                                );
 
-                              // If found, use that, otherwise create a placeholder
-                              return foundOption || { value, label: "Unknown" };
-                            })}
-                            onChange={(selected) =>
-                              field.onChange(
-                                selected
-                                  ? selected.map((option) => option.value)
-                                  : []
-                              )
-                            }
-                            placeholder={"Select Volunteer"}
-                            disabled={watchObservation}
-                            className={
-                              watchObservation &&
-                              "cursor-not-allowed opacity-50"
-                            }
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                                // If found, use that, otherwise create a placeholder
+                                return (
+                                  foundOption || { value, label: "Unknown" }
+                                );
+                              })}
+                              onChange={(selected) =>
+                                field.onChange(
+                                  selected
+                                    ? selected.map((option) => option.value)
+                                    : []
+                                )
+                              }
+                              placeholder={"Select Volunteer"}
+                              disabled={watchObservation}
+                              className={
+                                watchObservation &&
+                                "cursor-not-allowed opacity-50"
+                              }
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
                   {/* Event Poster Image */}
                   <FormField
                     control={form.control}
@@ -715,7 +831,13 @@ const NewCreateEventForm = () => {
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <Button type="submit" className="flex-1">
-                {createEventMutation.isPending ? "Creating..." : "Create"}
+                {isEditMode
+                  ? updateEventMutation.isPending
+                    ? "Updating..."
+                    : "Update"
+                  : createEventMutation.isPending
+                    ? "Creating..."
+                    : "Create"}
               </Button>
             </AlertDialogFooter>
           </form>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import {
   AlertDialog,
@@ -49,6 +49,7 @@ const AnnouncementForm = ({
   // Use the props first, then fall back to URL params if needed
   const subgroupIdToUse = subgroupId || searchParams.get("subgroupId");
   const groupIdToUse = groupId || searchParams.get("groupId");
+  const fileInputRef = useRef(null);
 
   const [currentFiles, setCurrentFiles] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -91,8 +92,12 @@ const AnnouncementForm = ({
     }
 
     form.reset();
-    setIsOpen(false);
+    setCurrentFiles([]);
+    setSelectedFileTypes("None");
+    setSelectedVideo("");
+    setSelectedPDF("");
     setImagePreviews([]);
+    setIsOpen(false);
   };
 
   useEffect(() => {
@@ -127,6 +132,11 @@ const AnnouncementForm = ({
 
     // Update filePreviews state
     setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+    // Reset the file input value so the same file can be selected again
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   return (
@@ -137,6 +147,7 @@ const AnnouncementForm = ({
         if (!open) {
           setCurrentFiles([]);
           form.reset();
+          setImagePreviews([]);
         }
       }}
     >
@@ -220,6 +231,7 @@ const AnnouncementForm = ({
                       <Input
                         id="file-input"
                         type="file"
+                        ref={fileInputRef}
                         accept={
                           selectedFileType === "Image(s)"
                             ? "image/*"
@@ -249,6 +261,10 @@ const AnnouncementForm = ({
                                 URL.createObjectURL(file)
                               ),
                             ]);
+                            // Reset the file input value so the same file can be selected again
+                            if (fileInputRef.current) {
+                              fileInputRef.current.value = "";
+                            }
                           } else {
                             const file = files[0]; // Only one file for PDF or Video
                             const url = URL.createObjectURL(file);
@@ -260,6 +276,10 @@ const AnnouncementForm = ({
                             }
 
                             form.setValue("files", [file]);
+                            // Reset the file input value so the same file can be selected again
+                            if (fileInputRef.current) {
+                              fileInputRef.current.value = "";
+                            }
                           }
                         }}
                       />

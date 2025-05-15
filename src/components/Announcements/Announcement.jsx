@@ -176,12 +176,26 @@ const Announcement = ({ announcement, deleteAnnouncementMutation }) => {
                 <div
                   key={i}
                   className={cn(
-                    "flex-1 border border-primary-outline hover:cursor-pointer",
+                    "w-full border border-primary-outline hover:cursor-pointer",
                     {
                       relative: i === 2,
                     },
-                    { "rounded-s-md": i === 0 },
-                    { "relative z-20 rounded-e-md bg-black": i === 2 }
+                    {
+                      "overflow-hidden rounded-md":
+                        i === 0 && announcement.announcement_files.length === 1,
+                    },
+                    {
+                      "overflow-hidden rounded-s-md":
+                        i === 0 && announcement.announcement_files.length > 1,
+                    },
+                    {
+                      "relative z-20 overflow-hidden rounded-e-md bg-black":
+                        i === 2 && announcement.announcement_files.length > 2,
+                    },
+                    {
+                      "relative z-20 overflow-hidden rounded-e-md bg-black":
+                        i === 1 && announcement.announcement_files.length > 1,
+                    }
                   )}
                 >
                   <img

@@ -44,8 +44,6 @@ const useAnnouncements = ({ group_id, subgroup_id }) => {
         title: "Success",
         description: "Announcement created.",
       });
-      // Invalidate the query with both parameters
-      queryClient.invalidateQueries({ queryKey });
     },
 
     onError: (error, context) => {
@@ -62,7 +60,7 @@ const useAnnouncements = ({ group_id, subgroup_id }) => {
 
     onSettled: () => {
       queryClient.invalidateQueries({
-        queryKey: ["announcements", group_id],
+        queryKey: ["announcements"],
       });
     },
   });
