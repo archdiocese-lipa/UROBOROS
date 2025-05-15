@@ -733,7 +733,11 @@ export const removeAssignedVolunteer = async (volunteerId, eventId) => {
   }
 };
 
-export const addAssignedVolunteer = async ({ eventId, assignVolunteer }) => {
+export const addAssignedVolunteer = async ({
+  eventId,
+  assignVolunteer,
+  userId,
+}) => {
   try {
     const getPromises = assignVolunteer.map(async (volunteer_id) => {
       const { data, error } = await supabase
@@ -772,6 +776,7 @@ export const addAssignedVolunteer = async ({ eventId, assignVolunteer }) => {
         {
           event_id: eventId,
           volunteer_id,
+          assigner_id: userId,
           assigned_at: new Date().toISOString(),
         },
       ]);
