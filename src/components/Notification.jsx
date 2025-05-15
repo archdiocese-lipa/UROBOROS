@@ -180,7 +180,7 @@ const NotificationButton = ({
           >
             {count > 0 && (
               <div className="absolute -right-4 -top-2">
-                <div className="bg-danger flex h-5 w-5 items-center justify-center rounded-full text-[11px] text-white">
+                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-danger text-[11px] text-white">
                   {countLoading ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
@@ -212,7 +212,7 @@ const NotificationButton = ({
         <span>{btnName}</span>
       </div>
       {count > 0 && (
-        <span className="bg-danger flex h-full w-12 items-center justify-center rounded-full text-white">
+        <span className="flex h-full w-12 items-center justify-center rounded-full bg-danger text-white">
           {countLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : count}
         </span>
       )}

@@ -3,84 +3,6 @@ import { supabase } from "./supabaseClient";
 import axios from "axios";
 import { getAuthToken } from "./feedBackService";
 
-// /**
-//  * Creates a new announcement and uploads associated files to Supabase storage.
-//  * Also associates the announcement with ministries via the `announcement_ministries` table.
-//  *
-//  * @param {Object} params - The parameters for creating an announcement.
-//  * @param {Object} params.announcementData - The data for the announcement.
-//  * @param {string} params.announcementData.title - The title of the announcement.
-//  * @param {string} params.announcementData.content - The content of the announcement.
-//  * @param {FileList} [params.announcementData.files] - The file to be uploaded (optional).
-//  * @param {string} params.user_id - The ID of the user creating the announcement.
-//  *
-//  * @throws {Error} If there is an error during the file upload, announcement creation, or ministry association.
-//  */
-// export const createAnnouncements = async ({
-//   data,
-//   userId,
-//   groupId,
-//   subgroupId,
-// }) => {
-//   const fileData = [];
-
-//   await Promise.all(
-//     data.files.map(async (file) => {
-//       const fileName = `${file.name.split(".")[0]}-${Date.now()}`;
-//       const fileExt = file.name.split(".")[1];
-
-//       const { data: uploadData, error: uploadError } = await supabase.storage
-//         .from("Uroboros")
-//         .upload(`announcement/${fileName}.${fileExt}`, file);
-
-//       if (uploadError) {
-//         throw new Error(`Error uploading file: ${uploadError.message}`);
-//       }
-
-//       fileData.push({
-//         url: uploadData.path,
-//         name: fileName,
-//         type: file.type,
-//       });
-//     })
-//   );
-
-//   const { data: fetchData, error } = await supabase
-//     .from("announcement")
-//     .insert([
-//       {
-//         title: data.title,
-//         content: data.content,
-//         visibility: groupId || subgroupId ? "private" : "public",
-//         group_id: groupId ?? undefined,
-//         subgroup_id: subgroupId ?? undefined,
-//         user_id: userId,
-//       },
-//     ])
-//     .select("id")
-//     .single();
-
-//   if (error) {
-//     console.error("Error inserting announcement:", error.message);
-//     throw error;
-//   }
-
-//   await Promise.all(
-//     fileData.map(async (file) => {
-//       const { error: insertError } = await supabase
-//         .from("announcement_files")
-//         .insert([{ announcement_id: fetchData.id, ...file }]);
-
-//       if (insertError) {
-//         console.error("Error inserting into announcement_files:", insertError);
-//         throw insertError;
-//       }
-//     })
-//   );
-
-//   return fetchData;
-// };
-
 export const createAnnouncement = async ({
   data,
   groupId = null,
@@ -121,7 +43,7 @@ export const createAnnouncement = async ({
 
     return response.data;
   } catch (error) {
-    console.error("Error creating announcement:", error);
+    console.error("Error creating announcement:", error.message);
 
     // Return a more helpful error message
     if (error.response) {
@@ -425,4 +347,77 @@ export const getAnnouncementMinistryId = async (announcement_id) => {
     throw new Error(error.message);
   }
   return ministryIds;
+};
+
+export const fetchSingleAnnouncement = async (announcementId) => {
+  try {
+    if (!announcementId) {
+      throw new Error(
+        "Announcement ID is required to fetch a single announcement."
+      );
+    }
+
+    const { data: announcement, error } = await supabase
+      .from("announcement")
+      .select(
+        "*, users(first_name, last_name, role), announcement_files(id, url, name, type)"
+      )
+      .eq("id", announcementId)
+      .single(); // Use single() as we expect one announcement
+
+    if (error) {
+      if (error.code === "PGRST116") {
+        // PostgREST error for "No rows found"
+        return null; // Or throw new Error("Announcement not found");
+      }
+      console.error("Error fetching single announcement:", error.message);
+      throw error;
+    }
+
+    if (!announcement) {
+      return null; // Announcement not found
+    }
+
+    // Transform file URLs to public URLs
+    const transformedAnnouncement = {
+      ...announcement,
+      announcement_files: announcement.announcement_files.map((file) => ({
+        ...file,
+        url: supabase.storage.from("Uroboros").getPublicUrl(file.url).data
+          .publicUrl,
+      })),
+    };
+
+    return transformedAnnouncement;
+  } catch (err) {
+    console.error("Error in fetchSingleAnnouncement:", err.message);
+    throw new Error(
+      err.message ||
+        "An unexpected error occurred while fetching the announcement."
+    );
+  }
+};
+
+export const getAnnouncementByComment = async (commentId) => {
+  const { data, error } = await supabase
+    .from("comment_data")
+    .select(
+      "announcement(id, title, content, created_at, visibility, users(first_name, last_name, role), announcement_files(id, url, name, type))"
+    )
+    .eq("id", commentId)
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  // Transform file URLs to public URLs
+  data.announcement.announcement_files =
+    data.announcement.announcement_files.map((file) => ({
+      ...file,
+      url: supabase.storage.from("Uroboros").getPublicUrl(file.url).data
+        .publicUrl,
+    }));
+
+  return data;
 };

@@ -46,13 +46,24 @@ import TriggerLikeIcon from "../CommentComponents/TriggerLikeIcon";
 import AnnouncementForm from "./AnnouncementForm";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { useLocation } from "react-router-dom";
+import { useLocation, useSearchParams } from "react-router-dom";
 import AutoLinkText from "@/lib/AutoLinkText";
 
-const Announcement = ({ announcement, deleteAnnouncementMutation }) => {
+const Announcement = ({
+  announcement,
+  deleteAnnouncementMutation,
+  isModal = false,
+}) => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState();
   const { userData } = useUser();
   const location = useLocation();
+  const [_, setParams] = useSearchParams();
+
+  const handleParams = (announcementId) => {
+    const params = new URLSearchParams();
+    params.set("announcementId", announcementId);
+    setParams(params);
+  };
 
   if (!userData) {
     return null;
@@ -73,9 +84,20 @@ const Announcement = ({ announcement, deleteAnnouncementMutation }) => {
                 : userData?.role !== "admin" &&
                   announcement.users.role.toFirstUpperCase()}
             </p>
-            <p className="text-[0.7rem] text-accent md:text-sm">
-              {new Date(announcement.created_at).toDateTime()}
-            </p>
+            {!isModal && (
+              <p
+                onClick={handleParams.bind(null, announcement.id)}
+                className="text-[0.7rem] text-accent hover:cursor-pointer hover:underline md:text-sm"
+              >
+                {new Date(announcement?.created_at).toDateTime()}
+              </p>
+            )}
+            {isModal && (
+              <p className="text-[0.7rem] text-accent hover:cursor-pointer hover:underline md:text-sm">
+                {new Date(announcement?.created_at).toDateTime()}
+              </p>
+            )}
+
             {/* <img src={GlobeIcon} alt="icon" /> */}
             {announcement.visibility === "public" ? (
               <GlobeIcon className="h-4 w-4 text-accent" />
@@ -85,7 +107,7 @@ const Announcement = ({ announcement, deleteAnnouncementMutation }) => {
           </div>
         </div>
 
-        {userData?.id === announcement?.user_id && (
+        {userData?.id === announcement?.user_id && !isModal && (
           <Popover>
             <PopoverTrigger>
               <KebabIcon className="h-6 w-6 text-accent" />
@@ -267,7 +289,7 @@ const Announcement = ({ announcement, deleteAnnouncementMutation }) => {
       </div>
       <Separator className="mb-3 mt-6" />
 
-      <Comments announcement_id={announcement?.id} />
+      <Comments announcement_id={announcement?.id} isModal={isModal} />
     </div>
   );
 };
@@ -308,6 +330,8 @@ Announcement.propTypes = {
       ministry_name: PropTypes.string,
     })
   ),
+
+  isModal: PropTypes.bool,
 };
 
 export default Announcement;

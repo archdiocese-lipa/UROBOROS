@@ -6,6 +6,7 @@ import useInterObserver from "@/hooks/useInterObserver";
 import Loading from "@/components/Loading";
 import AnnouncementHeader from "@/components/Announcements/AnnouncementHeader";
 import FoldedPaper from "@/assets/images/FoldedPaper.png";
+import AnnouncementModal from "@/components/Announcements/AnnouncementModal";
 
 const Announcements = () => {
   const { userData } = useUser();
@@ -37,6 +38,7 @@ const Announcements = () => {
 
   return (
     <div className="flex h-full w-full flex-col">
+      <AnnouncementModal />
       <div className="mb-2 flex w-3/4 items-end justify-between lg:mb-6">
         <div className="">
           <Title className="mb-0 lg:mb-3">Announcements</Title>
@@ -83,6 +85,7 @@ const Announcements = () => {
                       announcement={announcement}
                       editAnnouncementMutation={editAnnouncementMutation}
                       deleteAnnouncementMutation={deleteAnnouncementMutation}
+                      isModal={false}
                     />
                   </div>
                 ))
