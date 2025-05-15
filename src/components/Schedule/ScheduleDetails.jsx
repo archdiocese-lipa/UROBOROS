@@ -403,7 +403,8 @@ const ScheduleDetails = () => {
   });
 
   const addVolunteerMutation = useMutation({
-    mutationFn: async (data) => addAssignedVolunteer(data),
+    mutationFn: async (data) =>
+      addAssignedVolunteer({ ...data, userId: userData?.id }),
     onSuccess: () => {
       toast({
         title: "Volunteer added successfully",

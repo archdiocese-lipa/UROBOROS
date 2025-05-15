@@ -20,6 +20,7 @@ import { SIDEBAR_LINKS } from "@/constants/sidebarLinks";
 import { ChevronUp } from "@/assets/icons/icons";
 import useRoleSwitcher from "@/hooks/useRoleSwitcher";
 import { ROLES } from "@/constants/roles";
+import Notification from "./Notification";
 
 const Sidebar = () => {
   const url = useLocation();
@@ -72,6 +73,7 @@ const Sidebar = () => {
                 />
               );
             })}
+          <Notification isMobile={true} />
 
           <div className="flex flex-col items-center justify-center">
             <DropdownMenu>
@@ -117,10 +119,13 @@ const Sidebar = () => {
             </p>
           </div>
         </ul>
-        <SidebarProfile
-          availableRoles={availableRoles}
-          onSwitchRole={onSwitchRole}
-        />
+        <div className="ml-9 hidden flex-col items-start gap-y-2 lg:flex">
+          <Notification isMobile={false} />
+          <SidebarProfile
+            availableRoles={availableRoles}
+            onSwitchRole={onSwitchRole}
+          />
+        </div>
       </div>
     </div>
   );
@@ -144,7 +149,7 @@ const SidebarProfile = ({ availableRoles, onSwitchRole }) => {
 
   if (!userData) {
     return (
-      <div className="ml-9 hidden h-10 max-w-56 items-center justify-between rounded-[20px] bg-white p-1 lg:flex">
+      <div className="hidden h-10 max-w-56 items-center justify-between rounded-[20px] bg-white p-1 lg:flex">
         <div className="flex items-center gap-2">
           <Avatar className="h-8 w-8">
             <AvatarFallback>?</AvatarFallback>
@@ -161,7 +166,7 @@ const SidebarProfile = ({ availableRoles, onSwitchRole }) => {
     "Guest";
 
   return (
-    <div className="ml-9 hidden h-10 w-56 items-center justify-between rounded-[20px] bg-white p-1 lg:flex">
+    <div className="hidden h-10 w-56 items-center justify-between rounded-[20px] bg-white p-1 lg:flex">
       <div className="flex items-center gap-2">
         {/* <Link
           to="/profile"
