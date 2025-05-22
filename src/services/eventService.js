@@ -17,7 +17,13 @@ export const createEvent = async (eventData) => {
     userId, // Creator's ID
     assignVolunteer,
     eventPosterImage,
+    reminder,
+    reminderDays,
   } = eventData;
+
+  const reminderDate = new Date(eventDate);
+  reminderDate.setDate(reminderDate.getDate() - reminderDays);
+  const reminderDateIso = reminderDate.toISOString();
 
   try {
     //  Upload the image (if provided)
@@ -50,6 +56,8 @@ export const createEvent = async (eventData) => {
           creator_id: userId,
           requires_attendance: !eventObservation,
           image_url: imagePath,
+          is_automatic_reminder: reminder,
+          automatic_reminder_date: reminderDateIso,
         },
       ])
       .select("id") // Return the new event ID

@@ -80,6 +80,7 @@ import AddExistingRecord from "./AddExistingRecord";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import CustomReactSelect from "../CustomReactSelect";
 import { getMinistryVolunteers } from "@/services/ministryService";
+import { manualEventReminder } from "@/services/notificationService";
 
 const ScheduleDetails = () => {
   const [qrCode, setQRCode] = useState(null);
@@ -379,6 +380,50 @@ const ScheduleDetails = () => {
       setDisableSchedule(false);
     }
   }, [event, userData]);
+  const { mutate: notificationMutation, isPending: sendingNotification } =
+    useMutation({
+      mutationFn: manualEventReminder,
+      onSuccess: () => {
+        toast({
+          title: "Notification sent successfully",
+        });
+      },
+      onError: (error) => {
+        toast({
+          title: "Error sending notification",
+          description: `${error.message}`,
+          variant: "destructive",
+        });
+      },
+    });
+
+  const handleSendNotification = (event) => {
+    const formattedDate = new Date(event.event_date).toLocaleDateString(
+      "en-US",
+      {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      }
+    );
+
+    const formattedTime = new Date(
+      `2000-01-01T${event.event_time}`
+    ).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+
+    const data = {
+      eventName: event.event_name,
+      eventDate: formattedDate,
+      eventTime: event?.event_time ? formattedTime : null,
+      eventDescription: event?.event_description || null,
+    };
+
+    notificationMutation({ eventId, data });
+  };
 
   const removeAssignedVolunteerMutation = useMutation({
     mutationFn: async (volunteerId) =>
@@ -474,6 +519,16 @@ const ScheduleDetails = () => {
           <div className="flex flex-col gap-1 md:flex-row">
             {!disableSchedule && (
               <div className="flex flex-wrap gap-1">
+                <Button
+                  onClick={() => handleSendNotification(event)}
+                  disabled={sendingNotification}
+                >
+                  <Icon
+                    className="h-4 w-4 text-white"
+                    icon={"mingcute:notification-fill"}
+                  />
+                  {sendingNotification ? "Sending..." : "Send Notification"}
+                </Button>
                 <AddExistingRecord eventId={eventId} />
                 <AddRecord eventId={eventId} />
               </div>

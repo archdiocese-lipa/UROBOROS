@@ -155,6 +155,8 @@ const NewCreateEventForm = () => {
       assignVolunteer: [],
       groups: "",
       ministry: "",
+      reminder: false,
+      reminderDays: undefined,
     },
   });
 
@@ -277,7 +279,7 @@ const NewCreateEventForm = () => {
       <AlertDialogTrigger asChild>
         <Button>
           <div className="flex gap-2">
-            <EventIcon className="text-primary" />
+            <EventIcon className="h-3 w-3 text-primary" />
             <p>Create Event</p>
           </div>
         </Button>
@@ -595,8 +597,89 @@ const NewCreateEventForm = () => {
                 </div>
               </div>
               {/************************************************************ Right Div **********************************/}
+
               <div className="flex-1">
                 <div className="flex flex-col gap-6">
+                  {/* Reminder */}
+                  <FormField
+                    control={form.control}
+                    name="reminder"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-[12px] font-semibold text-accent/75">
+                          Automatic Notice to Attendees
+                        </FormLabel>
+                        <FormControl>
+                          <div className="flex justify-between rounded-xl bg-primary px-4 py-4">
+                            <div>
+                              <p className="font-bold text-accent">
+                                Enable Automatic Notice
+                              </p>
+                              <p className="text-[12px] font-medium text-accent/75">
+                                This will enable the automatic notifications to
+                                the event&apos;s attendees at a set time.
+                              </p>
+                            </div>
+                            <Switch
+                              {...field}
+                              checked={field.value || false}
+                              onCheckedChange={(checked) => {
+                                field.onChange(checked);
+
+                                if (!checked) {
+                                  form.setValue("reminderDays", undefined);
+                                }
+                              }}
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  {/* Days before the reminder */}
+                  <FormField
+                    control={form.control}
+                    name="reminderDays"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="sr-only text-[12px] font-semibold text-accent/75">
+                          Number of Days to Announcement Before the Event.
+                        </FormLabel>
+                        <FormControl>
+                          <Select
+                            value={
+                              field.value !== undefined &&
+                              field.value !== undefined
+                                ? String(field.value)
+                                : ""
+                            } // MODIFIED: Convert number to string for Select; ensure placeholder shows for null/undefined
+                            onValueChange={(stringValue) => {
+                              // MODIFIED: Convert string from Select to number for react-hook-form
+                              if (stringValue === "") {
+                                // Handle potential empty string if placeholder is re-selectable or value cleared
+                                field.onChange(undefined);
+                              } else {
+                                field.onChange(parseInt(stringValue));
+                              }
+                            }}
+                            disabled={!form.watch("reminder")}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select Days" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {/* SelectItem values remain strings */}
+                              <SelectItem value="1">1 Day</SelectItem>
+                              <SelectItem value="2">2 Days</SelectItem>
+                              <SelectItem value="3">3 Days</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   {/* Assign Volunteer */}
                   <FormField
                     control={form.control}

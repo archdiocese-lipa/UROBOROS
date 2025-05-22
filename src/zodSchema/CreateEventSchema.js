@@ -57,6 +57,10 @@ export const createEventSchema = z
     ministry: z.string().optional(),
     groups: z.string().optional(),
 
+    reminder: z.boolean().default(false),
+
+    reminderDays: z.number(),
+
     assignVolunteer: z.array(z.string()).default([]),
 
     eventPosterImage: z

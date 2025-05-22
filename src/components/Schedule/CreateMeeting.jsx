@@ -102,7 +102,7 @@ const CreateMeeting = () => {
   return (
     <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>
-        <Button size="primary" className="px-3.5 py-2">
+        <Button className="px-3.5 py-2">
           <Users className="text-primary" />
           <p>Create Meeting</p>
         </Button>

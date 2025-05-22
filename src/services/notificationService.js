@@ -1,4 +1,6 @@
+import axios from "axios";
 import { supabase } from "./supabaseClient";
+import { getAuthToken } from "./feedBackService";
 
 /**
  * Fetches notifications from Supabase
@@ -189,4 +191,26 @@ export const markAllAsRead = async (receiverId) => {
   }
 
   return data;
+};
+export const manualEventReminder = async ({ eventId, data }) => {
+  const token = await getAuthToken();
+  try {
+    return await axios.post(
+      `${import.meta.env.VITE_UROBOROS_API_PRODUCTION}/send-manual-reminder/${eventId}`,
+      data,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+  } catch (error) {
+    console.error(
+      "Error sending manual notification:",
+      error.response.data.error
+    );
+    throw new Error(
+      error.response?.data?.error || "Failed to send manual notification"
+    );
+  }
 };
