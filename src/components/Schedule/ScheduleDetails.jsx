@@ -527,7 +527,7 @@ const ScheduleDetails = () => {
                     className="h-4 w-4 text-white"
                     icon={"mingcute:notification-fill"}
                   />
-                  {sendingNotification ? "Sending..." : "Send Notification"}
+                  {sendingNotification ? "Sending..." : "Send Reminders"}
                 </Button>
                 <AddExistingRecord eventId={eventId} />
                 <AddRecord eventId={eventId} />

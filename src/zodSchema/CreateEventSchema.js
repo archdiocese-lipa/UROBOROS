@@ -52,7 +52,7 @@ export const createEventSchema = z
       ])
       .optional(),
 
-    eventObservation: z.boolean().default(false),
+    eventObservation: z.boolean().default(true),
 
     ministry: z.string().optional(),
     groups: z.string().optional(),
@@ -110,7 +110,7 @@ export const createEventSchema = z
     }
 
     // Validate time and volunteers for non-observation events
-    if (data.eventObservation === false) {
+    if (data.eventObservation) {
       // Validate eventTime (eventTime is required when eventObservation is false)
       const isValidEventTime =
         data.eventTime &&
@@ -139,49 +139,3 @@ export const createEventSchema = z
       }
     }
   });
-
-// export const createEventSchema = z.object({
-//   eventName: z.string().min(2, {
-//     message: "Event name is required.",
-//   }),
-//   eventVisibility: z.string().min(1, { message: "Visibility." }),
-//   ministry: z
-//     .string()
-//     .optional()
-//     .superRefine((data, ctx) => {
-//       if (data.eventVisibility === "ministry" && !data.ministry) {
-//         ctx.addIssue({
-//           path: ["ministry"],
-//           message: "Ministry is required.",
-//           code: z.ZodIssueCode.custom,
-//         });
-//       }
-//     }),
-//   groups: z.string().optional(),
-//   // .superRefine((data, ctx) => {
-//   //   if (data.eventVisibility === "groups" && !data.groups) {
-//   //     ctx.addIssue({
-//   //       path: ["groups"],
-//   //       message: "Group selection is required.",
-//   //       code: z.ZodIssueCode.custom,
-//   //     });
-//   //   }
-//   // }),
-//   eventDate: z
-//     .instanceof(Date, { message: "Please select date." })
-//     .refine((date) => !isNaN(date.getTime()), {
-//       message: "Date is required.",
-//     })
-//     .refine((date) => date >= new Date(), {
-//       message: "Date must not be in the past.",
-//     }),
-//   eventTime: z
-//     .instanceof(Date, { message: "Time is required" })
-//     .refine((date) => date.getHours() >= 0 && date.getHours() < 24, {
-//       message: "Time is required.",
-//     }),
-//   eventDescription: z.string().optional().default(""),
-//   assignVolunteer: z
-//     .array(z.string())
-//     .min(1, { message: "At least one volunteer must be assigned." }),
-// });

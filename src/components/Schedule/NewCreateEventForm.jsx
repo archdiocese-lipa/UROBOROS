@@ -148,7 +148,7 @@ const NewCreateEventForm = () => {
       eventName: "",
       eventDescription: "",
       eventVisibility: "",
-      eventObservation: false,
+      eventObservation: true,
       eventTime: null,
       eventDate: null,
       eventPosterImage: null,
@@ -273,6 +273,14 @@ const NewCreateEventForm = () => {
       }
     }
   }, [selectedMinistry, watchVisibility, groups, form]);
+
+  // Reset event time and assigned volunteers when observation when disable
+  useEffect(() => {
+    if (!watchObservation) {
+      form.setValue("eventTime", null);
+      form.setValue("assignVolunteer", []);
+    }
+  });
 
   return (
     <AlertDialog open={openDialog} onOpenChange={handleOpenDialog}>
@@ -500,7 +508,7 @@ const NewCreateEventForm = () => {
                         <div className="flex justify-between rounded-xl bg-primary px-4 py-2">
                           <div>
                             <Label className="text-[12px] font-medium text-accent/75">
-                              Option to disable time and volunteer
+                              Time and volunteer required
                             </Label>
                           </div>
                           <Switch
@@ -521,12 +529,12 @@ const NewCreateEventForm = () => {
                     </FormItem>
                   )}
                 />
-                <div className="flex flex-col items-center gap-x-2 sm:flex-row">
+                <div className="flex flex-col gap-x-2 sm:flex-row">
                   <FormField
                     control={form.control}
                     name="eventDate"
                     render={({ field }) => (
-                      <FormItem className="flex w-full flex-1 flex-col">
+                      <FormItem className="flex flex-1 flex-col">
                         <FormLabel className="text-[12px] font-semibold text-accent/75">
                           Event Date
                         </FormLabel>
@@ -575,7 +583,7 @@ const NewCreateEventForm = () => {
                     control={form.control}
                     name="eventTime"
                     render={({ field }) => (
-                      <FormItem className="w-full flex-1">
+                      <FormItem className="w-full flex-1 flex-col">
                         <FormLabel className="text-[12px] font-semibold text-accent/75">
                           Event Time
                         </FormLabel>
@@ -584,9 +592,9 @@ const NewCreateEventForm = () => {
                           <TimePicker
                             value={field.value}
                             onChange={(newValue) => field.onChange(newValue)}
-                            disabled={watchObservation}
+                            disabled={!watchObservation}
                             className={
-                              watchObservation ? "cursor-not-allowed" : ""
+                              !watchObservation ? "cursor-not-allowed" : ""
                             }
                           />
                         </FormControl>
@@ -715,9 +723,9 @@ const NewCreateEventForm = () => {
                               )
                             }
                             placeholder={"Select Volunteer"}
-                            disabled={watchObservation}
+                            disabled={!watchObservation}
                             className={
-                              watchObservation &&
+                              !watchObservation &&
                               "cursor-not-allowed opacity-50"
                             }
                           />
