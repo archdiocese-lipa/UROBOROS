@@ -59,7 +59,7 @@ export const createEventSchema = z
 
     reminder: z.boolean().default(false),
 
-    reminderDays: z.number(),
+    reminderDays: z.number().optional(),
 
     assignVolunteer: z.array(z.string()).default([]),
 

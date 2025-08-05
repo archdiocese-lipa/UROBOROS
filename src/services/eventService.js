@@ -515,6 +515,7 @@ export const getEventsCalendar = async (ministry = []) => {
       .from("events")
       .select("*")
       .eq("event_visibility", "public")
+      .order("event_date", { descending: false })
       .gte("event_date", new Date().toISOString());
 
     // Fetch private events filtered by ministry IDs (only if provided)
