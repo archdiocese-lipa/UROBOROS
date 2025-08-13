@@ -1,7 +1,5 @@
 import { paginate } from "@/lib/utils";
 import { supabase } from "./supabaseClient";
-import axios from "axios";
-import { getAuthToken } from "./feedBackService";
 
 export const createAnnouncement = async ({
   data,
@@ -9,13 +7,21 @@ export const createAnnouncement = async ({
   subGroupId = null,
 }) => {
   try {
-    const token = await getAuthToken();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      throw new Error("User not authenticated");
+    }
+
     // Create a FormData instance for multipart/form-data submission
     const formData = new FormData();
 
     // Add text fields
     formData.append("title", data.title);
     formData.append("content", data.content);
+    formData.append("userId", user.id);
 
     // Add optional fields if they exist
     if (groupId) formData.append("groupId", groupId);
@@ -28,36 +34,22 @@ export const createAnnouncement = async ({
       });
     }
 
-    // Make API request with the formData
-    const response = await axios.post(
-      `${import.meta.env.VITE_UROBOROS_API_PRODUCTION}/announcement/create`,
-      // "http://localhost:3000/announcement/create",
-      formData,
+    // Invoke Supabase Edge Function
+    const { data: result, error } = await supabase.functions.invoke(
+      "create-announcement",
       {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
+        body: formData,
       }
     );
 
-    return response.data;
+    if (error) {
+      throw new Error(error.message || "Failed to create announcement");
+    }
+
+    return result;
   } catch (error) {
     console.error("Error creating announcement:", error.message);
-
-    // Return a more helpful error message
-    if (error.response) {
-      // The server responded with a status code outside the 2xx range
-      throw new Error(
-        error.response.data.error || "Failed to create announcement"
-      );
-    } else if (error.request) {
-      // The request was made but no response was received
-      throw new Error("No response from server. Please check your connection.");
-    } else {
-      // Something happened in setting up the request
-      throw new Error("Error setting up request: ", error.message);
-    }
+    throw new Error(error.message || "Failed to create announcement");
   }
 };
 

@@ -75,24 +75,38 @@ const AnnouncementForm = ({
 
   const onSubmit = (data) => {
     if (title) {
-      editAnnouncementMutation.mutate({
-        data,
-        announcementId,
-        groupId: groupIdToUse,
-        subgroupId: subgroupIdToUse,
-      });
+      editAnnouncementMutation.mutate(
+        {
+          data,
+          announcementId,
+          groupId: groupIdToUse,
+          subgroupId: subgroupIdToUse,
+        },
+        {
+          onSuccess: () => {
+            form.reset();
+            setIsOpen(false);
+            setImagePreviews([]);
+          },
+        }
+      );
     } else {
-      addAnnouncementMutation.mutate({
-        data,
-        userId: userData?.id,
-        groupId: groupIdToUse,
-        subgroupId: subgroupIdToUse,
-      });
+      addAnnouncementMutation.mutate(
+        {
+          data,
+          userId: userData?.id,
+          groupId: groupIdToUse,
+          subgroupId: subgroupIdToUse,
+        },
+        {
+          onSuccess: () => {
+            form.reset();
+            setIsOpen(false);
+            setImagePreviews([]);
+          },
+        }
+      );
     }
-
-    form.reset();
-    setIsOpen(false);
-    setImagePreviews([]);
   };
 
   useEffect(() => {
